@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
+using Harmony;
 
 namespace VTOLVR_Multiplayer
 {
@@ -31,25 +32,31 @@ namespace VTOLVR_Multiplayer
         private void CreateUI()
         {
             Log("Creating Multiplayer UI");
-            Transform missionBriefingTemp = GameObject.Find("InteractableCanvas").transform.GetChild(0).GetChild(9).GetChild(2);
-
+            Transform ScenarioDisplay = GameObject.Find("InteractableCanvas").transform.GetChild(0).GetChild(6).GetChild(0).GetChild(1);
             //Creating the MP button
-            Transform mpButton = Instantiate(missionBriefingTemp.GetChild(7).gameObject, missionBriefingTemp).transform;
+            Transform mpButton = Instantiate(ScenarioDisplay.GetChild(6).gameObject, ScenarioDisplay).transform;
+            Log("Multiplayer Button" + mpButton.name);
+            mpButton.gameObject.SetActive(true);
             mpButton.name = "MPButton";
-            mpButton.GetComponent<RectTransform>().position = new Vector3(631, -604);
-            mpButton.GetComponent<RectTransform>().sizeDelta = new Vector2(129.1f, 84);
+            mpButton.GetComponent<RectTransform>().localPosition = new Vector3(601, -325);
+            mpButton.GetComponent<RectTransform>().sizeDelta = new Vector2(70, 206.7f);
             mpButton.GetComponentInChildren<Text>().text = "MP";
-            mpButton.GetComponentInChildren<Image>().color = Color.cyan; //Errors here
+            mpButton.GetComponent<Image>().color = Color.cyan;
+            mpButton.GetComponent<Button>().onClick = new Button.ButtonClickedEvent();
             VRInteractable mpInteractable = mpButton.GetComponentInChildren<VRInteractable>();
             mpInteractable.interactableName = "Multiplayer";
             mpInteractable.OnInteract = new UnityEngine.Events.UnityEvent();
-            mpInteractable.OnInteract.AddListener(delegate { OpenMP(); Debug.Log("After Open MP"); });
+            mpInteractable.OnInteract.AddListener(delegate { Debug.Log("Before Opening MP");  OpenMP();});
 
             GameObject.Find("InteractableCanvas").GetComponent<VRPointInteractableCanvas>().RefreshInteractables();
         }
 
         public void OpenMP()
         {
+            Log("Finding Mission");
+            CampaignSelectorUI selectorUI = FindObjectOfType<CampaignSelectorUI>();
+            int missionIdx = (int)Traverse.Create(selectorUI).Field("missionIdx").GetValue();
+            PilotSaveManager.currentScenario = PilotSaveManager.currentCampaign.missions[missionIdx];
             Log("Pressed Open Multiplayer Button\n" +
                 PilotSaveManager.currentScenario + "\n" +
                 PilotSaveManager.currentCampaign + "\n" +
