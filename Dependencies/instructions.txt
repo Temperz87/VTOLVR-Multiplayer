@@ -3,6 +3,7 @@ Dependencies Needed
 	Assembly-CSharp.dll
 	Assembly-CSharp-firstpass.dll
 	ModLoader.dll
+	netstandard.dll
 	UnityEngine.CoreModule.dll
 	UnityEngine.dll
 	UnityEngine.PhysicsModule.dll
