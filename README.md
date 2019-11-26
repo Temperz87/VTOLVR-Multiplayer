@@ -1,2 +1,2 @@
 # VTOLVR-Multiplayer
-The Multiplayer Mod for VTOLVR by . Marsh.Mello .
+The Multiplayer Mod for VTOL VR by . Marsh.Mello .

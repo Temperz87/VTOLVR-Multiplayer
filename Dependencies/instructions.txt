@@ -1,0 +1,9 @@
+Dependencies Needed
+	0Harmony.dll
+	Assembly-CSharp.dll
+	Assembly-CSharp-firstpass.dll
+	ModLoader.dll
+	UnityEngine.CoreModule.dll
+	UnityEngine.dll
+	UnityEngine.PhysicsModule.dll
+	UnityEngine.UI.dll
