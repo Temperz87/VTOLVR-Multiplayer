@@ -17,6 +17,8 @@ namespace VTOLVR_Multiplayer
             SceneManager.sceneLoaded += SceneLoaded;
             base.ModLoaded();
             CreateUI();
+            if (Networker._instance == null)
+                gameObject.AddComponent<Networker>();
         }
 
         private void SceneLoaded(Scene arg0, LoadSceneMode arg1)
@@ -61,7 +63,7 @@ namespace VTOLVR_Multiplayer
             BackButton.GetComponent<RectTransform>().sizeDelta = new Vector2(70, 256.3f);
             BackButton.GetComponentInChildren<Text>().text = "Back";
             BackButton.GetComponent<Image>().color = Color.red;
-            VRInteractable BackInteractable = mpButton.GetComponent<VRInteractable>();
+            VRInteractable BackInteractable = BackButton.GetComponent<VRInteractable>();
             BackInteractable.interactableName = "Back";
             BackInteractable.OnInteract = new UnityEngine.Events.UnityEvent();
             BackInteractable.OnInteract.AddListener(delegate { Debug.Log("Before Back"); MPMenu.SetActive(false); ScenarioDisplay.gameObject.SetActive(true); });
@@ -71,20 +73,20 @@ namespace VTOLVR_Multiplayer
             HostButton.GetComponent<RectTransform>().sizeDelta = new Vector2(70, 256.3f);
             HostButton.GetComponentInChildren<Text>().text = "Host";
             HostButton.GetComponent<Image>().color = Color.green;
-            VRInteractable HostInteractable = mpButton.GetComponent<VRInteractable>();
+            VRInteractable HostInteractable = HostButton.GetComponent<VRInteractable>();
             HostInteractable.interactableName = "Host Game";
             HostInteractable.OnInteract = new UnityEngine.Events.UnityEvent();
-            HostInteractable.OnInteract.AddListener(delegate { Debug.Log("Before Host");});
+            HostInteractable.OnInteract.AddListener(delegate { Debug.Log("Before Host"); Host(); });
             //Join
             GameObject JoinButton = Instantiate(mpButton.gameObject, MPMenu.transform);
             JoinButton.GetComponent<RectTransform>().localPosition = new Vector3(297, -325);
             JoinButton.GetComponent<RectTransform>().sizeDelta = new Vector2(70, 256.3f);
             JoinButton.GetComponentInChildren<Text>().text = "Join";
             JoinButton.GetComponent<Image>().color = Color.green;
-            VRInteractable JoinInteractable = mpButton.GetComponent<VRInteractable>();
-            JoinInteractable.interactableName = "Host Game";
+            VRInteractable JoinInteractable = JoinButton.GetComponent<VRInteractable>();
+            JoinInteractable.interactableName = "Join Game";
             JoinInteractable.OnInteract = new UnityEngine.Events.UnityEvent();
-            JoinInteractable.OnInteract.AddListener(delegate { Debug.Log("Before Join"); });
+            JoinInteractable.OnInteract.AddListener(delegate { Debug.Log("Before Join"); Join(); });
 
 
             mpInteractable.OnInteract.AddListener(delegate { Debug.Log("Before Opening MP"); MPMenu.SetActive(true);ScenarioDisplay.gameObject.SetActive(false); OpenMP(); });
@@ -96,10 +98,20 @@ namespace VTOLVR_Multiplayer
             CampaignSelectorUI selectorUI = FindObjectOfType<CampaignSelectorUI>();
             int missionIdx = (int)Traverse.Create(selectorUI).Field("missionIdx").GetValue();
             PilotSaveManager.currentScenario = PilotSaveManager.currentCampaign.missions[missionIdx];
-            Log("Pressed Open Multiplayer Button\n" +
+            Log("Pressed Open Multiplayer with\n" +
                 PilotSaveManager.currentScenario + "\n" +
                 PilotSaveManager.currentCampaign + "\n" +
                 PilotSaveManager.currentVehicle);
+        }
+
+        public void Host()
+        {
+            Networker.SendP2P(new Steamworks.CSteamID(0), new Message(), Steamworks.EP2PSend.k_EP2PSendReliable);
+        }
+
+        public void Join()
+        {
+
         }
     }
 }

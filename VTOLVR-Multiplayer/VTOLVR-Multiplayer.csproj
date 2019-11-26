@@ -69,7 +69,9 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="MessageType.cs" />
+    <Compile Include="Messages\Message.cs" />
+    <Compile Include="Messages\MessageType.cs" />
+    <Compile Include="Messages\Packet.cs" />
     <Compile Include="Multiplayer.cs" />
     <Compile Include="Networker.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
