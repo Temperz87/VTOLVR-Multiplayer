@@ -1,8 +1,6 @@
 ﻿using Steamworks;
 using System;
 
-namespace VTOLVR_Multiplayer
-{
     public enum PacketType { Single,Multiple}
     [Serializable]
     public class Packet
@@ -33,4 +31,3 @@ namespace VTOLVR_Multiplayer
             packetType = PacketType.Multiple;
         }
     }
-}

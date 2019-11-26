@@ -4,8 +4,6 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace VTOLVR_Multiplayer
-{
     [Serializable]
     public class Message_JoinRequest : Message
     {
@@ -30,4 +28,3 @@ namespace VTOLVR_Multiplayer
             type = MessageType.JoinRequest_Result;
         }
     }
-}

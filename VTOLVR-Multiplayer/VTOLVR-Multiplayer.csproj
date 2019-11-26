@@ -75,7 +75,7 @@
     <Compile Include="Messages\Packet.cs" />
     <Compile Include="Multiplayer.cs" />
     <Compile Include="Networker.cs" />
-    <Compile Include="Patches\Patch_VehicleConfigSceneSetup.cs" />
+    <Compile Include="Patches\Patch_LoadingSceneController.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
