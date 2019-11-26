@@ -7,11 +7,13 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 using Harmony;
+using System.Reflection;
 
 namespace VTOLVR_Multiplayer
 {
     public class Multiplayer : VTOLMOD
     {
+        private static string harmonyID = "marsh.vtolvr.multiplayer";
         public override void ModLoaded()
         {
             SceneManager.sceneLoaded += SceneLoaded;
@@ -19,6 +21,9 @@ namespace VTOLVR_Multiplayer
             CreateUI();
             if (Networker._instance == null)
                 gameObject.AddComponent<Networker>();
+
+            var harmony = HarmonyInstance.Create(harmonyID);
+            harmony.PatchAll(Assembly.GetExecutingAssembly());
         }
 
         private void SceneLoaded(Scene arg0, LoadSceneMode arg1)
@@ -106,12 +111,15 @@ namespace VTOLVR_Multiplayer
 
         public void Host()
         {
-            Networker.SendP2P(new Steamworks.CSteamID(0), new Message(), Steamworks.EP2PSend.k_EP2PSendReliable);
+
         }
 
         public void Join()
         {
-
+            if (Networker.hostID == new Steamworks.CSteamID(0))
+                Networker.JoinGame();
+            else
+                Debug.LogWarning("Already in a game with " + Networker.hostID.m_SteamID);
         }
     }
 }
