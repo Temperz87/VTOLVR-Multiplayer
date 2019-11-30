@@ -21,6 +21,7 @@ public class Networker : MonoBehaviour
     public static Dictionary<CSteamID, bool> readyDic { get; private set; } = new Dictionary<CSteamID, bool>();
     public static bool hostReady;
     public static CSteamID hostID { get; private set; }
+    private Callback<P2PSessionRequest_t> _p2PSessionRequestCallback;
     private void Awake()
     {
         if (_instance != null)
@@ -28,6 +29,14 @@ public class Networker : MonoBehaviour
         _instance = this;
         gameState = GameState.Menu;
         SceneManager.sceneLoaded += SceneLoaded;
+        _p2PSessionRequestCallback = Callback<P2PSessionRequest_t>.Create(OnP2PSessionRequest);
+    }
+
+    private void OnP2PSessionRequest(P2PSessionRequest_t request)
+    {
+        //Yes this is expecting everyone, even if they are not friends...
+        SteamNetworking.AcceptP2PSessionWithUser(request.m_steamIDRemote);
+        Debug.Log("Accepting P2P with " + SteamFriends.GetFriendPersonaName(request.m_steamIDRemote));
     }
 
     private void SceneLoaded(Scene arg0, LoadSceneMode arg1)
