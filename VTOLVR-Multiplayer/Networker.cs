@@ -21,7 +21,6 @@ public class Networker : MonoBehaviour
     public static Dictionary<CSteamID, bool> readyDic { get; private set; } = new Dictionary<CSteamID, bool>();
     public static bool hostReady;
     public static CSteamID hostID { get; private set; }
-    private static ulong TestSteamID = 76561198085673453;
     private void Awake()
     {
         if (_instance != null)
@@ -63,7 +62,7 @@ public class Networker : MonoBehaviour
         isHost = true;
         FindObjectOfType<MissionBriefingUI>().FlyButton();
     }
-    public static void JoinGame()
+    public static void JoinGame(CSteamID steamID)
     {
         if (gameState != GameState.Menu)
         {
@@ -71,7 +70,7 @@ public class Networker : MonoBehaviour
             return;
         }
         isHost = false;
-        SendP2P(new CSteamID(TestSteamID),
+        SendP2P(steamID,
             new Message_JoinRequest(PilotSaveManager.currentVehicle.name,
                                     PilotSaveManager.currentScenario.scenarioID,
                                     PilotSaveManager.currentCampaign.campaignID),
