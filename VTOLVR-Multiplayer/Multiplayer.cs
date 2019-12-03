@@ -255,6 +255,7 @@ public class Multiplayer : VTOLMOD
         Log("Refreahing Interactables");
         GameObject.Find("InteractableCanvas").GetComponent<VRPointInteractableCanvas>().RefreshInteractables();
         Log($"Total Friends:{totalFriends} In VTOLVR:{vtolvrFriends.Count} In Game:{inGameFriends.Count} Online:{onlineFriends.Count} Offline:{offlineFriends.Count}");
+        Networker.ResetNetworkUID();
     }
 
     public void SelectFriend(int index)

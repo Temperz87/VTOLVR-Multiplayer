@@ -10,13 +10,15 @@ public class Message_SpawnVehicle : Message
     public Vector3 position;
     public Quaternion rotation;
     public ulong csteamID;
+    public ulong networkID;
 
-    public Message_SpawnVehicle(VTOLVehicles vehicle, Vector3 position, Quaternion rotation, ulong csteamID)
+    public Message_SpawnVehicle(VTOLVehicles vehicle, Vector3 position, Quaternion rotation, ulong csteamID, ulong networkID)
     {
         this.vehicle = vehicle;
         this.position = position;
         this.rotation = rotation;
         this.csteamID = csteamID;
+        this.networkID = networkID;
         type = MessageType.SpawnVehicle;
     }
 }

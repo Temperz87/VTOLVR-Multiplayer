@@ -20,6 +20,7 @@ public static class PlayerManager
     public static void MapLoaded(VTMapCustom customMap = null) //Clients and Hosts
     {
         Debug.Log("The map has loaded");
+        Networker.CreateWorldCentre();
         //As a client, when the map has loaded we are going to request a spawn point from the host
         if (!Networker.isHost)
             Networker.SendP2P(Networker.hostID, new Message(MessageType.RequestSpawn), EP2PSend.k_EP2PSendReliable);
@@ -89,19 +90,22 @@ public static class PlayerManager
     {
         Debug.Log("Sending our location to spawn our vehicle");
         VTOLVehicles currentVehicle = VTOLAPI.GetPlayersVehicleEnum();
+        ulong id = Networker.GenerateNetworkUID();
+        localVehicle.AddComponent<RigidbodyNetworker_Sender>().networkUID = id;
         if (Networker.isHost)
         {
             Networker.SendGlobalP2P(new Message_SpawnVehicle(
                 currentVehicle,
                 localVehicle.transform.position,
                 localVehicle.transform.rotation,
-                SteamUser.GetSteamID().m_SteamID),
+                SteamUser.GetSteamID().m_SteamID,
+                id),
                 EP2PSend.k_EP2PSendReliable);
         }
         else
         {
             Networker.SendP2P(Networker.hostID,
-                new Message_SpawnVehicle(currentVehicle, localVehicle.transform.position, localVehicle.transform.rotation, SteamUser.GetSteamID().m_SteamID),
+                new Message_SpawnVehicle(currentVehicle, localVehicle.transform.position, localVehicle.transform.rotation, SteamUser.GetSteamID().m_SteamID,id),
                 EP2PSend.k_EP2PSendReliable);
         }
     }
@@ -140,6 +144,10 @@ public static class PlayerManager
             Debug.Log("We found CameraRigParent");
 
         GameObject.Destroy(CameraRigParent);
+
+        RigidbodyNetworker_Receiver rbNetworker = newVehicle.AddComponent<RigidbodyNetworker_Receiver>();
+        Networker.RigidbodyUpdate += rbNetworker.RigidbodyUpdate;
+        rbNetworker.networkUID = message.networkID;
     }
 
     public static void GenerateSpawns(Transform startPosition)

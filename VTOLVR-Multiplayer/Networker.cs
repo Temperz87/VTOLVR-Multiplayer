@@ -23,11 +23,14 @@ public class Networker : MonoBehaviour
     public static bool hostReady;
     public static CSteamID hostID { get; private set; }
     private Callback<P2PSessionRequest_t> _p2PSessionRequestCallback;
-
+    private static Transform worldCenter;
+    //networkUID is used as an identifer for all network object, we are just adding onto this to get a new one
+    private static ulong networkUID = 0;
     #region Message Type Callbacks
     public static event UnityAction<Packet, CSteamID> RequestSpawn;
     public static event UnityAction<Packet> RequestSpawn_Result;
     public static event UnityAction<Packet> SpawnVehicle;
+    public static event UnityAction<Packet> RigidbodyUpdate;
     #endregion
     private void Awake()
     {
@@ -35,7 +38,6 @@ public class Networker : MonoBehaviour
             Debug.LogError("There is already a networker in the game!");
         _instance = this;
         gameState = GameState.Menu;
-        SceneManager.sceneLoaded += SceneLoaded;
         _p2PSessionRequestCallback = Callback<P2PSessionRequest_t>.Create(OnP2PSessionRequest);
 
         RequestSpawn += PlayerManager.RequestSpawn;
@@ -51,22 +53,6 @@ public class Networker : MonoBehaviour
         Debug.Log("Accepting P2P with " + SteamFriends.GetFriendPersonaName(request.m_steamIDRemote));
     }
 
-    private void SceneLoaded(Scene arg0, LoadSceneMode arg1)
-    {
-        Debug.Log("Networker Scene Loaded " + arg0.name);
-        switch (arg0.buildIndex)
-        {
-            case 3: //Vehicle Config Room
-                break;
-            case 6: //OpenWater
-            case 7: //Akutan
-                StartCoroutine(GameSceneLoaded());
-                break;
-            case 11: //CustomMapBase
-            default:
-                break;
-        }
-    }
 
     private void Update()
     {
@@ -127,6 +113,10 @@ public class Networker : MonoBehaviour
         BinaryFormatter binaryFormatter = new BinaryFormatter();
         MemoryStream memoryStream = new MemoryStream();
         binaryFormatter.Serialize(memoryStream, packet);
+        if (memoryStream.ToArray().Length > 1200)
+        {
+            Debug.LogError("MORE THAN 1200 Bytes for message");
+        }
         if (SteamNetworking.SendP2PPacket(remoteID, memoryStream.ToArray(), (uint)memoryStream.Length, packet.sendType))
         {
             Debug.Log($"Sent P2P to {remoteID.m_SteamID}");
@@ -222,6 +212,10 @@ public class Networker : MonoBehaviour
                         if (SpawnVehicle != null)
                             SpawnVehicle.Invoke(packet);
                         break;
+                    case MessageType.RigidbodyUpdate:
+                        if (RigidbodyUpdate != null)
+                            RigidbodyUpdate.Invoke(packet);
+                        break;
                     default:
                         break;
                 }
@@ -278,9 +272,29 @@ public class Networker : MonoBehaviour
         }
         return true;
     }
-    private IEnumerator GameSceneLoaded()
+
+    public static ulong GenerateNetworkUID()
     {
-        yield return new WaitForSeconds(2);
-        Debug.Log("HELO WE ARE IN THE GAME SCENE");
+        networkUID++;
+        return networkUID;
+    }
+    public static void ResetNetworkUID()
+    {
+        networkUID = 0;
+    }
+
+    public static Transform CreateWorldCentre()
+    {
+        GameObject centre = new GameObject("World Centre", typeof(FloatingOriginTransform));
+        centre.transform.position = new Vector3(0, 0, 0);
+        return centre.transform;
+    }
+
+    public static Vector3 GetWorldCentre()
+    {
+        if (worldCenter != null)
+            return worldCenter.position;
+        Debug.LogError("worldCentre was null");
+        return CreateWorldCentre().position;
     }
 }
