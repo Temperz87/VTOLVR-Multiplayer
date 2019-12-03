@@ -55,7 +55,7 @@ public static class PlayerManager
             spawnRequestQueue.Enqueue(sender);
             return;
         }
-        if (spawnPoints == null)
+        if (spawnPoints == null || spawnPoints.Count == 0)
         {
             Debug.LogError("Spawn points was null, we won't be able to find any spawn point then");
             return;
@@ -78,6 +78,63 @@ public static class PlayerManager
         }
         localVehicle.transform.position = result.position;
         localVehicle.transform.rotation = result.rotation;
+        SendSpawnVehicle(localVehicle);
+    }
+    public static void SendSpawnVehicle(GameObject localVehicle) //Both
+    {
+        Debug.Log("Sending our location to spawn our vehicle");
+        VTOLVehicles currentVehicle = VTOLAPI.GetPlayersVehicleEnum();
+        if (Networker.isHost)
+        {
+            Networker.SendGlobalP2P(new Message_SpawnVehicle(
+                currentVehicle,
+                localVehicle.transform.position,
+                localVehicle.transform.rotation,
+                SteamUser.GetSteamID().m_SteamID),
+                EP2PSend.k_EP2PSendReliable);
+        }
+        else
+        {
+            Networker.SendP2P(Networker.hostID,
+                new Message_SpawnVehicle(currentVehicle, localVehicle.transform.position, localVehicle.transform.rotation, SteamUser.GetSteamID().m_SteamID),
+                EP2PSend.k_EP2PSendReliable);
+        }
+    }
+    public static void SpawnVehicle(Packet packet)
+    {
+        Debug.Log("Recived a Spawn Vehicle Message");
+        Message_SpawnVehicle message = (Message_SpawnVehicle)((PacketSingle)packet).message;
+        GameObject newVehicle = GameObject.Instantiate(PilotSaveManager.currentVehicle.vehiclePrefab);
+        newVehicle.name = $"Client [{message.csteamID}]";
+        newVehicle.transform.position = message.position;
+        newVehicle.transform.rotation = message.rotation;
+        CamRigRotationInterpolator[] camRig = GameObject.FindObjectsOfType<CamRigRotationInterpolator>();
+        Debug.Log("Trying to Destroy camera rig");
+        Debug.Log($"There are {camRig.Length} CamRigRotationInterpolator's");
+        GameObject CameraRigParent = null;
+        for (int i = 0; i < camRig.Length; i++)
+        {
+            Transform parent = camRig[i].transform.parent.parent;
+            if (parent.name == newVehicle.name)
+            {
+                CameraRigParent = camRig[i].gameObject;
+                break;
+            }
+            else if (parent.name != "SEVTF" || parent.name != "FA-26B")
+            {
+                if (parent.parent.name == newVehicle.name)
+                {
+                    CameraRigParent = camRig[i].gameObject;
+                    break;
+                }
+            }
+        }
+        if (CameraRigParent == null)
+            Debug.LogError("We didn't find CameraRigParent");
+        else
+            Debug.Log("We found CameraRigParent");
+
+        GameObject.Destroy(CameraRigParent);
     }
 
     public static void GenerateSpawns(Transform startPosition)

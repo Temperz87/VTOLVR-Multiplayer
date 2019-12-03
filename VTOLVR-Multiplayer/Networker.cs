@@ -26,7 +26,8 @@ public class Networker : MonoBehaviour
 
     #region Message Type Callbacks
     public static event UnityAction<Packet, CSteamID> RequestSpawn;
-    public static event UnityAction<Packet> RequestSpawn_Result; 
+    public static event UnityAction<Packet> RequestSpawn_Result;
+    public static event UnityAction<Packet> SpawnVehicle;
     #endregion
     private void Awake()
     {
@@ -39,6 +40,7 @@ public class Networker : MonoBehaviour
 
         RequestSpawn += PlayerManager.RequestSpawn;
         RequestSpawn_Result += PlayerManager.RequestSpawn_Result;
+        SpawnVehicle += PlayerManager.SpawnVehicle;
         VTCustomMapManager.OnLoadedMap += PlayerManager.MapLoaded;
     }
 
@@ -94,6 +96,14 @@ public class Networker : MonoBehaviour
                                     PilotSaveManager.currentScenario.scenarioID,
                                     PilotSaveManager.currentCampaign.campaignID),
             EP2PSend.k_EP2PSendReliable);
+    }
+    public static void SendExcludeP2P(CSteamID excludeID, Message message, EP2PSend sendType)
+    {
+        for (int i = 0; i < players.Count; i++)
+        {
+            if (players[i] != excludeID)
+                SendP2P(players[i], message, sendType);
+        }
     }
     public static void SendGlobalP2P(Message message, EP2PSend sendType)
     {
@@ -207,6 +217,10 @@ public class Networker : MonoBehaviour
                     case MessageType.RequestSpawn_Result:
                         if (RequestSpawn_Result != null)
                             RequestSpawn_Result.Invoke(packet);
+                        break;
+                    case MessageType.SpawnVehicle:
+                        if (SpawnVehicle != null)
+                            SpawnVehicle.Invoke(packet);
                         break;
                     default:
                         break;
