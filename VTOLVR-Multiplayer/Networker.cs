@@ -113,7 +113,7 @@ public class Networker : MonoBehaviour
         BinaryFormatter binaryFormatter = new BinaryFormatter();
         MemoryStream memoryStream = new MemoryStream();
         binaryFormatter.Serialize(memoryStream, packet);
-        if (memoryStream.ToArray().Length > 1200)
+        if (memoryStream.ToArray().Length > 1200 && (packet.sendType == EP2PSend.k_EP2PSendUnreliable || packet.sendType == EP2PSend.k_EP2PSendUnreliableNoDelay))
         {
             Debug.LogError("MORE THAN 1200 Bytes for message");
         }
@@ -157,7 +157,7 @@ public class Networker : MonoBehaviour
                         if (!isHost)
                         {
                             Debug.LogError($"Recived Join Request when we are not the host");
-                            //return; //<---- Disable when testing on single client
+                            return;
                         }
                         Message_JoinRequest joinRequest = packetS.message as Message_JoinRequest;
                         if (joinRequest.currentVehicle == PilotSaveManager.currentVehicle.vehicleName &&

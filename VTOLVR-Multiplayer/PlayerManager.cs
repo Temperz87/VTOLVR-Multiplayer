@@ -112,7 +112,10 @@ public static class PlayerManager
     public static void SpawnVehicle(Packet packet)
     {
         Debug.Log("Recived a Spawn Vehicle Message");
+
+        Debug.Log("Sending to other clients");
         Message_SpawnVehicle message = (Message_SpawnVehicle)((PacketSingle)packet).message;
+        Networker.SendExcludeP2P(new CSteamID(message.csteamID), message, EP2PSend.k_EP2PSendReliable);
         GameObject newVehicle = GameObject.Instantiate(PilotSaveManager.currentVehicle.vehiclePrefab);
         newVehicle.name = $"Client [{message.csteamID}]";
         newVehicle.transform.position = message.position;

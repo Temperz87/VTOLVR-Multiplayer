@@ -19,7 +19,7 @@ public class RigidbodyNetworker_Sender : MonoBehaviour
 
     private void LateUpdate()
     {
-        lastMessage.position = transform.position;
+        lastMessage.position = Networker.GetWorldCentre() - transform.position;
         lastMessage.velocity = rb.velocity;
         lastMessage.angularVelocity = rb.angularVelocity;
         if (Networker.isHost)
