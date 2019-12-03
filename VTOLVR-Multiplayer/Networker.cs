@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using UnityEngine;
+using UnityEngine.Events;
 using UnityEngine.SceneManagement;
 using Steamworks;
 using System.Runtime.Serialization.Formatters.Binary;
@@ -22,6 +23,11 @@ public class Networker : MonoBehaviour
     public static bool hostReady;
     public static CSteamID hostID { get; private set; }
     private Callback<P2PSessionRequest_t> _p2PSessionRequestCallback;
+
+    #region Message Type Callbacks
+    public static event UnityAction<Packet, CSteamID> RequestSpawn;
+    public static event UnityAction<Packet> RequestSpawn_Result; 
+    #endregion
     private void Awake()
     {
         if (_instance != null)
@@ -30,6 +36,10 @@ public class Networker : MonoBehaviour
         gameState = GameState.Menu;
         SceneManager.sceneLoaded += SceneLoaded;
         _p2PSessionRequestCallback = Callback<P2PSessionRequest_t>.Create(OnP2PSessionRequest);
+
+        RequestSpawn += PlayerManager.RequestSpawn;
+        RequestSpawn_Result += PlayerManager.RequestSpawn_Result;
+        VTCustomMapManager.OnLoadedMap += PlayerManager.MapLoaded;
     }
 
     private void OnP2PSessionRequest(P2PSessionRequest_t request)
@@ -189,6 +199,14 @@ public class Networker : MonoBehaviour
                         Debug.Log("The host said everyone is ready, launching the mission");
                         hostReady = true;
                         LoadingSceneController.instance.PlayerReady();
+                        break;
+                    case MessageType.RequestSpawn:
+                        if (RequestSpawn != null)
+                            RequestSpawn.Invoke(packet, csteamID);
+                        break;
+                    case MessageType.RequestSpawn_Result:
+                        if (RequestSpawn_Result != null)
+                            RequestSpawn_Result.Invoke(packet);
                         break;
                     default:
                         break;
