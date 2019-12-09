@@ -20,4 +20,9 @@ public struct V3
     {
         return new Vector3(x, y, z);
     }
+
+    public override string ToString()
+    {
+        return $"X:{x} Y:{y} Z:{z}";
+    }
 }

@@ -145,7 +145,6 @@ public class Networker : MonoBehaviour
         {
             MemoryStream serializationStream = new MemoryStream(array);
             Packet packet = new BinaryFormatter().Deserialize(serializationStream) as Packet;
-            Debug.Log($"Recived P2P from {csteamID.m_SteamID}");
             if (packet.packetType == PacketType.Single)
             {
                 PacketSingle packetS = packet as PacketSingle;

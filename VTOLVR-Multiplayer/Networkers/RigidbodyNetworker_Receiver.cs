@@ -19,7 +19,9 @@ public class RigidbodyNetworker_Receiver : MonoBehaviour
     private void Awake()
     {
         rb = GetComponent<Rigidbody>();
-        FloatingOriginTransform originTransform = gameObject.AddComponent<FloatingOriginTransform>();
+        FloatingOriginTransform originTransform = GetComponent<FloatingOriginTransform>();
+        if (originTransform == null)
+            originTransform = gameObject.AddComponent<FloatingOriginTransform>();
         originTransform.SetRigidbody(rb);
     }
 

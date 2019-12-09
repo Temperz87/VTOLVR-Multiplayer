@@ -53,7 +53,7 @@ public static class PlayerManager
             lastSpawn = FindFreeSpawn();
             Networker.SendP2P(
                 spawnRequestQueue.Dequeue(),
-                new Message_RequestSpawn_Result(new V3(lastSpawn.position), lastSpawn.rotation),
+                new Message_RequestSpawn_Result(new V3(lastSpawn.position), new V3(lastSpawn.rotation.eulerAngles)),
                 EP2PSend.k_EP2PSendReliable);
         }
     }
@@ -72,14 +72,14 @@ public static class PlayerManager
             return;
         }
         Transform spawn = FindFreeSpawn();
-        Networker.SendP2P(sender, new Message_RequestSpawn_Result(new V3(spawn.position), spawn.rotation), EP2PSend.k_EP2PSendReliable);
+        Networker.SendP2P(sender, new Message_RequestSpawn_Result(new V3(spawn.position), new V3(spawn.rotation.eulerAngles)), EP2PSend.k_EP2PSendReliable);
     }
 
     public static void RequestSpawn_Result(Packet packet) //Clients Only
     {
         Debug.Log("The host has sent back our spawn point");
         Message_RequestSpawn_Result result = (Message_RequestSpawn_Result)((PacketSingle)packet).message;
-        Debug.Log($"We need to move to {result.position} : {result.rotation.eulerAngles}");
+        Debug.Log($"We need to move to {result.position} : {result.rotation}");
 
         GameObject localVehicle = VTOLAPI.instance.GetPlayersVehicleGameObject();
         if (localVehicle == null)
@@ -88,7 +88,7 @@ public static class PlayerManager
             return;
         }
         localVehicle.transform.position = result.position.GetV3();
-        localVehicle.transform.rotation = result.rotation;
+        localVehicle.transform.rotation = Quaternion.Euler(result.rotation.GetV3());
         SendSpawnVehicle(localVehicle);
     }
     

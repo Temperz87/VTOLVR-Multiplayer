@@ -9,9 +9,9 @@ using UnityEngine;
 public class Message_RequestSpawn_Result : Message
 {
     public V3 position;
-    public Quaternion rotation;
+    public V3 rotation;
 
-    public Message_RequestSpawn_Result(V3 position, Quaternion rotation)
+    public Message_RequestSpawn_Result(V3 position, V3 rotation)
     {
         this.position = position;
         this.rotation = rotation;
