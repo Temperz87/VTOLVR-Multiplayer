@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using UnityEngine;
+[Serializable]
 public class Message_RigidbodyUpdate : Message
 {
     public Vector3 velocity, angularVelocity;

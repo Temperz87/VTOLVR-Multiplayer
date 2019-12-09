@@ -80,6 +80,7 @@ class Patch_LoadingSceneHelmet_Update
                     else
                     {
                         Debug.Log("I'm ready but others are not, waiting");
+                        Networker.hostReady = true;
                     }
                 }
                 else if (!Networker.hostReady)

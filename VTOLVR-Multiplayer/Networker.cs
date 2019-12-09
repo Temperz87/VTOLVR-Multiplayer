@@ -185,7 +185,7 @@ public class Networker : MonoBehaviour
                         //The client has said they are ready to start, so we change it in the dictionary
                         if (readyDic.ContainsKey(csteamID))
                         {
-                            Debug.Log($"{csteamID.m_SteamID} has said they are ready!");
+                            Debug.Log($"{csteamID.m_SteamID} has said they are ready!\nHost ready state {hostReady}");
                             readyDic[csteamID] = true;
                             if (hostReady && EveryoneElseReady())
                             {
