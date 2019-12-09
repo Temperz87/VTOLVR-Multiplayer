@@ -9,11 +9,11 @@ using UnityEngine.UI;
 using Harmony;
 using System.Reflection;
 using Steamworks;
-
+using System.Collections;
 
 public class Multiplayer : VTOLMOD
 {
-    private static string harmonyID = "marsh.vtolvr.multiplayer";
+    private static string TesterURL = "http://86.182.16.225/?id=";
 
     private struct FriendItem
     {
@@ -34,16 +34,27 @@ public class Multiplayer : VTOLMOD
     private CSteamID selectedFriend;
     private Transform selectionTF;
 
+    private void Start()
+    {
+        HarmonyInstance harmony = HarmonyInstance.Create("marsh.vtolvr.multiplayer");      
+        harmony.PatchAll(Assembly.GetExecutingAssembly());
+    }
     public override void ModLoaded()
     {
+                System.Net.WebClient wc = new System.Net.WebClient();
+        string webData = wc.DownloadString(TesterURL + SteamUser.GetSteamID().m_SteamID);
+        if (webData != "Y")
+            return;
+
+        Debug.Log("Valid User " + SteamUser.GetSteamID().m_SteamID);
+
         SceneManager.sceneLoaded += SceneLoaded;
         base.ModLoaded();
         CreateUI();
         gameObject.AddComponent<Networker>();
 
 
-        var harmony = HarmonyInstance.Create(harmonyID);
-        harmony.PatchAll();
+        
     }
 
     private void SceneLoaded(Scene arg0, LoadSceneMode arg1)
@@ -52,6 +63,10 @@ public class Multiplayer : VTOLMOD
         {
             case 2:
                 CreateUI();
+                break;
+            case 7:
+            case 12:
+                StartCoroutine(WaitForMap());
                 break;
         }
     }
@@ -281,7 +296,7 @@ public class Multiplayer : VTOLMOD
 
     public void Host()
     {
-
+        Networker.HostGame();
     }
 
     public void Join()
@@ -290,5 +305,16 @@ public class Multiplayer : VTOLMOD
             Networker.JoinGame(selectedFriend);
         else
             Debug.LogWarning("Already in a game with " + Networker.hostID.m_SteamID);
+    }
+
+    private IEnumerator WaitForMap()
+    {
+        Log("Started WaitForMap");
+        while (VTMapManager.fetch == null || !VTMapManager.fetch.scenarioReady)
+        {
+            yield return null;
+        }
+        Log("Wait for map finished");
+        PlayerManager.MapLoaded();
     }
 }

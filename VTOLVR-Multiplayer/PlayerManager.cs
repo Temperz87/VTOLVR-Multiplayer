@@ -29,13 +29,18 @@ public static class PlayerManager
             hostLoaded = true;
             GameObject localVehicle = VTOLAPI.instance.GetPlayersVehicleGameObject();
             if (localVehicle != null)
+            {
+                GenerateSpawns(localVehicle.transform);
                 SendSpawnVehicle(localVehicle);
+                
+            }                
             else
                 Debug.Log("Local vehicle for host was null");
             if (spawnRequestQueue.Count != 0)
                 SpawnRequestQueue();
         }
     }
+
     /// <summary>
     /// This gives all the people waiting their spawn points
     /// </summary>
@@ -159,7 +164,8 @@ public static class PlayerManager
         GameObject lastSpawn;
         for (int i = 0; i < spawnsCount; i++)
         {
-            lastSpawn = new GameObject("MP Spawn Point", typeof(FloatingOriginShifter));
+            lastSpawn = new GameObject("MP Spawn " + i);
+            lastSpawn.AddComponent<FloatingOriginShifter>();
             lastSpawn.transform.position = startPosition.position + startPosition.TransformVector(new Vector3(spawnSpacing * i, 0, 0));
             spawnPoints.Add(lastSpawn.transform);
             Debug.Log("Created MP Spawn at " + lastSpawn.transform.position);

@@ -5,13 +5,15 @@ using System.Text;
 using System.Threading.Tasks;
 using UnityEngine;
 using Harmony;
+using System.Collections;
+/*
 [HarmonyPatch(typeof(VTMapManager))]
 [HarmonyPatch("ScenarioStartRoutine")]
 class Patch_VTMapManager
 {
-    public static void Postfix()
+    public static IEnumerator Postfix()
     {
-        Debug.Log("POST FIX AFTER ScenarioStartRoutine");
-        PlayerManager.MapLoaded();
+
     }
 }
+*/

@@ -67,7 +67,7 @@ public class Networker : MonoBehaviour
             return;
         }
         isHost = true;
-        FindObjectOfType<MissionBriefingUI>().FlyButton();
+        _instance.StartCoroutine(_instance.FlyButton());
     }
     public static void JoinGame(CSteamID steamID)
     {
@@ -285,9 +285,10 @@ public class Networker : MonoBehaviour
 
     public static Transform CreateWorldCentre()
     {
-        GameObject centre = new GameObject("World Centre", typeof(FloatingOriginTransform));
-        centre.transform.position = new Vector3(0, 0, 0);
-        return centre.transform;
+        Debug.Log("Created the world centre");
+        worldCenter = new GameObject("World Centre", typeof(FloatingOriginTransform)).transform;
+        worldCenter.transform.position = new Vector3(0, 0, 0);
+        return worldCenter.transform;
     }
 
     public static Vector3 GetWorldCentre()

@@ -8,3 +8,4 @@ Dependencies Needed
 	UnityEngine.dll
 	UnityEngine.PhysicsModule.dll
 	UnityEngine.UI.dll
+	UnityEngine.AudioModule.dll
