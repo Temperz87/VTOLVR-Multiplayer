@@ -7,11 +7,11 @@ using UnityEngine;
 [Serializable]
 public class Message_RigidbodyUpdate : Message
 {
-    public Vector3 velocity, angularVelocity;
-    public Vector3 position;
+    public V3 velocity, angularVelocity;
+    public V3 position;
     public ulong networkUID;
 
-    public Message_RigidbodyUpdate(Vector3 velocity, Vector3 angularVelocity, Vector3 position, ulong networkUID)
+    public Message_RigidbodyUpdate(V3 velocity, V3 angularVelocity, V3 position, ulong networkUID)
     {
         this.velocity = velocity;
         this.angularVelocity = angularVelocity;

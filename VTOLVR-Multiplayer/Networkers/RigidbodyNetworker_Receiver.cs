@@ -28,9 +28,9 @@ public class RigidbodyNetworker_Receiver : MonoBehaviour
         if (packet.networkUID != networkUID)
             return;
         Message_RigidbodyUpdate rigidbodyUpdate = (Message_RigidbodyUpdate)((PacketSingle)packet).message;
-        targetPosition = Networker.GetWorldCentre() - rigidbodyUpdate.position;
-        rb.velocity = rigidbodyUpdate.velocity;
-        rb.angularVelocity = rigidbodyUpdate.angularVelocity;
+        targetPosition = Networker.GetWorldCentre() - rigidbodyUpdate.position.GetV3();
+        rb.velocity = rigidbodyUpdate.velocity.GetV3();
+        rb.angularVelocity = rigidbodyUpdate.angularVelocity.GetV3();
 
         if (Vector3.Distance(transform.position, targetPosition) > positionThreshhold)
         {

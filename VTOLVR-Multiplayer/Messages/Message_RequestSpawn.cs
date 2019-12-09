@@ -8,10 +8,10 @@ using UnityEngine;
 [Serializable]
 public class Message_RequestSpawn_Result : Message
 {
-    public Vector3 position;
+    public V3 position;
     public Quaternion rotation;
 
-    public Message_RequestSpawn_Result(Vector3 position, Quaternion rotation)
+    public Message_RequestSpawn_Result(V3 position, Quaternion rotation)
     {
         this.position = position;
         this.rotation = rotation;

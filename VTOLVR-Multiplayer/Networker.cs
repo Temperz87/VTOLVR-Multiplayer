@@ -119,7 +119,7 @@ public class Networker : MonoBehaviour
         }
         if (SteamNetworking.SendP2PPacket(remoteID, memoryStream.ToArray(), (uint)memoryStream.Length, packet.sendType))
         {
-            Debug.Log($"Sent P2P to {remoteID.m_SteamID}");
+            
         }
         else
         {

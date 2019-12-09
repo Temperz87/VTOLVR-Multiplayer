@@ -19,14 +19,14 @@ public class RigidbodyNetworker_Sender : MonoBehaviour
         Debug.Log("Set or got floating origin transform");
         originTransform.SetRigidbody(rb);
         Debug.Log("Setting last message");
-        lastMessage = new Message_RigidbodyUpdate(rb.velocity, rb.angularVelocity, transform.position, networkUID);
+        lastMessage = new Message_RigidbodyUpdate(new V3(rb.velocity), new V3(rb.angularVelocity), new V3(transform.position), networkUID);
     }
 
     private void LateUpdate()
     {
-        lastMessage.position = Networker.GetWorldCentre() - transform.position;
-        lastMessage.velocity = rb.velocity;
-        lastMessage.angularVelocity = rb.angularVelocity;
+        lastMessage.position = new V3(Networker.GetWorldCentre() - transform.position);
+        lastMessage.velocity = new V3(rb.velocity);
+        lastMessage.angularVelocity = new V3(rb.angularVelocity);
         if (Networker.isHost)
             Networker.SendGlobalP2P(lastMessage, Steamworks.EP2PSend.k_EP2PSendUnreliableNoDelay);
         else

@@ -53,7 +53,7 @@ public static class PlayerManager
             lastSpawn = FindFreeSpawn();
             Networker.SendP2P(
                 spawnRequestQueue.Dequeue(),
-                new Message_RequestSpawn_Result(lastSpawn.position, lastSpawn.rotation),
+                new Message_RequestSpawn_Result(new V3(lastSpawn.position), lastSpawn.rotation),
                 EP2PSend.k_EP2PSendReliable);
         }
     }
@@ -72,7 +72,7 @@ public static class PlayerManager
             return;
         }
         Transform spawn = FindFreeSpawn();
-        Networker.SendP2P(sender, new Message_RequestSpawn_Result(spawn.position, spawn.rotation), EP2PSend.k_EP2PSendReliable);
+        Networker.SendP2P(sender, new Message_RequestSpawn_Result(new V3(spawn.position), spawn.rotation), EP2PSend.k_EP2PSendReliable);
     }
 
     public static void RequestSpawn_Result(Packet packet) //Clients Only
@@ -87,10 +87,11 @@ public static class PlayerManager
             Debug.LogError("The local vehicle was null");
             return;
         }
-        localVehicle.transform.position = result.position;
+        localVehicle.transform.position = result.position.GetV3();
         localVehicle.transform.rotation = result.rotation;
         SendSpawnVehicle(localVehicle);
     }
+    
     public static void SendSpawnVehicle(GameObject localVehicle) //Both
     {
         Debug.Log("Sending our location to spawn our vehicle");
@@ -101,8 +102,8 @@ public static class PlayerManager
         {
             Networker.SendGlobalP2P(new Message_SpawnVehicle(
                 currentVehicle,
-                localVehicle.transform.position,
-                localVehicle.transform.rotation,
+                new V3(localVehicle.transform.position),
+                new V3(localVehicle.transform.rotation.eulerAngles),
                 SteamUser.GetSteamID().m_SteamID,
                 id),
                 EP2PSend.k_EP2PSendReliable);
@@ -110,7 +111,7 @@ public static class PlayerManager
         else
         {
             Networker.SendP2P(Networker.hostID,
-                new Message_SpawnVehicle(currentVehicle, localVehicle.transform.position, localVehicle.transform.rotation, SteamUser.GetSteamID().m_SteamID,id),
+                new Message_SpawnVehicle(currentVehicle, new V3(localVehicle.transform.position), new V3(localVehicle.transform.rotation.eulerAngles), SteamUser.GetSteamID().m_SteamID,id),
                 EP2PSend.k_EP2PSendReliable);
         }
     }
@@ -123,8 +124,8 @@ public static class PlayerManager
         Networker.SendExcludeP2P(new CSteamID(message.csteamID), message, EP2PSend.k_EP2PSendReliable);
         GameObject newVehicle = GameObject.Instantiate(PilotSaveManager.currentVehicle.vehiclePrefab);
         newVehicle.name = $"Client [{message.csteamID}]";
-        newVehicle.transform.position = message.position;
-        newVehicle.transform.rotation = message.rotation;
+        newVehicle.transform.position = message.position.GetV3();
+        newVehicle.transform.rotation = Quaternion.Euler(message.rotation.GetV3());
         CamRigRotationInterpolator[] camRig = GameObject.FindObjectsOfType<CamRigRotationInterpolator>();
         Debug.Log("Trying to Destroy camera rig");
         Debug.Log($"There are {camRig.Length} CamRigRotationInterpolator's");
