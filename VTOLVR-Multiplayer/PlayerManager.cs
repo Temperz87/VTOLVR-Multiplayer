@@ -20,7 +20,6 @@ public static class PlayerManager
     public static void MapLoaded(VTMapCustom customMap = null) //Clients and Hosts
     {
         Debug.Log("The map has loaded");
-        Networker.CreateWorldCentre();
         //As a client, when the map has loaded we are going to request a spawn point from the host
         if (!Networker.isHost)
             Networker.SendP2P(Networker.hostID, new Message(MessageType.RequestSpawn), EP2PSend.k_EP2PSendReliable);

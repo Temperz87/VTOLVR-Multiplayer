@@ -30,7 +30,7 @@ public class RigidbodyNetworker_Receiver : MonoBehaviour
         if (packet.networkUID != networkUID)
             return;
         Message_RigidbodyUpdate rigidbodyUpdate = (Message_RigidbodyUpdate)((PacketSingle)packet).message;
-        targetPosition = Networker.GetWorldCentre() - rigidbodyUpdate.position.toVector3;
+        targetPosition = VTMapManager.GlobalToWorldPoint(rigidbodyUpdate.position);
         rb.velocity = rigidbodyUpdate.velocity.toVector3;
         rb.angularVelocity = rigidbodyUpdate.angularVelocity.toVector3;
 

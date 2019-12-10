@@ -19,7 +19,7 @@ public class RigidbodyNetworker_Sender : MonoBehaviour
 
     private void LateUpdate()
     {
-        lastMessage.position = new Vector3D(Networker.GetWorldCentre() - transform.position);
+        lastMessage.position = VTMapManager.WorldToGlobalPoint(transform.position);
         lastMessage.velocity = new Vector3D(rb.velocity);
         lastMessage.angularVelocity = new Vector3D(rb.angularVelocity);
         if (Networker.isHost)

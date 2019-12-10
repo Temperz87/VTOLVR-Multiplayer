@@ -23,7 +23,6 @@ public class Networker : MonoBehaviour
     public static bool hostReady;
     public static CSteamID hostID { get; private set; }
     private Callback<P2PSessionRequest_t> _p2PSessionRequestCallback;
-    private static Transform worldCenter;
     //networkUID is used as an identifer for all network object, we are just adding onto this to get a new one
     private static ulong networkUID = 0;
     #region Message Type Callbacks
@@ -280,21 +279,5 @@ public class Networker : MonoBehaviour
     public static void ResetNetworkUID()
     {
         networkUID = 0;
-    }
-
-    public static Transform CreateWorldCentre()
-    {
-        Debug.Log("Created the world centre");
-        worldCenter = new GameObject("World Centre", typeof(FloatingOriginTransform)).transform;
-        worldCenter.transform.position = new Vector3(0, 0, 0);
-        return worldCenter.transform;
-    }
-
-    public static Vector3 GetWorldCentre()
-    {
-        if (worldCenter != null)
-            return worldCenter.position;
-        Debug.LogError("worldCentre was null");
-        return CreateWorldCentre().position;
     }
 }
