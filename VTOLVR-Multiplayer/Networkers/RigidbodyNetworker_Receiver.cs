@@ -30,14 +30,19 @@ public class RigidbodyNetworker_Receiver : MonoBehaviour
         if (packet.networkUID != networkUID)
             return;
         Message_RigidbodyUpdate rigidbodyUpdate = (Message_RigidbodyUpdate)((PacketSingle)packet).message;
-        targetPosition = Networker.GetWorldCentre() - rigidbodyUpdate.position.GetV3();
-        rb.velocity = rigidbodyUpdate.velocity.GetV3();
-        rb.angularVelocity = rigidbodyUpdate.angularVelocity.GetV3();
+        targetPosition = Networker.GetWorldCentre() - rigidbodyUpdate.position.toVector3;
+        rb.velocity = rigidbodyUpdate.velocity.toVector3;
+        rb.angularVelocity = rigidbodyUpdate.angularVelocity.toVector3;
 
         if (Vector3.Distance(transform.position, targetPosition) > positionThreshhold)
         {
             Debug.Log("Outside of thresh hold, moving " + gameObject.name);
             transform.position = targetPosition;
+        }
+        else
+        {
+            Debug.Log($"Updating Position of UID {networkUID} to {transform.position} : {rb.velocity}" + 
+                $"\nNetwork Message was {rigidbodyUpdate.position} : {rigidbodyUpdate.velocity}");
         }
     }
 

@@ -31,7 +31,17 @@ public static class PlayerManager
             if (localVehicle != null)
             {
                 GenerateSpawns(localVehicle.transform);
+                Transform temp = FindFreeSpawn();
+                FlightInfo flightInfo = localVehicle.GetComponent<FlightInfo>();
+                flightInfo.PauseGCalculations();
+                localVehicle.GetComponent<PlayerVehicleSetup>().LandVehicle(null);
+                Debug.Log($"Moving local vehicle from {localVehicle.GetComponent<Rigidbody>().position} to {temp.position}");
+                localVehicle.GetComponent<Rigidbody>().position = temp.position;
+                localVehicle.transform.position = temp.position;
+                Debug.Log($"Moved local vehicle to {localVehicle.GetComponent<Rigidbody>().position} : {localVehicle.transform.position}");
+                GameObject.CreatePrimitive(PrimitiveType.Cube).transform.position = localVehicle.transform.position;
                 SendSpawnVehicle(localVehicle);
+                flightInfo.UnpauseGCalculations();
                 
             }                
             else
@@ -53,7 +63,7 @@ public static class PlayerManager
             lastSpawn = FindFreeSpawn();
             Networker.SendP2P(
                 spawnRequestQueue.Dequeue(),
-                new Message_RequestSpawn_Result(new V3(lastSpawn.position), new V3(lastSpawn.rotation.eulerAngles)),
+                new Message_RequestSpawn_Result(new Vector3D(lastSpawn.position), new Vector3D(lastSpawn.rotation.eulerAngles)),
                 EP2PSend.k_EP2PSendReliable);
         }
     }
@@ -72,7 +82,7 @@ public static class PlayerManager
             return;
         }
         Transform spawn = FindFreeSpawn();
-        Networker.SendP2P(sender, new Message_RequestSpawn_Result(new V3(spawn.position), new V3(spawn.rotation.eulerAngles)), EP2PSend.k_EP2PSendReliable);
+        Networker.SendP2P(sender, new Message_RequestSpawn_Result(new Vector3D(spawn.position), new Vector3D(spawn.rotation.eulerAngles)), EP2PSend.k_EP2PSendReliable);
     }
 
     public static void RequestSpawn_Result(Packet packet) //Clients Only
@@ -87,8 +97,8 @@ public static class PlayerManager
             Debug.LogError("The local vehicle was null");
             return;
         }
-        localVehicle.transform.position = result.position.GetV3();
-        localVehicle.transform.rotation = Quaternion.Euler(result.rotation.GetV3());
+        localVehicle.transform.position = result.position.toVector3;
+        localVehicle.transform.rotation = Quaternion.Euler(result.rotation.toVector3);
         SendSpawnVehicle(localVehicle);
     }
     
@@ -102,8 +112,8 @@ public static class PlayerManager
         {
             Networker.SendGlobalP2P(new Message_SpawnVehicle(
                 currentVehicle,
-                new V3(localVehicle.transform.position),
-                new V3(localVehicle.transform.rotation.eulerAngles),
+                new Vector3D(localVehicle.transform.position),
+                new Vector3D(localVehicle.transform.rotation.eulerAngles),
                 SteamUser.GetSteamID().m_SteamID,
                 id),
                 EP2PSend.k_EP2PSendReliable);
@@ -111,7 +121,7 @@ public static class PlayerManager
         else
         {
             Networker.SendP2P(Networker.hostID,
-                new Message_SpawnVehicle(currentVehicle, new V3(localVehicle.transform.position), new V3(localVehicle.transform.rotation.eulerAngles), SteamUser.GetSteamID().m_SteamID,id),
+                new Message_SpawnVehicle(currentVehicle, new Vector3D(localVehicle.transform.position), new Vector3D(localVehicle.transform.rotation.eulerAngles), SteamUser.GetSteamID().m_SteamID,id),
                 EP2PSend.k_EP2PSendReliable);
         }
     }
@@ -124,8 +134,8 @@ public static class PlayerManager
         Networker.SendExcludeP2P(new CSteamID(message.csteamID), message, EP2PSend.k_EP2PSendReliable);
         GameObject newVehicle = GameObject.Instantiate(PilotSaveManager.currentVehicle.vehiclePrefab);
         newVehicle.name = $"Client [{message.csteamID}]";
-        newVehicle.transform.position = message.position.GetV3();
-        newVehicle.transform.rotation = Quaternion.Euler(message.rotation.GetV3());
+        newVehicle.transform.position = message.position.toVector3;
+        newVehicle.transform.rotation = Quaternion.Euler(message.rotation.toVector3);
         CamRigRotationInterpolator[] camRig = GameObject.FindObjectsOfType<CamRigRotationInterpolator>();
         Debug.Log("Trying to Destroy camera rig");
         Debug.Log($"There are {camRig.Length} CamRigRotationInterpolator's");
@@ -152,6 +162,13 @@ public static class PlayerManager
         else
             Debug.Log("We found CameraRigParent");
 
+        Debug.Log("Destroying the suit");
+        Transform suit = CameraRigParent.transform.parent.Find("RiggedSuit");
+        if (suit != null)
+        {
+            Debug.Log("Found the suit, destorying it");
+            GameObject.Destroy(suit.gameObject);
+        }
         GameObject.Destroy(CameraRigParent);
 
         RigidbodyNetworker_Receiver rbNetworker = newVehicle.AddComponent<RigidbodyNetworker_Receiver>();
@@ -163,7 +180,7 @@ public static class PlayerManager
     {
         spawnPoints = new List<Transform>(spawnsCount);
         GameObject lastSpawn;
-        for (int i = 0; i < spawnsCount; i++)
+        for (int i = 1; i <= spawnsCount; i++)
         {
             lastSpawn = new GameObject("MP Spawn " + i);
             lastSpawn.AddComponent<FloatingOriginShifter>();

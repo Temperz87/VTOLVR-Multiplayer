@@ -8,12 +8,12 @@ using UnityEngine;
 public class Message_SpawnVehicle : Message
 {
     public VTOLVehicles vehicle;
-    public V3 position;
-    public V3 rotation;
+    public Vector3D position;
+    public Vector3D rotation;
     public ulong csteamID;
     public ulong networkID;
 
-    public Message_SpawnVehicle(VTOLVehicles vehicle, V3 position, V3 rotation, ulong csteamID, ulong networkID)
+    public Message_SpawnVehicle(VTOLVehicles vehicle, Vector3D position, Vector3D rotation, ulong csteamID, ulong networkID)
     {
         this.vehicle = vehicle;
         this.position = position;
