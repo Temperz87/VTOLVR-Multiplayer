@@ -41,12 +41,17 @@ public class Multiplayer : VTOLMOD
     }
     public override void ModLoaded()
     {
-                System.Net.WebClient wc = new System.Net.WebClient();
+#if RELEASE
+        Log("Running in Release Mode");
+        System.Net.WebClient wc = new System.Net.WebClient();
         string webData = wc.DownloadString(TesterURL + SteamUser.GetSteamID().m_SteamID);
         if (webData != "Y")
             return;
+#else
+        Log("Running in Debug Mode");
+#endif
 
-        Debug.Log("Valid User " + SteamUser.GetSteamID().m_SteamID);
+        Log("Valid User " + SteamUser.GetSteamID().m_SteamID);
 
         SceneManager.sceneLoaded += SceneLoaded;
         base.ModLoaded();
@@ -135,7 +140,7 @@ public class Multiplayer : VTOLMOD
         VRInteractable BackInteractable = BackButton.GetComponent<VRInteractable>();
         BackInteractable.interactableName = "Back";
         BackInteractable.OnInteract = new UnityEngine.Events.UnityEvent();
-        BackInteractable.OnInteract.AddListener(delegate { Debug.Log("Before Back"); MPMenu.SetActive(false); ScenarioDisplay.gameObject.SetActive(true); });
+        BackInteractable.OnInteract.AddListener(delegate { Log("Before Back"); MPMenu.SetActive(false); ScenarioDisplay.gameObject.SetActive(true); });
         //Host
         GameObject HostButton = Instantiate(mpButton.gameObject, MPMenu.transform);
         HostButton.GetComponent<RectTransform>().localPosition = new Vector3(0, -325);
@@ -145,7 +150,7 @@ public class Multiplayer : VTOLMOD
         VRInteractable HostInteractable = HostButton.GetComponent<VRInteractable>();
         HostInteractable.interactableName = "Host Game";
         HostInteractable.OnInteract = new UnityEngine.Events.UnityEvent();
-        HostInteractable.OnInteract.AddListener(delegate { Debug.Log("Before Host"); Host(); });
+        HostInteractable.OnInteract.AddListener(delegate { Log("Before Host"); Host(); });
         //Join
         JoinButton = Instantiate(mpButton.gameObject, MPMenu.transform);
         JoinButton.GetComponent<RectTransform>().localPosition = new Vector3(489, -325);
@@ -155,16 +160,16 @@ public class Multiplayer : VTOLMOD
         VRInteractable JoinInteractable = JoinButton.GetComponent<VRInteractable>();
         JoinInteractable.interactableName = "Join Game";
         JoinInteractable.OnInteract = new UnityEngine.Events.UnityEvent();
-        JoinInteractable.OnInteract.AddListener(delegate { Debug.Log("Before Join"); Join(); });
+        JoinInteractable.OnInteract.AddListener(delegate { Log("Before Join"); Join(); });
         JoinButton.SetActive(false);
 
-        mpInteractable.OnInteract.AddListener(delegate { Debug.Log("Before Opening MP"); RefershFriends(); MPMenu.SetActive(true); ScenarioDisplay.gameObject.SetActive(false); OpenMP(); });
+        mpInteractable.OnInteract.AddListener(delegate { Log("Before Opening MP"); RefershFriends(); MPMenu.SetActive(true); ScenarioDisplay.gameObject.SetActive(false); OpenMP(); });
         GameObject.Find("InteractableCanvas").GetComponent<VRPointInteractableCanvas>().RefreshInteractables();
     }
 
     public void RefershFriends()
     {
-        Debug.Log("Refreshing Friends");
+        Log("Refreshing Friends");
         int friendsCount = SteamFriends.GetFriendCount(EFriendFlags.k_EFriendFlagImmediate);
         if (friendsCount == -1)
         {
@@ -277,7 +282,7 @@ public class Multiplayer : VTOLMOD
     {
         JoinButton.SetActive(true);
         selectedFriend = steamFriends[index].steamID;
-        Debug.Log("User has selected " + SteamFriends.GetFriendPersonaName(steamFriends[index].steamID));
+        Log("User has selected " + SteamFriends.GetFriendPersonaName(steamFriends[index].steamID));
 
         selectionTF.position = steamFriends[index].transform.position;
         selectionTF.GetComponent<Image>().color = new Color(0.3529411764705882f, 0.196078431372549f, 0);
@@ -304,7 +309,7 @@ public class Multiplayer : VTOLMOD
         if (Networker.hostID == new Steamworks.CSteamID(0))
             Networker.JoinGame(selectedFriend);
         else
-            Debug.LogWarning("Already in a game with " + Networker.hostID.m_SteamID);
+            LogWarning("Already in a game with " + Networker.hostID.m_SteamID);
     }
 
     private IEnumerator WaitForMap()
