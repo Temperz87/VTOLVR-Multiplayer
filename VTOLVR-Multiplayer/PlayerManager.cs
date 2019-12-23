@@ -39,9 +39,9 @@ public static class PlayerManager
                 //localVehicle.GetComponent<PlayerVehicleSetup>().LandVehicle(temp);
                 //FloatingOrigin.instance.ShiftOrigin(new Vector3(0, 100, 0), true);
                 FloatingOriginTransform fot = localVehicle.GetComponent<FloatingOriginTransform>();
-                Harmony.Traverse.Create(fot).Method("OnOriginShift_RB", new object[]{ temp.transform.position });
+                Harmony.Traverse.Create(fot).Method("OnOriginShift_RB", new object[] { temp.transform.position });
                 SendSpawnVehicle(localVehicle);
-            }                
+            }
             else
                 Debug.Log("Local vehicle for host was null");
             if (spawnRequestQueue.Count != 0)
@@ -133,7 +133,7 @@ public static class PlayerManager
         else
         {
             Networker.SendP2P(Networker.hostID,
-                new Message_SpawnVehicle(currentVehicle, new Vector3D(localVehicle.transform.position), new Vector3D(localVehicle.transform.rotation.eulerAngles), SteamUser.GetSteamID().m_SteamID,id),
+                new Message_SpawnVehicle(currentVehicle, new Vector3D(localVehicle.transform.position), new Vector3D(localVehicle.transform.rotation.eulerAngles), SteamUser.GetSteamID().m_SteamID, id),
                 EP2PSend.k_EP2PSendReliable);
         }
     }
