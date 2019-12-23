@@ -10,27 +10,26 @@ public class PlaneNetworker_Sender : MonoBehaviour
     public ulong networkUID;
 
     //Classes we use to find the information out
-    private FlightInfo flightInfo;
     private WheelsController wheelsController;
     private AeroController aeroController;
-    private TiltController tiltController;
     private VRThrottle vRThrottle;
 
     private Message_PlaneUpdate lastMessage;
 
     private void Awake()
     {
+        
         lastMessage = new Message_PlaneUpdate(false, 0, 0, 0, 0, 0, 0, false, false, networkUID);
 
-        flightInfo = GetComponent<FlightInfo>();
         wheelsController = GetComponent<WheelsController>();
         aeroController = GetComponent<AeroController>();
-        tiltController = GetComponent<TiltController>();
         vRThrottle = gameObject.GetComponentInChildren<VRThrottle>();
         if (vRThrottle == null)
             Debug.Log("Cound't find throttle");
         else
             vRThrottle.OnSetThrottle.AddListener(SetThrottle);
+
+        Debug.Log("Done Plane Sender");
     }
 
     private void LateUpdate()

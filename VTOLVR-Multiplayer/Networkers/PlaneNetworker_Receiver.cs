@@ -22,11 +22,10 @@ public class PlaneNetworker_Receiver : MonoBehaviour
     }
     public void PlaneUpdate(Packet packet)
     {
-        Debug.Log($"Plane Update\nOur Network ID = {networkUID} Packet Network ID = {packet.networkUID}");
-        if (packet.networkUID != networkUID)
-            return;
         lastMessage = (Message_PlaneUpdate)((PacketSingle)packet).message;
-
+        Debug.Log($"Plane Update\nOur Network ID = {networkUID} Packet Network ID = {lastMessage.networkUID}");
+        if (lastMessage.networkUID != networkUID)
+            return;
         if (wheelsController.gearAnimator.GetCurrentState() == (lastMessage.landingGear ? GearAnimator.GearStates.Extended : GearAnimator.GearStates.Retracted))
         {
             wheelsController.SetGear(lastMessage.landingGear);

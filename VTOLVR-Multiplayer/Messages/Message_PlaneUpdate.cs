@@ -25,5 +25,6 @@ public class Message_PlaneUpdate : Message
         this.tailHook = tailHook;
         this.fuelPort = fuelPort;
         this.networkUID = networkUID;
+        type = MessageType.PlaneUpdate;
     }
 }

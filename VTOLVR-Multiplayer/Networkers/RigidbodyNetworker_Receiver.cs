@@ -27,10 +27,10 @@ public class RigidbodyNetworker_Receiver : MonoBehaviour
 
     public void RigidbodyUpdate(Packet packet)
     {
-        Debug.Log($"Rigidbody Update\nOur Network ID = {networkUID} Packet Network ID = {packet.networkUID}");
-        if (packet.networkUID != networkUID)
-            return;
         Message_RigidbodyUpdate rigidbodyUpdate = (Message_RigidbodyUpdate)((PacketSingle)packet).message;
+        Debug.Log($"Rigidbody Update\nOur Network ID = {networkUID} Packet Network ID = {rigidbodyUpdate.networkUID}");
+        if (rigidbodyUpdate.networkUID != networkUID)
+            return;
         targetPosition = VTMapManager.GlobalToWorldPoint(rigidbodyUpdate.position);
         rb.velocity = rigidbodyUpdate.velocity.toVector3;
         rb.angularVelocity = rigidbodyUpdate.angularVelocity.toVector3;

@@ -122,8 +122,10 @@ public static class PlayerManager
         rbSender.spawnRot = rot;
         rbSender.SetSpawn();
 
+        Debug.Log("Adding Plane Sender");
         PlaneNetworker_Sender planeSender = localVehicle.AddComponent<PlaneNetworker_Sender>();
         planeSender.networkUID = id;
+
 
         if (Networker.isHost)
         {
