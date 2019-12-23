@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -9,6 +10,7 @@ public class RigidbodyNetworker_Sender : MonoBehaviour
     public ulong networkUID;
     private Rigidbody rb;
     private Message_RigidbodyUpdate lastMessage;
+    public Vector3 spawnPos, spawnRot;
     private void Awake()
     {
         rb = GetComponent<Rigidbody>();
@@ -26,5 +28,18 @@ public class RigidbodyNetworker_Sender : MonoBehaviour
             Networker.SendGlobalP2P(lastMessage, Steamworks.EP2PSend.k_EP2PSendUnreliableNoDelay);
         else
             Networker.SendP2P(Networker.hostID, lastMessage, Steamworks.EP2PSend.k_EP2PSendUnreliableNoDelay);
+    }
+
+    public void SetSpawn()
+    {
+        StartCoroutine(SetSpawnEnumerator());
+    }
+
+    private IEnumerator SetSpawnEnumerator()
+    {
+        yield return new WaitForSeconds(0.5f);
+        rb.position = spawnPos;
+        rb.rotation = Quaternion.Euler(spawnRot);
+        Debug.Log($"Our position is now {rb.position}");
     }
 }
