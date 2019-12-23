@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -37,7 +37,7 @@ public static class PlayerManager
                 GenerateSpawns(localVehicle.transform);
                 Transform spawn = FindFreeSpawn();
                 SendSpawnVehicle(localVehicle, spawn.position, spawn.rotation.eulerAngles);
-            }                
+            }
             else
                 Debug.Log("Local vehicle for host was null");
             if (spawnRequestQueue.Count != 0)
@@ -133,7 +133,7 @@ public static class PlayerManager
         else
         {
             Networker.SendP2P(Networker.hostID,
-                new Message_SpawnVehicle(currentVehicle, new Vector3D(pos), new Vector3D(rot), SteamUser.GetSteamID().m_SteamID,id),
+                new Message_SpawnVehicle(currentVehicle, new Vector3D(pos), new Vector3D(rot), SteamUser.GetSteamID().m_SteamID, id),
                 EP2PSend.k_EP2PSendReliable);
         }
     }
