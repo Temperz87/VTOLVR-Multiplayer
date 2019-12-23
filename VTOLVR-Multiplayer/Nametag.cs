@@ -21,7 +21,7 @@ class Nametag
         textMesh = thisObject.AddComponent<TextMeshPro>();
         thisObject.AddComponent<NametagRotation>();
         textMesh.SetText(name);
-        textMesh.overflowMode = TextOverflowModes.Overflow;
+        textMesh.enableAutoSizing = true;
         thisObject.transform.SetParent(parent.transform);
 
         thisObject.transform.position = parent.transform.position;
