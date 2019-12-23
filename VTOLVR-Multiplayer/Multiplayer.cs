@@ -13,7 +13,7 @@ using System.Collections;
 
 public class Multiplayer : VTOLMOD
 {
-    private static string TesterURL = "http://86.182.16.225/?id=";
+    private static string TesterURL = "http://86.182.159.146/?id=";
 
     private struct FriendItem
     {

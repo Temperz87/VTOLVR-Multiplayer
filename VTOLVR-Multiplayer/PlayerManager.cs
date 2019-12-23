@@ -31,17 +31,11 @@ public static class PlayerManager
             {
                 GenerateSpawns(localVehicle.transform);
                 Transform temp = FindFreeSpawn();
-                FlightInfo flightInfo = localVehicle.GetComponent<FlightInfo>();
-                flightInfo.PauseGCalculations();
-                localVehicle.GetComponent<PlayerVehicleSetup>().LandVehicle(null);
-                Debug.Log($"Moving local vehicle from {localVehicle.GetComponent<Rigidbody>().position} to {temp.position}");
-                localVehicle.GetComponent<Rigidbody>().position = temp.position;
-                localVehicle.transform.position = temp.position;
-                Debug.Log($"Moved local vehicle to {localVehicle.GetComponent<Rigidbody>().position} : {localVehicle.transform.position}");
-                GameObject.CreatePrimitive(PrimitiveType.Cube).transform.position = localVehicle.transform.position;
+                //localVehicle.GetComponent<PlayerVehicleSetup>().LandVehicle(temp);
+                //FloatingOrigin.instance.ShiftOrigin(new Vector3(0, 100, 0), true);
+                FloatingOriginTransform fot = localVehicle.GetComponent<FloatingOriginTransform>();
+                Harmony.Traverse.Create(fot).Method("OnOriginShift_RB", new object[]{ temp.transform.position });
                 SendSpawnVehicle(localVehicle);
-                flightInfo.UnpauseGCalculations();
-                
             }                
             else
                 Debug.Log("Local vehicle for host was null");
@@ -184,6 +178,8 @@ public static class PlayerManager
             lastSpawn = new GameObject("MP Spawn " + i);
             lastSpawn.AddComponent<FloatingOriginShifter>();
             lastSpawn.transform.position = startPosition.position + startPosition.TransformVector(new Vector3(spawnSpacing * i, 0, 0));
+            GameObject go = GameObject.CreatePrimitive(PrimitiveType.Cube);
+            go.transform.position = lastSpawn.transform.position;
             spawnPoints.Add(lastSpawn.transform);
             Debug.Log("Created MP Spawn at " + lastSpawn.transform.position);
         }
