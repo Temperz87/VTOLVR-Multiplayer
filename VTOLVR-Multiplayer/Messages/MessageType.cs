@@ -1,4 +1,8 @@
-﻿public enum MessageType
+﻿/// <summary>
+/// This is the type of message which has been sent with the packet,
+/// this is so that we know what class to convert it to.
+/// </summary>
+public enum MessageType
 {
     None,
     JoinRequest, //When the client asks if they can join
