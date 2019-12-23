@@ -38,7 +38,7 @@ class Nametag
     {
         public void Update()
         {
-            transform.parent.LookAt(GameObject.Find("Camera.main").transform);
+            transform.LookAt(GameObject.Find("Camera.main").transform);
         }
     }
 }
