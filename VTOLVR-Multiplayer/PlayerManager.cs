@@ -192,6 +192,10 @@ public static class PlayerManager
         RigidbodyNetworker_Receiver rbNetworker = newVehicle.AddComponent<RigidbodyNetworker_Receiver>();
         Networker.RigidbodyUpdate += rbNetworker.RigidbodyUpdate;
         rbNetworker.networkUID = message.networkID;
+
+        Debug.Log("Adding Name Tag");
+        new Nametag(SteamFriends.GetFriendPersonaName(new CSteamID(message.csteamID)), newVehicle);
+        Debug.Log("Added Name Tag");
     }
     /// <summary>
     /// Creates the spawn points for the other players.
