@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -35,12 +35,8 @@ public static class PlayerManager
             if (localVehicle != null)
             {
                 GenerateSpawns(localVehicle.transform);
-                Transform temp = FindFreeSpawn();
-                //localVehicle.GetComponent<PlayerVehicleSetup>().LandVehicle(temp);
-                //FloatingOrigin.instance.ShiftOrigin(new Vector3(0, 100, 0), true);
-                FloatingOriginTransform fot = localVehicle.GetComponent<FloatingOriginTransform>();
-                Harmony.Traverse.Create(fot).Method("OnOriginShift_RB", new object[] { temp.transform.position });
-                SendSpawnVehicle(localVehicle);
+                Transform spawn = FindFreeSpawn();
+                SendSpawnVehicle(localVehicle, spawn.position, spawn.rotation.eulerAngles);
             }
             else
                 Debug.Log("Local vehicle for host was null");
@@ -108,24 +104,28 @@ public static class PlayerManager
         }
         localVehicle.transform.position = result.position.toVector3;
         localVehicle.transform.rotation = Quaternion.Euler(result.rotation.toVector3);
-        SendSpawnVehicle(localVehicle);
+        SendSpawnVehicle(localVehicle, result.position.toVector3, result.rotation.toVector3);
     }
     /// <summary>
     /// Sends the message to other clients to spawn their vehicles
     /// </summary>
     /// <param name="localVehicle">The local clients gameobject</param>
-    public static void SendSpawnVehicle(GameObject localVehicle) //Both
+    public static void SendSpawnVehicle(GameObject localVehicle, Vector3 pos, Vector3 rot) //Both
     {
         Debug.Log("Sending our location to spawn our vehicle");
         VTOLVehicles currentVehicle = VTOLAPI.GetPlayersVehicleEnum();
         ulong id = Networker.GenerateNetworkUID();
-        localVehicle.AddComponent<RigidbodyNetworker_Sender>().networkUID = id;
+        RigidbodyNetworker_Sender rbSender = localVehicle.AddComponent<RigidbodyNetworker_Sender>();
+        rbSender.networkUID = id;
+        rbSender.spawnPos = pos;
+        rbSender.spawnRot = rot;
+        rbSender.SetSpawn();
         if (Networker.isHost)
         {
             Networker.SendGlobalP2P(new Message_SpawnVehicle(
                 currentVehicle,
-                new Vector3D(localVehicle.transform.position),
-                new Vector3D(localVehicle.transform.rotation.eulerAngles),
+                new Vector3D(pos),
+                new Vector3D(rot),
                 SteamUser.GetSteamID().m_SteamID,
                 id),
                 EP2PSend.k_EP2PSendReliable);
@@ -133,7 +133,7 @@ public static class PlayerManager
         else
         {
             Networker.SendP2P(Networker.hostID,
-                new Message_SpawnVehicle(currentVehicle, new Vector3D(localVehicle.transform.position), new Vector3D(localVehicle.transform.rotation.eulerAngles), SteamUser.GetSteamID().m_SteamID, id),
+                new Message_SpawnVehicle(currentVehicle, new Vector3D(pos), new Vector3D(rot), SteamUser.GetSteamID().m_SteamID, id),
                 EP2PSend.k_EP2PSendReliable);
         }
     }
@@ -206,8 +206,6 @@ public static class PlayerManager
             lastSpawn = new GameObject("MP Spawn " + i);
             lastSpawn.AddComponent<FloatingOriginShifter>();
             lastSpawn.transform.position = startPosition.position + startPosition.TransformVector(new Vector3(spawnSpacing * i, 0, 0));
-            GameObject go = GameObject.CreatePrimitive(PrimitiveType.Cube);
-            go.transform.position = lastSpawn.transform.position;
             spawnPoints.Add(lastSpawn.transform);
             Debug.Log("Created MP Spawn at " + lastSpawn.transform.position);
         }
