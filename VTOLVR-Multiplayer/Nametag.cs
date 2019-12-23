@@ -20,6 +20,7 @@ class Nametag
         thisObject = new GameObject("nametag");
         textMesh = thisObject.AddComponent<TextMeshPro>();
         textMesh.SetText(name);
+        textMesh.overflowMode = TextOverflowModes.Overflow;
         thisObject.transform.SetParent(parent.transform);
 
         thisObject.transform.position = parent.transform.position;

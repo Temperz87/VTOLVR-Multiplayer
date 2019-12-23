@@ -27,6 +27,7 @@ public class RigidbodyNetworker_Receiver : MonoBehaviour
 
     public void RigidbodyUpdate(Packet packet)
     {
+        Debug.Log("Rigidbody Update");
         if (packet.networkUID != networkUID)
             return;
         Message_RigidbodyUpdate rigidbodyUpdate = (Message_RigidbodyUpdate)((PacketSingle)packet).message;
