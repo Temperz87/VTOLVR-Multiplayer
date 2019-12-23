@@ -24,6 +24,7 @@ public class RigidbodyNetworker_Sender : MonoBehaviour
         lastMessage.position = VTMapManager.WorldToGlobalPoint(transform.position);
         lastMessage.velocity = new Vector3D(rb.velocity);
         lastMessage.angularVelocity = new Vector3D(rb.angularVelocity);
+        lastMessage.networkUID = networkUID;
         if (Networker.isHost)
             Networker.SendGlobalP2P(lastMessage, Steamworks.EP2PSend.k_EP2PSendUnreliableNoDelay);
         else
