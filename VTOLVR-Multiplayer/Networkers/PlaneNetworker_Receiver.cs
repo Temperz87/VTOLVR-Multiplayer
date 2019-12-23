@@ -22,6 +22,7 @@ public class PlaneNetworker_Receiver : MonoBehaviour
     }
     public void PlaneUpdate(Packet packet)
     {
+        Debug.Log($"Plane Update\nOur Network ID = {networkUID} Packet Network ID = {packet.networkUID}");
         if (packet.networkUID != networkUID)
             return;
         lastMessage = (Message_PlaneUpdate)((PacketSingle)packet).message;
