@@ -115,11 +115,16 @@ public static class PlayerManager
         Debug.Log("Sending our location to spawn our vehicle");
         VTOLVehicles currentVehicle = VTOLAPI.GetPlayersVehicleEnum();
         ulong id = Networker.GenerateNetworkUID();
+
         RigidbodyNetworker_Sender rbSender = localVehicle.AddComponent<RigidbodyNetworker_Sender>();
         rbSender.networkUID = id;
         rbSender.spawnPos = pos;
         rbSender.spawnRot = rot;
         rbSender.SetSpawn();
+
+        PlaneNetworker_Sender planeSender = localVehicle.AddComponent<PlaneNetworker_Sender>();
+        planeSender.networkUID = id;
+
         if (Networker.isHost)
         {
             Networker.SendGlobalP2P(new Message_SpawnVehicle(
@@ -194,9 +199,11 @@ public static class PlayerManager
         Networker.RigidbodyUpdate += rbNetworker.RigidbodyUpdate;
         rbNetworker.networkUID = message.networkID;
 
-        Debug.Log("Adding Name Tag");
+        PlaneNetworker_Receiver planeReceiver = newVehicle.AddComponent<PlaneNetworker_Receiver>();
+        planeReceiver.networkUID = message.networkID;
+        Networker.PlaneUpdate += planeReceiver.PlaneUpdate;
+
         new Nametag(SteamFriends.GetFriendPersonaName(new CSteamID(message.csteamID)), newVehicle);
-        Debug.Log("Added Name Tag");
     }
     /// <summary>
     /// Creates the spawn points for the other players.

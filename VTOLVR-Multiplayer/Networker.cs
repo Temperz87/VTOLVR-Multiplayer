@@ -32,6 +32,7 @@ public class Networker : MonoBehaviour
     public static event UnityAction<Packet> RequestSpawn_Result;
     public static event UnityAction<Packet> SpawnVehicle;
     public static event UnityAction<Packet> RigidbodyUpdate;
+    public static event UnityAction<Packet> PlaneUpdate;
     #endregion
     private void Awake()
     {
@@ -238,6 +239,10 @@ public class Networker : MonoBehaviour
                     case MessageType.RigidbodyUpdate:
                         if (RigidbodyUpdate != null)
                             RigidbodyUpdate.Invoke(packet);
+                        break;
+                    case MessageType.PlaneUpdate:
+                        if (PlaneUpdate != null)
+                            PlaneUpdate.Invoke(packet);
                         break;
                     default:
                         break;
