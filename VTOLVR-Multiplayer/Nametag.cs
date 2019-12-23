@@ -19,6 +19,7 @@ class Nametag
         this.parent = parent;
         thisObject = new GameObject("nametag");
         textMesh = thisObject.AddComponent<TextMeshPro>();
+        thisObject.AddComponent<NametagRotation>();
         textMesh.SetText(name);
         textMesh.overflowMode = TextOverflowModes.Overflow;
         thisObject.transform.SetParent(parent.transform);
@@ -31,5 +32,13 @@ class Nametag
     {
         this.name = name;
         textMesh.SetText(name);
+    }
+
+    class NametagRotation : MonoBehaviour
+    {
+        public void Update()
+        {
+            transform.parent.LookAt(GameObject.Find("Camera.main").transform);
+        }
     }
 }
