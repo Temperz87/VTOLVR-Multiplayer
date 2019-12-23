@@ -17,6 +17,11 @@ public static class PlayerManager
     /// </summary>
     private static Queue<CSteamID> spawnRequestQueue = new Queue<CSteamID>();
     private static bool hostLoaded;
+    /// <summary>
+    /// This runs when the map has finished loading and hopefully 
+    /// when the player first can interact with the vehicle.
+    /// </summary>
+    /// <param name="customMap"></param>
     public static void MapLoaded(VTMapCustom customMap = null) //Clients and Hosts
     {
         Debug.Log("The map has loaded");
@@ -60,6 +65,12 @@ public static class PlayerManager
                 EP2PSend.k_EP2PSendReliable);
         }
     }
+    /// <summary>
+    /// This is when a client has requested a spawn point from the host,
+    /// the host gets a spawn point and sends back the position
+    /// </summary>
+    /// <param name="packet">The Message</param>
+    /// <param name="sender">The client who sent it</param>
     public static void RequestSpawn(Packet packet, CSteamID sender) //Host Only
     {
         Debug.Log("A player has requested for a spawn point");
@@ -77,7 +88,12 @@ public static class PlayerManager
         Transform spawn = FindFreeSpawn();
         Networker.SendP2P(sender, new Message_RequestSpawn_Result(new Vector3D(spawn.position), new Vector3D(spawn.rotation.eulerAngles)), EP2PSend.k_EP2PSendReliable);
     }
-
+    /// <summary>
+    /// When the client receives a P2P message of their spawn point, 
+    /// this will move them to that location before sending their vehicle 
+    /// to the host.
+    /// </summary>
+    /// <param name="packet">The message sent over the network</param>
     public static void RequestSpawn_Result(Packet packet) //Clients Only
     {
         Debug.Log("The host has sent back our spawn point");
@@ -94,7 +110,10 @@ public static class PlayerManager
         localVehicle.transform.rotation = Quaternion.Euler(result.rotation.toVector3);
         SendSpawnVehicle(localVehicle);
     }
-    
+    /// <summary>
+    /// Sends the message to other clients to spawn their vehicles
+    /// </summary>
+    /// <param name="localVehicle">The local clients gameobject</param>
     public static void SendSpawnVehicle(GameObject localVehicle) //Both
     {
         Debug.Log("Sending our location to spawn our vehicle");
@@ -118,6 +137,12 @@ public static class PlayerManager
                 EP2PSend.k_EP2PSendReliable);
         }
     }
+    /// <summary>
+    /// When the user has received a message of spawn vehicle, 
+    /// this creates the vehilc and removes any thing which shouldn't
+    /// be on it.
+    /// </summary>
+    /// <param name="packet">The message</param>
     public static void SpawnVehicle(Packet packet)
     {
         Debug.Log("Recived a Spawn Vehicle Message");
@@ -168,7 +193,10 @@ public static class PlayerManager
         Networker.RigidbodyUpdate += rbNetworker.RigidbodyUpdate;
         rbNetworker.networkUID = message.networkID;
     }
-
+    /// <summary>
+    /// Creates the spawn points for the other players.
+    /// </summary>
+    /// <param name="startPosition">The location of where the first spawn should be</param>
     public static void GenerateSpawns(Transform startPosition)
     {
         spawnPoints = new List<Transform>(spawnsCount);
@@ -184,7 +212,10 @@ public static class PlayerManager
             Debug.Log("Created MP Spawn at " + lastSpawn.transform.position);
         }
     }
-
+    /// <summary>
+    /// Returns a spawn point which isn't blocked by another player
+    /// </summary>
+    /// <returns>A free spawn point</returns>
     public static Transform FindFreeSpawn()
     {
         //Later on this will check the spawns if there is anyone sitting still at this spawn

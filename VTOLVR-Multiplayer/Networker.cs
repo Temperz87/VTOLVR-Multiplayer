@@ -26,6 +26,8 @@ public class Networker : MonoBehaviour
     //networkUID is used as an identifer for all network object, we are just adding onto this to get a new one
     private static ulong networkUID = 0;
     #region Message Type Callbacks
+    //These callbacks are use for other scripts to know when a network message has been
+    //received for them. They should match the name of the message class they relate to.
     public static event UnityAction<Packet, CSteamID> RequestSpawn;
     public static event UnityAction<Packet> RequestSpawn_Result;
     public static event UnityAction<Packet> SpawnVehicle;
@@ -90,18 +92,41 @@ public class Networker : MonoBehaviour
                 SendP2P(players[i], message, sendType);
         }
     }
+    /// <summary>
+    /// Sends a P2P message to all the other players, only works if host.
+    /// </summary>
+    /// <param name="message">The Message which is being set</param>
+    /// <param name="sendType">Specifies how you want the data to be transmitted, such as reliably, unreliable, buffered, etc.</param>
     public static void SendGlobalP2P(Message message, EP2PSend sendType)
     {
+        if (!isHost)
+        {
+            Debug.LogError("Can't send global P2P as user isn't host");
+            return;
+        }
         for (int i = 0; i < players.Count; i++)
         {
             SendP2P(players[i], message, sendType);
         }
     }
+    /// <summary>
+    /// Sends a P2P Message to another user.
+    /// </summary>
+    /// <param name="remoteID">The target user to send the packet to.</param>
+    /// <param name="message">The message to be send to that user.</param>
+    /// <param name="sendType">Specifies how you want the data to be transmitted, such as reliably, unreliable, buffered, etc.</param>
     public static void SendP2P(CSteamID remoteID, Message message, EP2PSend sendType)
     {
         PacketSingle packet = new PacketSingle(message, sendType);
         SendP2P(remoteID, packet);
     }
+    /// <summary>
+    /// Sends multiple messages to another user. [Currently Doesn't work]
+    /// </summary>
+    /// <param name="remoteID">The target user to send the packet to.</param>
+    /// <param name="messages">The messages to be send to that user.</param>
+    /// <param name="sendType">Specifies how you want the data to be transmitted, such as reliably, unreliable, buffered, etc.</param>
+    [Obsolete]
     public static void SendP2P(CSteamID remoteID, Message[] messages, EP2PSend sendType)
     {
         PacketMultiple packet = new PacketMultiple(messages, sendType);
