@@ -41,14 +41,14 @@ public class Multiplayer : VTOLMOD
     }
     public override void ModLoaded()
     {
-#if RELEASE
+#if DEBUG
+        Log("Running in Debug Mode");
+#else
         Log("Running in Release Mode");
         System.Net.WebClient wc = new System.Net.WebClient();
         string webData = wc.DownloadString(TesterURL + SteamUser.GetSteamID().m_SteamID);
         if (webData != "Y")
             return;
-#else
-        Log("Running in Debug Mode");
 #endif
 
         Log("Valid User " + SteamUser.GetSteamID().m_SteamID);
