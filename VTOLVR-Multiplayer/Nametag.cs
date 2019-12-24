@@ -14,9 +14,11 @@ public class Nametag : MonoBehaviour
     {
         this.head = head;
         textMesh = gameObject.AddComponent<TextMeshPro>();
+        textMesh.alignment = TextAlignmentOptions.Center;
+        textMesh.overflowMode = TextOverflowModes.Overflow;
         textMesh.SetText(name);
-        transform.SetParent(parent.transform);
-        transform.localPosition = Vector3.up * 10f;
+        transform.SetParent(parent);
+        transform.localPosition = new Vector3(0,10,0);
     }
     public void Update()
     {

@@ -35,8 +35,7 @@ public static class PlayerManager
             if (localVehicle != null)
             {
                 GenerateSpawns(localVehicle.transform);
-                Transform spawn = FindFreeSpawn();
-                SendSpawnVehicle(localVehicle, spawn.position, spawn.rotation.eulerAngles);
+                SendSpawnVehicle(localVehicle, localVehicle.transform.position, localVehicle.transform.rotation.eulerAngles);
             }
             else
                 Debug.Log("Local vehicle for host was null");
