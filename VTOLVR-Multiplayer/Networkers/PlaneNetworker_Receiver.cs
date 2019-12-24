@@ -4,20 +4,24 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using UnityEngine;
-
+using Harmony;
 public class PlaneNetworker_Receiver : MonoBehaviour
 {
     public ulong networkUID;
     private Message_PlaneUpdate lastMessage;
 
     //Classes we use to set the information
-    private WheelsController wheelsController;
-    private ModuleEngine[] engines;
+    private LandingGearLever landingGear;
+    private VRThrottle throttle;
     private FlightAssist flightAssist;
+    private Traverse traverse;
+
+    private int landingGearLastState = 0;
     private void Awake()
     {
-        wheelsController = GetComponent<WheelsController>();
-        engines = GetComponentsInChildren<ModuleEngine>();
+        landingGear = GetComponentInChildren<LandingGearLever>();
+        throttle = GetComponentInChildren<VRThrottle>();
+        traverse = Traverse.Create(throttle);
         flightAssist = GetComponent<FlightAssist>();
         flightAssist.assistEnabled = true;
     }
@@ -29,19 +33,17 @@ public class PlaneNetworker_Receiver : MonoBehaviour
             return;
         Debug.Log("Received\n" + lastMessage.ToString());
 
-        if (wheelsController.gearAnimator.GetCurrentState() == (lastMessage.landingGear ? GearAnimator.GearStates.Extended : GearAnimator.GearStates.Retracted))
+        if (landingGearLastState != (lastMessage.landingGear ? 0 : 1))
         {
-            wheelsController.SetGear(lastMessage.landingGear);
+            landingGearLastState = lastMessage.landingGear ? 0 : 1;
+            landingGear.SetState(landingGearLastState);
         }
 
         flightAssist.SetFlaps(lastMessage.flaps);
         flightAssist.SetPitchYawRoll(new Vector3(lastMessage.pitch, lastMessage.yaw, lastMessage.roll));
         flightAssist.SetBrakes(lastMessage.breaks);
 
-        for (int i = 0; i < engines.Length; i++)
-        {
-            engines[i].SetThrottle(lastMessage.throttle);
-        }
+        traverse.Method("UpdateThrottle", new object[] { lastMessage.throttle}).GetValue();
     }
     public void OnDestory()
     {
