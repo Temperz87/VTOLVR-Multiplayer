@@ -12,13 +12,14 @@ public class PlaneNetworker_Receiver : MonoBehaviour
 
     //Classes we use to set the information
     private WheelsController wheelsController;
-    private AeroController aeroController;
     private ModuleEngine[] engines;
+    private FlightAssist flightAssist;
     private void Awake()
     {
         wheelsController = GetComponent<WheelsController>();
-        aeroController = GetComponent<AeroController>();
         engines = GetComponentsInChildren<ModuleEngine>();
+        flightAssist = GetComponent<FlightAssist>();
+        flightAssist.assistEnabled = true;
     }
     public void PlaneUpdate(Packet packet)
     {
@@ -26,17 +27,16 @@ public class PlaneNetworker_Receiver : MonoBehaviour
         Debug.Log($"Plane Update\nOur Network ID = {networkUID} Packet Network ID = {lastMessage.networkUID}");
         if (lastMessage.networkUID != networkUID)
             return;
+        Debug.Log("Received\n" + lastMessage.ToString());
+
         if (wheelsController.gearAnimator.GetCurrentState() == (lastMessage.landingGear ? GearAnimator.GearStates.Extended : GearAnimator.GearStates.Retracted))
         {
             wheelsController.SetGear(lastMessage.landingGear);
         }
 
-        if (aeroController.flaps != lastMessage.flaps)
-            aeroController.SetFlaps(lastMessage.flaps);
-        if (aeroController.input != new Vector3(lastMessage.pitch, lastMessage.yaw, lastMessage.roll))
-            aeroController.input = new Vector3(lastMessage.pitch, lastMessage.yaw, lastMessage.roll);
-        if (aeroController.brake != lastMessage.breaks)
-            aeroController.SetBrakes(lastMessage.breaks);
+        flightAssist.SetFlaps(lastMessage.flaps);
+        flightAssist.SetPitchYawRoll(new Vector3(lastMessage.pitch, lastMessage.yaw, lastMessage.roll));
+        flightAssist.SetBrakes(lastMessage.breaks);
 
         for (int i = 0; i < engines.Length; i++)
         {

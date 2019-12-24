@@ -197,6 +197,18 @@ public static class PlayerManager
         }
         GameObject.Destroy(CameraRigParent);
 
+        //Changing Vehicle Input Manager
+        VehicleInputManager inputManager = newVehicle.GetComponent<VehicleInputManager>();
+        List<FlightControlComponent> list = new List<FlightControlComponent>();
+        for (int i = 0; i < inputManager.pyrOutputs.Length; i++)
+        {
+            if (inputManager.pyrOutputs[i] != null)
+            {
+                list.Add(inputManager.pyrOutputs[i]);
+            }
+        }
+        inputManager.pyrOutputs = list.ToArray();
+
         RigidbodyNetworker_Receiver rbNetworker = newVehicle.AddComponent<RigidbodyNetworker_Receiver>();
         Networker.RigidbodyUpdate += rbNetworker.RigidbodyUpdate;
         rbNetworker.networkUID = message.networkID;
@@ -220,6 +232,7 @@ public static class PlayerManager
             lastSpawn = new GameObject("MP Spawn " + i);
             lastSpawn.AddComponent<FloatingOriginShifter>();
             lastSpawn.transform.position = startPosition.position + startPosition.TransformVector(new Vector3(spawnSpacing * i, 0, 0));
+            lastSpawn.transform.rotation = startPosition.rotation;
             spawnPoints.Add(lastSpawn.transform);
             Debug.Log("Created MP Spawn at " + lastSpawn.transform.position);
         }

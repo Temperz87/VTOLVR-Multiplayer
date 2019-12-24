@@ -27,4 +27,10 @@ public class Message_PlaneUpdate : Message
         this.networkUID = networkUID;
         type = MessageType.PlaneUpdate;
     }
+
+    public override string ToString()
+    {
+        return $"Landing Gear = {landingGear} Flaps = {flaps} Pitch = {pitch} Roll = {roll} Yaw = {yaw} Breaks = {breaks} " +
+            $"Throttle = {throttle} tailHook = {tailHook} Fuel Port = {fuelPort} NetworkID = {networkUID}";
+    }
 }
