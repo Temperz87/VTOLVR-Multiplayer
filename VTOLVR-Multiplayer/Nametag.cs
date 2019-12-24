@@ -6,39 +6,21 @@ using System.Threading.Tasks;
 using TMPro;
 using UnityEngine;
 
-class Nametag
+public class Nametag : MonoBehaviour
 {
-    public string name { get; set; }
-    TextMeshPro textMesh;
-    GameObject thisObject;
-    GameObject parent;
-
-    public Nametag(string name, GameObject parent)
+    private TextMeshPro textMesh;
+    public Transform head;
+    public void SetText(string name, Transform parent, Transform head)
     {
-        this.name = name;
-        this.parent = parent;
-        thisObject = new GameObject("nametag");
-        textMesh = thisObject.AddComponent<TextMeshPro>();
-        thisObject.AddComponent<NametagRotation>();
+        this.head = head;
+        textMesh = gameObject.AddComponent<TextMeshPro>();
         textMesh.SetText(name);
-        textMesh.enableAutoSizing = true;
-        thisObject.transform.SetParent(parent.transform);
-
-        thisObject.transform.position = parent.transform.position;
-        thisObject.transform.Translate(Vector3.up * 10f);
+        transform.SetParent(parent.transform);
+        transform.localPosition = Vector3.up * 10f;
     }
-
-    public void SetName(string name)
+    public void Update()
     {
-        this.name = name;
-        textMesh.SetText(name);
-    }
-
-    class NametagRotation : MonoBehaviour
-    {
-        public void Update()
-        {
-            transform.LookAt(Camera.main.transform);
-        }
+        if (head != null)
+            transform.LookAt(head);
     }
 }

@@ -217,7 +217,9 @@ public static class PlayerManager
         planeReceiver.networkUID = message.networkID;
         Networker.PlaneUpdate += planeReceiver.PlaneUpdate;
 
-        new Nametag(SteamFriends.GetFriendPersonaName(new CSteamID(message.csteamID)), newVehicle);
+        newVehicle.AddComponent<Nametag>().SetText(
+            SteamFriends.GetFriendPersonaName(new CSteamID(message.csteamID)),
+            newVehicle.transform, VRHead.instance.transform);
     }
     /// <summary>
     /// Creates the spawn points for the other players.
