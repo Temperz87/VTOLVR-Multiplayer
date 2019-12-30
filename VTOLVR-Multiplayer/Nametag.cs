@@ -10,6 +10,13 @@ public class Nametag : MonoBehaviour
 {
     private TextMeshPro textMesh;
     public Transform head;
+
+    /// <summary>
+    /// Sets the text
+    /// </summary>
+    /// <param name="name">The name to display</param>
+    /// <param name="parent">The GameObject to attach the name to</param>
+    /// <param name="head">The GameObject to rotate towards, typically the head of the player</param>
     public void SetText(string name, Transform parent, Transform head)
     {
         this.head = head;
@@ -18,7 +25,7 @@ public class Nametag : MonoBehaviour
         textMesh.overflowMode = TextOverflowModes.Overflow;
         textMesh.SetText(name);
         transform.SetParent(parent);
-        transform.localPosition = new Vector3(0,10,0);
+        transform.localPosition = new Vector3(0, 10, 0);
     }
     public void Update()
     {
