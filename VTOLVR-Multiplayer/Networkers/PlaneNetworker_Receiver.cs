@@ -11,25 +11,17 @@ public class PlaneNetworker_Receiver : MonoBehaviour
     private Message_PlaneUpdate lastMessage;
 
     //Classes we use to set the information
-    private LandingGearLever landingGear;
-    private VRThrottle throttle;
-    private FlapsLever flaps;
-    private VRJoystick joystick;
-    private FlightAssist flightAssist;
+    private WheelsController wheelsController;
+    private AeroController aeroController;
+    //private TiltController tiltController;
+    private ModuleEngine[] engines;
 
-    private Traverse throttleTraverse;
-
-    private int landingGearLastState = 0;
     private void Awake()
     {
-        landingGear = GetComponentInChildren<LandingGearLever>();
-        flaps = GetComponentInChildren<FlapsLever>();
-        joystick = GetComponentInChildren<VRJoystick>();
-
-        throttle = GetComponentInChildren<VRThrottle>();
-        throttleTraverse = Traverse.Create(throttle);
-        flightAssist = GetComponent<FlightAssist>();
-        flightAssist.assistEnabled = true;
+        wheelsController = GetComponent<WheelsController>();
+        aeroController = GetComponent<AeroController>();
+        //tiltController = GetComponent<TiltController>();
+        engines = GetComponentsInChildren<ModuleEngine>();
     }
     public void PlaneUpdate(Packet packet)
     {
@@ -38,36 +30,30 @@ public class PlaneNetworker_Receiver : MonoBehaviour
             return;
         Debug.Log("Received Plane Update\n" + lastMessage.ToString());
 
+        /*
         if (landingGearLastState != (lastMessage.landingGear ? 0 : 1))
         {
             Debug.Log("Changing the landing gear state");
             landingGearLastState = lastMessage.landingGear ? 0 : 1;
             landingGear.SetState(landingGearLastState);
         }
-        
+        */
 
-        switch (lastMessage.flaps)
+        if (wheelsController.gearAnimator.GetCurrentState() == (lastMessage.landingGear ? GearAnimator.GearStates.Extended : GearAnimator.GearStates.Retracted))
         {
-            case 0:
-                flaps.SetState(0);
-                Debug.Log("Setting flaps to 0");
-                break;
-            case 0.5f:
-                flaps.SetState(1);
-                Debug.Log("Setting flaps to 1");
-                break;
-            case 1:
-                flaps.SetState(2);
-                Debug.Log("Setting flaps to 2");
-                break;
-
+            wheelsController.SetGear(lastMessage.landingGear);
         }
 
-        joystick.OnSetStick.Invoke(new Vector3(lastMessage.pitch, lastMessage.yaw, lastMessage.roll));
-        throttle.OnTriggerAxis.Invoke(lastMessage.breaks);
 
-        
-        throttle.RemoteSetThrottle(lastMessage.throttle);
+        aeroController.flaps = lastMessage.flaps;
+
+        aeroController.input = new Vector3(lastMessage.pitch, lastMessage.yaw, lastMessage.roll);
+        aeroController.SetBrakes(lastMessage.breaks);
+
+        for (int i = 0; i < engines.Length; i++)
+        {
+            engines[i].SetThrottle(lastMessage.throttle);
+        }
     }
     public void OnDestory()
     {

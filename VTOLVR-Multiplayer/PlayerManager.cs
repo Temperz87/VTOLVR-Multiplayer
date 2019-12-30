@@ -17,6 +17,7 @@ public static class PlayerManager
     /// </summary>
     private static Queue<CSteamID> spawnRequestQueue = new Queue<CSteamID>();
     private static bool hostLoaded;
+    private static GameObject av42cPrefab, fa26bPrefab, f45Prefab;
     /// <summary>
     /// This runs when the map has finished loading and hopefully 
     /// when the player first can interact with the vehicle.
@@ -31,6 +32,7 @@ public static class PlayerManager
         else
         {
             hostLoaded = true;
+            SetPrefabs();
             GameObject localVehicle = VTOLAPI.instance.GetPlayersVehicleGameObject();
             if (localVehicle != null)
             {
@@ -157,56 +159,25 @@ public static class PlayerManager
         Message_SpawnVehicle message = (Message_SpawnVehicle)((PacketSingle)packet).message;
         if (Networker.isHost)
             Networker.SendExcludeP2P(new CSteamID(message.csteamID), message, EP2PSend.k_EP2PSendReliable);
-        GameObject newVehicle = GameObject.Instantiate(PilotSaveManager.currentVehicle.vehiclePrefab);
+        GameObject newVehicle = null;
+        switch (VTOLAPI.GetPlayersVehicleEnum())
+        {
+            case VTOLVehicles.None:
+                Debug.LogError("Vehcile Enum seems to be none, couldn't spawn player vehicle");
+                return;
+            case VTOLVehicles.AV42C:
+                newVehicle = GameObject.Instantiate(av42cPrefab);
+                break;
+            case VTOLVehicles.FA26B:
+                newVehicle = GameObject.Instantiate(fa26bPrefab);
+                break;
+            case VTOLVehicles.F45A:
+                newVehicle = GameObject.Instantiate(f45Prefab);
+                break;
+        }
         newVehicle.name = $"Client [{message.csteamID}]";
         newVehicle.transform.position = message.position.toVector3;
         newVehicle.transform.rotation = Quaternion.Euler(message.rotation.toVector3);
-        CamRigRotationInterpolator[] camRig = GameObject.FindObjectsOfType<CamRigRotationInterpolator>();
-        Debug.Log("Trying to Destroy camera rig");
-        Debug.Log($"There are {camRig.Length} CamRigRotationInterpolator's");
-        GameObject CameraRigParent = null;
-        for (int i = 0; i < camRig.Length; i++)
-        {
-            Transform parent = camRig[i].transform.parent.parent;
-            if (parent.name == newVehicle.name)
-            {
-                CameraRigParent = camRig[i].gameObject;
-                break;
-            }
-            else if (parent.name != "SEVTF" || parent.name != "FA-26B")
-            {
-                if (parent.parent.name == newVehicle.name)
-                {
-                    CameraRigParent = camRig[i].gameObject;
-                    break;
-                }
-            }
-        }
-        if (CameraRigParent == null)
-            Debug.LogError("We didn't find CameraRigParent");
-        else
-            Debug.Log("We found CameraRigParent");
-
-        Debug.Log("Destroying the suit");
-        Transform suit = CameraRigParent.transform.parent.Find("RiggedSuit");
-        if (suit != null)
-        {
-            Debug.Log("Found the suit, destorying it");
-            GameObject.Destroy(suit.gameObject);
-        }
-        GameObject.Destroy(CameraRigParent);
-
-        //Changing Vehicle Input Manager
-        VehicleInputManager inputManager = newVehicle.GetComponent<VehicleInputManager>();
-        List<FlightControlComponent> list = new List<FlightControlComponent>();
-        for (int i = 0; i < inputManager.pyrOutputs.Length; i++)
-        {
-            if (inputManager.pyrOutputs[i] != null)
-            {
-                list.Add(inputManager.pyrOutputs[i]);
-            }
-        }
-        inputManager.pyrOutputs = list.ToArray();
 
         RigidbodyNetworker_Receiver rbNetworker = newVehicle.AddComponent<RigidbodyNetworker_Receiver>();
         Networker.RigidbodyUpdate += rbNetworker.RigidbodyUpdate;
@@ -219,6 +190,23 @@ public static class PlayerManager
         newVehicle.AddComponent<Nametag>().SetText(
             SteamFriends.GetFriendPersonaName(new CSteamID(message.csteamID)),
             newVehicle.transform, VRHead.instance.transform);
+    }
+    /// <summary>
+    /// Finds the prefabs which are used for spawning the other players on our client
+    /// </summary>
+    private static void SetPrefabs()
+    {
+        UnitCatalogue.UpdateCatalogue();
+        av42cPrefab = UnitCatalogue.GetUnitPrefab("AV-42CAI");
+        fa26bPrefab = UnitCatalogue.GetUnitPrefab("FA-26B AI");
+        f45Prefab = UnitCatalogue.GetUnitPrefab("F-45A AI");
+
+        if (!av42cPrefab)
+            Debug.LogError("Couldn't find the prefab for the AV-42C");
+        if (!fa26bPrefab)
+            Debug.LogError("Couldn't find the prefab for the F/A-26B");
+        if (!f45Prefab)
+            Debug.LogError("Couldn't find the prefab for the F-45A");
     }
     /// <summary>
     /// Creates the spawn points for the other players.
