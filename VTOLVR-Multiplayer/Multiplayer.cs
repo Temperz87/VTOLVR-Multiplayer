@@ -80,6 +80,12 @@ public class Multiplayer : VTOLMOD
     {
         Log("Creating Multiplayer UI");
         Transform ScenarioDisplay = GameObject.Find("InteractableCanvas").transform.GetChild(0).GetChild(6).GetChild(0).GetChild(1);
+        if (ScenarioDisplay.name != "ScenarioDisplay")
+        {
+            Log($"ScenarioDisplay was wrong ({ScenarioDisplay.name}), trying other method");
+            ScenarioDisplay = GameObject.Find("InteractableCanvas").transform.GetChild(0).GetChild(7).GetChild(0).GetChild(1);
+            Log($"ScenarioDisplay now == {ScenarioDisplay.name}");
+        }
         //Creating the MP button
         Transform mpButton = Instantiate(ScenarioDisplay.GetChild(6).gameObject, ScenarioDisplay).transform;
         Log("Multiplayer Button" + mpButton.name);
@@ -95,7 +101,7 @@ public class Multiplayer : VTOLMOD
         mpInteractable.OnInteract = new UnityEngine.Events.UnityEvent();
 
 
-        //Creating Mp Menu
+        Log("Creating Mp Menu");//Creating Mp Menu
         GameObject MPMenu = Instantiate(ScenarioDisplay.gameObject, ScenarioDisplay.parent);
         GameObject ScrollView = null;
         for (int i = 0; i < MPMenu.transform.childCount; i++)
@@ -111,12 +117,12 @@ public class Multiplayer : VTOLMOD
         content = ScrollView.transform.GetChild(0).GetChild(0).gameObject;
         selectionTF = content.transform.GetChild(0);
         selectionTF.GetComponent<Image>().color = new Color(0,0,0,0);
-        //Copying the List from select Campaign for friends
+        Log("Copying the List from select Campaign for friends");//Copying the List from select Campaign for friends
         friendsTemplate = content.transform.GetChild(1).gameObject;
         buttonHeight = ((RectTransform)friendsTemplate.transform).rect.height;
 
-        
-        //Getting the headers from the campaign display
+
+        Log("Getting the headers from the campaign display"); //Getting the headers from the campaign display
         GameObject lableTemplate = ScenarioDisplay.parent.GetChild(0).GetChild(5).GetChild(0).GetChild(0).GetChild(2).gameObject;
         lableVTOL = Instantiate(lableTemplate, content.transform);
         lableVTOL.GetComponentInChildren<Text>().text = "In VTOL VR";
@@ -131,7 +137,7 @@ public class Multiplayer : VTOLMOD
         lableOffline.GetComponentInChildren<Text>().text = "Offline";
         lableOffline.SetActive(true);
 
-        //Back Button
+        Log("Back Button");//Back Button
         GameObject BackButton = Instantiate(mpButton.gameObject, MPMenu.transform);
         BackButton.GetComponent<RectTransform>().localPosition = new Vector3(-508, -325);
         BackButton.GetComponent<RectTransform>().sizeDelta = new Vector2(70, 256.3f);
@@ -141,7 +147,7 @@ public class Multiplayer : VTOLMOD
         BackInteractable.interactableName = "Back";
         BackInteractable.OnInteract = new UnityEngine.Events.UnityEvent();
         BackInteractable.OnInteract.AddListener(delegate { Log("Before Back"); MPMenu.SetActive(false); ScenarioDisplay.gameObject.SetActive(true); });
-        //Host
+        Log("Host");//Host
         GameObject HostButton = Instantiate(mpButton.gameObject, MPMenu.transform);
         HostButton.GetComponent<RectTransform>().localPosition = new Vector3(0, -325);
         HostButton.GetComponent<RectTransform>().sizeDelta = new Vector2(70, 256.3f);
@@ -151,7 +157,7 @@ public class Multiplayer : VTOLMOD
         HostInteractable.interactableName = "Host Game";
         HostInteractable.OnInteract = new UnityEngine.Events.UnityEvent();
         HostInteractable.OnInteract.AddListener(delegate { Log("Before Host"); Host(); });
-        //Join
+        Log("Join");//Join
         JoinButton = Instantiate(mpButton.gameObject, MPMenu.transform);
         JoinButton.GetComponent<RectTransform>().localPosition = new Vector3(489, -325);
         JoinButton.GetComponent<RectTransform>().sizeDelta = new Vector2(70, 256.3f);
@@ -162,9 +168,10 @@ public class Multiplayer : VTOLMOD
         JoinInteractable.OnInteract = new UnityEngine.Events.UnityEvent();
         JoinInteractable.OnInteract.AddListener(delegate { Log("Before Join"); Join(); });
         JoinButton.SetActive(false);
-
+        Log("Last one");
         mpInteractable.OnInteract.AddListener(delegate { Log("Before Opening MP"); RefershFriends(); MPMenu.SetActive(true); ScenarioDisplay.gameObject.SetActive(false); OpenMP(); });
         GameObject.Find("InteractableCanvas").GetComponent<VRPointInteractableCanvas>().RefreshInteractables();
+        Log("Finished");
     }
 
     public void RefershFriends()
