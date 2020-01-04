@@ -22,13 +22,13 @@ public class PlaneNetworker_Receiver : MonoBehaviour
         aeroController = GetComponent<AeroController>();
         //tiltController = GetComponent<TiltController>();
         engines = GetComponentsInChildren<ModuleEngine>();
+        Networker.PlaneUpdate += PlaneUpdate;
     }
     public void PlaneUpdate(Packet packet)
     {
         lastMessage = (Message_PlaneUpdate)((PacketSingle)packet).message;
         if (lastMessage.networkUID != networkUID)
             return;
-        Debug.Log("Received Plane Update\n" + lastMessage.ToString());
 
         /*
         if (landingGearLastState != (lastMessage.landingGear ? 0 : 1))

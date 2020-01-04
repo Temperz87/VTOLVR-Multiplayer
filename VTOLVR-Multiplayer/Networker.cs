@@ -33,6 +33,7 @@ public class Networker : MonoBehaviour
     public static event UnityAction<Packet> SpawnVehicle;
     public static event UnityAction<Packet> RigidbodyUpdate;
     public static event UnityAction<Packet> PlaneUpdate;
+    public static event UnityAction<Packet> EngineTiltUpdate;
     #endregion
     private void Awake()
     {
@@ -184,6 +185,11 @@ public class Networker : MonoBehaviour
                             return;
                         }
                         Message_JoinRequest joinRequest = packetS.message as Message_JoinRequest;
+                        if (players.Contains(csteamID))
+                        {
+                            Debug.LogError("The player seemed to send two join requests");
+                            return;
+                        }
                         if (joinRequest.currentVehicle == PilotSaveManager.currentVehicle.vehicleName &&
                             joinRequest.currentScenario == PilotSaveManager.currentScenario.scenarioID &&
                             joinRequest.currentCampaign == PilotSaveManager.currentCampaign.campaignID)
@@ -243,6 +249,10 @@ public class Networker : MonoBehaviour
                     case MessageType.PlaneUpdate:
                         if (PlaneUpdate != null)
                             PlaneUpdate.Invoke(packet);
+                        break;
+                    case MessageType.EngineTiltUpdate:
+                        if (EngineTiltUpdate != null)
+                            EngineTiltUpdate.Invoke(packet);
                         break;
                     default:
                         break;

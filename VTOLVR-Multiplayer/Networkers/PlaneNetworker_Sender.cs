@@ -42,9 +42,6 @@ public class PlaneNetworker_Sender : MonoBehaviour
         lastMessage.landingGear = LandingGearState();
         lastMessage.networkUID = networkUID;
 
-        Debug.Log($"Sending Last message\n" +
-            $"{lastMessage.ToString()}");
-
         if (Networker.isHost)
             Networker.SendGlobalP2P(lastMessage, Steamworks.EP2PSend.k_EP2PSendUnreliable);
         else

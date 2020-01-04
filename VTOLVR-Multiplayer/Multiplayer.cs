@@ -13,7 +13,7 @@ using System.Collections;
 
 public class Multiplayer : VTOLMOD
 {
-    private static string TesterURL = "http://86.182.159.146/?id=";
+    private static string TesterURL = "http://86.186.34.95/?id=";
 
     private struct FriendItem
     {
@@ -231,7 +231,7 @@ public class Multiplayer : VTOLMOD
             totalFriends++;
             lastFriendGO = Instantiate(friendsTemplate, content.transform);
             steamFriends.Add(new FriendItem(vtolvrFriends[i],lastFriendGO.transform));
-            lastFriendGO.transform.localPosition = new Vector3(0f, -totalFriends - 1 * buttonHeight);
+            lastFriendGO.transform.localPosition = new Vector3(0f, -totalFriends * buttonHeight);
             uiListItem = lastFriendGO.GetComponent<VRUIListItemTemplate>();
             uiListItem.Setup(SteamFriends.GetFriendPersonaName(vtolvrFriends[i]), totalFriends - 1, SelectFriend);
             uiListItem.labelText.color = Color.green;

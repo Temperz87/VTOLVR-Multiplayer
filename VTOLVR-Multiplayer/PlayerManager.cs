@@ -27,12 +27,12 @@ public static class PlayerManager
     {
         Debug.Log("The map has loaded");
         //As a client, when the map has loaded we are going to request a spawn point from the host
+        SetPrefabs();
         if (!Networker.isHost)
             Networker.SendP2P(Networker.hostID, new Message(MessageType.RequestSpawn), EP2PSend.k_EP2PSendReliable);
         else
         {
             hostLoaded = true;
-            SetPrefabs();
             GameObject localVehicle = VTOLAPI.instance.GetPlayersVehicleGameObject();
             if (localVehicle != null)
             {
@@ -127,6 +127,13 @@ public static class PlayerManager
         PlaneNetworker_Sender planeSender = localVehicle.AddComponent<PlaneNetworker_Sender>();
         planeSender.networkUID = id;
 
+        if (currentVehicle == VTOLVehicles.AV42C || currentVehicle == VTOLVehicles.F45A)
+        {
+            Debug.Log("Added Tilt Updater to our vehicle");
+            EngineTiltNetworker_Sender tiltSender = localVehicle.AddComponent<EngineTiltNetworker_Sender>();
+            tiltSender.networkUID = id;
+        }
+
 
         if (Networker.isHost)
         {
@@ -155,39 +162,72 @@ public static class PlayerManager
     {
         Debug.Log("Recived a Spawn Vehicle Message");
 
-        Debug.Log("Sending to other clients");
+        
         Message_SpawnVehicle message = (Message_SpawnVehicle)((PacketSingle)packet).message;
         if (Networker.isHost)
+        {
+            Debug.Log("Sending to other clients");
             Networker.SendExcludeP2P(new CSteamID(message.csteamID), message, EP2PSend.k_EP2PSendReliable);
+        }
+            
         GameObject newVehicle = null;
-        switch (VTOLAPI.GetPlayersVehicleEnum())
+        switch (message.vehicle)
         {
             case VTOLVehicles.None:
                 Debug.LogError("Vehcile Enum seems to be none, couldn't spawn player vehicle");
                 return;
             case VTOLVehicles.AV42C:
-                newVehicle = GameObject.Instantiate(av42cPrefab);
+                newVehicle = GameObject.Instantiate(av42cPrefab, message.position.toVector3, Quaternion.Euler(message.rotation.toVector3));
                 break;
             case VTOLVehicles.FA26B:
-                newVehicle = GameObject.Instantiate(fa26bPrefab);
+                newVehicle = GameObject.Instantiate(fa26bPrefab, message.position.toVector3, Quaternion.Euler(message.rotation.toVector3));
                 break;
             case VTOLVehicles.F45A:
-                newVehicle = GameObject.Instantiate(f45Prefab);
+                newVehicle = GameObject.Instantiate(f45Prefab, message.position.toVector3, Quaternion.Euler(message.rotation.toVector3));
                 break;
         }
+        Debug.Log("Setting vehicle name");
         newVehicle.name = $"Client [{message.csteamID}]";
-        newVehicle.transform.position = message.position.toVector3;
-        newVehicle.transform.rotation = Quaternion.Euler(message.rotation.toVector3);
+        Debug.Log($"Spawned new vehicle at {newVehicle.transform.position}");
 
         RigidbodyNetworker_Receiver rbNetworker = newVehicle.AddComponent<RigidbodyNetworker_Receiver>();
-        Networker.RigidbodyUpdate += rbNetworker.RigidbodyUpdate;
         rbNetworker.networkUID = message.networkID;
 
         PlaneNetworker_Receiver planeReceiver = newVehicle.AddComponent<PlaneNetworker_Receiver>();
         planeReceiver.networkUID = message.networkID;
-        Networker.PlaneUpdate += planeReceiver.PlaneUpdate;
 
-        newVehicle.AddComponent<Nametag>().SetText(
+        if (message.vehicle == VTOLVehicles.AV42C || message.vehicle == VTOLVehicles.F45A)
+        {
+            Debug.Log("Adding Tilt Controller to this vehicle " + message.networkID);
+            EngineTiltNetworker_Receiver tiltReceiver = newVehicle.AddComponent<EngineTiltNetworker_Receiver>();
+            tiltReceiver.networkUID = message.networkID;
+        }
+
+
+        Rigidbody rb = newVehicle.GetComponent<Rigidbody>();
+        AIPilot aIPilot = newVehicle.GetComponent<AIPilot>();
+        Debug.Log($"Changing {newVehicle.name}'s position and rotation\nPos:{rb.position} Rotation:{rb.rotation.eulerAngles}");
+        aIPilot.kPlane.SetToKinematic();
+        aIPilot.kPlane.enabled = false;
+        rb.interpolation = RigidbodyInterpolation.None;
+        aIPilot.commandState = AIPilot.CommandStates.Override;
+
+
+        rb.position = message.position.toVector3;
+        rb.rotation = Quaternion.Euler(message.rotation.toVector3);
+        aIPilot.kPlane.enabled = true;
+        aIPilot.kPlane.SetVelocity(Vector3.zero);
+        aIPilot.kPlane.SetToDynamic();
+        rb.interpolation = RigidbodyInterpolation.Interpolate;
+
+        Debug.Log($"Finished changing {newVehicle.name}\n Pos:{rb.position} Rotation:{rb.rotation.eulerAngles}");
+
+        GameObject parent = new GameObject("Name Tag Holder");
+        GameObject nameTag = new GameObject("Name Tag");
+        parent.transform.SetParent(newVehicle.transform);
+        parent.transform.localRotation = Quaternion.Euler(0, 180, 0);
+        nameTag.transform.SetParent(parent.transform);
+        nameTag.AddComponent<Nametag>().SetText(
             SteamFriends.GetFriendPersonaName(new CSteamID(message.csteamID)),
             newVehicle.transform, VRHead.instance.transform);
     }

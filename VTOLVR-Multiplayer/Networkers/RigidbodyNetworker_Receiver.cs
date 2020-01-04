@@ -23,12 +23,13 @@ public class RigidbodyNetworker_Receiver : MonoBehaviour
         if (originTransform == null)
             originTransform = gameObject.AddComponent<FloatingOriginTransform>();
         originTransform.SetRigidbody(rb);
+        Networker.RigidbodyUpdate += RigidbodyUpdate;
     }
 
     public void RigidbodyUpdate(Packet packet)
     {
         Message_RigidbodyUpdate rigidbodyUpdate = (Message_RigidbodyUpdate)((PacketSingle)packet).message;
-        Debug.Log($"Rigidbody Update\nOur Network ID = {networkUID} Packet Network ID = {rigidbodyUpdate.networkUID}");
+        //Debug.Log($"Rigidbody Update\nOur Network ID = {networkUID} Packet Network ID = {rigidbodyUpdate.networkUID}");
         if (rigidbodyUpdate.networkUID != networkUID)
             return;
         targetPosition = VTMapManager.GlobalToWorldPoint(rigidbodyUpdate.position);
@@ -42,8 +43,8 @@ public class RigidbodyNetworker_Receiver : MonoBehaviour
         }
         else
         {
-            Debug.Log($"Updating Position of UID {networkUID} to {transform.position} : {rb.velocity}" + 
-                $"\nNetwork Message was {rigidbodyUpdate.position} : {rigidbodyUpdate.velocity}");
+            //Debug.Log($"Updating Position of UID {networkUID} to {transform.position} : {rb.velocity}" + 
+            //   $"\nNetwork Message was {rigidbodyUpdate.position} : {rigidbodyUpdate.velocity}");
         }
     }
 

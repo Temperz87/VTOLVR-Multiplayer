@@ -14,4 +14,5 @@ public enum MessageType
     SpawnVehicle, //When someone is telling everyone to spawn a new vehicle on their game
     RigidbodyUpdate, //When a RigidbodyNetworker is updating
     PlaneUpdate, //This is when the base plane script is updating
+    EngineTiltUpdate, //This is the angle of an engine when its tilted
 }
