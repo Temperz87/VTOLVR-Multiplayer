@@ -20,6 +20,7 @@ class EngineTiltNetworker_Sender : MonoBehaviour
     private void LateUpdate()
     {
         lastMessage.angle = tiltController.currentTilt;
+        lastMessage.networkUID = networkUID;
 
         if (Networker.isHost)
             Networker.SendGlobalP2P(lastMessage, Steamworks.EP2PSend.k_EP2PSendUnreliable);
