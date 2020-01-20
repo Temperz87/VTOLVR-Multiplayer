@@ -13,7 +13,8 @@ using System.Collections;
 
 public class Multiplayer : VTOLMOD
 {
-    private static string TesterURL = "http://86.186.34.95/?id=";
+    private static string TesterURL = "http://marsh.vtolvr-mods.com/";
+    public static bool SoloTesting = true;
 
     private struct FriendItem
     {
@@ -44,6 +45,7 @@ public class Multiplayer : VTOLMOD
 #if DEBUG
         Log("Running in Debug Mode");
 #else
+        SoloTesting = false;
         Log("Running in Release Mode");
         System.Net.WebClient wc = new System.Net.WebClient();
         string webData = wc.DownloadString(TesterURL + SteamUser.GetSteamID().m_SteamID);

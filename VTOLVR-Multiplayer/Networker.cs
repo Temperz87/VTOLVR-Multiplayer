@@ -106,6 +106,11 @@ public class Networker : MonoBehaviour
             Debug.LogError("Can't send global P2P as user isn't host");
             return;
         }
+        if (Multiplayer.SoloTesting)
+        {
+            SendP2P(new CSteamID(), message, sendType);
+            return;
+        }
         for (int i = 0; i < players.Count; i++)
         {
             SendP2P(players[i], message, sendType);
@@ -143,6 +148,12 @@ public class Networker : MonoBehaviour
         {
             Debug.LogError("MORE THAN 1200 Bytes for message");
         }
+        if (Multiplayer.SoloTesting)
+        {
+            //This skips sending the network message and gets sent right to ReadP2PPacket so that we can test solo with a fake player.
+            _instance.ReadP2PPacket(memoryStream.ToArray(), 0, 0, new CSteamID(1));
+            return;
+        }
         if (SteamNetworking.SendP2PPacket(remoteID, memoryStream.ToArray(), (uint)memoryStream.Length, packet.sendType))
         {
             
@@ -158,108 +169,109 @@ public class Networker : MonoBehaviour
         uint num;
         while (SteamNetworking.IsP2PPacketAvailable(out num))
         {
-            ReadP2PPacket(num);
-        }
-    }
-
-    private void ReadP2PPacket(uint num)
-    {
-        byte[] array = new byte[num];
-        uint num2;
-        CSteamID csteamID;
-        if (SteamNetworking.ReadP2PPacket(array, num, out num2, out csteamID, 0))
-        {
-            MemoryStream serializationStream = new MemoryStream(array);
-            Packet packet = new BinaryFormatter().Deserialize(serializationStream) as Packet;
-            if (packet.packetType == PacketType.Single)
+            byte[] array = new byte[num];
+            uint num2;
+            CSteamID csteamID;
+            if (SteamNetworking.ReadP2PPacket(array, num, out num2, out csteamID, 0))
             {
-                PacketSingle packetS = packet as PacketSingle;
-                switch (packetS.message.type)
-                {
-                    case MessageType.None:
-                        break;
-                    case MessageType.JoinRequest:
-                        if (!isHost)
-                        {
-                            Debug.LogError($"Recived Join Request when we are not the host");
-                            return;
-                        }
-                        Message_JoinRequest joinRequest = packetS.message as Message_JoinRequest;
-                        if (players.Contains(csteamID))
-                        {
-                            Debug.LogError("The player seemed to send two join requests");
-                            return;
-                        }
-                        if (joinRequest.currentVehicle == PilotSaveManager.currentVehicle.vehicleName &&
-                            joinRequest.currentScenario == PilotSaveManager.currentScenario.scenarioID &&
-                            joinRequest.currentCampaign == PilotSaveManager.currentCampaign.campaignID)
-                        {
-                            Debug.Log($"Accepting {csteamID.m_SteamID}");
-                            players.Add(csteamID);
-                            readyDic.Add(csteamID, false);
-                            SendP2P(csteamID, new Message_JoinRequest_Result(true), EP2PSend.k_EP2PSendReliable);
-                        }
-                        break;
-                    case MessageType.JoinRequest_Result:
-                        Message_JoinRequest_Result joinResult = packetS.message as Message_JoinRequest_Result;
-                        if (joinResult.canJoin)
-                        {
-                            Debug.Log($"Joining {csteamID.m_SteamID}");
-                            hostID = csteamID;
-                            StartCoroutine(FlyButton());
-                        }
-                        else
-                            Debug.LogWarning($"We can't join {csteamID.m_SteamID}");
-                        break;
-                    case MessageType.Ready:
-                        //The client has said they are ready to start, so we change it in the dictionary
-                        if (readyDic.ContainsKey(csteamID))
-                        {
-                            Debug.Log($"{csteamID.m_SteamID} has said they are ready!\nHost ready state {hostReady}");
-                            readyDic[csteamID] = true;
-                            if (hostReady && EveryoneElseReady())
-                            {
-                                Debug.Log("The last client has said they are ready, starting");
-                                SendGlobalP2P(new Message(MessageType.Ready_Result), EP2PSend.k_EP2PSendReliable);
-                                LoadingSceneController.instance.PlayerReady();
-                            }
-                        }
-                        break;
-                    case MessageType.Ready_Result:
-                        Debug.Log("The host said everyone is ready, launching the mission");
-                        hostReady = true;
-                        LoadingSceneController.instance.PlayerReady();
-                        break;
-                    case MessageType.RequestSpawn:
-                        if (RequestSpawn != null)
-                            RequestSpawn.Invoke(packet, csteamID);
-                        break;
-                    case MessageType.RequestSpawn_Result:
-                        if (RequestSpawn_Result != null)
-                            RequestSpawn_Result.Invoke(packet);
-                        break;
-                    case MessageType.SpawnVehicle:
-                        if (SpawnVehicle != null)
-                            SpawnVehicle.Invoke(packet);
-                        break;
-                    case MessageType.RigidbodyUpdate:
-                        if (RigidbodyUpdate != null)
-                            RigidbodyUpdate.Invoke(packet);
-                        break;
-                    case MessageType.PlaneUpdate:
-                        if (PlaneUpdate != null)
-                            PlaneUpdate.Invoke(packet);
-                        break;
-                    case MessageType.EngineTiltUpdate:
-                        if (EngineTiltUpdate != null)
-                            EngineTiltUpdate.Invoke(packet);
-                        break;
-                    default:
-                        break;
-                }
+                ReadP2PPacket(array, num, num2, csteamID);
             }
         }
     }
+
+    private void ReadP2PPacket(byte[] array, uint num, uint num2, CSteamID csteamID)
+    {
+        MemoryStream serializationStream = new MemoryStream(array);
+        Packet packet = new BinaryFormatter().Deserialize(serializationStream) as Packet;
+        if (packet.packetType == PacketType.Single)
+        {
+            PacketSingle packetS = packet as PacketSingle;
+            switch (packetS.message.type)
+            {
+                case MessageType.None:
+                    break;
+                case MessageType.JoinRequest:
+                    if (!isHost)
+                    {
+                        Debug.LogError($"Recived Join Request when we are not the host");
+                        return;
+                    }
+                    Message_JoinRequest joinRequest = packetS.message as Message_JoinRequest;
+                    if (players.Contains(csteamID))
+                    {
+                        Debug.LogError("The player seemed to send two join requests");
+                        return;
+                    }
+                    if (joinRequest.currentVehicle == PilotSaveManager.currentVehicle.vehicleName &&
+                        joinRequest.currentScenario == PilotSaveManager.currentScenario.scenarioID &&
+                        joinRequest.currentCampaign == PilotSaveManager.currentCampaign.campaignID)
+                    {
+                        Debug.Log($"Accepting {csteamID.m_SteamID}");
+                        players.Add(csteamID);
+                        readyDic.Add(csteamID, false);
+                        SendP2P(csteamID, new Message_JoinRequest_Result(true), EP2PSend.k_EP2PSendReliable);
+                    }
+                    break;
+                case MessageType.JoinRequest_Result:
+                    Message_JoinRequest_Result joinResult = packetS.message as Message_JoinRequest_Result;
+                    if (joinResult.canJoin)
+                    {
+                        Debug.Log($"Joining {csteamID.m_SteamID}");
+                        hostID = csteamID;
+                        StartCoroutine(FlyButton());
+                    }
+                    else
+                        Debug.LogWarning($"We can't join {csteamID.m_SteamID}");
+                    break;
+                case MessageType.Ready:
+                    //The client has said they are ready to start, so we change it in the dictionary
+                    if (readyDic.ContainsKey(csteamID))
+                    {
+                        Debug.Log($"{csteamID.m_SteamID} has said they are ready!\nHost ready state {hostReady}");
+                        readyDic[csteamID] = true;
+                        if (hostReady && EveryoneElseReady())
+                        {
+                            Debug.Log("The last client has said they are ready, starting");
+                            SendGlobalP2P(new Message(MessageType.Ready_Result), EP2PSend.k_EP2PSendReliable);
+                            LoadingSceneController.instance.PlayerReady();
+                        }
+                    }
+                    break;
+                case MessageType.Ready_Result:
+                    Debug.Log("The host said everyone is ready, launching the mission");
+                    hostReady = true;
+                    LoadingSceneController.instance.PlayerReady();
+                    break;
+                case MessageType.RequestSpawn:
+                    if (RequestSpawn != null)
+                        RequestSpawn.Invoke(packet, csteamID);
+                    break;
+                case MessageType.RequestSpawn_Result:
+                    if (RequestSpawn_Result != null)
+                        RequestSpawn_Result.Invoke(packet);
+                    break;
+                case MessageType.SpawnVehicle:
+                    if (SpawnVehicle != null)
+                        SpawnVehicle.Invoke(packet);
+                    break;
+                case MessageType.RigidbodyUpdate:
+                    if (RigidbodyUpdate != null)
+                        RigidbodyUpdate.Invoke(packet);
+                    break;
+                case MessageType.PlaneUpdate:
+                    if (PlaneUpdate != null)
+                        PlaneUpdate.Invoke(packet);
+                    break;
+                case MessageType.EngineTiltUpdate:
+                    if (EngineTiltUpdate != null)
+                        EngineTiltUpdate.Invoke(packet);
+                    break;
+                default:
+                    break;
+            }
+        }
+    }
+    
 
     private IEnumerator FlyButton()
     {
@@ -313,8 +325,10 @@ public class Networker : MonoBehaviour
 
     public static ulong GenerateNetworkUID()
     {
-        networkUID++;
-        return networkUID;
+        ulong result = networkUID + 1;
+        networkUID = result;
+        Debug.Log($"Generated New UID ({result})");
+        return result;
     }
     public static void ResetNetworkUID()
     {
