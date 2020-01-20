@@ -21,10 +21,8 @@ class EngineTiltNetworker_Receiver : MonoBehaviour
     public void EngineTiltUpdate(Packet packet)
     {
         lastMessage = (Message_EngineTiltUpdate)((PacketSingle)packet).message;
-        Debug.LogWarning($"Thruster Message our id is {networkUID}\n" + lastMessage.ToString());
         if (lastMessage.networkUID != networkUID)
             return;
-        Debug.Log("Got new tilt message of angle = " + lastMessage.angle);
         tiltController.SetTiltImmediate(lastMessage.angle);
     }
 
