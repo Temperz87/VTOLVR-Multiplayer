@@ -22,6 +22,8 @@ public class RigidbodyNetworker_Sender : MonoBehaviour
     private void LateUpdate()
     {
         lastMessage.position = VTMapManager.WorldToGlobalPoint(transform.position);
+        if (Multiplayer.SoloTesting)
+            lastMessage.position += new Vector3D(30, 0, 0);
         lastMessage.velocity = new Vector3D(rb.velocity);
         lastMessage.angularVelocity = new Vector3D(rb.angularVelocity);
         lastMessage.networkUID = networkUID;

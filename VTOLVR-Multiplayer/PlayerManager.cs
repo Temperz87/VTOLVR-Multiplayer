@@ -134,7 +134,8 @@ public static class PlayerManager
             tiltSender.networkUID = id;
         }
 
-
+        if (Multiplayer.SoloTesting)
+            pos += new Vector3(20, 0, 0);
         if (Networker.isHost)
         {
             Networker.SendGlobalP2P(new Message_SpawnVehicle(
