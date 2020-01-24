@@ -14,8 +14,6 @@ public class RigidbodyNetworker_Sender : MonoBehaviour
     private void Awake()
     {
         rb = GetComponent<Rigidbody>();
-        Debug.Log("Added RB");
-        Debug.Log("Setting last message");
         lastMessage = new Message_RigidbodyUpdate(new Vector3D(rb.velocity), new Vector3D(rb.angularVelocity), new Vector3D(transform.position), networkUID);
     }
 

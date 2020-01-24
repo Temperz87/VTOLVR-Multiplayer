@@ -13,15 +13,19 @@ public class PlaneNetworker_Receiver : MonoBehaviour
     //Classes we use to set the information
     private WheelsController wheelsController;
     private AeroController aeroController;
-    //private TiltController tiltController;
     private ModuleEngine[] engines;
+    private AIPilot aiPilot;
 
     private void Awake()
     {
-        wheelsController = GetComponent<WheelsController>();
         aeroController = GetComponent<AeroController>();
-        //tiltController = GetComponent<TiltController>();
-        engines = GetComponentsInChildren<ModuleEngine>();
+        aeroController.battery = GetComponentInChildren<Battery>();
+        aiPilot = GetComponent<AIPilot>();
+        Debug.Log($"There are {aiPilot.autoPilot.outputs.Length} outputs");
+        for (int i = 0; i < aiPilot.autoPilot.outputs.Length; i++)
+        {
+            Debug.Log($"Output {i} name = {aiPilot.autoPilot.outputs[i].gameObject.name}");
+        }
         Networker.PlaneUpdate += PlaneUpdate;
     }
     public void PlaneUpdate(Packet packet)
@@ -29,31 +33,20 @@ public class PlaneNetworker_Receiver : MonoBehaviour
         lastMessage = (Message_PlaneUpdate)((PacketSingle)packet).message;
         if (lastMessage.networkUID != networkUID)
             return;
+        aiPilot.commandState = AIPilot.CommandStates.Override;
+        //aiPilot.autoPilot.steerMode = AutoPilot.SteerModes.Aim;
 
-        /*
-        if (landingGearLastState != (lastMessage.landingGear ? 0 : 1))
-        {
-            Debug.Log("Changing the landing gear state");
-            landingGearLastState = lastMessage.landingGear ? 0 : 1;
-            landingGear.SetState(landingGearLastState);
-        }
-        */
+        if (lastMessage.landingGear)
+            aiPilot.gearAnimator.Extend();
+        else
+            aiPilot.gearAnimator.Retract();
 
-        if (wheelsController.gearAnimator.GetCurrentState() == (lastMessage.landingGear ? GearAnimator.GearStates.Extended : GearAnimator.GearStates.Retracted))
-        {
-            wheelsController.SetGear(lastMessage.landingGear);
-        }
+        aiPilot.autoPilot.SetFlaps(lastMessage.flaps);
 
-
-        aeroController.flaps = lastMessage.flaps;
+        aiPilot.autoPilot.OverrideSetBrakes(lastMessage.breaks);
+        aiPilot.autoPilot.OverrideSetThrottle(lastMessage.throttle);
 
         aeroController.input = new Vector3(lastMessage.pitch, lastMessage.yaw, lastMessage.roll);
-        aeroController.SetBrakes(lastMessage.breaks);
-
-        for (int i = 0; i < engines.Length; i++)
-        {
-            engines[i].SetThrottle(lastMessage.throttle);
-        }
     }
     public void OnDestory()
     {
