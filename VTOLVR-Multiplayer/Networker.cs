@@ -211,6 +211,18 @@ public class Networker : MonoBehaviour
                         readyDic.Add(csteamID, false);
                         SendP2P(csteamID, new Message_JoinRequest_Result(true), EP2PSend.k_EP2PSendReliable);
                     }
+                    else
+                    {
+                        string reason = "Failed to Join Player";
+                        if (joinRequest.currentVehicle != PilotSaveManager.currentVehicle.vehicleName)
+                            reason += "\nWrong Vehicle.";
+                        if (joinRequest.currentScenario != PilotSaveManager.currentScenario.scenarioID)
+                            reason += "\nWrong Scenario.";
+                        if (joinRequest.currentCampaign != PilotSaveManager.currentCampaign.campaignID)
+                            reason += "\nWrong Campaign.";
+                        SendP2P(csteamID, new Message_JoinRequest_Result(false, reason), EP2PSend.k_EP2PSendReliable);
+                        Debug.Log($"Denied {csteamID}, reason\n{reason}");
+                    }
                     break;
                 case MessageType.JoinRequest_Result:
                     Message_JoinRequest_Result joinResult = packetS.message as Message_JoinRequest_Result;
@@ -221,7 +233,9 @@ public class Networker : MonoBehaviour
                         StartCoroutine(FlyButton());
                     }
                     else
-                        Debug.LogWarning($"We can't join {csteamID.m_SteamID}");
+                    {
+                        Debug.LogWarning($"We can't join {csteamID.m_SteamID} reason = \n{joinResult.reason}");
+                    }
                     break;
                 case MessageType.Ready:
                     //The client has said they are ready to start, so we change it in the dictionary

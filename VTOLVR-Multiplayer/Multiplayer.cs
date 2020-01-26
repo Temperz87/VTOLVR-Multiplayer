@@ -35,6 +35,9 @@ public class Multiplayer : VTOLMOD
     private CSteamID selectedFriend;
     private Transform selectionTF;
 
+    private Coroutine waitingForJoin;
+    private Text joinButtonText;
+
     private void Start()
     {
         HarmonyInstance harmony = HarmonyInstance.Create("marsh.vtolvr.multiplayer");      
@@ -163,7 +166,8 @@ public class Multiplayer : VTOLMOD
         JoinButton = Instantiate(mpButton.gameObject, MPMenu.transform);
         JoinButton.GetComponent<RectTransform>().localPosition = new Vector3(489, -325);
         JoinButton.GetComponent<RectTransform>().sizeDelta = new Vector2(70, 256.3f);
-        JoinButton.GetComponentInChildren<Text>().text = "Join";
+        joinButtonText = JoinButton.GetComponentInChildren<Text>();
+        joinButtonText.text = "Join";
         JoinButton.GetComponent<Image>().color = Color.green;
         VRInteractable JoinInteractable = JoinButton.GetComponent<VRInteractable>();
         JoinInteractable.interactableName = "Join Game";
@@ -315,10 +319,23 @@ public class Multiplayer : VTOLMOD
 
     public void Join()
     {
-        if (Networker.hostID == new Steamworks.CSteamID(0))
+        if (Networker.hostID == new Steamworks.CSteamID(0) && waitingForJoin == null)
+        {
             Networker.JoinGame(selectedFriend);
+            waitingForJoin = StartCoroutine(WaitingForJoiningRequestResult());
+        }
         else
             LogWarning("Already in a game with " + Networker.hostID.m_SteamID);
+    }
+    private IEnumerator WaitingForJoiningRequestResult()
+    {
+        for (int i = 10; i > 0; i--)
+        {
+            joinButtonText.text = $"Joining [{i}]";
+            yield return new WaitForSeconds(1);
+        }
+        joinButtonText.text = "Join";
+        waitingForJoin = null;
     }
 
     private IEnumerator WaitForMap()
