@@ -43,6 +43,7 @@ public static class PlayerManager
                 Debug.Log("Local vehicle for host was null");
             if (spawnRequestQueue.Count != 0)
                 SpawnRequestQueue();
+            Networker.alreadyInGame = true;
         }
     }
 

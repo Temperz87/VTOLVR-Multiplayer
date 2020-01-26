@@ -20,7 +20,7 @@ public class Networker : MonoBehaviour
     public static GameState gameState { get; private set; }
     public static List<CSteamID> players { get; private set; } = new List<CSteamID>();
     public static Dictionary<CSteamID, bool> readyDic { get; private set; } = new Dictionary<CSteamID, bool>();
-    public static bool hostReady;
+    public static bool hostReady, alreadyInGame;
     public static CSteamID hostID { get; private set; }
     private Callback<P2PSessionRequest_t> _p2PSessionRequestCallback;
     //networkUID is used as an identifer for all network object, we are just adding onto this to get a new one
@@ -229,7 +229,13 @@ public class Networker : MonoBehaviour
                     {
                         Debug.Log($"{csteamID.m_SteamID} has said they are ready!\nHost ready state {hostReady}");
                         readyDic[csteamID] = true;
-                        if (hostReady && EveryoneElseReady())
+                        if (alreadyInGame)
+                        {
+                            //Someone is trying to join when we are already in game.
+                            Debug.Log($"We are already in session, {csteamID} is joining in!");
+                            SendP2P(csteamID, new Message(MessageType.Ready_Result), EP2PSend.k_EP2PSendReliable);
+                        }
+                        else if (hostReady && EveryoneElseReady())
                         {
                             Debug.Log("The last client has said they are ready, starting");
                             SendGlobalP2P(new Message(MessageType.Ready_Result), EP2PSend.k_EP2PSendReliable);
