@@ -11,21 +11,12 @@ public class PlaneNetworker_Receiver : MonoBehaviour
     private Message_PlaneUpdate lastMessage;
 
     //Classes we use to set the information
-    private WheelsController wheelsController;
-    private AeroController aeroController;
-    private ModuleEngine[] engines;
     private AIPilot aiPilot;
-
+    private AutoPilot autoPilot;
     private void Awake()
     {
-        aeroController = GetComponent<AeroController>();
-        aeroController.battery = GetComponentInChildren<Battery>();
         aiPilot = GetComponent<AIPilot>();
-        Debug.Log($"There are {aiPilot.autoPilot.outputs.Length} outputs");
-        for (int i = 0; i < aiPilot.autoPilot.outputs.Length; i++)
-        {
-            Debug.Log($"Output {i} name = {aiPilot.autoPilot.outputs[i].gameObject.name}");
-        }
+        autoPilot = aiPilot.autoPilot;
         Networker.PlaneUpdate += PlaneUpdate;
     }
     public void PlaneUpdate(Packet packet)
@@ -33,25 +24,38 @@ public class PlaneNetworker_Receiver : MonoBehaviour
         lastMessage = (Message_PlaneUpdate)((PacketSingle)packet).message;
         if (lastMessage.networkUID != networkUID)
             return;
-        aiPilot.commandState = AIPilot.CommandStates.Override;
-        //aiPilot.autoPilot.steerMode = AutoPilot.SteerModes.Aim;
-
         if (lastMessage.landingGear)
             aiPilot.gearAnimator.Extend();
         else
             aiPilot.gearAnimator.Retract();
 
-        aiPilot.autoPilot.SetFlaps(lastMessage.flaps);
-
-        aiPilot.autoPilot.OverrideSetBrakes(lastMessage.breaks);
-        aiPilot.autoPilot.OverrideSetThrottle(lastMessage.throttle);
-
-        aeroController.input = new Vector3(lastMessage.pitch, lastMessage.yaw, lastMessage.roll);
+        for (int i = 0; i < autoPilot.outputs.Length; i++)
+        {
+            autoPilot.outputs[i].SetPitchYawRoll(new Vector3(lastMessage.pitch, lastMessage.yaw, lastMessage.roll));
+            autoPilot.outputs[i].SetBrakes(lastMessage.breaks);            
+            autoPilot.outputs[i].SetFlaps(lastMessage.flaps);
+            autoPilot.outputs[i].SetWheelSteer(lastMessage.yaw);
+        }
+        for (int i = 0; i < autoPilot.engines.Count; i++)
+        {
+            autoPilot.engines[i].SetThrottle(lastMessage.throttle);
+        }
     }
     public void OnDestory()
     {
         Networker.PlaneUpdate -= PlaneUpdate;
         Debug.Log("Destroyed Plane Update");
         Debug.Log(gameObject.name);
+    }
+}
+
+[HarmonyPatch(typeof(AutoPilot))]
+[HarmonyPatch("UpdateAutopilot")]
+public class Patch0
+{
+    public static bool Prefix(AutoPilot __instance, float deltaTime)
+    {
+        bool result = !__instance.gameObject.name.Contains("Client [");
+        return result;
     }
 }
