@@ -35,13 +35,12 @@ public class RigidbodyNetworker_Receiver : MonoBehaviour
         targetPosition = VTMapManager.GlobalToWorldPoint(rigidbodyUpdate.position);
         rb.velocity = rigidbodyUpdate.velocity.toVector3;
         rb.angularVelocity = rigidbodyUpdate.angularVelocity.toVector3;
-        
+        transform.rotation = Quaternion.Euler(rigidbodyUpdate.rotation.toVector3); //Angular Velocity doesn't seem to be working so I'm just setting the rotation.
 
         if (Vector3.Distance(transform.position, targetPosition) > positionThreshhold)
         {
             Debug.Log("Outside of thresh hold, moving " + gameObject.name);
             transform.position = targetPosition;
-            transform.rotation = Quaternion.Euler(rigidbodyUpdate.rotation.toVector3);
         }
         else
         {

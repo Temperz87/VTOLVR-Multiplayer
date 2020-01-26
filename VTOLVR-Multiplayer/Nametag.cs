@@ -31,6 +31,6 @@ public class Nametag : MonoBehaviour
     public void Update()
     {
         if (head != null)
-            transform.LookAt(head);
+            transform.LookAt(2 * transform.position - head.position);
     }
 }

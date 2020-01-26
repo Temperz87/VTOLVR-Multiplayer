@@ -15,7 +15,7 @@ using TMPro;
 public class Multiplayer : VTOLMOD
 {
     private static string TesterURL = "http://marsh.vtolvr-mods.com/";
-    public static bool SoloTesting = false;
+    public static bool SoloTesting = true;
     public static Multiplayer _instance;
 
     private struct FriendItem
@@ -176,6 +176,9 @@ public class Multiplayer : VTOLMOD
         lobbyInfoText = lobbyInfoGO.GetComponent<Text>();
         lobbyInfoText.text = "Select a friend or host a lobby.";
         lobbyInfoText.alignment = TextAnchor.UpperLeft;
+        lobbyInfoText.transform.localRotation =  Quaternion.Euler(lobbyInfoText.transform.localRotation.eulerAngles.x + 90,
+            lobbyInfoText.transform.localRotation.y,
+            lobbyInfoText.transform.localRotation.z);
         Log("Last one");
         mpInteractable.OnInteract.AddListener(delegate { Log("Before Opening MP"); RefershFriends(); MPMenu.SetActive(true); ScenarioDisplay.gameObject.SetActive(false); OpenMP(); });
         GameObject.Find("InteractableCanvas").GetComponent<VRPointInteractableCanvas>().RefreshInteractables();

@@ -30,6 +30,12 @@ public class RigidbodyNetworker_Sender : MonoBehaviour
             Networker.SendGlobalP2P(lastMessage, Steamworks.EP2PSend.k_EP2PSendUnreliableNoDelay);
         else
             Networker.SendP2P(Networker.hostID, lastMessage, Steamworks.EP2PSend.k_EP2PSendUnreliableNoDelay);
+
+        if (rb.position.sqrMagnitude > 600)
+        {
+            FloatingOrigin.instance.ShiftOrigin(rb.position, true);
+            Debug.Log("SHIFTING ORIGIN!");
+        }
     }
 
     public void SetSpawn()

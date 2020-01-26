@@ -14,7 +14,9 @@ public enum MessageType
     RequestSpawn, //Requesting a location to spawn at to the host
     RequestSpawn_Result, //The Result of the host sending to client where they can spawn
     SpawnVehicle, //When someone is telling everyone to spawn a new vehicle on their game
+    RequestAllCurrrentPlayers, //When someone joins the host needs to send them all the current players in the game.
     RigidbodyUpdate, //When a RigidbodyNetworker is updating
     PlaneUpdate, //This is when the base plane script is updating
     EngineTiltUpdate, //This is the angle of an engine when its tilted
+    RequestNetworkUID, //A client wants a ID for one of it's object which no one else has.
 }

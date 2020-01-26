@@ -16,16 +16,22 @@ public static class PlayerManager
     /// incase the host hasn't loaded in, in time.
     /// </summary>
     private static Queue<CSteamID> spawnRequestQueue = new Queue<CSteamID>();
-    private static bool hostLoaded;
+    private static Queue<Packet> playersToSpawnQueue = new Queue<Packet>();
+    private static bool hostLoaded, gameLoaded;
     private static GameObject av42cPrefab, fa26bPrefab, f45Prefab;
     public struct Player
     {
         public CSteamID cSteamID;
         public GameObject vehicle;
-        public Player(CSteamID cSteamID, GameObject vehicle)
+        public VTOLVehicles vehicleName;
+        public ulong vehicleUID;
+
+        public Player(CSteamID cSteamID, GameObject vehicle, VTOLVehicles vehicleName, ulong vehicleUID)
         {
             this.cSteamID = cSteamID;
             this.vehicle = vehicle;
+            this.vehicleName = vehicleName;
+            this.vehicleUID = vehicleUID;
         }
     }
     public static List<Player> players = new List<Player>(); //This is the list of players
@@ -36,7 +42,11 @@ public static class PlayerManager
     /// <param name="customMap"></param>
     public static void MapLoaded(VTMapCustom customMap = null) //Clients and Hosts
     {
+        GameObject cube = GameObject.CreatePrimitive(PrimitiveType.Cube);
+        cube.transform.position = Vector3.zero;
+        cube.transform.localScale = new Vector3(50, 1000, 50);
         Debug.Log("The map has loaded");
+        gameLoaded = true;
         //As a client, when the map has loaded we are going to request a spawn point from the host
         SetPrefabs();
         if (!Networker.isHost)
@@ -48,13 +58,21 @@ public static class PlayerManager
             if (localVehicle != null)
             {
                 GenerateSpawns(localVehicle.transform);
-                SendSpawnVehicle(localVehicle, localVehicle.transform.position, localVehicle.transform.rotation.eulerAngles);
+                SendSpawnVehicle(localVehicle, localVehicle.transform.position, localVehicle.transform.rotation.eulerAngles, Networker.GenerateNetworkUID());
             }
             else
                 Debug.Log("Local vehicle for host was null");
             if (spawnRequestQueue.Count != 0)
                 SpawnRequestQueue();
             Networker.alreadyInGame = true;
+        }
+
+        if (playersToSpawnQueue.Count != 0)
+        {
+            for (int i = 0; i < playersToSpawnQueue.Count; i++)
+            {
+                SpawnVehicle(playersToSpawnQueue.Dequeue());
+            }
         }
     }
 
@@ -70,7 +88,7 @@ public static class PlayerManager
             lastSpawn = FindFreeSpawn();
             Networker.SendP2P(
                 spawnRequestQueue.Dequeue(),
-                new Message_RequestSpawn_Result(new Vector3D(lastSpawn.position), new Vector3D(lastSpawn.rotation.eulerAngles)),
+                new Message_RequestSpawn_Result(new Vector3D(lastSpawn.position), new Vector3D(lastSpawn.rotation.eulerAngles), Networker.GenerateNetworkUID()),
                 EP2PSend.k_EP2PSendReliable);
         }
     }
@@ -95,7 +113,7 @@ public static class PlayerManager
             return;
         }
         Transform spawn = FindFreeSpawn();
-        Networker.SendP2P(sender, new Message_RequestSpawn_Result(new Vector3D(spawn.position), new Vector3D(spawn.rotation.eulerAngles)), EP2PSend.k_EP2PSendReliable);
+        Networker.SendP2P(sender, new Message_RequestSpawn_Result(new Vector3D(spawn.position), new Vector3D(spawn.rotation.eulerAngles), Networker.GenerateNetworkUID()), EP2PSend.k_EP2PSendReliable);
     }
     /// <summary>
     /// When the client receives a P2P message of their spawn point, 
@@ -117,52 +135,42 @@ public static class PlayerManager
         }
         localVehicle.transform.position = result.position.toVector3;
         localVehicle.transform.rotation = Quaternion.Euler(result.rotation.toVector3);
-        SendSpawnVehicle(localVehicle, result.position.toVector3, result.rotation.toVector3);
+        SendSpawnVehicle(localVehicle, result.position.toVector3, result.rotation.toVector3, result.vehicleUID);
     }
     /// <summary>
     /// Sends the message to other clients to spawn their vehicles
     /// </summary>
     /// <param name="localVehicle">The local clients gameobject</param>
-    public static void SendSpawnVehicle(GameObject localVehicle, Vector3 pos, Vector3 rot) //Both
+    public static void SendSpawnVehicle(GameObject localVehicle, Vector3 pos, Vector3 rot, ulong UID) //Both
     {
-        players.Add(new Player(SteamUser.GetSteamID(), localVehicle));
         Debug.Log("Sending our location to spawn our vehicle");
         VTOLVehicles currentVehicle = VTOLAPI.GetPlayersVehicleEnum();
-        ulong id = Networker.GenerateNetworkUID();
+        players.Add(new Player(SteamUser.GetSteamID(), localVehicle,currentVehicle, UID));
 
         RigidbodyNetworker_Sender rbSender = localVehicle.AddComponent<RigidbodyNetworker_Sender>();
-        rbSender.networkUID = id;
+        rbSender.networkUID = UID;
         rbSender.spawnPos = pos;
         rbSender.spawnRot = rot;
         rbSender.SetSpawn();
 
         Debug.Log("Adding Plane Sender");
         PlaneNetworker_Sender planeSender = localVehicle.AddComponent<PlaneNetworker_Sender>();
-        planeSender.networkUID = id;
+        planeSender.networkUID = UID;
 
         if (currentVehicle == VTOLVehicles.AV42C || currentVehicle == VTOLVehicles.F45A)
         {
             Debug.Log("Added Tilt Updater to our vehicle");
             EngineTiltNetworker_Sender tiltSender = localVehicle.AddComponent<EngineTiltNetworker_Sender>();
-            tiltSender.networkUID = id;
+            tiltSender.networkUID = UID;
         }
 
         if (Multiplayer.SoloTesting)
             pos += new Vector3(20, 0, 0);
-        if (Networker.isHost)
-        {
-            Networker.SendGlobalP2P(new Message_SpawnVehicle(
-                currentVehicle,
-                new Vector3D(pos),
-                new Vector3D(rot),
-                SteamUser.GetSteamID().m_SteamID,
-                id),
-                EP2PSend.k_EP2PSendReliable);
-        }
-        else
+
+        if (!Networker.isHost)
         {
             Networker.SendP2P(Networker.hostID,
-                new Message_SpawnVehicle(currentVehicle, new Vector3D(pos), new Vector3D(rot), SteamUser.GetSteamID().m_SteamID, id),
+                new Message_SpawnVehicle(currentVehicle, new Vector3D(pos), new Vector3D(rot), SteamUser.GetSteamID().m_SteamID, UID),
                 EP2PSend.k_EP2PSendReliable);
         }
     }
@@ -176,12 +184,38 @@ public static class PlayerManager
     {
         Debug.Log("Recived a Spawn Vehicle Message");
 
+        if (!gameLoaded)
+        {
+            Debug.LogWarning("Our game isn't loaded, adding spawn vehicle to queue");
+            playersToSpawnQueue.Enqueue(packet);
+            return;
+        }
         
         Message_SpawnVehicle message = (Message_SpawnVehicle)((PacketSingle)packet).message;
         if (Networker.isHost)
         {
-            Debug.Log("Sending to other clients");
+            Debug.Log("Telling other clients about new player and new player about other clients");
             Networker.SendExcludeP2P(new CSteamID(message.csteamID), message, EP2PSend.k_EP2PSendReliable);
+            for (int i = 0; i < players.Count; i++)
+            {
+                if (players[i].cSteamID == SteamUser.GetSteamID())
+                {
+                    Debug.LogWarning("Skiping this one as it's the host");
+                    continue;
+                }
+                //We first send the new player to an existing spawned in player
+                Networker.SendP2P(players[i].cSteamID, message, EP2PSend.k_EP2PSendReliable);
+                //Then we send this current player to the new player.
+                Networker.SendP2P(new CSteamID(message.csteamID), 
+                    new Message_SpawnVehicle(
+                        players[i].vehicleName,
+                        VTMapManager.WorldToGlobalPoint(players[i].vehicle.transform.position),
+                        new Vector3D(players[i].vehicle.transform.rotation.eulerAngles),
+                        players[i].cSteamID.m_SteamID,
+                        players[i].vehicleUID), 
+                    EP2PSend.k_EP2PSendReliable);
+                Debug.Log($"We have told {players[i].cSteamID.m_SteamID} about the new player ({message.csteamID}) and the other way round");
+            }
         }
             
         GameObject newVehicle = null;
@@ -245,7 +279,7 @@ public static class PlayerManager
             SteamFriends.GetFriendPersonaName(new CSteamID(message.csteamID)),
             newVehicle.transform, VRHead.instance.transform);
 
-        players.Add(new Player(new CSteamID(message.csteamID), newVehicle));
+        players.Add(new Player(new CSteamID(message.csteamID), newVehicle,message.vehicle,message.networkID));
     }
     /// <summary>
     /// Finds the prefabs which are used for spawning the other players on our client
