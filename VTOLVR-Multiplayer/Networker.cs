@@ -190,6 +190,19 @@ public class Networker : MonoBehaviour
             {
                 case MessageType.None:
                     break;
+                case MessageType.LobbyInfoRequest:
+                    SendP2P(csteamID,
+                        new Message_LobbyInfoRequest_Result(SteamFriends.GetPersonaName(),
+                                                                PilotSaveManager.currentVehicle.vehicleName,
+                                                                PilotSaveManager.currentScenario.scenarioName,
+                                                                PilotSaveManager.currentCampaign.campaignName,
+                                                                PlayerManager.players.Count.ToString()),
+                        EP2PSend.k_EP2PSendReliable);
+                    break;
+                case MessageType.LobbyInfoRequest_Result:
+                    Message_LobbyInfoRequest_Result result = packetS.message as Message_LobbyInfoRequest_Result;
+                    Multiplayer._instance.lobbyInfoText.text = result.username + "'s Game\n" + result.vehicle + "\n" + result.campaign + " " + result.scenario + "\n" + (result.playercount == "1" ? result.playercount + " Player" : result.playercount + " Players");
+                    break;
                 case MessageType.JoinRequest:
                     if (!isHost)
                     {

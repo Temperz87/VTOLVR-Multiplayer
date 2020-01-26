@@ -80,6 +80,9 @@
     <Reference Include="UnityEngine.PhysicsModule">
       <HintPath>..\Dependencies\UnityEngine.PhysicsModule.dll</HintPath>
     </Reference>
+    <Reference Include="UnityEngine.TextRenderingModule">
+      <HintPath>..\Dependencies\UnityEngine.TextRenderingModule.dll</HintPath>
+    </Reference>
     <Reference Include="UnityEngine.UI">
       <HintPath>..\Dependencies\UnityEngine.UI.dll</HintPath>
     </Reference>
@@ -89,6 +92,7 @@
     <Compile Include="Messages\MessageType.cs" />
     <Compile Include="Messages\Message_EngineTiltUpdate.cs" />
     <Compile Include="Messages\Message_JoinRequest.cs" />
+    <Compile Include="Messages\Message_LobbyInfoRequest.cs" />
     <Compile Include="Messages\Message_PlaneUpdate.cs" />
     <Compile Include="Messages\Message_RequestSpawn.cs" />
     <Compile Include="Messages\Message_RigidbodyUpdate.cs" />

@@ -5,6 +5,8 @@
 public enum MessageType
 {
     None,
+    LobbyInfoRequest, //When a client wants to know the info about a lobby to display
+    LobbyInfoRequest_Result,//The information about the lobby
     JoinRequest, //When the client asks if they can join
     JoinRequest_Result, //Responce from the host if the client can join
     Ready, //Clients telling the host that they are ready

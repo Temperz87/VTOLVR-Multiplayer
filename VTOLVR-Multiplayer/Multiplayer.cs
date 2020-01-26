@@ -10,11 +10,13 @@ using Harmony;
 using System.Reflection;
 using Steamworks;
 using System.Collections;
+using TMPro;
 
 public class Multiplayer : VTOLMOD
 {
     private static string TesterURL = "http://marsh.vtolvr-mods.com/";
-    public static bool SoloTesting = true;
+    public static bool SoloTesting = false;
+    public static Multiplayer _instance;
 
     private struct FriendItem
     {
@@ -28,7 +30,7 @@ public class Multiplayer : VTOLMOD
         }
     }
     //Friends
-    private GameObject friendsTemplate, content, lableVTOL,lableInGame,lableOnline,lableOffline, JoinButton;
+    private GameObject friendsTemplate, content, lableVTOL, JoinButton;
     private ScrollRect scrollRect;
     private float buttonHeight;
     private List<FriendItem> steamFriends = new List<FriendItem>();
@@ -37,9 +39,11 @@ public class Multiplayer : VTOLMOD
 
     private Coroutine waitingForJoin;
     private Text joinButtonText;
+    public Text lobbyInfoText;
 
     private void Start()
     {
+        _instance = this;
         HarmonyInstance harmony = HarmonyInstance.Create("marsh.vtolvr.multiplayer");      
         harmony.PatchAll(Assembly.GetExecutingAssembly());
     }
@@ -132,15 +136,6 @@ public class Multiplayer : VTOLMOD
         lableVTOL = Instantiate(lableTemplate, content.transform);
         lableVTOL.GetComponentInChildren<Text>().text = "In VTOL VR";
         lableVTOL.SetActive(true);
-        lableInGame = Instantiate(lableTemplate, content.transform);
-        lableInGame.GetComponentInChildren<Text>().text = "In Game";
-        lableInGame.SetActive(true);
-        lableOnline = Instantiate(lableTemplate, content.transform);
-        lableOnline.GetComponentInChildren<Text>().text = "Online";
-        lableOnline.SetActive(true);
-        lableOffline = Instantiate(lableTemplate, content.transform);
-        lableOffline.GetComponentInChildren<Text>().text = "Offline";
-        lableOffline.SetActive(true);
 
         Log("Back Button");//Back Button
         GameObject BackButton = Instantiate(mpButton.gameObject, MPMenu.transform);
@@ -174,6 +169,13 @@ public class Multiplayer : VTOLMOD
         JoinInteractable.OnInteract = new UnityEngine.Events.UnityEvent();
         JoinInteractable.OnInteract.AddListener(delegate { Log("Before Join"); Join(); });
         JoinButton.SetActive(false);
+        Log("Lobby Info Text");
+        GameObject lobbyInfoGO = Instantiate(mpButton.transform.GetChild(0).gameObject, MPMenu.transform);
+        lobbyInfoGO.GetComponent<RectTransform>().localPosition = new Vector3(-168.3f, -30.9f);
+        lobbyInfoGO.GetComponent<RectTransform>().sizeDelta = new Vector2(942.9f, 469.8f);
+        lobbyInfoText = lobbyInfoGO.GetComponent<Text>();
+        lobbyInfoText.text = "Select a friend or host a lobby.";
+        lobbyInfoText.alignment = TextAnchor.UpperLeft;
         Log("Last one");
         mpInteractable.OnInteract.AddListener(delegate { Log("Before Opening MP"); RefershFriends(); MPMenu.SetActive(true); ScenarioDisplay.gameObject.SetActive(false); OpenMP(); });
         GameObject.Find("InteractableCanvas").GetComponent<VRPointInteractableCanvas>().RefreshInteractables();
@@ -199,19 +201,11 @@ public class Multiplayer : VTOLMOD
          */
         CSteamID lastFriendID;
         List<CSteamID> vtolvrFriends = new List<CSteamID>();
-        List<CSteamID> inGameFriends = new List<CSteamID>();
-        List<CSteamID> onlineFriends = new List<CSteamID>();
-        List<CSteamID> offlineFriends = new List<CSteamID>();
         Log("Getting all friends");
         for (int i = 0; i < friendsCount; i++)
         {
             lastFriendID = SteamFriends.GetFriendByIndex(i, EFriendFlags.k_EFriendFlagImmediate);
-            if (SteamFriends.GetFriendPersonaState(lastFriendID) == EPersonaState.k_EPersonaStateOffline)
-            {
-                offlineFriends.Add(lastFriendID);
-                continue;
-            }
-            else if (SteamFriends.GetFriendGamePlayed(lastFriendID,out FriendGameInfo_t gameInfo))
+             if (SteamFriends.GetFriendGamePlayed(lastFriendID,out FriendGameInfo_t gameInfo))
             {
                 if (gameInfo.m_gameID.AppID().m_AppId == 667970)
                 {
@@ -219,11 +213,7 @@ public class Multiplayer : VTOLMOD
                     vtolvrFriends.Add(lastFriendID);
                     continue;
                 }
-                inGameFriends.Add(lastFriendID);
-                continue;
             }
-            //Just online
-            onlineFriends.Add(lastFriendID);
         }
         Log("Adding friends to list");
         //Now we want to create the ingame list
@@ -242,42 +232,6 @@ public class Multiplayer : VTOLMOD
             uiListItem.Setup(SteamFriends.GetFriendPersonaName(vtolvrFriends[i]), totalFriends - 1, SelectFriend);
             uiListItem.labelText.color = Color.green;
         }
-        totalFriends++;
-        lableInGame.transform.localPosition = new Vector3(0, -totalFriends * buttonHeight);
-        for (int i = 0; i < inGameFriends.Count; i++)
-        {
-            totalFriends++;
-            lastFriendGO = Instantiate(friendsTemplate, content.transform);
-            steamFriends.Add(new FriendItem(inGameFriends[i], lastFriendGO.transform));
-            lastFriendGO.transform.localPosition = new Vector3(0f, -totalFriends * buttonHeight);
-            uiListItem = lastFriendGO.GetComponent<VRUIListItemTemplate>();
-            uiListItem.Setup(SteamFriends.GetFriendPersonaName(inGameFriends[i]), totalFriends - 2, SelectFriend);
-            uiListItem.labelText.color = Color.green;
-        }
-        totalFriends++;
-        lableOnline.transform.localPosition = new Vector3(0, -totalFriends * buttonHeight);
-        for (int i = 0; i < onlineFriends.Count; i++)
-        {
-            totalFriends++;
-            lastFriendGO = Instantiate(friendsTemplate, content.transform);
-            steamFriends.Add(new FriendItem(onlineFriends[i], lastFriendGO.transform));
-            lastFriendGO.transform.localPosition = new Vector3(0f, -totalFriends * buttonHeight);
-            uiListItem = lastFriendGO.GetComponent<VRUIListItemTemplate>();
-            uiListItem.Setup(SteamFriends.GetFriendPersonaName(onlineFriends[i]), totalFriends - 3, SelectFriend);
-            uiListItem.labelText.color = Color.blue;
-        }
-        totalFriends++;
-        lableOffline.transform.localPosition = new Vector3(0, -totalFriends * buttonHeight);
-        for (int i = 0; i < offlineFriends.Count; i++)
-        {
-            totalFriends++;
-            lastFriendGO = Instantiate(friendsTemplate, content.transform);
-            steamFriends.Add(new FriendItem(offlineFriends[i], lastFriendGO.transform));
-            lastFriendGO.transform.localPosition = new Vector3(0f, -totalFriends * buttonHeight);
-            uiListItem = lastFriendGO.GetComponent<VRUIListItemTemplate>();
-            uiListItem.Setup(SteamFriends.GetFriendPersonaName(offlineFriends[i]), totalFriends - 4, SelectFriend);
-            uiListItem.labelText.color = Color.grey;
-        }
 
         Log("Updating Scroll Rect");
         scrollRect.content.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, (2f + steamFriends.Count) * buttonHeight);
@@ -287,7 +241,7 @@ public class Multiplayer : VTOLMOD
         friendsTemplate.SetActive(false);
         Log("Refreahing Interactables");
         GameObject.Find("InteractableCanvas").GetComponent<VRPointInteractableCanvas>().RefreshInteractables();
-        Log($"Total Friends:{totalFriends} In VTOLVR:{vtolvrFriends.Count} In Game:{inGameFriends.Count} Online:{onlineFriends.Count} Offline:{offlineFriends.Count}");
+        Log($"Total Friends:{totalFriends} In VTOLVR:{vtolvrFriends.Count}");
         Networker.ResetNetworkUID();
     }
 
@@ -296,7 +250,7 @@ public class Multiplayer : VTOLMOD
         JoinButton.SetActive(true);
         selectedFriend = steamFriends[index].steamID;
         Log("User has selected " + SteamFriends.GetFriendPersonaName(steamFriends[index].steamID));
-
+        Networker.SendP2P(steamFriends[index].steamID, new Message_LobbyInfoRequest(), EP2PSend.k_EP2PSendReliable); //Getting lobby info.
         selectionTF.position = steamFriends[index].transform.position;
         selectionTF.GetComponent<Image>().color = new Color(0.3529411764705882f, 0.196078431372549f, 0);
     }

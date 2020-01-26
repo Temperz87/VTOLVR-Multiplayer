@@ -18,6 +18,17 @@ public static class PlayerManager
     private static Queue<CSteamID> spawnRequestQueue = new Queue<CSteamID>();
     private static bool hostLoaded;
     private static GameObject av42cPrefab, fa26bPrefab, f45Prefab;
+    public struct Player
+    {
+        public CSteamID cSteamID;
+        public GameObject vehicle;
+        public Player(CSteamID cSteamID, GameObject vehicle)
+        {
+            this.cSteamID = cSteamID;
+            this.vehicle = vehicle;
+        }
+    }
+    public static List<Player> players = new List<Player>(); //This is the list of players
     /// <summary>
     /// This runs when the map has finished loading and hopefully 
     /// when the player first can interact with the vehicle.
@@ -114,6 +125,7 @@ public static class PlayerManager
     /// <param name="localVehicle">The local clients gameobject</param>
     public static void SendSpawnVehicle(GameObject localVehicle, Vector3 pos, Vector3 rot) //Both
     {
+        players.Add(new Player(SteamUser.GetSteamID(), localVehicle));
         Debug.Log("Sending our location to spawn our vehicle");
         VTOLVehicles currentVehicle = VTOLAPI.GetPlayersVehicleEnum();
         ulong id = Networker.GenerateNetworkUID();
@@ -232,6 +244,8 @@ public static class PlayerManager
         nameTag.AddComponent<Nametag>().SetText(
             SteamFriends.GetFriendPersonaName(new CSteamID(message.csteamID)),
             newVehicle.transform, VRHead.instance.transform);
+
+        players.Add(new Player(new CSteamID(message.csteamID), newVehicle));
     }
     /// <summary>
     /// Finds the prefabs which are used for spawning the other players on our client
