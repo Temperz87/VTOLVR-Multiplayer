@@ -23,6 +23,7 @@ public class Nametag : MonoBehaviour
         textMesh = gameObject.AddComponent<TextMeshPro>();
         textMesh.alignment = TextAlignmentOptions.Center;
         textMesh.overflowMode = TextOverflowModes.Overflow;
+        textMesh.enableWordWrapping = false;
         textMesh.SetText(name);
         transform.SetParent(parent);
         transform.localPosition = new Vector3(0, 10, 0);
