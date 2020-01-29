@@ -163,6 +163,7 @@ public class Multiplayer : VTOLMOD
         JoinButton.GetComponent<RectTransform>().sizeDelta = new Vector2(70, 256.3f);
         joinButtonText = JoinButton.GetComponentInChildren<Text>();
         joinButtonText.text = "Join";
+        joinButtonText.resizeTextForBestFit = true;
         JoinButton.GetComponent<Image>().color = Color.green;
         VRInteractable JoinInteractable = JoinButton.GetComponent<VRInteractable>();
         JoinInteractable.interactableName = "Join Game";
@@ -251,6 +252,7 @@ public class Multiplayer : VTOLMOD
     public void SelectFriend(int index)
     {
         JoinButton.SetActive(true);
+        joinButtonText.text = $"Join {SteamFriends.GetFriendPersonaName(steamFriends[index].steamID)}";
         selectedFriend = steamFriends[index].steamID;
         Log("User has selected " + SteamFriends.GetFriendPersonaName(steamFriends[index].steamID));
         Networker.SendP2P(steamFriends[index].steamID, new Message_LobbyInfoRequest(), EP2PSend.k_EP2PSendReliable); //Getting lobby info.
