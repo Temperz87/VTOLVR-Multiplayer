@@ -42,9 +42,6 @@ public static class PlayerManager
     /// <param name="customMap"></param>
     public static void MapLoaded(VTMapCustom customMap = null) //Clients and Hosts
     {
-        GameObject cube = GameObject.CreatePrimitive(PrimitiveType.Cube);
-        cube.transform.position = Vector3.zero;
-        cube.transform.localScale = new Vector3(50, 1000, 50);
         Debug.Log("The map has loaded");
         gameLoaded = true;
         //As a client, when the map has loaded we are going to request a spawn point from the host
@@ -167,7 +164,7 @@ public static class PlayerManager
         if (Multiplayer.SoloTesting)
             pos += new Vector3(20, 0, 0);
 
-        if (!Networker.isHost)
+        if (!Networker.isHost || Multiplayer.SoloTesting)
         {
             Networker.SendP2P(Networker.hostID,
                 new Message_SpawnVehicle(currentVehicle, new Vector3D(pos), new Vector3D(rot), SteamUser.GetSteamID().m_SteamID, UID),
@@ -194,8 +191,7 @@ public static class PlayerManager
         Message_SpawnVehicle message = (Message_SpawnVehicle)((PacketSingle)packet).message;
         if (Networker.isHost)
         {
-            Debug.Log("Telling other clients about new player and new player about other clients");
-            Networker.SendExcludeP2P(new CSteamID(message.csteamID), message, EP2PSend.k_EP2PSendReliable);
+            Debug.Log("Telling other clients about new player and new player about other clients. Player count = " + players.Count);
             for (int i = 0; i < players.Count; i++)
             {
                 if (players[i].cSteamID == SteamUser.GetSteamID())
@@ -309,7 +305,7 @@ public static class PlayerManager
         for (int i = 1; i <= spawnsCount; i++)
         {
             lastSpawn = new GameObject("MP Spawn " + i);
-            lastSpawn.AddComponent<FloatingOriginShifter>();
+            lastSpawn.AddComponent<FloatingOriginTransform>();
             lastSpawn.transform.position = startPosition.position + startPosition.TransformVector(new Vector3(spawnSpacing * i, 0, 0));
             lastSpawn.transform.rotation = startPosition.rotation;
             spawnPoints.Add(lastSpawn.transform);
