@@ -19,4 +19,5 @@ public enum MessageType
     PlaneUpdate, //This is when the base plane script is updating
     EngineTiltUpdate, //This is the angle of an engine when its tilted
     RequestNetworkUID, //A client wants a ID for one of it's object which no one else has.
+    Disconnecting, //When a user is disconnecting from the server
 }

@@ -49,6 +49,15 @@ public class RigidbodyNetworker_Receiver : MonoBehaviour
         }
     }
 
+    public void OnDisconnect(Packet packet)
+    {
+        Message_Disconnecting message = ((PacketSingle)packet).message as Message_Disconnecting;
+        if (message.UID != networkUID)
+            return;
+        Networker.Disconnecting -= OnDisconnect;
+        Destroy(gameObject);
+    }
+
     public void OnDestroy()
     {
         Networker.RigidbodyUpdate -= RigidbodyUpdate;

@@ -34,6 +34,7 @@ public class Networker : MonoBehaviour
     public static event UnityAction<Packet> RigidbodyUpdate;
     public static event UnityAction<Packet> PlaneUpdate;
     public static event UnityAction<Packet> EngineTiltUpdate;
+    public static event UnityAction<Packet> Disconnecting;
     #endregion
     private void Awake()
     {
@@ -47,6 +48,7 @@ public class Networker : MonoBehaviour
         RequestSpawn_Result += PlayerManager.RequestSpawn_Result;
         SpawnVehicle += PlayerManager.SpawnVehicle;
         VTCustomMapManager.OnLoadedMap += PlayerManager.MapLoaded;
+        SceneManager.activeSceneChanged += SceneChanged;
     }
 
     private void OnP2PSessionRequest(P2PSessionRequest_t request)
@@ -114,6 +116,23 @@ public class Networker : MonoBehaviour
         for (int i = 0; i < players.Count; i++)
         {
             SendP2P(players[i], message, sendType);
+        }
+    }
+    public static void SendGlobalP2P(Packet packet)
+    {
+        if (!isHost)
+        {
+            Debug.LogError("Can't send global P2P as user isn't host");
+            return;
+        }
+        if (Multiplayer.SoloTesting)
+        {
+            SendP2P(new CSteamID(), packet);
+            return;
+        }
+        for (int i = 0; i < players.Count; i++)
+        {
+            SendP2P(players[i], packet);
         }
     }
     /// <summary>
@@ -299,6 +318,15 @@ public class Networker : MonoBehaviour
                     if (EngineTiltUpdate != null)
                         EngineTiltUpdate.Invoke(packet);
                     break;
+                case MessageType.Disconnecting:
+                    if (Disconnecting != null)
+                        Disconnecting.Invoke(packet);
+                    if (isHost)
+                    {
+                        SendGlobalP2P(packet);
+                        players.Remove(csteamID);
+                    }
+                    break;
                 default:
                     break;
             }
@@ -366,5 +394,48 @@ public class Networker : MonoBehaviour
     public static void ResetNetworkUID()
     {
         networkUID = 0;
+    }
+
+    private void SceneChanged(Scene current, Scene next)
+    {
+        if (next.buildIndex == 2 && PlayerManager.gameLoaded)
+        {
+            Disconnect();
+        }
+    }
+
+    public void OnApplicationQuit()
+    {
+        if (PlayerManager.gameLoaded)
+        {
+            Disconnect(true);
+        }
+    }
+    /// <summary>
+    /// This will send any messages needed to the host or other players and reset variables.
+    /// </summary>
+    public void Disconnect(bool applicationClosing = false)
+    {
+        Debug.Log("Disconnecting from server");
+        if (isHost)
+        {
+            SendGlobalP2P(new Message_Disconnecting(PlayerManager.localUID, true), EP2PSend.k_EP2PSendReliable);
+        }
+        else
+        {
+            SendP2P(hostID, new Message_Disconnecting(PlayerManager.localUID, true), EP2PSend.k_EP2PSendReliable);
+        }
+
+        if (applicationClosing)
+            return;
+        isHost = false;
+        gameState = GameState.Menu;
+        players = new List<CSteamID>();
+        readyDic = new Dictionary<CSteamID, bool>();
+        hostReady = false;
+        alreadyInGame = false;
+        hostID = new CSteamID(0);
+
+        PlayerManager.OnDisconnect();
     }
 }

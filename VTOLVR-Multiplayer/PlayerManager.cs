@@ -17,8 +17,10 @@ public static class PlayerManager
     /// </summary>
     private static Queue<CSteamID> spawnRequestQueue = new Queue<CSteamID>();
     private static Queue<Packet> playersToSpawnQueue = new Queue<Packet>();
-    private static bool hostLoaded, gameLoaded;
+    private static bool hostLoaded;
+    public static bool gameLoaded;
     private static GameObject av42cPrefab, fa26bPrefab, f45Prefab;
+    public static ulong localUID;
     public struct Player
     {
         public CSteamID cSteamID;
@@ -55,7 +57,8 @@ public static class PlayerManager
             if (localVehicle != null)
             {
                 GenerateSpawns(localVehicle.transform);
-                SendSpawnVehicle(localVehicle, localVehicle.transform.position, localVehicle.transform.rotation.eulerAngles, Networker.GenerateNetworkUID());
+                localUID = Networker.GenerateNetworkUID();
+                SendSpawnVehicle(localVehicle, localVehicle.transform.position, localVehicle.transform.rotation.eulerAngles, localUID);
             }
             else
                 Debug.Log("Local vehicle for host was null");
@@ -133,6 +136,7 @@ public static class PlayerManager
         localVehicle.transform.position = result.position.toVector3;
         localVehicle.transform.rotation = Quaternion.Euler(result.rotation.toVector3);
         SendSpawnVehicle(localVehicle, result.position.toVector3, result.rotation.toVector3, result.vehicleUID);
+        localUID = result.vehicleUID;
     }
     /// <summary>
     /// Sends the message to other clients to spawn their vehicles
@@ -239,6 +243,7 @@ public static class PlayerManager
 
         PlaneNetworker_Receiver planeReceiver = newVehicle.AddComponent<PlaneNetworker_Receiver>();
         planeReceiver.networkUID = message.networkID;
+        Networker.Disconnecting += planeReceiver.OnDisconnect; 
 
         if (message.vehicle == VTOLVehicles.AV42C || message.vehicle == VTOLVehicles.F45A)
         {
@@ -326,5 +331,15 @@ public static class PlayerManager
             return returnValue;
         }
         return spawnPoints[UnityEngine.Random.Range(0, spawnsCount - 1)];
+    }
+
+    public static void OnDisconnect()
+    {
+        spawnPoints = new List<Transform>();
+        spawnRequestQueue = new Queue<CSteamID>();
+        playersToSpawnQueue = new Queue<Packet>();
+        hostLoaded = false;
+        gameLoaded = false;
+        localUID = 0;
     }
 }
