@@ -168,10 +168,20 @@ public static class PlayerManager
         if (Multiplayer.SoloTesting)
             pos += new Vector3(20, 0, 0);
 
+        int[] cms = new int[] { };
+        string[] hps = new string[] { };
+        float fuel = 0.65f;
+        if (VehicleEquipper.loadoutSet)
+        {
+            hps = VehicleEquipper.loadout.hpLoadout;
+            cms = VehicleEquipper.loadout.cmLoadout;
+            fuel = VehicleEquipper.loadout.normalizedFuel;
+        }
+
         if (!Networker.isHost || Multiplayer.SoloTesting)
         {
             Networker.SendP2P(Networker.hostID,
-                new Message_SpawnVehicle(currentVehicle, new Vector3D(pos), new Vector3D(rot), SteamUser.GetSteamID().m_SteamID, UID),
+                new Message_SpawnVehicle(currentVehicle, new Vector3D(pos), new Vector3D(rot), SteamUser.GetSteamID().m_SteamID, UID,hps,cms,fuel),
                 EP2PSend.k_EP2PSendReliable);
         }
     }
@@ -212,9 +222,18 @@ public static class PlayerManager
                         VTMapManager.WorldToGlobalPoint(players[i].vehicle.transform.position),
                         new Vector3D(players[i].vehicle.transform.rotation.eulerAngles),
                         players[i].cSteamID.m_SteamID,
-                        players[i].vehicleUID), 
+                        players[i].vehicleUID,
+                        new string[] { }, //As they have been in the session we need to get their current weapons in another message
+                        new int[] { },//Same for cms
+                        0.65f), //Same for fuel
                     EP2PSend.k_EP2PSendReliable);
                 Debug.Log($"We have told {players[i].cSteamID.m_SteamID} about the new player ({message.csteamID}) and the other way round");
+
+                //Asking the current player what their weapons are currently.
+                Networker.SendP2P(players[i].cSteamID,
+                    new Message(MessageType.WeaponsSet),
+                    EP2PSend.k_EP2PSendReliable);
+                Debug.Log($"We have asked {players[i].cSteamID.m_SteamID} what their current weapons are, and now waiting for a responce.");
             }
         }
             
@@ -279,6 +298,21 @@ public static class PlayerManager
         nameTag.AddComponent<Nametag>().SetText(
             SteamFriends.GetFriendPersonaName(new CSteamID(message.csteamID)),
             newVehicle.transform, VRHead.instance.transform);
+
+        WeaponManager weaponManager = newVehicle.GetComponent<WeaponManager>();
+        if (weaponManager == null)
+            Debug.LogError("Failed to get weapon manager on " + newVehicle.name);
+        Loadout loadout = new Loadout();
+        loadout.normalizedFuel = message.normalizedFuel;
+        loadout.hpLoadout = message.hpLoadout;
+        loadout.cmLoadout = message.cmLoadout;
+        weaponManager.EquipWeapons(loadout);
+
+        FuelTank fuelTank = newVehicle.GetComponent<FuelTank>();
+        if (fuelTank == null)
+            Debug.LogError("Failed to get fuel tank on " + newVehicle.name);
+        fuelTank.startingFuel = loadout.normalizedFuel * fuelTank.maxFuel;
+        fuelTank.SetNormFuel(loadout.normalizedFuel);
 
         players.Add(new Player(new CSteamID(message.csteamID), newVehicle,message.vehicle,message.networkID));
     }

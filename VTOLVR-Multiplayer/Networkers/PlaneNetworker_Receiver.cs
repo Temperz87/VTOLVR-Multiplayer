@@ -13,11 +13,26 @@ public class PlaneNetworker_Receiver : MonoBehaviour
     //Classes we use to set the information
     private AIPilot aiPilot;
     private AutoPilot autoPilot;
+
+    private WeaponManager weaponManager;
+    private CountermeasureManager cmManager;
+    private FuelTank fuelTank;
     private void Awake()
     {
         aiPilot = GetComponent<AIPilot>();
         autoPilot = aiPilot.autoPilot;
         Networker.PlaneUpdate += PlaneUpdate;
+        Networker.WeaponSet_Result += WeaponSet_Result;
+
+        weaponManager = GetComponent<WeaponManager>();
+        if (weaponManager == null)
+            Debug.LogError("Weapon Manager was null on " + gameObject.name);
+        cmManager = GetComponentInChildren<CountermeasureManager>();
+        if (cmManager == null)
+            Debug.LogError("CountermeasureManager was null on " + gameObject.name);
+        fuelTank = GetComponent<FuelTank>();
+        if (fuelTank == null)
+            Debug.LogError("FuelTank was null on " + gameObject.name);
     }
     public void PlaneUpdate(Packet packet)
     {
@@ -40,6 +55,28 @@ public class PlaneNetworker_Receiver : MonoBehaviour
         {
             autoPilot.engines[i].SetThrottle(lastMessage.throttle);
         }
+    }
+    public void WeaponSet_Result(Packet packet)
+    {
+        Message_WeaponSet_Result message = (Message_WeaponSet_Result)((PacketSingle)packet).message;
+        if (message.UID != networkUID)
+            return;
+        Loadout loadout = new Loadout();
+        loadout.hpLoadout = message.hpLoadout;
+        loadout.cmLoadout = message.cmLoadout;
+        loadout.normalizedFuel = message.normalizedFuel;
+        weaponManager.EquipWeapons(loadout);
+
+        for (int i = 0; i < cmManager.countermeasures.Count; i++)
+        {
+            //There should only ever be two counter measures.
+            //So the second array in message should be fine.
+            cmManager.countermeasures[i].count = message.cmLoadout[i];
+        }
+
+        fuelTank.startingFuel = loadout.normalizedFuel;
+        fuelTank.SetNormFuel(loadout.normalizedFuel);
+
     }
     public void OnDisconnect(Packet packet)
     {

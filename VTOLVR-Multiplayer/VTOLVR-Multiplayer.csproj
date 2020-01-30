@@ -99,6 +99,7 @@
     <Compile Include="Messages\Message_RequestSpawn.cs" />
     <Compile Include="Messages\Message_RigidbodyUpdate.cs" />
     <Compile Include="Messages\Message_SpawnVehicle.cs" />
+    <Compile Include="Messages\Message_WeaponSet.cs" />
     <Compile Include="Messages\Packet.cs" />
     <Compile Include="Multiplayer.cs" />
     <Compile Include="Nametag.cs" />

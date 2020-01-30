@@ -35,6 +35,8 @@ public class Networker : MonoBehaviour
     public static event UnityAction<Packet> PlaneUpdate;
     public static event UnityAction<Packet> EngineTiltUpdate;
     public static event UnityAction<Packet> Disconnecting;
+    public static event UnityAction<Packet> WeaponSet;
+    public static event UnityAction<Packet> WeaponSet_Result;
     #endregion
     private void Awake()
     {
@@ -323,8 +325,20 @@ public class Networker : MonoBehaviour
                         Disconnecting.Invoke(packet);
                     if (isHost)
                     {
-                        SendGlobalP2P(packet);
                         players.Remove(csteamID);
+                        SendGlobalP2P(packet);
+                    }
+                    break;
+                case MessageType.WeaponsSet:
+                    if (WeaponSet != null)
+                        WeaponSet.Invoke(packet);
+                    break;
+                case MessageType.WeaponsSet_Result:
+                    if (WeaponSet_Result != null)
+                        WeaponSet_Result.Invoke(packet);
+                    if (isHost)
+                    {
+                        SendGlobalP2P(packet);
                     }
                     break;
                 default:
