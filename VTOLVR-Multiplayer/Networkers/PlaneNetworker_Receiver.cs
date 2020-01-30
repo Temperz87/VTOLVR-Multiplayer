@@ -23,6 +23,7 @@ public class PlaneNetworker_Receiver : MonoBehaviour
         autoPilot = aiPilot.autoPilot;
         Networker.PlaneUpdate += PlaneUpdate;
         Networker.WeaponSet_Result += WeaponSet_Result;
+        Networker.Disconnecting += OnDisconnect;
 
         weaponManager = GetComponent<WeaponManager>();
         if (weaponManager == null)
@@ -84,12 +85,14 @@ public class PlaneNetworker_Receiver : MonoBehaviour
         if (message.UID != networkUID)
             return;
 
-        Networker.Disconnecting -= OnDisconnect;
+        
         Destroy(gameObject);
     }
     public void OnDestory()
     {
         Networker.PlaneUpdate -= PlaneUpdate;
+        Networker.Disconnecting -= OnDisconnect;
+        Networker.WeaponSet_Result -= WeaponSet_Result;
         Debug.Log("Destroyed Plane Update");
         Debug.Log(gameObject.name);
     }

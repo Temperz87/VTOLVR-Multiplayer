@@ -42,6 +42,8 @@ public class PlaneNetworker_Sender : MonoBehaviour
         fuelTank = GetComponent<FuelTank>();
         if (fuelTank == null)
             Debug.LogError("FuelTank was null on our vehicle");
+
+        Networker.WeaponSet += WeaponSet;
         Debug.Log("Done Plane Sender");
     }
 
@@ -95,5 +97,9 @@ public class PlaneNetworker_Sender : MonoBehaviour
         Networker.SendP2P(Networker.hostID,
             new Message_WeaponSet_Result(hps.ToArray(), cm.ToArray(), fuel, networkUID),
             Steamworks.EP2PSend.k_EP2PSendReliable);
+    }
+    public void OnDestory()
+    {
+        Networker.WeaponSet -= WeaponSet;
     }
 }

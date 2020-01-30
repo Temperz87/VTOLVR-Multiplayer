@@ -54,13 +54,13 @@ public class RigidbodyNetworker_Receiver : MonoBehaviour
         Message_Disconnecting message = ((PacketSingle)packet).message as Message_Disconnecting;
         if (message.UID != networkUID)
             return;
-        Networker.Disconnecting -= OnDisconnect;
         Destroy(gameObject);
     }
 
     public void OnDestroy()
     {
         Networker.RigidbodyUpdate -= RigidbodyUpdate;
+        Networker.Disconnecting -= OnDisconnect;
         Debug.Log("Destroyed Rigidbody Update");
         Debug.Log(gameObject.name);
     }

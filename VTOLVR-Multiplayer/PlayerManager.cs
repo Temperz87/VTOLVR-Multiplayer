@@ -262,7 +262,6 @@ public static class PlayerManager
 
         PlaneNetworker_Receiver planeReceiver = newVehicle.AddComponent<PlaneNetworker_Receiver>();
         planeReceiver.networkUID = message.networkID;
-        Networker.Disconnecting += planeReceiver.OnDisconnect; 
 
         if (message.vehicle == VTOLVehicles.AV42C || message.vehicle == VTOLVehicles.F45A)
         {
