@@ -321,13 +321,27 @@ public class Networker : MonoBehaviour
                         EngineTiltUpdate.Invoke(packet);
                     break;
                 case MessageType.Disconnecting:
-                    if (Disconnecting != null)
-                        Disconnecting.Invoke(packet);
+                    
                     if (isHost)
                     {
                         players.Remove(csteamID);
                         SendGlobalP2P(packet);
                     }
+                    else
+                    {
+                        Message_Disconnecting messsage = ((PacketSingle)packet).message as Message_Disconnecting;
+                        if (messsage.isHost)
+                        {
+                            //If it is the host quiting we just need to quit the mission as all networking will be lost.
+                            FlightSceneManager flightSceneManager = FindObjectOfType<FlightSceneManager>();
+                            if (flightSceneManager == null)
+                                Debug.LogError("FlightSceneManager was null when host quit");
+                            flightSceneManager.ExitScene();
+                        }
+                        break;
+                    }
+                    if (Disconnecting != null)
+                        Disconnecting.Invoke(packet);
                     break;
                 case MessageType.WeaponsSet:
                     if (WeaponSet != null)
@@ -437,7 +451,7 @@ public class Networker : MonoBehaviour
         }
         else
         {
-            SendP2P(hostID, new Message_Disconnecting(PlayerManager.localUID, true), EP2PSend.k_EP2PSendReliable);
+            SendP2P(hostID, new Message_Disconnecting(PlayerManager.localUID, false), EP2PSend.k_EP2PSendReliable);
         }
 
         if (applicationClosing)
