@@ -62,25 +62,23 @@ public class Multiplayer : VTOLMOD
 
         Log("Valid User " + SteamUser.GetSteamID().m_SteamID);
 
-        SceneManager.sceneLoaded += SceneLoaded;
+        VTOLAPI.SceneLoaded += SceneLoaded;
         base.ModLoaded();
         CreateUI();
         gameObject.AddComponent<Networker>();
-
-
-        
     }
 
-    private void SceneLoaded(Scene arg0, LoadSceneMode arg1)
+    private void SceneLoaded(VTOLScenes scene)
     {
-        switch (arg0.buildIndex)
+        switch (scene)
         {
-            case 2:
+            case VTOLScenes.ReadyRoom:
                 CreateUI();
                 break;
-            case 7:
-            case 12:
-                StartCoroutine(WaitForMap());
+            case VTOLScenes.Akutan:
+            case VTOLScenes.CustomMapBase:
+                Log("Map Loaded");
+                PlayerManager.MapLoaded();
                 break;
         }
     }
@@ -297,14 +295,8 @@ public class Multiplayer : VTOLMOD
         waitingForJoin = null;
     }
 
-    private IEnumerator WaitForMap()
+    public void OnDestory()
     {
-        Log("Started WaitForMap");
-        while (VTMapManager.fetch == null || !VTMapManager.fetch.scenarioReady)
-        {
-            yield return null;
-        }
-        Log("Wait for map finished");
-        PlayerManager.MapLoaded();
+        VTOLAPI.SceneLoaded -= SceneLoaded;
     }
 }
