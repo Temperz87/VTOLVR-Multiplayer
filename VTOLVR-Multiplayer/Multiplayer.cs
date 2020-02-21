@@ -80,6 +80,9 @@ public class Multiplayer : VTOLMOD
                 Log("Map Loaded");
                 PlayerManager.MapLoaded();
                 break;
+            case VTOLScenes.LoadingScene:
+                CreateLoadingSceneObjects();
+                break;
         }
     }
 
@@ -293,6 +296,22 @@ public class Multiplayer : VTOLMOD
         }
         joinButtonText.text = "Join";
         waitingForJoin = null;
+    }
+
+    private void CreateLoadingSceneObjects()
+    {
+        Transform cube = GameObject.CreatePrimitive(PrimitiveType.Cube).transform;
+        cube.position = new Vector3(-0.485f, 1.153f, 0.394f);
+        cube.rotation = Quaternion.Euler(0,-53.038f,0);
+        cube.localScale = new Vector3(0.5f,0.5f,0.01f);
+        cube.name = "Multiplayer Player List";
+
+        GameObject Text = new GameObject("Text", typeof(TextMeshPro), typeof(RectTransform));
+        RectTransform rect = Text.GetComponent<RectTransform>();
+        rect.sizeDelta = new Vector2(1, 1);
+        rect.anchoredPosition = new Vector3(0, 0, -1);
+        Networker.loadingText = Text.GetComponent<TextMeshPro>();
+        Networker.loadingText.fontSize = 1;
     }
 
     public void OnDestory()

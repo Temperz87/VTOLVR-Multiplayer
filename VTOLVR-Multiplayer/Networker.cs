@@ -10,6 +10,7 @@ using Steamworks;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.IO;
 using System.Collections;
+using TMPro;
 
 
 public class Networker : MonoBehaviour
@@ -25,6 +26,7 @@ public class Networker : MonoBehaviour
     private Callback<P2PSessionRequest_t> _p2PSessionRequestCallback;
     //networkUID is used as an identifer for all network object, we are just adding onto this to get a new one
     private static ulong networkUID = 0;
+    public static TextMeshPro loadingText;
     #region Message Type Callbacks
     //These callbacks are use for other scripts to know when a network message has been
     //received for them. They should match the name of the message class they relate to.
@@ -247,6 +249,7 @@ public class Networker : MonoBehaviour
                         Debug.Log($"Accepting {csteamID.m_SteamID}");
                         players.Add(csteamID);
                         readyDic.Add(csteamID, false);
+                        UpdateLoadingText();
                         SendP2P(csteamID, new Message_JoinRequest_Result(true), EP2PSend.k_EP2PSendReliable);
                     }
                     else
@@ -286,6 +289,7 @@ public class Networker : MonoBehaviour
                             //Someone is trying to join when we are already in game.
                             Debug.Log($"We are already in session, {csteamID} is joining in!");
                             SendP2P(csteamID, new Message(MessageType.Ready_Result), EP2PSend.k_EP2PSendReliable);
+                            break;
                         }
                         else if (hostReady && EveryoneElseReady())
                         {
@@ -293,6 +297,7 @@ public class Networker : MonoBehaviour
                             SendGlobalP2P(new Message(MessageType.Ready_Result), EP2PSend.k_EP2PSendReliable);
                             LoadingSceneController.instance.PlayerReady();
                         }
+                        UpdateLoadingText();
                     }
                     break;
                 case MessageType.Ready_Result:
@@ -376,6 +381,10 @@ public class Networker : MonoBehaviour
                 case MessageType.RequestNetworkUID:
                     if (RequestNetworkUID != null)
                         RequestNetworkUID.Invoke(packet);
+                    break;
+                case MessageType.LoadingTextUpdate:
+                    if (!isHost)
+                        UpdateLoadingText(packet);
                     break;
                 default:
                     break;
@@ -462,6 +471,31 @@ public class Networker : MonoBehaviour
         {
             Disconnect();
         }
+    }
+
+    public void UpdateLoadingText() //Host Only
+    {
+        if (!isHost)
+            return;
+        StringBuilder content = new StringBuilder("Players:");
+        content.AppendLine(SteamFriends.GetPersonaName() + ": " + (hostReady ? "Ready" : "Not Ready"));
+        for (int i = 0; i < players.Count; i++)
+        {
+            content.AppendLine(SteamFriends.GetFriendPersonaName(players[i]) + ": " + (readyDic[players[i]]? "Ready": "Not Ready"));
+        }
+        if (loadingText != null)
+            loadingText.text = content.ToString();
+
+        SendGlobalP2P(new Message_LoadingTextUpdate(content.ToString()), EP2PSend.k_EP2PSendReliable);
+    }
+    public void UpdateLoadingText(Packet packet) //Clients Only
+    {
+        if (isHost)
+            return;
+        Message_LoadingTextUpdate message = ((PacketSingle)packet).message as Message_LoadingTextUpdate;
+        if (loadingText != null)
+            loadingText.text = message.content;
+        Debug.Log("Updated loading text to \n" + message.content);
     }
 
     public void OnApplicationQuit()

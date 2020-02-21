@@ -11,6 +11,7 @@ public enum MessageType
     JoinRequest_Result, //Responce from the host if the client can join
     Ready, //Clients telling the host that they are ready
     Ready_Result, //Host telling everyone we are starting
+    LoadingTextUpdate, //To Update the loading text to show who is ready.
     RequestSpawn, //Requesting a location to spawn at to the host
     RequestSpawn_Result, //The Result of the host sending to client where they can spawn
     SpawnVehicle, //When someone is telling everyone to spawn a new vehicle on their game
