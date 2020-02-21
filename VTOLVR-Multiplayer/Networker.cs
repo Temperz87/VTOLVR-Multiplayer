@@ -473,22 +473,22 @@ public class Networker : MonoBehaviour
         }
     }
 
-    public void UpdateLoadingText() //Host Only
+    public static void UpdateLoadingText() //Host Only
     {
         if (!isHost)
             return;
-        StringBuilder content = new StringBuilder("Players:");
-        content.AppendLine(SteamFriends.GetPersonaName() + ": " + (hostReady ? "Ready" : "Not Ready"));
+        StringBuilder content = new StringBuilder("Players:\n");
+        content.AppendLine(SteamFriends.GetPersonaName() + ": " + (hostReady ? "Ready" : "Not Ready") + "\n");
         for (int i = 0; i < players.Count; i++)
         {
-            content.AppendLine(SteamFriends.GetFriendPersonaName(players[i]) + ": " + (readyDic[players[i]]? "Ready": "Not Ready"));
+            content.Append(SteamFriends.GetFriendPersonaName(players[i]) + ": " + (readyDic[players[i]]? "Ready": "Not Ready") + "\n");
         }
         if (loadingText != null)
             loadingText.text = content.ToString();
 
         SendGlobalP2P(new Message_LoadingTextUpdate(content.ToString()), EP2PSend.k_EP2PSendReliable);
     }
-    public void UpdateLoadingText(Packet packet) //Clients Only
+    public static void UpdateLoadingText(Packet packet) //Clients Only
     {
         if (isHost)
             return;

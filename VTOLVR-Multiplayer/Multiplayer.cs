@@ -307,11 +307,14 @@ public class Multiplayer : VTOLMOD
         cube.name = "Multiplayer Player List";
 
         GameObject Text = new GameObject("Text", typeof(TextMeshPro), typeof(RectTransform));
+        Text.transform.SetParent(cube,false);
         RectTransform rect = Text.GetComponent<RectTransform>();
         rect.sizeDelta = new Vector2(1, 1);
-        rect.anchoredPosition = new Vector3(0, 0, -1);
+        rect.localPosition = new Vector3(0, 0, -1);
         Networker.loadingText = Text.GetComponent<TextMeshPro>();
         Networker.loadingText.fontSize = 1;
+        Networker.loadingText.color = Color.black;
+        Networker.UpdateLoadingText();
     }
 
     public void OnDestory()

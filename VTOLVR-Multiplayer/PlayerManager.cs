@@ -10,7 +10,7 @@ public static class PlayerManager
     public static List<Transform> spawnPoints { private set; get; }
 
     private static float spawnSpacing = 20;
-    private static int spawnsCount = 4;
+    private static int spawnsCount = 20;
     /// <summary>
     /// This is the queue for people waiting to get a spawn point,
     /// incase the host hasn't loaded in, in time.
