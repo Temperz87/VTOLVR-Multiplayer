@@ -53,16 +53,16 @@ public class MissileNetworker_Receiver : MonoBehaviour
 
     private Actor GetActorAtPosition(Vector3D globalPos)
     {
-        Vector3 b = VTMapManager.GlobalToWorldPoint(globalPos);
+        Vector3 worldPos = VTMapManager.GlobalToWorldPoint(globalPos);
         Actor result = null;
         float num = 250000f;
-        foreach (Actor actor in TargetManager.instance.allActors)
+        for (int i = 0; i < TargetManager.instance.allActors.Count; i++)
         {
-            float sqrMagnitude = (actor.position - b).sqrMagnitude;
+            float sqrMagnitude = (TargetManager.instance.allActors[i].position - worldPos).sqrMagnitude;
             if (sqrMagnitude < num)
             {
                 num = sqrMagnitude;
-                result = actor;
+                result = TargetManager.instance.allActors[i];
             }
         }
         return result;
