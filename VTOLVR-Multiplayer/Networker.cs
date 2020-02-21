@@ -56,7 +56,7 @@ public class Networker : MonoBehaviour
         RequestSpawn_Result += PlayerManager.RequestSpawn_Result;
         SpawnVehicle += PlayerManager.SpawnVehicle;
         VTCustomMapManager.OnLoadedMap += PlayerManager.MapLoaded;
-        SceneManager.activeSceneChanged += SceneChanged;
+        VTOLAPI.SceneLoaded += SceneChanged;
     }
 
     private void OnP2PSessionRequest(P2PSessionRequest_t request)
@@ -465,9 +465,9 @@ public class Networker : MonoBehaviour
             Debug.LogError("For some reason the host requested a UID instead of generating one.");
     }
 
-    private void SceneChanged(Scene current, Scene next)
+    private void SceneChanged(VTOLScenes scene)
     {
-        if (next.buildIndex == 2 && PlayerManager.gameLoaded)
+        if (scene == VTOLScenes.ReadyRoom && PlayerManager.gameLoaded)
         {
             Disconnect();
         }
