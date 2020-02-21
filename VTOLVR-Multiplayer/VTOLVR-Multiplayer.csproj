@@ -88,28 +88,35 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="HPInfo.cs" />
     <Compile Include="Messages\Message.cs" />
     <Compile Include="Messages\MessageType.cs" />
     <Compile Include="Messages\Message_Disconnecting.cs" />
     <Compile Include="Messages\Message_EngineTiltUpdate.cs" />
     <Compile Include="Messages\Message_JoinRequest.cs" />
     <Compile Include="Messages\Message_LobbyInfoRequest.cs" />
+    <Compile Include="Messages\Message_MissileUpdate.cs" />
     <Compile Include="Messages\Message_PlaneUpdate.cs" />
     <Compile Include="Messages\Message_RequestNetworkUID.cs" />
     <Compile Include="Messages\Message_RequestSpawn.cs" />
     <Compile Include="Messages\Message_RigidbodyUpdate.cs" />
     <Compile Include="Messages\Message_SpawnVehicle.cs" />
+    <Compile Include="Messages\Message_WeaponFiring.cs" />
     <Compile Include="Messages\Message_WeaponSet.cs" />
+    <Compile Include="Messages\Message_WeaponStoppedFiring.cs" />
     <Compile Include="Messages\Packet.cs" />
     <Compile Include="Multiplayer.cs" />
     <Compile Include="Nametag.cs" />
     <Compile Include="Networker.cs" />
     <Compile Include="Networkers\EngineTiltNetworker_Receiver.cs" />
     <Compile Include="Networkers\EngineTiltNetworker_Sender.cs" />
+    <Compile Include="Networkers\MissileNetworker_Receiver.cs" />
+    <Compile Include="Networkers\MissileNetworker_Sender.cs" />
     <Compile Include="Networkers\PlaneNetworker_Receiver.cs" />
     <Compile Include="Networkers\PlaneNetworker_Sender.cs" />
     <Compile Include="Networkers\RigidbodyNetworker_Sender.cs" />
     <Compile Include="Patches\Patch_LoadingSceneController.cs" />
+    <Compile Include="Patches\Patch_Missile.cs" />
     <Compile Include="Patches\Patch_VTMapManager.cs" />
     <Compile Include="PlayerManager.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

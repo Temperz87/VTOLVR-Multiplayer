@@ -22,4 +22,7 @@ public enum MessageType
     Disconnecting, //When a user is disconnecting from the server
     WeaponsSet, //This is when the host asks someone what their current weapons are for a new guy
     WeaponsSet_Result, //This is the weapons of the person who we asked
+    WeaponFiring, //This is saying that the weapon is now firing on this vehicle
+    WeaponStoppedFiring, //This is when they have finished firing
+    MissileUpdate, //This is when a missile is updating its state across the network.
 }

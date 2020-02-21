@@ -37,6 +37,10 @@ public class Networker : MonoBehaviour
     public static event UnityAction<Packet> Disconnecting;
     public static event UnityAction<Packet> WeaponSet;
     public static event UnityAction<Packet> WeaponSet_Result;
+    public static event UnityAction<Packet> WeaponFiring;
+    public static event UnityAction<Packet> WeaponStoppedFiring;
+    public static event UnityAction<Packet> MissileUpdate;
+    public static event UnityAction<Packet> RequestNetworkUID;
     #endregion
     private void Awake()
     {
@@ -324,6 +328,8 @@ public class Networker : MonoBehaviour
                     
                     if (isHost)
                     {
+                        if (Multiplayer.SoloTesting)
+                            break;
                         players.Remove(csteamID);
                         SendGlobalP2P(packet);
                     }
@@ -354,6 +360,22 @@ public class Networker : MonoBehaviour
                     {
                         SendGlobalP2P(packet);
                     }
+                    break;
+                case MessageType.WeaponFiring:
+                    if (WeaponFiring != null)
+                        WeaponFiring.Invoke(packet);
+                    break;
+                case MessageType.WeaponStoppedFiring:
+                    if (WeaponStoppedFiring != null)
+                        WeaponStoppedFiring.Invoke(packet);
+                    break;
+                case MessageType.MissileUpdate:
+                    if (MissileUpdate != null)
+                        MissileUpdate.Invoke(packet);
+                    break;
+                case MessageType.RequestNetworkUID:
+                    if (RequestNetworkUID != null)
+                        RequestNetworkUID.Invoke(packet);
                     break;
                 default:
                     break;
@@ -422,6 +444,16 @@ public class Networker : MonoBehaviour
     public static void ResetNetworkUID()
     {
         networkUID = 0;
+    }
+    public static void RequestUID(ulong clientsID)
+    {
+        if (!isHost)
+        {
+            SendP2P(hostID, new Message_RequestNetworkUID(clientsID), EP2PSend.k_EP2PSendReliable);
+            Debug.Log("Requetsed UID from host");
+        }
+        else
+            Debug.LogError("For some reason the host requested a UID instead of generating one.");
     }
 
     private void SceneChanged(Scene current, Scene next)

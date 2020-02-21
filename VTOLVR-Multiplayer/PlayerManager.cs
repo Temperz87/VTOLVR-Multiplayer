@@ -168,20 +168,63 @@ public static class PlayerManager
         if (Multiplayer.SoloTesting)
             pos += new Vector3(20, 0, 0);
 
-        int[] cms = new int[] { };
-        string[] hps = new string[] { };
+        List<int> cm = new List<int>();
+        List<HPInfo> hps = new List<HPInfo>();
         float fuel = 0.65f;
+
+        //Setting up missiles with MissileUpdate Scripts
+        Debug.Log("Setting up missiles");
+        WeaponManager weaponManager = localVehicle.GetComponent<WeaponManager>();
+        List<HPInfo> hpInfos = new List<HPInfo>();
+        HPEquippable lastEquippable = null;
+        for (int i = 0; i < weaponManager.equipCount; i++)
+        {
+            lastEquippable = weaponManager.GetEquip(i);
+            List<ulong> missileUIDS = new List<ulong>();
+            if (lastEquippable.weaponType != HPEquippable.WeaponTypes.Gun &&
+                lastEquippable.weaponType != HPEquippable.WeaponTypes.Rocket)
+            {
+                HPEquipMissileLauncher HPml = lastEquippable as HPEquipMissileLauncher;
+                for (int j = 0; j < HPml.ml.missiles.Length; j++)
+                {
+                    //There shouldn't be any shot missiles, but if so this skips them as they are null.
+                    if (HPml.ml.missiles[i] == null)
+                    {
+                        missileUIDS.Add(0);
+                        continue;
+                    }
+
+                    MissileNetworker_Sender sender = HPml.ml.missiles[i].gameObject.AddComponent<MissileNetworker_Sender>();
+                    sender.networkUID = Networker.GenerateNetworkUID();
+                    missileUIDS.Add(sender.networkUID);
+                }
+            }
+
+            hpInfos.Add(new HPInfo(
+                    lastEquippable.gameObject.name.Replace("(Clone)", ""),
+                    lastEquippable.weaponType,
+                    missileUIDS.ToArray()));
+        }
+
+        //Getting Counter Measure flares.
+        Debug.Log("Setting up Counter Measure");
+        CountermeasureManager cmManager = localVehicle.GetComponentInChildren<CountermeasureManager>();
+
+        for (int i = 0; i < cmManager.countermeasures.Count; i++)
+        {
+            cm.Add(cmManager.countermeasures[i].count);
+        }
+
+        //Getting Fuel
         if (VehicleEquipper.loadoutSet)
         {
-            hps = VehicleEquipper.loadout.hpLoadout;
-            cms = VehicleEquipper.loadout.cmLoadout;
             fuel = VehicleEquipper.loadout.normalizedFuel;
         }
 
         if (!Networker.isHost || Multiplayer.SoloTesting)
         {
             Networker.SendP2P(Networker.hostID,
-                new Message_SpawnVehicle(currentVehicle, new Vector3D(pos), new Vector3D(rot), SteamUser.GetSteamID().m_SteamID, UID,hps,cms,fuel),
+                new Message_SpawnVehicle(currentVehicle, new Vector3D(pos), new Vector3D(rot), SteamUser.GetSteamID().m_SteamID, UID,hps.ToArray(),cm.ToArray(),fuel),
                 EP2PSend.k_EP2PSendReliable);
         }
     }
@@ -205,6 +248,25 @@ public static class PlayerManager
         Message_SpawnVehicle message = (Message_SpawnVehicle)((PacketSingle)packet).message;
         if (Networker.isHost)
         {
+            Debug.Log("Generating UIDS for any missiles the new vehicle has");
+            for (int i = 0; i < message.hpLoadout.Length; i++)
+            {
+                for (int j = 0; j < message.hpLoadout[i].missileUIDS.Length; j++)
+                {
+                    if (message.hpLoadout[i].missileUIDS[j] != 0)
+                    {
+                        //Storing the old one
+                        ulong clientsUID = message.hpLoadout[i].missileUIDS[j];
+                        //Generating a new global UID for that missile
+                        message.hpLoadout[i].missileUIDS[j] = Networker.GenerateNetworkUID();
+                        //Sending it back to that client
+                        Networker.SendP2P(new CSteamID(message.csteamID),
+                            new Message_RequestNetworkUID(clientsUID, message.hpLoadout[i].missileUIDS[j]),
+                            EP2PSend.k_EP2PSendReliable);
+                    }
+                }
+            }
+
             Debug.Log("Telling other clients about new player and new player about other clients. Player count = " + players.Count);
             for (int i = 0; i < players.Count; i++)
             {
@@ -213,6 +275,7 @@ public static class PlayerManager
                     Debug.LogWarning("Skiping this one as it's the host");
                     continue;
                 }
+                PlaneNetworker_Receiver existingPlayersPR = players[i].vehicle.GetComponent<PlaneNetworker_Receiver>();
                 //We first send the new player to an existing spawned in player
                 Networker.SendP2P(players[i].cSteamID, message, EP2PSend.k_EP2PSendReliable);
                 //Then we send this current player to the new player.
@@ -223,13 +286,13 @@ public static class PlayerManager
                         new Vector3D(players[i].vehicle.transform.rotation.eulerAngles),
                         players[i].cSteamID.m_SteamID,
                         players[i].vehicleUID,
-                        new string[] { }, //As they have been in the session we need to get their current weapons in another message
-                        new int[] { },//Same for cms
-                        0.65f), //Same for fuel
+                        existingPlayersPR.GenerateHPInfo(),
+                        existingPlayersPR.GetCMS(),
+                        existingPlayersPR.GetFuel()),
                     EP2PSend.k_EP2PSendReliable);
                 Debug.Log($"We have told {players[i].cSteamID.m_SteamID} about the new player ({message.csteamID}) and the other way round");
 
-                //Asking the current player what their weapons are currently.
+                //We ask the existing player what their load out just incase the host's player receiver was out of sync.
                 Networker.SendP2P(players[i].cSteamID,
                     new Message(MessageType.WeaponsSet),
                     EP2PSend.k_EP2PSendReliable);
@@ -301,9 +364,16 @@ public static class PlayerManager
         WeaponManager weaponManager = newVehicle.GetComponent<WeaponManager>();
         if (weaponManager == null)
             Debug.LogError("Failed to get weapon manager on " + newVehicle.name);
+
+        List<string> hpLoadoutNames = new List<string>();
+        for (int i = 0; i < message.hpLoadout.Length; i++)
+        {
+            hpLoadoutNames.Add(message.hpLoadout[i].hpName);
+        }
+
         Loadout loadout = new Loadout();
         loadout.normalizedFuel = message.normalizedFuel;
-        loadout.hpLoadout = message.hpLoadout;
+        loadout.hpLoadout = hpLoadoutNames.ToArray();
         loadout.cmLoadout = message.cmLoadout;
         weaponManager.EquipWeapons(loadout);
 
