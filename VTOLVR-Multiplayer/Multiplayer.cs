@@ -14,7 +14,7 @@ using TMPro;
 
 public class Multiplayer : VTOLMOD
 {
-    private static string TesterURL = "http://marsh.vtolvr-mods.com/";
+    private static string TesterURL = "http://marsh.vtolvr-mods.com/?id=";
     public static bool SoloTesting = true;
     public static Multiplayer _instance;
 
@@ -312,7 +312,8 @@ public class Multiplayer : VTOLMOD
         rect.sizeDelta = new Vector2(1, 1);
         rect.localPosition = new Vector3(0, 0, -1);
         Networker.loadingText = Text.GetComponent<TextMeshPro>();
-        Networker.loadingText.fontSize = 1;
+        Networker.loadingText.enableAutoSizing = true;
+        Networker.loadingText.fontSizeMin = 0;
         Networker.loadingText.color = Color.black;
         Networker.UpdateLoadingText();
     }
