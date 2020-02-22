@@ -169,7 +169,6 @@ public static class PlayerManager
             pos += new Vector3(20, 0, 0);
 
         List<int> cm = new List<int>();
-        List<HPInfo> hps = new List<HPInfo>();
         float fuel = 0.65f;
 
         //Setting up missiles with MissileUpdate Scripts
@@ -242,7 +241,7 @@ public static class PlayerManager
         if (!Networker.isHost || Multiplayer.SoloTesting)
         {
             Networker.SendP2P(Networker.hostID,
-                new Message_SpawnVehicle(currentVehicle, new Vector3D(pos), new Vector3D(rot), SteamUser.GetSteamID().m_SteamID, UID,hps.ToArray(),cm.ToArray(),fuel),
+                new Message_SpawnVehicle(currentVehicle, new Vector3D(pos), new Vector3D(rot), SteamUser.GetSteamID().m_SteamID, UID, hpInfos.ToArray(),cm.ToArray(),fuel),
                 EP2PSend.k_EP2PSendReliable);
         }
     }
@@ -389,6 +388,11 @@ public static class PlayerManager
             hpLoadoutNames.Add(message.hpLoadout[i].hpName);
         }
 
+        Debug.Log("Setting Loadout on this new vehicle spawned");
+        for (int i = 0; i < hpLoadoutNames.Count; i++)
+        {
+            Debug.Log("HP " + i + " Name: " + hpLoadoutNames[i]);
+        }
         Loadout loadout = new Loadout();
         loadout.normalizedFuel = message.normalizedFuel;
         loadout.hpLoadout = hpLoadoutNames.ToArray();
