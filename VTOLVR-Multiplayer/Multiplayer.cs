@@ -97,7 +97,7 @@ public class Multiplayer : VTOLMOD
             Log($"ScenarioDisplay now == {ScenarioDisplay.name}");
         }
         //Creating the MP button
-        Transform mpButton = Instantiate(ScenarioDisplay.GetChild(6).gameObject, ScenarioDisplay).transform;
+        Transform mpButton = Instantiate(ScenarioDisplay.GetChild(10).gameObject, ScenarioDisplay).transform;
         Log("Multiplayer Button" + mpButton.name);
         mpButton.gameObject.SetActive(true);
         mpButton.name = "MPButton";
