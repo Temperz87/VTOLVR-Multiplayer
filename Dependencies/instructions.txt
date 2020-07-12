@@ -1,5 +1,5 @@
 Dependencies Needed
-	0Harmony.dll
+	0Harmony.dll (v1.2)
 	Assembly-CSharp.dll
 	Assembly-CSharp-firstpass.dll
 	ModLoader.dll
