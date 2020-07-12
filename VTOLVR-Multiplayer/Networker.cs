@@ -15,6 +15,7 @@ using TMPro;
 
 public class Networker : MonoBehaviour
 {
+    private CampaignScenario PSMC;
     public static Networker _instance { get; private set; }
     public static bool isHost { get; private set; }
     public enum GameState { Menu, Config, Game };
@@ -69,6 +70,11 @@ public class Networker : MonoBehaviour
 
     private void Update()
     {
+        if (PilotSaveManager.currentScenario != null)
+        {
+            if (PSMC != PilotSaveManager.currentScenario)
+            { PSMC = PilotSaveManager.currentScenario; }
+        }
         ReadP2P();
     }
 
@@ -395,9 +401,16 @@ public class Networker : MonoBehaviour
 
     private IEnumerator FlyButton()
     {
-        ControllerEventHandler.PauseEvents();
+        PilotSaveManager.currentScenario = PSMC;
+        if (PilotSaveManager.currentScenario == null)
+        {
+            Debug.LogError("A null scenario was used on flight button!");
+            yield break;
+        }
+           ControllerEventHandler.PauseEvents();
         ScreenFader.FadeOut(Color.black, 0.85f);
         yield return new WaitForSeconds(1f);
+        Debug.Log("Continueing fly button lmao i typod like marsh.");
         if (PilotSaveManager.currentScenario.equipConfigurable)
         {
             LoadingSceneController.LoadSceneImmediate("VehicleConfiguration");
@@ -430,6 +443,7 @@ public class Networker : MonoBehaviour
                 LoadingSceneController.LoadScene(PilotSaveManager.currentScenario.mapSceneName);
             }
         }
+        Debug.Log("Fly button successful, unpausing events.");
         ControllerEventHandler.UnpauseEvents();
     }
     //Checks if everyone had sent the Ready Message Type saying they are ready in the vehicle config room

@@ -53,7 +53,7 @@ public static class PlayerManager
         else
         {
             hostLoaded = true;
-            GameObject localVehicle = VTOLAPI.instance.GetPlayersVehicleGameObject();
+            GameObject localVehicle = VTOLAPI.GetPlayersVehicleGameObject();
             if (localVehicle != null)
             {
                 GenerateSpawns(localVehicle.transform);

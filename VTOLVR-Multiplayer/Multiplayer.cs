@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
-using HarmonyLib;
+using Harmony;
 using System.Reflection;
 using Steamworks;
 using System.Collections;
@@ -44,7 +44,7 @@ public class Multiplayer : VTOLMOD
     private void Start()
     {
         _instance = this;
-        Harmony harmony = new Harmony("marsh.vtolvr.multiplayer");
+        HarmonyInstance harmony = HarmonyInstance.Create("marsh.vtolvr.multiplayer.temperzFork");
         harmony.PatchAll(Assembly.GetExecutingAssembly());
     }
     public override void ModLoaded()
