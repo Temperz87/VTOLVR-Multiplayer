@@ -15,6 +15,7 @@ public class Message_SpawnVehicle : Message
     public HPInfo[] hpLoadout;
     public int[] cmLoadout;
     public float normalizedFuel;
+    // public int playerCount;
 
     public Message_SpawnVehicle(VTOLVehicles vehicle, Vector3D position, Vector3D rotation, ulong csteamID, ulong networkID, HPInfo[] hpLoadout, int[] cmLoadout, float normalizedFuel)
     {
@@ -26,6 +27,7 @@ public class Message_SpawnVehicle : Message
         this.hpLoadout = hpLoadout;
         this.cmLoadout = cmLoadout;
         this.normalizedFuel = normalizedFuel;
+        // this.playerCount = playerCount;
         type = MessageType.SpawnVehicle;
     }
 }

@@ -55,11 +55,11 @@ public class Multiplayer : VTOLMOD
         SoloTesting = false;
         Log("Running in Release Mode");
         System.Net.WebClient wc = new System.Net.WebClient();
-        string webData = wc.DownloadString(TesterURL + SteamUser.GetSteamID().m_SteamID);
-        if (webData != "Y")
-            return;
+        /*string webData = wc.DownloadString(TesterURL + SteamUser.GetSteamID().m_SteamID);
+        if (webData != "Y") Relying on the honor system for this
+            return;*/
 #endif
-
+        SoloTesting = false;
         Log("Valid User " + SteamUser.GetSteamID().m_SteamID);
 
         VTOLAPI.SceneLoaded += SceneLoaded;

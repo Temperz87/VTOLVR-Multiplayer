@@ -8,14 +8,14 @@ public class MissileNetworker_Receiver : MonoBehaviour
     public ulong networkUID;
     private Missile thisMissile;
     private Message_MissileUpdate lastMessage;
-    private Rigidbody rigidbody;
+    // private Rigidbody rigidbody; see missileSender for why i not using rigidbody
 
-    private float positionThreshold = 10;
+    private float positionThreshold = 10f;
 
     private void Start()
     {
         thisMissile = GetComponent<Missile>();
-        rigidbody = GetComponent<Rigidbody>();
+        // rigidbody = GetComponent<Rigidbody>();
         Networker.MissileUpdate += MissileUpdate;
     }
 
@@ -42,12 +42,12 @@ public class MissileNetworker_Receiver : MonoBehaviour
             return;
         }
 
-        rigidbody.velocity = lastMessage.velocity.toVector3;
-        rigidbody.rotation = Quaternion.Euler(lastMessage.rotation.toVector3);
-        if (Vector3.Distance(rigidbody.position, lastMessage.position.toVector3) > positionThreshold)
+        // gameObject.transform.velocity = lastMessage.velocity.toVector3;
+        gameObject.transform.rotation = Quaternion.Euler(lastMessage.rotation.toVector3);
+        if (Vector3.Distance(gameObject.transform.position, lastMessage.position.toVector3) > positionThreshold)
         {
             Debug.LogWarning($"Missile ({gameObject.name}) is outside the threshold. Teleporting to position.");
-            rigidbody.position = lastMessage.position.toVector3;
+            gameObject.transform.position = lastMessage.position.toVector3;
         }
     }
 

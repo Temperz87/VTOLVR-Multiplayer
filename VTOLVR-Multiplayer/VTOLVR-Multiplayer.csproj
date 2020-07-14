@@ -8,7 +8,7 @@
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>VTOLVR_Multiplayer</RootNamespace>
-    <AssemblyName>VTOLVR-Multiplayer</AssemblyName>
+    <AssemblyName>Multiplayer</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <Deterministic>true</Deterministic>
@@ -136,11 +136,8 @@
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent>if EXIST "A:\Program Files\Steam\steamapps\common\VTOL VR\" (
-copy "$(ProjectDir)\bin\Debug\VTOLVR-Multiplayer.dll" "A:\Program Files\Steam\steamapps\common\VTOL VR\VTOLVR_ModLoader\mods\Multiplayer\Multiplayer.dll"
-)
-if EXIST "F:\SteamLibrary\steamapps\common\VTOL VR" (
-copy "$(ProjectDir)\bin\Debug\VTOLVR-Multiplayer.dll" "F:\SteamLibrary\steamapps\common\VTOL VR\VTOLVR_ModLoader\mods\Multiplayer\Multiplayer.dll"
+    <PostBuildEvent>if EXIST "D:\Vidjagames\steamapps\common\VTOL VR\VTOLVR_ModLoader\mods\" (
+xcopy  "$(ProjectDir)bin\Debug\$(TargetName).dll" "D:\Vidjagames\steamapps\common\VTOL VR\VTOLVR_ModLoader\mods\" /Y
 )</PostBuildEvent>
   </PropertyGroup>
 </Project>

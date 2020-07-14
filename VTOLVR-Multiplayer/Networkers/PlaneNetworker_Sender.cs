@@ -31,8 +31,6 @@ public class PlaneNetworker_Sender : MonoBehaviour
         lastMessage = new Message_PlaneUpdate(false, 0, 0, 0, 0, 0, 0, false, false, networkUID);
         lastFiringMessage = new Message_WeaponFiring(-1, networkUID);
         lastStoppedFiringMessage = new Message_WeaponStoppedFiring(networkUID);
-
-
         wheelsController = GetComponent<WheelsController>();
         aeroController = GetComponent<AeroController>();
         vRThrottle = gameObject.GetComponentInChildren<VRThrottle>();
@@ -76,9 +74,15 @@ public class PlaneNetworker_Sender : MonoBehaviour
             else
             {
                 if (Networker.isHost)
+                {
+                    Debug.Log("Sending packet as host");
                     Networker.SendGlobalP2P(lastStoppedFiringMessage, Steamworks.EP2PSend.k_EP2PSendReliable);
+                }
                 else
+                {
+                    Debug.Log("Sending packet as client");
                     Networker.SendP2P(Networker.hostID, lastStoppedFiringMessage, Steamworks.EP2PSend.k_EP2PSendReliable);
+                }
             }
             
         }
@@ -121,6 +125,10 @@ public class PlaneNetworker_Sender : MonoBehaviour
         for (int i = 0; i < weaponManager.equipCount; i++)
         {
             lastEquippable = weaponManager.GetEquip(i);
+            if (lastEquippable == null)
+            {
+                continue;
+            }
             List<ulong> missileUIDS = new List<ulong>();
             if (lastEquippable.weaponType != HPEquippable.WeaponTypes.Gun &&
                 lastEquippable.weaponType != HPEquippable.WeaponTypes.Rocket)

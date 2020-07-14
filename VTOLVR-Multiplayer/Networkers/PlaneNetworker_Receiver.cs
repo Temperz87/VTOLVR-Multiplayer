@@ -122,26 +122,44 @@ public class PlaneNetworker_Receiver : MonoBehaviour
 
         List<HPInfo> hpInfos = new List<HPInfo>();
         HPEquippable lastEquippable = null;
+        Debug.LogError("doing for loop");
         for (int i = 0; i < weaponManager.equipCount; i++)
         {
             lastEquippable = weaponManager.GetEquip(i);
-            List<ulong> missileUIDS = new List<ulong>();
-            if (lastEquippable.weaponType != HPEquippable.WeaponTypes.Gun &&
-                lastEquippable.weaponType != HPEquippable.WeaponTypes.Rocket)
+            if (lastEquippable == null)
             {
-                HPEquipMissileLauncher HPml = lastEquippable as HPEquipMissileLauncher;
-                if (HPml.ml == null) //I think this could be null.
+                Debug.Log("last equippable null, continueing loop");
+                continue;
+            }
+            Debug.Log("Last equipable weaopn manager get equip i woohoooooo");
+            List<ulong> missileUIDS = new List<ulong>();
+            Debug.Log("Last equipable weaopn manager get equip i woohoooooo");
+            if (lastEquippable is HPEquipMissileLauncher) // I removed .weapon type because fuck you
+            {
+                Debug.Log("Oh shit we're doing a missile now.");
+                HPEquipMissileLauncher HPml = (HPEquipMissileLauncher)lastEquippable ;
+                Debug.Log("as shit");
+                if (HPml.ml == null)
+                {
+                    Debug.LogError("HPml.ml null");
                     break;
+                }
+                Debug.Log("entering for loop");
                 for (int j = 0; j < HPml.ml.missiles.Length; j++)
                 {
                     //If they are null, they have been shot.
                     if (HPml.ml.missiles[i] == null)
                     {
+                        Debug.LogError("if statement shot null");
                         missileUIDS.Add(0);
                         continue;
                     }
-
+                    Debug.Log("after first if in for");
                     MissileNetworker_Receiver reciever = HPml.ml.missiles[i].gameObject.GetComponent<MissileNetworker_Receiver>();
+                    if (reciever == null)
+                    {
+                        Debug.LogError("reciever null");
+                    }
                     if (reciever != null)
                         missileUIDS.Add(reciever.networkUID);
                     else
@@ -153,7 +171,10 @@ public class PlaneNetworker_Receiver : MonoBehaviour
                     lastEquippable.gameObject.name.Replace("(Clone)", ""),
                     lastEquippable.weaponType,
                     missileUIDS.ToArray()));
+            Debug.Log("hpInfos.Add()");
+
         }
+        Debug.LogError("return time!");
         return hpInfos.ToArray();
     }
     public int[] GetCMS()

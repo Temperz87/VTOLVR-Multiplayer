@@ -15,7 +15,9 @@ To get pasted the super basic tester check, you just need to build the mod in de
 ## Contributors
 
 [Ketkev](https://github.com/ketkev "Ketkev's Github") for their code which creates a name tag above the player's heads with their steam name.
+
 [MarshMellow0](https://github.com/MarshMello0 "MarshMello0's Github") for making the foundation of the multiplayer mod, so others can finish the fight.
+
 Contributions are welcomed, if you would like to help out with creating multiplayer, fork the project, add your code then create a pull request.
 
 ## Useful Links

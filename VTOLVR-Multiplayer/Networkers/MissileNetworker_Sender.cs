@@ -6,7 +6,7 @@ using UnityEngine;
 public class MissileNetworker_Sender : MonoBehaviour
 {
     public ulong networkUID;
-    private Rigidbody rigidbody;
+    // private Rigidbody rigidbody; doesn't exist in some missiles so we're not fucking with that shit
     private Message_MissileUpdate lastMessage;
     private Missile thisMissile;
     private bool receivedGlobalUID = false;
@@ -15,21 +15,41 @@ public class MissileNetworker_Sender : MonoBehaviour
         Networker.RequestNetworkUID += RequestUID;
         lastMessage = new Message_MissileUpdate(networkUID);
         thisMissile = GetComponent<Missile>();
-        rigidbody = GetComponent<Rigidbody>();
+        // rigidbody = GetComponent<Rigidbody>();
     }
 
     private void Update()
     {
         if (receivedGlobalUID && thisMissile != null && thisMissile.fired)
         {
+            if (lastMessage == null)
+            {
+                Debug.LogError("lastMessage null");
+            }
             lastMessage.networkUID = networkUID;
-            lastMessage.position = VTMapManager.WorldToGlobalPoint(rigidbody.position);
-            lastMessage.rotation = new Vector3D(rigidbody.rotation.eulerAngles);
+            /*if (rigidbody == null)
+            {
+                Debug.LogError("Rigidbody null");
+            }
+            if (rigidbody.position == null)
+            {
+                Debug.LogError("Rigidbody position null");
+            }*/
+            if (gameObject == null)
+            {
+                Debug.LogError("gameObject null in MIssileNetworked_Sender");
+            }
+            lastMessage.position = VTMapManager.WorldToGlobalPoint(gameObject.transform.position);
+            Debug.Log("Missile_sender lastmessage.position");
+            lastMessage.rotation = new Vector3D(gameObject.transform.rotation.eulerAngles);
+            Debug.Log("Missile_sender lastmessage.rotation");
             if (thisMissile.radarLock != null && thisMissile.radarLock.actor != null)
             {
+                Debug.Log("Missile_sender lock data");
                 lastMessage.targetPosition = VTMapManager.WorldToGlobalPoint(thisMissile.radarLock.actor.transform.position);
             }
             SendMessage(false);
+            Debug.Log("Missile_sender Sendmessage");
         }
     }
     public void RequestUID(Packet packet)

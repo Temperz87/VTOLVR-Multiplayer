@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using UnityEngine;
 using Steamworks;
+using Harmony;
 public static class PlayerManager
 {
     public static List<Transform> spawnPoints { private set; get; }
@@ -88,8 +89,8 @@ public static class PlayerManager
             lastSpawn = FindFreeSpawn();
             Networker.SendP2P(
                 spawnRequestQueue.Dequeue(),
-                new Message_RequestSpawn_Result(new Vector3D(lastSpawn.position), new Vector3D(lastSpawn.rotation.eulerAngles), Networker.GenerateNetworkUID()),
-                EP2PSend.k_EP2PSendReliable);
+                new Message_RequestSpawn_Result(new Vector3D(lastSpawn.position), new Vector3D(lastSpawn.rotation.eulerAngles), Networker.GenerateNetworkUID(), players.Count),
+                EP2PSend.k_EP2PSendReliable); 
         }
     }
     /// <summary>
@@ -113,7 +114,8 @@ public static class PlayerManager
             return;
         }
         Transform spawn = FindFreeSpawn();
-        Networker.SendP2P(sender, new Message_RequestSpawn_Result(new Vector3D(spawn.position), new Vector3D(spawn.rotation.eulerAngles), Networker.GenerateNetworkUID()), EP2PSend.k_EP2PSendReliable);
+        Debug.Log("The players spawn will be " + spawn);
+        Networker.SendP2P(sender, new Message_RequestSpawn_Result(new Vector3D(spawn.position), new Vector3D(spawn.rotation.eulerAngles), Networker.GenerateNetworkUID(), players.Count), EP2PSend.k_EP2PSendReliable);
     }
     /// <summary>
     /// When the client receives a P2P message of their spawn point, 
@@ -127,7 +129,7 @@ public static class PlayerManager
         Message_RequestSpawn_Result result = (Message_RequestSpawn_Result)((PacketSingle)packet).message;
         Debug.Log($"We need to move to {result.position} : {result.rotation}");
 
-        GameObject localVehicle = VTOLAPI.instance.GetPlayersVehicleGameObject();
+        GameObject localVehicle = VTOLAPI.GetPlayersVehicleGameObject();
         if (localVehicle == null)
         {
             Debug.LogError("The local vehicle was null");
@@ -324,7 +326,7 @@ public static class PlayerManager
                 Debug.LogError("Vehcile Enum seems to be none, couldn't spawn player vehicle");
                 return;
             case VTOLVehicles.AV42C:
-                newVehicle = GameObject.Instantiate(av42cPrefab, message.position.toVector3, Quaternion.Euler(message.rotation.toVector3));
+                newVehicle = GameObject.Instantiate(av42cPrefab, new Vector3(0f, 200f, 0f), Quaternion.Euler(message.rotation.toVector3));
                 break;
             case VTOLVehicles.FA26B:
                 newVehicle = GameObject.Instantiate(fa26bPrefab, message.position.toVector3, Quaternion.Euler(message.rotation.toVector3));
@@ -353,6 +355,14 @@ public static class PlayerManager
 
         Rigidbody rb = newVehicle.GetComponent<Rigidbody>();
         AIPilot aIPilot = newVehicle.GetComponent<AIPilot>();
+        foreach (Collider collider in newVehicle.GetComponentsInChildren<Collider>())
+        {
+            if (collider)
+            {
+                collider.gameObject.layer = 9;
+            }
+        }
+        aIPilot.enabled = false;
         Debug.Log($"Changing {newVehicle.name}'s position and rotation\nPos:{rb.position} Rotation:{rb.rotation.eulerAngles}");
         aIPilot.kPlane.SetToKinematic();
         aIPilot.kPlane.enabled = false;
