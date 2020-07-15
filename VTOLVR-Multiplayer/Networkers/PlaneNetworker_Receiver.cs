@@ -29,6 +29,7 @@ public class PlaneNetworker_Receiver : MonoBehaviour
         Networker.Disconnecting += OnDisconnect;
         Networker.WeaponFiring += WeaponFiring;
         Networker.WeaponStoppedFiring += WeaponStoppedFiring;
+        Networker.FireCountermeasure += FireCountermeasure;
 
         weaponManager = GetComponent<WeaponManager>();
         if (weaponManager == null)
@@ -114,6 +115,17 @@ public class PlaneNetworker_Receiver : MonoBehaviour
             return;
         weaponManager.EndFire();
     }
+
+    public void FireCountermeasure(Packet packet)
+    {
+        Debug.Log("Recieving CM Messsage");
+        Message_FireCountermeasure message = ((PacketSingle)packet).message as Message_FireCountermeasure;
+        //if (message.UID != networkUID)
+        //    return;
+        Debug.Log("FIRING CMS!");
+        aiPilot.aiSpawn.CountermeasureProgram(message.flares, message.chaff, 1, 0.1f);
+    }
+
     public HPInfo[] GenerateHPInfo()
     {
         if (!Networker.isHost)
@@ -204,6 +216,7 @@ public class PlaneNetworker_Receiver : MonoBehaviour
         Networker.WeaponSet_Result -= WeaponSet_Result;
         Networker.WeaponFiring -= WeaponFiring;
         Networker.WeaponStoppedFiring -= WeaponStoppedFiring;
+        Networker.FireCountermeasure -= FireCountermeasure;
         Debug.Log("Destroyed Plane Update");
         Debug.Log(gameObject.name);
     }

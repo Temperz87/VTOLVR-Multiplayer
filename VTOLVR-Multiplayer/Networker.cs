@@ -42,6 +42,7 @@ public class Networker : MonoBehaviour
     public static event UnityAction<Packet> WeaponSet_Result;
     public static event UnityAction<Packet> WeaponFiring;
     public static event UnityAction<Packet> WeaponStoppedFiring;
+    public static event UnityAction<Packet> FireCountermeasure;
     public static event UnityAction<Packet> MissileUpdate;
     public static event UnityAction<Packet> RequestNetworkUID;
     #endregion
@@ -475,6 +476,11 @@ public class Networker : MonoBehaviour
                     Debug.Log("case weapon stopped firing");
                     if (WeaponStoppedFiring != null)
                         WeaponStoppedFiring.Invoke(packet);
+                    break;
+                case MessageType.FireCountermeasure:
+                    Debug.Log("case countermeasure fired");
+                    if (FireCountermeasure != null)
+                        FireCountermeasure.Invoke(packet);
                     break;
                 case MessageType.MissileUpdate:
                     // Debug.Log("case missile update");

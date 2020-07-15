@@ -24,6 +24,7 @@ public class PlaneNetworker_Sender : MonoBehaviour
     private Message_PlaneUpdate lastMessage;
     private Message_WeaponFiring lastFiringMessage;
     private Message_WeaponStoppedFiring lastStoppedFiringMessage;
+    private Message_FireCountermeasure lastCountermeasureMessage;
 
     private void Awake()
     {
@@ -31,6 +32,7 @@ public class PlaneNetworker_Sender : MonoBehaviour
         lastMessage = new Message_PlaneUpdate(false, 0, 0, 0, 0, 0, 0, false, false, networkUID);
         lastFiringMessage = new Message_WeaponFiring(-1, networkUID);
         lastStoppedFiringMessage = new Message_WeaponStoppedFiring(networkUID);
+        lastCountermeasureMessage = new Message_FireCountermeasure(true, true, networkUID);
         wheelsController = GetComponent<WheelsController>();
         aeroController = GetComponent<AeroController>();
         vRThrottle = gameObject.GetComponentInChildren<VRThrottle>();
@@ -44,7 +46,12 @@ public class PlaneNetworker_Sender : MonoBehaviour
             Debug.LogError("Weapon Manager was null on our vehicle");
         cmManager = GetComponentInChildren<CountermeasureManager>();
         if (cmManager == null)
+        {
             Debug.LogError("CountermeasureManager was null on our vehicle");
+        }
+        else {
+            cmManager.OnFiredCM += FireCountermeasure;
+        }
         fuelTank = GetComponent<FuelTank>();
         if (fuelTank == null)
             Debug.LogError("FuelTank was null on our vehicle");
@@ -170,6 +177,15 @@ public class PlaneNetworker_Sender : MonoBehaviour
             new Message_WeaponSet_Result(hpInfos.ToArray(), cm.ToArray(), fuel, networkUID),
             Steamworks.EP2PSend.k_EP2PSendReliable);
     }
+
+    public void FireCountermeasure() {
+        Debug.Log("Sending CM Messsage");
+        if (Networker.isHost)
+            Networker.SendGlobalP2P(lastCountermeasureMessage, Steamworks.EP2PSend.k_EP2PSendReliable);
+        else
+            Networker.SendP2P(Networker.hostID, lastCountermeasureMessage, Steamworks.EP2PSend.k_EP2PSendReliable);
+    }
+
     public void OnDestory()
     {
         Networker.WeaponSet -= WeaponSet;
