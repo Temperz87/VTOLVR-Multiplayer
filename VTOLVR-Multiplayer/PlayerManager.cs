@@ -439,6 +439,8 @@ public static class PlayerManager
 
         Rigidbody rb = newVehicle.GetComponent<Rigidbody>();
         AIPilot aIPilot = newVehicle.GetComponent<AIPilot>();
+        Health health = newVehicle.GetComponent<Health>();
+        health.invincible = true;
         foreach (Collider collider in newVehicle.GetComponentsInChildren<Collider>())
         {
             if (collider)
