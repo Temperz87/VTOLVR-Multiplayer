@@ -12,7 +12,9 @@ public class Message_PlaneUpdate : Message
     public float breaks, throttle;
     public bool tailHook, fuelPort;
     public ulong networkUID;
-
+    //public bool hasRadar;
+    // public bool locked;
+    // public int radarLock;
     public Message_PlaneUpdate(bool landingGear, float flaps, float pitch, float roll, float yaw, float breaks, float throttle, bool tailHook, bool fuelPort, ulong networkUID)
     {
         this.landingGear = landingGear;
@@ -25,6 +27,9 @@ public class Message_PlaneUpdate : Message
         this.tailHook = tailHook;
         this.fuelPort = fuelPort;
         this.networkUID = networkUID;
+        // this.hasRadar = hasRadar;
+        // this.locked = locked;
+        // this.radarLock = radarLock;
         type = MessageType.PlaneUpdate;
     }
 

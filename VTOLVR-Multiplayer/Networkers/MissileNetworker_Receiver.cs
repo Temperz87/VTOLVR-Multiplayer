@@ -22,15 +22,20 @@ public class MissileNetworker_Receiver : MonoBehaviour
 
     public void MissileUpdate(Packet packet)
     {
+        Debug.Log("MissileUpdate invoked");
         lastMessage = ((PacketSingle)packet).message as Message_MissileUpdate;
         if (lastMessage.networkUID != networkUID)
-            return;
-
+        {
+            Debug.Log("Returning...");
+            return; 
+        }
+        Debug.Log("Didn't return");
         if (!thisMissile.fired)
         {
             Debug.Log("Missile fired on one end but not another, firing here.");
             if (lastMessage.guidanceMode == Missile.GuidanceModes.Radar)
             {
+                Debug.Log("Guidance mode radar");
                 RadarLockData lockData = new RadarLockData();
                 lockData.actor = GetActorAtPosition(lastMessage.targetPosition);
                 lockData.locked = true;
@@ -38,6 +43,7 @@ public class MissileNetworker_Receiver : MonoBehaviour
                 lockData.radarSymbol = GetComponentInChildren<Radar>().radarSymbol; //I'm just guessing they are
                 thisMissile.SetRadarLock(lockData);
             }
+            Debug.Log("Try fire missile clientside");
             thisMissile.Fire();
         }
 

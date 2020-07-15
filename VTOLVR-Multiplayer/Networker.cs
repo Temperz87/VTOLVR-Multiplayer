@@ -331,6 +331,10 @@ public class Networker : MonoBehaviour
                         Debug.LogError("The player seemed to send two join requests");
                         return;
                     }
+                    if (joinRequest.currentVehicle == "FA-26B")
+                    {
+                        joinRequest.currentVehicle = "F/A-26B";
+                    }
                     if (joinRequest.currentVehicle == PilotSaveManager.currentVehicle.vehicleName &&
                         joinRequest.currentScenario == PilotSaveManager.currentScenario.scenarioID &&
                         joinRequest.currentCampaign == PilotSaveManager.currentCampaign.campaignID)
@@ -345,7 +349,14 @@ public class Networker : MonoBehaviour
                     {
                         string reason = "Failed to Join Player";
                         if (joinRequest.currentVehicle != PilotSaveManager.currentVehicle.vehicleName)
-                            reason += "\nWrong Vehicle.";
+                        {
+                            reason += "\nWrong Vehicle, join request: " + joinRequest.currentVehicle + ", pilot save manager: " + PilotSaveManager.currentVehicle.vehicleName + ".";
+                            Debug.Log("Vehicle name list: ");
+                            foreach (PlayerVehicle playerVehicle in PilotSaveManager.GetVehicleList())
+                            {
+                                Debug.Log("    Next vehicle: " + playerVehicle.vehicleName);
+                            };
+                        }
                         if (joinRequest.currentScenario != PilotSaveManager.currentScenario.scenarioID)
                             reason += "\nWrong Scenario.";
                         if (joinRequest.currentCampaign != PilotSaveManager.currentCampaign.campaignID)
@@ -483,7 +494,7 @@ public class Networker : MonoBehaviour
                         FireCountermeasure.Invoke(packet);
                     break;
                 case MessageType.MissileUpdate:
-                    // Debug.Log("case missile update");
+                    Debug.Log("case missile update");
                     if (MissileUpdate != null)
                         MissileUpdate.Invoke(packet);
                     break;
@@ -501,7 +512,7 @@ public class Networker : MonoBehaviour
                     Debug.Log("default case");
                     break;
             }
-            if (isHost)
+            if (isHost && packetS.message.type != MessageType.JoinRequest)
             {
                 PlayerManager.SpawnRequestQueuePublic();
                 foreach (var uID in players)

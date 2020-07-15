@@ -24,12 +24,22 @@ public class PlaneNetworker_Sender : MonoBehaviour
     private Message_PlaneUpdate lastMessage;
     private Message_WeaponFiring lastFiringMessage;
     private Message_WeaponStoppedFiring lastStoppedFiringMessage;
+<<<<<<< Updated upstream
     private Message_FireCountermeasure lastCountermeasureMessage;
 
+=======
+    // private Actor.GetActorInfo GAI = new Actor.GetActorInfo();
+>>>>>>> Stashed changes
     private void Awake()
     {
-        
-        lastMessage = new Message_PlaneUpdate(false, 0, 0, 0, 0, 0, 0, false, false, networkUID);
+        if (VTOLAPI.GetPlayersVehicleEnum() != VTOLVehicles.AV42C)
+        {
+            lastMessage = new Message_PlaneUpdate(false, 0, 0, 0, 0, 0, 0, false, false, networkUID);
+        }
+        else
+        {
+            lastMessage = new Message_PlaneUpdate(false, 0, 0, 0, 0, 0, 0, false, false, networkUID);
+        }
         lastFiringMessage = new Message_WeaponFiring(-1, networkUID);
         lastStoppedFiringMessage = new Message_WeaponStoppedFiring(networkUID);
         lastCountermeasureMessage = new Message_FireCountermeasure(true, true, networkUID);
@@ -104,7 +114,10 @@ public class PlaneNetworker_Sender : MonoBehaviour
         lastMessage.breaks = aeroController.brake;
         lastMessage.landingGear = LandingGearState();
         lastMessage.networkUID = networkUID;
-
+        /*if (lastMessage.hasRadar)
+        {
+            lastMessage.radarLock.actor = weaponManager.lockingRadar.currentLock.actor;
+        }*/
         if (Networker.isHost)
             Networker.SendGlobalP2P(lastMessage, Steamworks.EP2PSend.k_EP2PSendUnreliable);
         else
@@ -145,13 +158,12 @@ public class PlaneNetworker_Sender : MonoBehaviour
                     break;
                 for (int j = 0; j < HPml.ml.missiles.Length; j++)
                 {
-                    //If they are null, they have been shot.
+                    /* If they are null, they have been shot.
                     if (HPml.ml.missiles[j] == null)
                     {
                         missileUIDS.Add(0);
                         continue;
-                    }
-
+                    }*/
                     MissileNetworker_Sender sender = HPml.ml.missiles[i].gameObject.GetComponent<MissileNetworker_Sender>();
                     if (sender != null)
                         missileUIDS.Add(sender.networkUID);
@@ -177,6 +189,7 @@ public class PlaneNetworker_Sender : MonoBehaviour
             new Message_WeaponSet_Result(hpInfos.ToArray(), cm.ToArray(), fuel, networkUID),
             Steamworks.EP2PSend.k_EP2PSendReliable);
     }
+<<<<<<< Updated upstream
 
     public void FireCountermeasure() {
         Debug.Log("Sending CM Messsage");
@@ -187,6 +200,9 @@ public class PlaneNetworker_Sender : MonoBehaviour
     }
 
     public void OnDestory()
+=======
+    public void OnDestroy()
+>>>>>>> Stashed changes
     {
         Networker.WeaponSet -= WeaponSet;
     }

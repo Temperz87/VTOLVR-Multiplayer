@@ -20,6 +20,7 @@ public class PlaneNetworker_Receiver : MonoBehaviour
     private CountermeasureManager cmManager;
     private FuelTank fuelTank;
     private Traverse traverse;
+    // private RadarLockData radarLockData;
     private void Awake()
     {
         aiPilot = GetComponent<AIPilot>();
@@ -64,6 +65,20 @@ public class PlaneNetworker_Receiver : MonoBehaviour
         {
             autoPilot.engines[i].SetThrottle(lastMessage.throttle);
         }
+        /*if (lastMessage.hasRadar)
+        {
+            if (lastMessage.radarLock != radarLockData.actor.actorID)
+            {
+                if (!lastMessage.locked)
+                {
+                    aiPilot.wm.lockingRadar.Unlock();
+                }
+                else
+                {
+                    aiPilot.wm.lockingRadar.ForceLock(lastMessage.radarLock.actor, out radarLockData);
+                }
+            }
+        }*/
     }
     public void WeaponSet_Result(Packet packet)
     {
@@ -209,7 +224,7 @@ public class PlaneNetworker_Receiver : MonoBehaviour
         
         Destroy(gameObject);
     }
-    public void OnDestory()
+    public void OnDestroy()
     {
         Networker.PlaneUpdate -= PlaneUpdate;
         Networker.Disconnecting -= OnDisconnect;

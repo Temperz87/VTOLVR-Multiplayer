@@ -137,8 +137,7 @@
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent>if EXIST "D:\Vidjagames\steamapps\common\VTOL VR\VTOLVR_ModLoader\mods\" (
-xcopy  "$(ProjectDir)bin\Debug\$(TargetName).dll" "D:\Vidjagames\steamapps\common\VTOL VR\VTOLVR_ModLoader\mods\" /Y
-)</PostBuildEvent>
+    <PostBuildEvent>
+    </PostBuildEvent>
   </PropertyGroup>
 </Project>
