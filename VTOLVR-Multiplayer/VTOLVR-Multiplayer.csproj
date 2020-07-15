@@ -93,6 +93,7 @@
     <Compile Include="Messages\MessageType.cs" />
     <Compile Include="Messages\Message_Disconnecting.cs" />
     <Compile Include="Messages\Message_EngineTiltUpdate.cs" />
+    <Compile Include="Messages\Message_FireCountermeasure.cs" />
     <Compile Include="Messages\Message_JoinRequest.cs" />
     <Compile Include="Messages\Message_LoadingTextUpdate.cs" />
     <Compile Include="Messages\Message_LobbyInfoRequest.cs" />

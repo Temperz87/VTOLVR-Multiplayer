@@ -32,5 +32,7 @@ public class Nametag : MonoBehaviour
     {
         if (head != null)
             transform.LookAt(2 * transform.position - head.position);
+        if (transform.parent != null)
+            transform.position = transform.parent.position + Vector3.up * 10;
     }
 }
