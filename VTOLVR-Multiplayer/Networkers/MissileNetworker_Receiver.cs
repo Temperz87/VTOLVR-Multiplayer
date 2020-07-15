@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Steamworks;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -68,7 +69,7 @@ public class MissileNetworker_Receiver : MonoBehaviour
         return result;
     }
 
-    public void OnDestory()
+    public void OnDestroy()
     {
         Networker.MissileUpdate -= MissileUpdate;
     }

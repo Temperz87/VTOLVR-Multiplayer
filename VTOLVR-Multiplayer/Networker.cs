@@ -395,6 +395,17 @@ public class Networker : MonoBehaviour
                 default:
                     break;
             }
+            if (isHost)
+            {
+                PlayerManager.SpawnRequestQueuePublic();
+                foreach (var uID in players)
+                {
+                    if (uID != SteamUser.GetSteamID() && uID != (CSteamID)packet.networkUID)
+                    {
+                        SendP2P(uID, packetS.message, EP2PSend.k_EP2PSendUnreliableNoDelay);
+                    }
+                }
+            }
         }
     }
     

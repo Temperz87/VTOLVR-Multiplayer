@@ -139,7 +139,7 @@ public class PlaneNetworker_Sender : MonoBehaviour
                 for (int j = 0; j < HPml.ml.missiles.Length; j++)
                 {
                     //If they are null, they have been shot.
-                    if (HPml.ml.missiles[i] == null)
+                    if (HPml.ml.missiles[j] == null)
                     {
                         missileUIDS.Add(0);
                         continue;
@@ -149,7 +149,7 @@ public class PlaneNetworker_Sender : MonoBehaviour
                     if (sender != null)
                         missileUIDS.Add(sender.networkUID);
                     else
-                        Debug.LogError($"Failed to get NetworkUID for missile ({HPml.ml.missiles[i].gameObject.name})");
+                        Debug.LogError($"Failed to get NetworkUID for missile ({HPml.ml.missiles[j].gameObject.name})");
                 }
             }
 

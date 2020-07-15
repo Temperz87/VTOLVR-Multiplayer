@@ -5,6 +5,8 @@ using System.Text;
 using System.Threading.Tasks;
 using UnityEngine;
 using Harmony;
+using Steamworks;
+
 public class PlaneNetworker_Receiver : MonoBehaviour
 {
     public ulong networkUID;
@@ -148,14 +150,14 @@ public class PlaneNetworker_Receiver : MonoBehaviour
                 for (int j = 0; j < HPml.ml.missiles.Length; j++)
                 {
                     //If they are null, they have been shot.
-                    if (HPml.ml.missiles[i] == null)
+                    if (HPml.ml.missiles[j] == null)
                     {
                         Debug.LogError("if statement shot null");
                         missileUIDS.Add(0);
                         continue;
                     }
                     Debug.Log("after first if in for");
-                    MissileNetworker_Receiver reciever = HPml.ml.missiles[i].gameObject.GetComponent<MissileNetworker_Receiver>();
+                    MissileNetworker_Receiver reciever = HPml.ml.missiles[j].gameObject.GetComponent<MissileNetworker_Receiver>();
                     if (reciever == null)
                     {
                         Debug.LogError("reciever null");
@@ -163,7 +165,7 @@ public class PlaneNetworker_Receiver : MonoBehaviour
                     if (reciever != null)
                         missileUIDS.Add(reciever.networkUID);
                     else
-                        Debug.LogError($"Failed to get NetworkUID for missile ({HPml.ml.missiles[i].gameObject.name})");
+                        Debug.LogError($"Failed to get NetworkUID for missile ({HPml.ml.missiles[j].gameObject.name})");
                 }
             }
 

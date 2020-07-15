@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Steamworks;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -26,7 +27,7 @@ class EngineTiltNetworker_Receiver : MonoBehaviour
         tiltController.SetTiltImmediate(lastMessage.angle);
     }
 
-    public void OnDestory()
+    public void OnDestroy()
     {
         Networker.EngineTiltUpdate -= EngineTiltUpdate;
         Debug.Log("Destroyed Engine Tilt Update");

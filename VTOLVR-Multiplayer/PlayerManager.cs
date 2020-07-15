@@ -78,6 +78,14 @@ public static class PlayerManager
     }
 
     /// <summary>
+    /// This is a way to invoke SpawnRequstQueue() if the queue is loaded
+    /// </summary>
+    public static void SpawnRequestQueuePublic()
+    {
+        if (spawnRequestQueue.Count != 0)
+            SpawnRequestQueue();
+    }
+    /// <summary>
     /// This gives all the people waiting their spawn points
     /// </summary>
     private static void SpawnRequestQueue() //Host Only
