@@ -512,7 +512,7 @@ public class Networker : MonoBehaviour
                     Debug.Log("default case");
                     break;
             }
-            if (isHost && packetS.message.type != MessageType.JoinRequest)
+            if (isHost && packetS.message.type != MessageType.JoinRequest && packetS.message.type != MessageType.SpawnVehicle && packetS.message.type != MessageType.RequestSpawn)
             {
                 PlayerManager.SpawnRequestQueuePublic();
                 foreach (var uID in players)

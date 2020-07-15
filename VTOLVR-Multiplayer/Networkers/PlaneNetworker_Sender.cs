@@ -24,12 +24,7 @@ public class PlaneNetworker_Sender : MonoBehaviour
     private Message_PlaneUpdate lastMessage;
     private Message_WeaponFiring lastFiringMessage;
     private Message_WeaponStoppedFiring lastStoppedFiringMessage;
-<<<<<<< Updated upstream
     private Message_FireCountermeasure lastCountermeasureMessage;
-
-=======
-    // private Actor.GetActorInfo GAI = new Actor.GetActorInfo();
->>>>>>> Stashed changes
     private void Awake()
     {
         if (VTOLAPI.GetPlayersVehicleEnum() != VTOLVehicles.AV42C)
@@ -189,9 +184,9 @@ public class PlaneNetworker_Sender : MonoBehaviour
             new Message_WeaponSet_Result(hpInfos.ToArray(), cm.ToArray(), fuel, networkUID),
             Steamworks.EP2PSend.k_EP2PSendReliable);
     }
-<<<<<<< Updated upstream
 
-    public void FireCountermeasure() {
+    public void FireCountermeasure() 
+    {
         Debug.Log("Sending CM Messsage");
         if (Networker.isHost)
             Networker.SendGlobalP2P(lastCountermeasureMessage, Steamworks.EP2PSend.k_EP2PSendReliable);
@@ -200,9 +195,6 @@ public class PlaneNetworker_Sender : MonoBehaviour
     }
 
     public void OnDestory()
-=======
-    public void OnDestroy()
->>>>>>> Stashed changes
     {
         Networker.WeaponSet -= WeaponSet;
     }
