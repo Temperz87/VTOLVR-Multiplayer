@@ -217,7 +217,7 @@ public static class PlayerManager
                     if (HPml.ml.missiles[j] == null)
                     {
                         missileUIDS.Add(0);
-                        Debug.LogError("It seems there wa sa missile shot as it was null");
+                        Debug.LogError("It seems there was a missile shot as it was null");
                         continue;
                     }
                     Debug.Log("Adding Missle Networker to missile");
@@ -335,7 +335,7 @@ public static class PlayerManager
                                 //There shouldn't be any shot missiles, but if so this skips them as they are null.
                                 if (HPml.ml.missiles[k] == null) {
                                     missileUIDS.Add(0);
-                                    Debug.LogError("It seems there wa sa missile shot as it was null");
+                                    Debug.LogError("It seems there was a missile shot as it was null");
                                     continue;
                                 }
                                 Debug.Log("Adding Missle Networker to missile");
@@ -410,7 +410,7 @@ public static class PlayerManager
                 Debug.LogError("Vehcile Enum seems to be none, couldn't spawn player vehicle");
                 return;
             case VTOLVehicles.AV42C:
-                newVehicle = GameObject.Instantiate(av42cPrefab, new Vector3(0f, 200f, 0f), Quaternion.Euler(message.rotation.toVector3));
+                newVehicle = GameObject.Instantiate(av42cPrefab, message.position.toVector3, Quaternion.Euler(message.rotation.toVector3));
                 break;
             case VTOLVehicles.FA26B:
                 newVehicle = GameObject.Instantiate(fa26bPrefab, message.position.toVector3, Quaternion.Euler(message.rotation.toVector3));

@@ -43,10 +43,14 @@ public class MissileNetworker_Sender : MonoBehaviour
             Debug.Log("Missile_sender lastmessage.position");
             lastMessage.rotation = new Vector3D(gameObject.transform.rotation.eulerAngles);
             Debug.Log("Missile_sender lastmessage.rotation");
-            if (thisMissile.radarLock != null && thisMissile.radarLock.actor != null)
+            lastMessage.guidanceMode = thisMissile.guidanceMode;
+            if (thisMissile.guidanceMode == Missile.GuidanceModes.Radar)
             {
-                Debug.Log("Missile_sender lock data");
-                lastMessage.targetPosition = VTMapManager.WorldToGlobalPoint(thisMissile.radarLock.actor.transform.position);
+                if (thisMissile.radarLock != null && thisMissile.radarLock.actor != null)
+                {
+                    Debug.Log("Missile_sender lock data");
+                    lastMessage.targetPosition = VTMapManager.WorldToGlobalPoint(thisMissile.radarLock.actor.transform.position);
+                }
             }
             SendMessage(false);
             Debug.Log("Missile_sender Sendmessage");

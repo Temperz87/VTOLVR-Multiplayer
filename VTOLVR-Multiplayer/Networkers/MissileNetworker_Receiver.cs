@@ -28,12 +28,16 @@ public class MissileNetworker_Receiver : MonoBehaviour
 
         if (!thisMissile.fired)
         {
-            RadarLockData lockData = new RadarLockData();
-            lockData.actor = GetActorAtPosition(lastMessage.targetPosition);
-            lockData.locked = true;
-            lockData.lockingRadar = GetComponentInChildren<LockingRadar>();     //Unsure if these are on a child or not
-            lockData.radarSymbol = GetComponentInChildren<Radar>().radarSymbol; //I'm just guessing they are
-            thisMissile.SetRadarLock(lockData);
+            Debug.Log("Missile fired on one end but not another, firing here.");
+            if (lastMessage.guidanceMode == Missile.GuidanceModes.Radar)
+            {
+                RadarLockData lockData = new RadarLockData();
+                lockData.actor = GetActorAtPosition(lastMessage.targetPosition);
+                lockData.locked = true;
+                lockData.lockingRadar = GetComponentInChildren<LockingRadar>();     //Unsure if these are on a child or not
+                lockData.radarSymbol = GetComponentInChildren<Radar>().radarSymbol; //I'm just guessing they are
+                thisMissile.SetRadarLock(lockData);
+            }
             thisMissile.Fire();
         }
 

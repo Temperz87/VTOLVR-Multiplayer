@@ -222,8 +222,42 @@ public class Networker : MonoBehaviour
             switch (packetS.message.type)
             {
                 case MessageType.None:
+                    Debug.Log("case none");
                     break;
                 case MessageType.LobbyInfoRequest:
+                    Debug.Log("case lobby info request");
+                    if (SteamFriends.GetPersonaName() == null)
+                    {
+                        Debug.LogError("Persona name null");
+                    }
+                    if (PilotSaveManager.currentVehicle == null)
+                    {
+                        Debug.LogError("vehicle name null");
+                    }
+                    if (PilotSaveManager.currentScenario == null)
+                    {
+                        Debug.LogError("current scenario null");
+                    }
+                    if (PilotSaveManager.currentCampaign == null)
+                    {
+                        Debug.LogError("Persona name null");
+                    }
+                    if (PlayerManager.players == null)
+                    {
+                        Debug.Log("PLayer manager.players == null");
+                    } // fuck you c#
+                    if (PilotSaveManager.currentScenario.scenarioID == null)
+                    {
+                        Debug.LogError("current scenario name null");
+                    }
+                    if (PilotSaveManager.currentCampaign.campaignName == null)
+                    {
+                        Debug.LogError("current campaign campaign name ");
+                    }
+                    if (PlayerManager.players.Count.ToString() == null)
+                    {
+                        Debug.LogError("players count to string somehow null");
+                    } // Fuck you again unity
                     SendP2P(csteamID,
                         new Message_LobbyInfoRequest_Result(SteamFriends.GetPersonaName(),
                                                                 PilotSaveManager.currentVehicle.vehicleName,
@@ -233,10 +267,58 @@ public class Networker : MonoBehaviour
                         EP2PSend.k_EP2PSendReliable);
                     break;
                 case MessageType.LobbyInfoRequest_Result:
+                    Debug.Log("case lobby info request result");
                     Message_LobbyInfoRequest_Result result = packetS.message as Message_LobbyInfoRequest_Result;
+                    Debug.Log("Set result");
+                    if (packetS == null)
+                    {
+                        Debug.LogError("packetS is null");
+                    }
+                    if (packetS.message == null)
+                    {
+                        Debug.LogError("packetS.message is null");
+                    }
+                    if (result == null)
+                    {
+                        Debug.LogError("Result is null");
+                    }
+                    if (result.username == null)
+                    {
+                        Debug.LogError("Result name is null");
+                    }
+                    if (result.vehicle == null)
+                    {
+                        Debug.LogError("Result vehicle is null");
+                    }
+                    if (result.campaign == null)
+                    {
+                        Debug.LogError("Result campaign is null");
+                    }
+                    if (result.scenario == null)
+                    {
+                        Debug.LogError("Result scenario is null");
+                    }
+                    if (result.playercount == null)
+                    {
+                        Debug.LogError("Result playercount is null");
+                    }
+                    if (Multiplayer._instance.lobbyInfoText.text == null)
+                    {
+                        Debug.LogError("Multiplayer _instance lobbyinfotext.text is null");
+                    }
+                    if (Multiplayer._instance == null)
+                    {
+                        Debug.LogError("Multiplayer _instance is null");
+                    }
+                    if (Multiplayer._instance.lobbyInfoText == null)
+                    {
+                        Debug.LogError("Multiplayer _instance lobbyinfotext is null");
+                    }
                     Multiplayer._instance.lobbyInfoText.text = result.username + "'s Game\n" + result.vehicle + "\n" + result.campaign + " " + result.scenario + "\n" + (result.playercount == "1" ? result.playercount + " Player" : result.playercount + " Players");
+                    Debug.Log("Breaking case set lobby info request result");
                     break;
                 case MessageType.JoinRequest:
+                    Debug.Log("case join request");
                     if (!isHost)
                     {
                         Debug.LogError($"Recived Join Request when we are not the host");
@@ -272,7 +354,9 @@ public class Networker : MonoBehaviour
                     }
                     break;
                 case MessageType.JoinRequest_Result:
+                    Debug.Log("case join request result");
                     Message_JoinRequest_Result joinResult = packetS.message as Message_JoinRequest_Result;
+                    Debug.Log("join result = packetS.message");
                     if (joinResult.canJoin)
                     {
                         Debug.Log($"Joining {csteamID.m_SteamID}");
@@ -285,6 +369,7 @@ public class Networker : MonoBehaviour
                     }
                     break;
                 case MessageType.Ready:
+                    Debug.Log("case ready");
                     //The client has said they are ready to start, so we change it in the dictionary
                     if (readyDic.ContainsKey(csteamID))
                     {
@@ -312,31 +397,38 @@ public class Networker : MonoBehaviour
                     LoadingSceneController.instance.PlayerReady();
                     break;
                 case MessageType.RequestSpawn:
+                    Debug.Log("case request spawn");
                     if (RequestSpawn != null)
                         RequestSpawn.Invoke(packet, csteamID);
                     break;
                 case MessageType.RequestSpawn_Result:
+                    Debug.Log("case request spawn result");
                     if (RequestSpawn_Result != null)
                         RequestSpawn_Result.Invoke(packet);
                     break;
                 case MessageType.SpawnVehicle:
+                    Debug.Log("case spawn vehicle");
                     if (SpawnVehicle != null)
                         SpawnVehicle.Invoke(packet);
                     break;
                 case MessageType.RigidbodyUpdate:
+                    // Debug.Log("case rigid body update");
                     if (RigidbodyUpdate != null)
                         RigidbodyUpdate.Invoke(packet);
                     break;
                 case MessageType.PlaneUpdate:
+                    // Debug.Log("case plane update");
                     if (PlaneUpdate != null)
                         PlaneUpdate.Invoke(packet);
                     break;
                 case MessageType.EngineTiltUpdate:
+                    // Debug.Log("case engine tilt update");
                     if (EngineTiltUpdate != null)
                         EngineTiltUpdate.Invoke(packet);
                     break;
                 case MessageType.Disconnecting:
-                    
+                    Debug.Log("case disconnecting");
+
                     if (isHost)
                     {
                         if (Multiplayer.SoloTesting)
@@ -361,10 +453,12 @@ public class Networker : MonoBehaviour
                         Disconnecting.Invoke(packet);
                     break;
                 case MessageType.WeaponsSet:
+                    Debug.Log("case weapon set");
                     if (WeaponSet != null)
                         WeaponSet.Invoke(packet);
                     break;
                 case MessageType.WeaponsSet_Result:
+                    Debug.Log("case weapon set result");
                     if (WeaponSet_Result != null)
                         WeaponSet_Result.Invoke(packet);
                     if (isHost)
@@ -373,26 +467,32 @@ public class Networker : MonoBehaviour
                     }
                     break;
                 case MessageType.WeaponFiring:
+                    Debug.Log("case weapon firing");
                     if (WeaponFiring != null)
                         WeaponFiring.Invoke(packet);
                     break;
                 case MessageType.WeaponStoppedFiring:
+                    Debug.Log("case weapon stopped firing");
                     if (WeaponStoppedFiring != null)
                         WeaponStoppedFiring.Invoke(packet);
                     break;
                 case MessageType.MissileUpdate:
+                    // Debug.Log("case missile update");
                     if (MissileUpdate != null)
                         MissileUpdate.Invoke(packet);
                     break;
                 case MessageType.RequestNetworkUID:
+                    Debug.Log("case request network UID");
                     if (RequestNetworkUID != null)
                         RequestNetworkUID.Invoke(packet);
                     break;
                 case MessageType.LoadingTextUpdate:
+                    Debug.Log("case loading text update");
                     if (!isHost)
                         UpdateLoadingText(packet);
                     break;
                 default:
+                    Debug.Log("default case");
                     break;
             }
             if (isHost)
