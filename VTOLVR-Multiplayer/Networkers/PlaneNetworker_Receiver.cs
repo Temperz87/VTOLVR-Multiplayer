@@ -16,10 +16,12 @@ public class PlaneNetworker_Receiver : MonoBehaviour
     private AIPilot aiPilot;
     private AutoPilot autoPilot;
 
+    private Health health;
     private WeaponManager weaponManager;
     private CountermeasureManager cmManager;
     private FuelTank fuelTank;
     private Traverse traverse;
+
     private void Awake()
     {
         aiPilot = GetComponent<AIPilot>();
@@ -30,6 +32,7 @@ public class PlaneNetworker_Receiver : MonoBehaviour
         Networker.WeaponFiring += WeaponFiring;
         Networker.WeaponStoppedFiring += WeaponStoppedFiring;
         Networker.FireCountermeasure += FireCountermeasure;
+        Networker.Death += Death;
 
         weaponManager = GetComponent<WeaponManager>();
         if (weaponManager == null)
@@ -40,6 +43,9 @@ public class PlaneNetworker_Receiver : MonoBehaviour
         fuelTank = GetComponent<FuelTank>();
         if (fuelTank == null)
             Debug.LogError("FuelTank was null on " + gameObject.name);
+        health = GetComponent<Health>();
+        if (health == null)
+            Debug.LogError("health was null on our vehicle");
 
         traverse = Traverse.Create(weaponManager);
     }
@@ -120,10 +126,21 @@ public class PlaneNetworker_Receiver : MonoBehaviour
     {
         Debug.Log("Recieving CM Messsage");
         Message_FireCountermeasure message = ((PacketSingle)packet).message as Message_FireCountermeasure;
-        //if (message.UID != networkUID)
-        //    return;
+        if (message.UID != networkUID)
+            return;
         Debug.Log("FIRING CMS!");
         aiPilot.aiSpawn.CountermeasureProgram(message.flares, message.chaff, 1, 0.1f);
+    }
+
+    public void Death(Packet packet)
+    {
+        Message_Death message = ((PacketSingle)packet).message as Message_Death;
+        Debug.Log("Pre dying");
+        if (message.UID != networkUID)
+                return;
+        Debug.Log("Dying");
+        health.invincible = false;
+        health.Kill();
     }
 
     public HPInfo[] GenerateHPInfo()
@@ -217,6 +234,7 @@ public class PlaneNetworker_Receiver : MonoBehaviour
         Networker.WeaponFiring -= WeaponFiring;
         Networker.WeaponStoppedFiring -= WeaponStoppedFiring;
         Networker.FireCountermeasure -= FireCountermeasure;
+        Networker.Death -= Death;
         Debug.Log("Destroyed Plane Update");
         Debug.Log(gameObject.name);
     }

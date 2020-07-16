@@ -91,6 +91,7 @@
     <Compile Include="HPInfo.cs" />
     <Compile Include="Messages\Message.cs" />
     <Compile Include="Messages\MessageType.cs" />
+    <Compile Include="Messages\Message_Death.cs" />
     <Compile Include="Messages\Message_Disconnecting.cs" />
     <Compile Include="Messages\Message_EngineTiltUpdate.cs" />
     <Compile Include="Messages\Message_FireCountermeasure.cs" />
