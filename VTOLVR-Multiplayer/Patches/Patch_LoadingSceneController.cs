@@ -88,6 +88,10 @@ class Patch_LoadingSceneHelmet_Update
                     Networker.SendP2P(Networker.hostID, new Message(MessageType.Ready), Steamworks.EP2PSend.k_EP2PSendReliable);
                     Debug.Log("Waiting for the host to say everyone is ready");
                 }
+                if (!Networker.hostLoaded && !Networker.isHost)
+                {
+                    Debug.Log("Waiting for host to load");
+                }
 
                 __instance.equipAudioSource.Play();
                 return false;

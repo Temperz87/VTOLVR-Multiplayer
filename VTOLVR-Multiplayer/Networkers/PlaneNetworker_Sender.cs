@@ -25,15 +25,17 @@ public class PlaneNetworker_Sender : MonoBehaviour
     private Message_WeaponFiring lastFiringMessage;
     private Message_WeaponStoppedFiring lastStoppedFiringMessage;
     private Message_FireCountermeasure lastCountermeasureMessage;
+    private Tailhook tailhook;
+    private CatapultHook launchBar;
     private void Awake()
     {
         if (VTOLAPI.GetPlayersVehicleEnum() != VTOLVehicles.AV42C)
         {
-            lastMessage = new Message_PlaneUpdate(false, 0, 0, 0, 0, 0, 0, false, false, networkUID);
+            lastMessage = new Message_PlaneUpdate(false, 0, 0, 0, 0, 0, 0, false, false, false, networkUID);
         }
         else
         {
-            lastMessage = new Message_PlaneUpdate(false, 0, 0, 0, 0, 0, 0, false, false, networkUID);
+            lastMessage = new Message_PlaneUpdate(false, 0, 0, 0, 0, 0, 0, false, false, false, networkUID);
         }
         lastFiringMessage = new Message_WeaponFiring(-1, networkUID);
         lastStoppedFiringMessage = new Message_WeaponStoppedFiring(networkUID);
@@ -65,6 +67,8 @@ public class PlaneNetworker_Sender : MonoBehaviour
 
         traverse = Traverse.Create(weaponManager);
         Debug.Log("Done Plane Sender");
+        tailhook = GetComponentInChildren<Tailhook>();
+        launchBar = GetComponentInChildren<CatapultHook>();
     }
 
     private void Update()
@@ -96,7 +100,6 @@ public class PlaneNetworker_Sender : MonoBehaviour
                     Networker.SendP2P(Networker.hostID, lastStoppedFiringMessage, Steamworks.EP2PSend.k_EP2PSendReliable);
                 }
             }
-            
         }
     }
 
@@ -109,6 +112,8 @@ public class PlaneNetworker_Sender : MonoBehaviour
         lastMessage.breaks = aeroController.brake;
         lastMessage.landingGear = LandingGearState();
         lastMessage.networkUID = networkUID;
+        lastMessage.tailHook = tailhook.isDeployed;
+        lastMessage.launchBar = launchBar.deployed;
         /*if (lastMessage.hasRadar)
         {
             lastMessage.radarLock.actor = weaponManager.lockingRadar.currentLock.actor;
@@ -153,12 +158,12 @@ public class PlaneNetworker_Sender : MonoBehaviour
                     break;
                 for (int j = 0; j < HPml.ml.missiles.Length; j++)
                 {
-                    /* If they are null, they have been shot.
-                    if (HPml.ml.missiles[j] == null)
+                    // If they are null, they have been shot.
+                    if (HPml.ml.missiles[j] != null)
                     {
                         missileUIDS.Add(0);
                         continue;
-                    }*/
+                    }
                     MissileNetworker_Sender sender = HPml.ml.missiles[i].gameObject.GetComponent<MissileNetworker_Sender>();
                     if (sender != null)
                         missileUIDS.Add(sender.networkUID);
@@ -169,6 +174,7 @@ public class PlaneNetworker_Sender : MonoBehaviour
 
             hpInfos.Add(new HPInfo(
                     lastEquippable.gameObject.name.Replace("(Clone)", ""),
+                    lastEquippable.hardpointIdx,
                     lastEquippable.weaponType,
                     missileUIDS.ToArray()));
         }
@@ -194,7 +200,7 @@ public class PlaneNetworker_Sender : MonoBehaviour
             Networker.SendP2P(Networker.hostID, lastCountermeasureMessage, Steamworks.EP2PSend.k_EP2PSendReliable);
     }
 
-    public void OnDestory()
+    public void OnDestroy()
     {
         Networker.WeaponSet -= WeaponSet;
     }

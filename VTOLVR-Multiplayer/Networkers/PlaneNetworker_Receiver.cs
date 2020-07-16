@@ -53,7 +53,14 @@ public class PlaneNetworker_Receiver : MonoBehaviour
             aiPilot.gearAnimator.Extend();
         else
             aiPilot.gearAnimator.Retract();
-
+        if (lastMessage.tailHook && !aiPilot.tailHook.isDeployed)
+            aiPilot.tailHook.ExtendHook();
+        else if (!lastMessage.tailHook && aiPilot.tailHook.isDeployed)
+            aiPilot.tailHook.RetractHook();
+        if (lastMessage.launchBar && !aiPilot.catHook.deployed)
+            aiPilot.catHook.SetState(1);
+        else if (!lastMessage.launchBar && aiPilot.catHook.deployed)
+            aiPilot.catHook.SetState(0);
         for (int i = 0; i < autoPilot.outputs.Length; i++)
         {
             autoPilot.outputs[i].SetPitchYawRoll(new Vector3(lastMessage.pitch, lastMessage.yaw, lastMessage.roll));
@@ -131,7 +138,7 @@ public class PlaneNetworker_Receiver : MonoBehaviour
         weaponManager.EndFire();
     }
 
-    public void FireCountermeasure(Packet packet)
+    public void FireCountermeasure(Packet packet) // chez
     {
         Debug.Log("Recieving CM Messsage");
         Message_FireCountermeasure message = ((PacketSingle)packet).message as Message_FireCountermeasure;
@@ -198,6 +205,7 @@ public class PlaneNetworker_Receiver : MonoBehaviour
 
             hpInfos.Add(new HPInfo(
                     lastEquippable.gameObject.name.Replace("(Clone)", ""),
+                    lastEquippable.hardpointIdx,
                     lastEquippable.weaponType,
                     missileUIDS.ToArray()));
             Debug.Log("hpInfos.Add()");

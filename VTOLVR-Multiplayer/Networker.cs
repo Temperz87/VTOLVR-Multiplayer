@@ -22,7 +22,7 @@ public class Networker : MonoBehaviour
     public static GameState gameState { get; private set; }
     public static List<CSteamID> players { get; private set; } = new List<CSteamID>();
     public static Dictionary<CSteamID, bool> readyDic { get; private set; } = new Dictionary<CSteamID, bool>();
-    public static bool hostReady, alreadyInGame;
+    public static bool hostReady, alreadyInGame, hostLoaded;
     public static CSteamID hostID { get; private set; }
     private Callback<P2PSessionRequest_t> _p2PSessionRequestCallback;
     //networkUID is used as an identifer for all network object, we are just adding onto this to get a new one
@@ -57,15 +57,15 @@ public class Networker : MonoBehaviour
         RequestSpawn += PlayerManager.RequestSpawn;
         RequestSpawn_Result += PlayerManager.RequestSpawn_Result;
         SpawnVehicle += PlayerManager.SpawnVehicle;
-        VTCustomMapManager.OnLoadedMap += PlayerManager.MapLoaded;
+        VTCustomMapManager.OnLoadedMap += (customMap) => { StartCoroutine(PlayerManager.MapLoaded(customMap)); };
         VTOLAPI.SceneLoaded += SceneChanged;
     }
-
     private void OnP2PSessionRequest(P2PSessionRequest_t request)
     {
         //Yes this is expecting everyone, even if they are not friends...
         SteamNetworking.AcceptP2PSessionWithUser(request.m_steamIDRemote);
         Debug.Log("Accepting P2P with " + SteamFriends.GetFriendPersonaName(request.m_steamIDRemote));
+        StartCoroutine(PlayerManager.MapLoaded());
     }
 
 
@@ -76,7 +76,7 @@ public class Networker : MonoBehaviour
             if (PSMC != PilotSaveManager.currentScenario)
             { PSMC = PilotSaveManager.currentScenario; }
         }
-        ReadP2P();
+        ReadP2P();  
     }
 
     public static void HostGame()
@@ -404,9 +404,9 @@ public class Networker : MonoBehaviour
                     }
                     break;
                 case MessageType.Ready_Result:
-                    Debug.Log("The host said everyone is ready, launching the mission");
+                    Debug.Log("The host said everyone is ready, waiting for the host to load.");
                     hostReady = true;
-                    LoadingSceneController.instance.PlayerReady();
+                    // LoadingSceneController.instance.PlayerReady();
                     break;
                 case MessageType.RequestSpawn:
                     Debug.Log("case request spawn");
@@ -440,7 +440,6 @@ public class Networker : MonoBehaviour
                     break;
                 case MessageType.Disconnecting:
                     Debug.Log("case disconnecting");
-
                     if (isHost)
                     {
                         if (Multiplayer.SoloTesting)
@@ -508,11 +507,23 @@ public class Networker : MonoBehaviour
                     if (!isHost)
                         UpdateLoadingText(packet);
                     break;
+                case MessageType.HostLoaded:
+                    Debug.Log("case host loaded");
+                    if (isHost)
+                    {
+                        Debug.Log("we shouldn't have gotten a host loaded....");
+                    }
+                    else
+                    {
+                        hostLoaded = true;
+                        LoadingSceneController.instance.PlayerReady();
+                    }
+                    break;
                 default:
                     Debug.Log("default case");
                     break;
             }
-            if (isHost && packetS.message.type != MessageType.JoinRequest && packetS.message.type != MessageType.SpawnVehicle && packetS.message.type != MessageType.RequestSpawn)
+            if (isHost && packetS.message.type != MessageType.JoinRequest  && packetS.message.type != MessageType.RequestSpawn)
             {
                 PlayerManager.SpawnRequestQueuePublic();
                 foreach (var uID in players)
