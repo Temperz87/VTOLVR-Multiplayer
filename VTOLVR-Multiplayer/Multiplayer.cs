@@ -70,6 +70,8 @@ public class Multiplayer : VTOLMOD
 
     private void SceneLoaded(VTOLScenes scene)
     {
+        UnityEngine.CrashReportHandler.CrashReportHandler.enableCaptureExceptions = false;
+
         switch (scene)
         {
             case VTOLScenes.ReadyRoom:
