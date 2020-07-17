@@ -69,58 +69,24 @@ public static class PlayerManager
             {
                 GenerateSpawns(localVehicle.transform);
                 localUID = Networker.GenerateNetworkUID();
-                SendSpawnVehicle(localVehicle, localVehicle.transform.position, localVehicle.transform.rotation.eulerAngles, localUID);
+                SpawnLocalVehicleAndInformOtherClients(localVehicle, localVehicle.transform.position, localVehicle.transform.rotation.eulerAngles, localUID);
             }
             else
                 Debug.Log("Local vehicle for host was null");
             if (spawnRequestQueue.Count != 0)
                 SpawnRequestQueue();
             Networker.alreadyInGame = true;
-            while (playersToSpawnQueue.Count > 0)
-            {
-                SpawnVehicle(playersToSpawnQueue.Dequeue());
-            }
+            
         }
+        while (playersToSpawnQueue.Count > 0) {
+            SpawnVehicle(playersToSpawnQueue.Dequeue());
+        }
+
         yield break;
     }
-    public static IEnumerator MapLoaded(VTMapCustom customMapToload) //Clients and Hosts
+    public static IEnumerator MapLoaded(VTMapCustom _) //Clients and Hosts
     {
-        while (VTMapManager.fetch == null || !VTMapManager.fetch.scenarioReady || FlightSceneManager.instance.switchingScene)
-        {
-            yield return null;
-        }
-        Debug.Log("The map has loaded");
-        gameLoaded = true;
-        //As a client, when the map has loaded we are going to request a spawn point from the host
-        SetPrefabs();
-        if (!Networker.isHost)
-        {
-            Networker.SendP2P(Networker.hostID, new Message(MessageType.RequestSpawn), EP2PSend.k_EP2PSendReliable);
-        }
-        else
-        {
-            Networker.hostLoaded = true;
-            Networker.hostReady = true;
-            hostLoaded = true;
-            Networker.SendGlobalP2P(new Message_HostLoaded(true), EP2PSend.k_EP2PSendReliable);
-            GameObject localVehicle = VTOLAPI.GetPlayersVehicleGameObject();
-            if (localVehicle != null)
-            {
-                GenerateSpawns(localVehicle.transform);
-                localUID = Networker.GenerateNetworkUID();
-                SendSpawnVehicle(localVehicle, localVehicle.transform.position, localVehicle.transform.rotation.eulerAngles, localUID);
-            }
-            else
-                Debug.Log("Local vehicle for host was null");
-            if (spawnRequestQueue.Count != 0)
-                SpawnRequestQueue();
-            Networker.alreadyInGame = true;
-            while (playersToSpawnQueue.Count > 0)
-            {
-                    SpawnVehicle(playersToSpawnQueue.Dequeue());
-            }
-        }
-        yield break;
+        return (MapLoaded());
     }
 
     /// <summary>
@@ -136,7 +102,7 @@ public static class PlayerManager
     /// <summary>
     /// This gives all the people waiting their spawn points
     /// </summary>
-    private static void SpawnRequestQueue() //Host Only
+    private static void SpawnRequestQueue() //Run by Host Only
     {
         Debug.Log($"Giving {spawnRequestQueue.Count} people their spawns");
         Transform lastSpawn;
@@ -152,11 +118,13 @@ public static class PlayerManager
     }
     /// <summary>
     /// This is when a client has requested a spawn point from the host,
-    /// the host gets a spawn point and sends back the position
+    /// the host gets a spawn point and sends back the position. This does
+    /// not actually spawn the vehicle yet, just makes the request to the
+    /// host. 
     /// </summary>
     /// <param name="packet">The Message</param>
     /// <param name="sender">The client who sent it</param>
-    public static void RequestSpawn(Packet packet, CSteamID sender) //Host Only
+    public static void RequestSpawn(Packet packet, CSteamID sender) //Run by Host Only
     {
         Debug.Log("A player has requested for a spawn point");
         if (!hostLoaded)
@@ -177,10 +145,11 @@ public static class PlayerManager
     /// <summary>
     /// When the client receives a P2P message of their spawn point, 
     /// this will move them to that location before sending their vehicle 
-    /// to the host.
+    /// to the host. This will call the function that spawns the local
+    /// vehicle. 
     /// </summary>
     /// <param name="packet">The message sent over the network</param>
-    public static void RequestSpawn_Result(Packet packet) //Clients Only
+    public static void RequestSpawn_Result(Packet packet) //Run by Clients Only
     {
         Debug.Log("The host has sent back our spawn point");
         Message_RequestSpawn_Result result = (Message_RequestSpawn_Result)((PacketSingle)packet).message;
@@ -194,18 +163,20 @@ public static class PlayerManager
         }
         localVehicle.transform.position = result.position.toVector3;
         localVehicle.transform.rotation = Quaternion.Euler(result.rotation.toVector3);
-        SendSpawnVehicle(localVehicle, result.position.toVector3, result.rotation.toVector3, result.vehicleUID);
+        SpawnLocalVehicleAndInformOtherClients(localVehicle, result.position.toVector3, result.rotation.toVector3, result.vehicleUID);
         localUID = result.vehicleUID;
     }
     /// <summary>
-    /// Sends the message to other clients to spawn their vehicles
+    /// Spawns a local vehicle, and sends the message to other clients to 
+    /// spawn their representation of this vehicle
     /// </summary>
     /// <param name="localVehicle">The local clients gameobject</param>
-    public static void SendSpawnVehicle(GameObject localVehicle, Vector3 pos, Vector3 rot, ulong UID) //Both
+    public static void SpawnLocalVehicleAndInformOtherClients(GameObject localVehicle, Vector3 pos, Vector3 rot, ulong UID) //Both
     {
         Debug.Log("Sending our location to spawn our vehicle");
         VTOLVehicles currentVehicle = VTOLAPI.GetPlayersVehicleEnum();
-        players.Add(new Player(SteamUser.GetSteamID(), localVehicle, currentVehicle, UID));
+        Player localPlayer = new Player(SteamUser.GetSteamID(), localVehicle, currentVehicle, UID);
+        players.Add(localPlayer);
 
         RigidbodyNetworker_Sender rbSender = localVehicle.AddComponent<RigidbodyNetworker_Sender>();
         rbSender.networkUID = UID;
@@ -227,80 +198,23 @@ public static class PlayerManager
         if (Multiplayer.SoloTesting)
             pos += new Vector3(20, 0, 0);
 
-        List<int> cm = new List<int>();
-        float fuel = 0.65f;
-
-        //Setting up missiles with MissileUpdate Scripts
-        Debug.Log("Setting up missiles");
-        WeaponManager weaponManager = localVehicle.GetComponent<WeaponManager>();
-        List<HPInfo> hpInfos = new List<HPInfo>();
-        HPEquippable lastEquippable = null;
-        for (int i = 0; i < weaponManager.equipCount; i++)
-        {
-            Debug.Log("Weapon Manager, Equip " + i);
-            lastEquippable = weaponManager.GetEquip(i);
-            if (lastEquippable == null) //If this is null, it means there isn't any weapon in that slot.
-                continue;
-            Debug.Log("Last Equippable = " + lastEquippable.fullName);
-            List<ulong> missileUIDS = new List<ulong>();
-            if (lastEquippable.weaponType != HPEquippable.WeaponTypes.Gun &&
-                lastEquippable.weaponType != HPEquippable.WeaponTypes.Rocket)
-            {
-                Debug.Log("This last equip is a missile launcher");
-                HPEquipMissileLauncher HPml = lastEquippable as HPEquipMissileLauncher;
-                if (HPml.ml == null)
-                {
-                    Debug.LogError("The Missile Launcher was null on this Missile Launcher");
-                    Debug.LogError("Type was = " + lastEquippable.weaponType);
-                    continue;
-                }
-                if (HPml.ml.missiles == null)
-                {
-                    Debug.LogError("The missile list is null");
-                    continue;
-                }
-                Debug.Log($"This has {HPml.ml.missiles.Length} missiles");
-                for (int j = 0; j < HPml.ml.missiles.Length; j++)
-                {
-                    //There shouldn't be any shot missiles, but if so this skips them as they are null.
-                    if (HPml.ml.missiles[j] == null)
-                    {
-                        Debug.LogError("It seems there was a missile shot as it was null");
-                        continue;
-                    }
-                    Debug.Log("Adding Missle Networker to missile");
-                    MissileNetworker_Sender sender = HPml.ml.missiles[j].gameObject.AddComponent<MissileNetworker_Sender>();
-                    sender.networkUID = Networker.GenerateNetworkUID();
-                    missileUIDS.Add(sender.networkUID);
-                }
-            }
-
-            hpInfos.Add(new HPInfo(
-                    lastEquippable.gameObject.name.Replace("(Clone)", ""),
-                    lastEquippable.hardpointIdx,
-                    lastEquippable.weaponType,
-                    missileUIDS.ToArray()));
-        }
-
-        //Getting Counter Measure flares.
-        Debug.Log("Setting up Counter Measure");
+        List<HPInfo> hpInfos = VTOLVR_Multiplayer.PlaneEquippableManager.generateLocalHpInfoList();
         CountermeasureManager cmManager = localVehicle.GetComponentInChildren<CountermeasureManager>();
-
-        for (int i = 0; i < cmManager.countermeasures.Count; i++)
-        {
-            cm.Add(cmManager.countermeasures[i].count);
-        }
-
-        //Getting Fuel
-        if (VehicleEquipper.loadoutSet)
-        {
-            fuel = VehicleEquipper.loadout.normalizedFuel;
-        }
+        List<int> cm = VTOLVR_Multiplayer.PlaneEquippableManager.generateCounterMeasuresFromCmManager(cmManager);
+        float fuel = VTOLVR_Multiplayer.PlaneEquippableManager.generateLocalFuelValue();
 
         if (!Networker.isHost || Multiplayer.SoloTesting)
         {
+            // Not host, so send host the spawn vehicle message
             Networker.SendP2P(Networker.hostID,
-                new Message_SpawnVehicle(currentVehicle, new Vector3D(pos), new Vector3D(rot), SteamUser.GetSteamID().m_SteamID, UID, hpInfos.ToArray(), cm.ToArray(), fuel),
+                new Message_SpawnVehicle(currentVehicle, 
+                    new Vector3D(pos), 
+                    new Vector3D(rot), 
+                    SteamUser.GetSteamID().m_SteamID, 
+                    UID, 
+                    hpInfos.ToArray(), 
+                    cm.ToArray(), 
+                    fuel),
                 EP2PSend.k_EP2PSendReliable);
         }
     }
@@ -310,7 +224,7 @@ public static class PlayerManager
     /// be on it.
     /// </summary>
     /// <param name="packet">The message</param>
-    public static void SpawnVehicle(Packet packet)
+    public static void SpawnVehicle(Packet packet) //Both, but never spawns the local vehicle, only executes spawn vehicle messages from other clients
     {
         Debug.Log("Recived a Spawn Vehicle Message");
 
@@ -353,73 +267,13 @@ public static class PlayerManager
                     Debug.Log($"Running host code to tell new player about host vehicle.");
 
                     GameObject localVehicle = VTOLAPI.GetPlayersVehicleGameObject();
+                    WeaponManager localWeaponManager = localVehicle.GetComponent<WeaponManager>();
 
-                    WeaponManager hostWeaponManager = localVehicle.GetComponent<WeaponManager>();
-                    List<HPInfo> hpInfos = new List<HPInfo>();
-                    List<int> cm = new List<int>();
-                    float fuel = 0.65f;
-                    HPEquippable lastEquippable = null;
-                    for (int j = 0; j < hostWeaponManager.equipCount; j++)
-                    {
-                        Debug.Log("Weapon Manager, Equip " + j);
-                        lastEquippable = hostWeaponManager.GetEquip(j);
-                        if (lastEquippable == null) //If this is null, it means there isn't any weapon in that slot.
-                            continue;
-                        Debug.Log("Last Equippable = " + lastEquippable.fullName);
-                        List<ulong> missileUIDS = new List<ulong>();
-                        if (lastEquippable.weaponType != HPEquippable.WeaponTypes.Gun &&
-                            lastEquippable.weaponType != HPEquippable.WeaponTypes.Rocket &&
-                            lastEquippable.weaponType != HPEquippable.WeaponTypes.Unknown)
-                        {
-                            Debug.Log("This last equip is a missile launcher");
-                            HPEquipMissileLauncher HPml = lastEquippable as HPEquipMissileLauncher;
-                            if (HPml.ml == null)
-                            {
-                                Debug.LogError("The Missile Launcher was null on this Missile Launcher");
-                                Debug.LogError("Type was = " + lastEquippable.weaponType);
-                                continue;
-                            }
-                            if (HPml.ml.missiles == null)
-                            {
-                                Debug.LogError("The missile list is null");
-                                continue;
-                            }
-                            Debug.Log($"This has {HPml.ml.missiles.Length} missiles");
-                            for (int k = 0; k < HPml.ml.missiles.Length; k++)
-                            {
-                                //There shouldn't be any shot missiles, but if so this skips them as they are null.
-                                if (HPml.ml.missiles[k] == null)
-                                {
-                                    missileUIDS.Add(0);
-                                    Debug.LogError("It seems there was a missile shot as it was null");
-                                    continue;
-                                }
-                                Debug.Log("Adding Missle Networker to missile");
-                                MissileNetworker_Sender sender = HPml.ml.missiles[k].gameObject.AddComponent<MissileNetworker_Sender>();
-                                sender.networkUID = Networker.GenerateNetworkUID();
-                                missileUIDS.Add(sender.networkUID);
-                            }
-                        }
-
-                        hpInfos.Add(new HPInfo(
-                                lastEquippable.gameObject.name.Replace("(Clone)", ""),
-                                lastEquippable.hardpointIdx,
-                                lastEquippable.weaponType,
-                                missileUIDS.ToArray()));
-                    }
-
+                    List<HPInfo> hpInfos = VTOLVR_Multiplayer.PlaneEquippableManager.generateHpInfoListFromWeaponManager(localWeaponManager,
+                        VTOLVR_Multiplayer.PlaneEquippableManager.HPInfoListGenerateNetworkType.sender);
                     CountermeasureManager cmManager = localVehicle.GetComponentInChildren<CountermeasureManager>();
-
-                    for (int l = 0; l < cmManager.countermeasures.Count; l++)
-                    {
-                        cm.Add(cmManager.countermeasures[l].count);
-                    }
-
-                    //Getting Fuel
-                    if (VehicleEquipper.loadoutSet)
-                    {
-                        fuel = VehicleEquipper.loadout.normalizedFuel;
-                    }
+                    List<int> cm = VTOLVR_Multiplayer.PlaneEquippableManager.generateCounterMeasuresFromCmManager(cmManager);
+                    float fuel = VTOLVR_Multiplayer.PlaneEquippableManager.generateLocalFuelValue();
 
                     Networker.SendP2P(new CSteamID(message.csteamID),
                         new Message_SpawnVehicle(

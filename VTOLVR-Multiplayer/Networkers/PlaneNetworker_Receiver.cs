@@ -156,68 +156,13 @@ public class PlaneNetworker_Receiver : MonoBehaviour
             return null;
         }
 
-        List<HPInfo> hpInfos = new List<HPInfo>();
-        HPEquippable lastEquippable = null;
-        Debug.LogError("doing for loop");
-        for (int i = 0; i < weaponManager.equipCount; i++)
-        {
-            lastEquippable = weaponManager.GetEquip(i);
-            if (lastEquippable == null)
-            {
-                Debug.Log("last equippable null, continueing loop");
-                continue;
-            }
-            Debug.Log("Last equipable weaopn manager get equip i woohoooooo");
-            List<ulong> missileUIDS = new List<ulong>();
-            Debug.Log("Last equipable weaopn manager get equip i woohoooooo");
-            if (lastEquippable is HPEquipMissileLauncher) // I removed .weapon type because fuck you
-            {
-                Debug.Log("Oh shit we're doing a missile now.");
-                HPEquipMissileLauncher HPml = (HPEquipMissileLauncher)lastEquippable ;
-                Debug.Log("as shit");
-                if (HPml.ml == null)
-                {
-                    Debug.LogError("HPml.ml null");
-                    break;
-                }
-                Debug.Log("entering for loop");
-                for (int j = 0; j < HPml.ml.missiles.Length; j++)
-                {
-                    //If they are null, they have been shot.
-                    if (HPml.ml.missiles[j] == null)
-                    {
-                        Debug.LogError("if statement shot null");
-                        missileUIDS.Add(0);
-                        continue;
-                    }
-                    Debug.Log("after first if in for");
-                    MissileNetworker_Receiver reciever = HPml.ml.missiles[j].gameObject.GetComponent<MissileNetworker_Receiver>();
-                    if (reciever == null)
-                    {
-                        Debug.LogError("reciever null");
-                    }
-                    if (reciever != null)
-                        missileUIDS.Add(reciever.networkUID);
-                    else
-                        Debug.LogError($"Failed to get NetworkUID for missile ({HPml.ml.missiles[j].gameObject.name})");
-                }
-            }
-
-            hpInfos.Add(new HPInfo(
-                    lastEquippable.gameObject.name.Replace("(Clone)", ""),
-                    lastEquippable.hardpointIdx,
-                    lastEquippable.weaponType,
-                    missileUIDS.ToArray()));
-            Debug.Log("hpInfos.Add()");
-
-        }
-        Debug.LogError("return time!");
-        return hpInfos.ToArray();
+        return VTOLVR_Multiplayer.PlaneEquippableManager.generateHpInfoListFromWeaponManager(weaponManager, 
+            VTOLVR_Multiplayer.PlaneEquippableManager.HPInfoListGenerateNetworkType.receiver).ToArray();
     }
     public int[] GetCMS()
     {
         //There is only ever 2 counter measures, thats why it's hard coded.
-        return new int[] { cmManager.countermeasures[0].count, cmManager.countermeasures[1].count };
+        return VTOLVR_Multiplayer.PlaneEquippableManager.generateCounterMeasuresFromCmManager(cmManager).ToArray();
     }
     public float GetFuel()
     {

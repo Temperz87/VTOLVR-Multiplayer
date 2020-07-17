@@ -137,54 +137,12 @@ public class PlaneNetworker_Sender : MonoBehaviour
     public void WeaponSet(Packet packet)
     {
         //This message has only been sent to us so no need to check UID
-        List<HPInfo> hpInfos = new List<HPInfo>();
-        List<int> cm = new List<int>();
-        float fuel = 0.65f;
+        List<HPInfo> hpInfos = VTOLVR_Multiplayer.PlaneEquippableManager.generateHpInfoListFromWeaponManager(weaponManager, 
+            VTOLVR_Multiplayer.PlaneEquippableManager.HPInfoListGenerateNetworkType.sender);
 
-        HPEquippable lastEquippable = null;
-        for (int i = 0; i < weaponManager.equipCount; i++)
-        {
-            lastEquippable = weaponManager.GetEquip(i);
-            if (lastEquippable == null)
-            {
-                continue;
-            }
-            List<ulong> missileUIDS = new List<ulong>();
-            if (lastEquippable.weaponType != HPEquippable.WeaponTypes.Gun &&
-                lastEquippable.weaponType != HPEquippable.WeaponTypes.Rocket)
-            {
-                HPEquipMissileLauncher HPml = lastEquippable as HPEquipMissileLauncher;
-                if (HPml.ml == null) //I think this could be null.
-                    break;
-                for (int j = 0; j < HPml.ml.missiles.Length; j++)
-                {
-                    // If they are null, they have been shot.
-                    if (HPml.ml.missiles[j] != null)
-                    {
-                        missileUIDS.Add(0);
-                        continue;
-                    }
-                    MissileNetworker_Sender sender = HPml.ml.missiles[i].gameObject.GetComponent<MissileNetworker_Sender>();
-                    if (sender != null)
-                        missileUIDS.Add(sender.networkUID);
-                    else
-                        Debug.LogError($"Failed to get NetworkUID for missile ({HPml.ml.missiles[j].gameObject.name})");
-                }
-            }
+        List<int> cm = VTOLVR_Multiplayer.PlaneEquippableManager.generateCounterMeasuresFromCmManager(cmManager);
 
-            hpInfos.Add(new HPInfo(
-                    lastEquippable.gameObject.name.Replace("(Clone)", ""),
-                    lastEquippable.hardpointIdx,
-                    lastEquippable.weaponType,
-                    missileUIDS.ToArray()));
-        }
-
-        for (int i = 0; i < cmManager.countermeasures.Count; i++)
-        {
-            cm.Add(cmManager.countermeasures[i].count);
-        }
-
-        fuel = fuelTank.fuel / fuelTank.totalFuel;
+        float fuel = VTOLVR_Multiplayer.PlaneEquippableManager.generateLocalFuelValue();
 
         Networker.SendP2P(Networker.hostID,
             new Message_WeaponSet_Result(hpInfos.ToArray(), cm.ToArray(), fuel, networkUID),

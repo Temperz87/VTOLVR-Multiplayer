@@ -8,9 +8,7 @@ public class MissileNetworker_Sender : MonoBehaviour
     public ulong networkUID;
     // private Rigidbody rigidbody; doesn't exist in some missiles so we're not fucking with that shit
     private Message_MissileUpdate lastMessage;
-    private HPEquipMissileLauncher hpML;
     private Missile thisMissile;
-    private int missileLauncheruID;
     private bool receivedGlobalUID = false;
     private void Awake()
     {
