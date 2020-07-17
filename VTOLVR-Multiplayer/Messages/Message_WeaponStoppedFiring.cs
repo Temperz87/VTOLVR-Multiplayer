@@ -1,4 +1,4 @@
-﻿using System;
+﻿/*using System;
 [Serializable]
 public class Message_WeaponStoppedFiring : Message
 {
@@ -8,4 +8,4 @@ public class Message_WeaponStoppedFiring : Message
         UID = uID;
         type = MessageType.WeaponStoppedFiring;
     }
-}
+}*/

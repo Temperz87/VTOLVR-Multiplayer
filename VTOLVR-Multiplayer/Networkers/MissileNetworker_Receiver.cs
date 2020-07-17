@@ -44,15 +44,17 @@ public class MissileNetworker_Receiver : MonoBehaviour
             {
                 foreach (var collider in thisMissile.gameObject.GetComponentsInChildren<Collider>())
                 {
+                    Debug.Log("Guidance mode Optical.");
                     collider.gameObject.layer = 9;
                 }
             }
             Debug.Log("Try fire missile clientside");
-            thisMissile.Fire();
+            // thisMissile.Fire();
         }
 
         if (lastMessage.hasExploded)
         {
+            Debug.Log("Missile exploded.");
             thisMissile.Detonate();
             return;
         }

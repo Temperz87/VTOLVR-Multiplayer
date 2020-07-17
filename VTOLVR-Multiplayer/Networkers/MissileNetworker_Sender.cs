@@ -27,13 +27,11 @@ public class MissileNetworker_Sender : MonoBehaviour
         }
         if (thisMissile != null && thisMissile.fired)
         {
-            Debug.Log("Missiles has been fired in main function");
             if (lastMessage == null)
             {
                 Debug.LogError("lastMessage null");
             }
             lastMessage.networkUID = networkUID;
-            Debug.Log("Past networkUID");
             /*if (rigidbody == null)
             {
                 Debug.LogError("Rigidbody null");
@@ -47,9 +45,7 @@ public class MissileNetworker_Sender : MonoBehaviour
                 Debug.LogError("gameObject null in MissileNetworker_Sender");
             }
             lastMessage.position = VTMapManager.WorldToGlobalPoint(gameObject.transform.position);
-            Debug.Log("Missile_sender lastmessage.position");
             lastMessage.rotation = new Vector3D(gameObject.transform.rotation.eulerAngles);
-            Debug.Log("Missile_sender lastmessage.rotation");
             lastMessage.guidanceMode = thisMissile.guidanceMode;
             if (thisMissile.guidanceMode == Missile.GuidanceModes.Radar)
             {
