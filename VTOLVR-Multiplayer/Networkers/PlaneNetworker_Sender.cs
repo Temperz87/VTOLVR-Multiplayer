@@ -22,7 +22,7 @@ public class PlaneNetworker_Sender : MonoBehaviour
     private int lastIdx;
     private Message_PlaneUpdate lastMessage;
     private Message_WeaponFiring lastFiringMessage;
-    private Message_WeaponStoppedFiring lastStoppedFiringMessage;
+    // private Message_WeaponStoppedFiring lastStoppedFiringMessage;
     private Message_FireCountermeasure lastCountermeasureMessage;
     private Tailhook tailhook;
     private CatapultHook launchBar;
@@ -38,7 +38,7 @@ public class PlaneNetworker_Sender : MonoBehaviour
             lastMessage = new Message_PlaneUpdate(false, 0, 0, 0, 0, 0, 0, false, false, false, networkUID);
         }
         lastFiringMessage = new Message_WeaponFiring(-1, false, networkUID);
-        lastStoppedFiringMessage = new Message_WeaponStoppedFiring(networkUID);
+        // lastStoppedFiringMessage = new Message_WeaponStoppedFiring(networkUID);
         lastCountermeasureMessage = new Message_FireCountermeasure(true, true, networkUID);
         wheelsController = GetComponent<WheelsController>();
         aeroController = GetComponent<AeroController>();
@@ -81,7 +81,7 @@ public class PlaneNetworker_Sender : MonoBehaviour
             lastIdx = lastFiringMessage.weaponIdx;
             Debug.Log("combinedWeaponIdx = " + lastFiringMessage.weaponIdx);
             lastFiringMessage.UID = networkUID;
-            lastStoppedFiringMessage.UID = networkUID;
+            // lastStoppedFiringMessage.UID = networkUID;
             lastFiringMessage.isFiring = weaponManager.isFiring;
             if (Networker.isHost)
                 Networker.SendGlobalP2P(lastFiringMessage, Steamworks.EP2PSend.k_EP2PSendReliable);

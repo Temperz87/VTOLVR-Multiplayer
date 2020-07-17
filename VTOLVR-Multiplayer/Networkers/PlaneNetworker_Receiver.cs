@@ -20,6 +20,7 @@ public class PlaneNetworker_Receiver : MonoBehaviour
     private CountermeasureManager cmManager;
     private FuelTank fuelTank;
     private Traverse traverse;
+    int idx;
     // private RadarLockData radarLockData;
     private void Awake()
     {
@@ -29,7 +30,7 @@ public class PlaneNetworker_Receiver : MonoBehaviour
         Networker.WeaponSet_Result += WeaponSet_Result;
         Networker.Disconnecting += OnDisconnect;
         Networker.WeaponFiring += WeaponFiring;
-        Networker.WeaponStoppedFiring += WeaponStoppedFiring;
+        // Networker.WeaponStoppedFiring += WeaponStoppedFiring;
         Networker.FireCountermeasure += FireCountermeasure;
 
         weaponManager = GetComponent<WeaponManager>();
@@ -120,15 +121,41 @@ public class PlaneNetworker_Receiver : MonoBehaviour
     public void WeaponFiring(Packet packet)
     {
         Message_WeaponFiring message = ((PacketSingle)packet).message as Message_WeaponFiring;
+        idx = (int)traverse.Field("weaponIdx").GetValue();
         if (message.UID != networkUID)
             return;
-        if (message.weaponIdx != (int)traverse.Field("weaponIdx").GetValue())
+        while (message.weaponIdx != idx)
         {
-            traverse.Field("weaponIdx").SetValue(message.weaponIdx);
+            if (weaponManager.isMasterArmed == false)
+            {
+                weaponManager.ToggleMasterArmed();
+            }
+            weaponManager.CycleActiveWeapons(false);
+            idx = (int)traverse.Field("weaponIdx").GetValue();
+            Debug.Log(idx + " " + message.weaponIdx);
         }
         if (message.isFiring != weaponManager.isFiring)
         {
-            weaponManager.StartFire();
+            if (message.isFiring)
+            {
+                if (weaponManager.isMasterArmed == false)
+                {
+                    weaponManager.ToggleMasterArmed();
+                }
+                if (weaponManager.currentEquip is HPEquipIRML || weaponManager.currentEquip is HPEquipRadarML)
+                {
+                    weaponManager.SingleFire();
+                }
+                else
+                {
+                    weaponManager.StartFire();
+                }
+            }
+            else
+            {
+                if (!(weaponManager.currentEquip is HPEquipIRML || weaponManager.currentEquip is HPEquipRadarML) || weaponManager.currentEquip is RocketLauncher)
+                    weaponManager.EndFire();
+            }
         }
         /*To switch weapon, we go back one previous one on the index and then toggle it to go forward one.
         //So that everything gets called which is in the normal game.
@@ -138,13 +165,13 @@ public class PlaneNetworker_Receiver : MonoBehaviour
         weaponManager.SetMasterArmed(true);
         weaponManager.StartFire();*/
     }
-    public void WeaponStoppedFiring(Packet packet)
+    /*public void WeaponStoppedFiring(Packet packet)
     {
         Message_WeaponStoppedFiring message = ((PacketSingle)packet).message as Message_WeaponStoppedFiring;
         if (message.UID != networkUID)
             return;
         weaponManager.EndFire();
-    }
+    }*/
 
     public void FireCountermeasure(Packet packet) // chez
     {
@@ -191,7 +218,7 @@ public class PlaneNetworker_Receiver : MonoBehaviour
         Networker.Disconnecting -= OnDisconnect;
         Networker.WeaponSet_Result -= WeaponSet_Result;
         Networker.WeaponFiring -= WeaponFiring;
-        Networker.WeaponStoppedFiring -= WeaponStoppedFiring;
+        // Networker.WeaponStoppedFiring -= WeaponStoppedFiring;
         Networker.FireCountermeasure -= FireCountermeasure;
         Debug.Log("Destroyed Plane Update");
         Debug.Log(gameObject.name);

@@ -44,6 +44,7 @@ public class MissileNetworker_Receiver : MonoBehaviour
             {
                 foreach (var collider in thisMissile.gameObject.GetComponentsInChildren<Collider>())
                 {
+                    Debug.Log("Guidance mode Optical.");
                     collider.gameObject.layer = 9;
                 }
             }
@@ -53,6 +54,7 @@ public class MissileNetworker_Receiver : MonoBehaviour
 
         if (lastMessage.hasExploded)
         {
+            Debug.Log("Missile exploded.");
             thisMissile.Detonate();
             return;
         }
