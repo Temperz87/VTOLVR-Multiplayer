@@ -100,6 +100,7 @@
     <Compile Include="Messages\Message_LobbyInfoRequest.cs" />
     <Compile Include="Messages\Message_MissileUpdate.cs" />
     <Compile Include="Messages\Message_PlaneUpdate.cs" />
+    <Compile Include="Messages\Message_Ready.cs" />
     <Compile Include="Messages\Message_RequestNetworkUID.cs" />
     <Compile Include="Messages\Message_RequestSpawn.cs" />
     <Compile Include="Messages\Message_RigidbodyUpdate.cs" />
@@ -121,6 +122,7 @@
     <Compile Include="Patches\Patch_LoadingSceneController.cs" />
     <Compile Include="Patches\Patch_VTMapManager.cs" />
     <Compile Include="Patches\Patch_VTTMapTrees.cs" />
+    <Compile Include="PlaneEquippableManager.cs" />
     <Compile Include="PlayerManager.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Networkers\RigidbodyNetworker_Receiver.cs" />

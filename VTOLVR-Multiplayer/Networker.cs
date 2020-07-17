@@ -22,6 +22,8 @@ public class Networker : MonoBehaviour
     public static GameState gameState { get; private set; }
     public static List<CSteamID> players { get; private set; } = new List<CSteamID>();
     public static Dictionary<CSteamID, bool> readyDic { get; private set; } = new Dictionary<CSteamID, bool>();
+    public static bool allPlayersReadyHasBeenSentFirstTime;
+    public static bool readySent;
     public static bool hostReady, alreadyInGame, hostLoaded;
     public static CSteamID hostID { get; private set; }
     private Callback<P2PSessionRequest_t> _p2PSessionRequestCallback;
@@ -46,6 +48,19 @@ public class Networker : MonoBehaviour
     public static event UnityAction<Packet> MissileUpdate;
     public static event UnityAction<Packet> RequestNetworkUID;
     #endregion
+    #region Host Forwarding Suppress By Message Type List
+    private List<MessageType> hostMessageForwardingSuppressList = new List<MessageType> {
+        MessageType.JoinRequest,
+        MessageType.JoinRequest_Result,
+        MessageType.SpawnVehicle,
+        MessageType.None,
+        MessageType.LobbyInfoRequest,
+        MessageType.LobbyInfoRequest_Result,
+        MessageType.WeaponsSet_Result,
+        MessageType.RequestNetworkUID,
+        MessageType.Ready
+    };
+    #endregion
     private void Awake()
     {
         if (_instance != null)
@@ -65,6 +80,8 @@ public class Networker : MonoBehaviour
         //Yes this is expecting everyone, even if they are not friends...
         SteamNetworking.AcceptP2PSessionWithUser(request.m_steamIDRemote);
         Debug.Log("Accepting P2P with " + SteamFriends.GetFriendPersonaName(request.m_steamIDRemote));
+
+        // Do this here???
         StartCoroutine(PlayerManager.MapLoaded());
     }
 
@@ -213,6 +230,14 @@ public class Networker : MonoBehaviour
         }
     }
 
+    private bool MessageTypeShouldBeForwarded(MessageType messageType) {
+        if (hostMessageForwardingSuppressList.Contains(messageType)) {
+            return (false);
+        }
+        return (true);
+    }
+
+
     private void ReadP2PPacket(byte[] array, uint num, uint num2, CSteamID csteamID)
     {
         MemoryStream serializationStream = new MemoryStream(array);
@@ -323,13 +348,15 @@ public class Networker : MonoBehaviour
                     if (!isHost)
                     {
                         Debug.LogError($"Recived Join Request when we are not the host");
-                        return;
+                        string notHostStr = "Failed to Join Player, they are not hosting a lobby";
+                        SendP2P(csteamID, new Message_JoinRequest_Result(false, notHostStr), EP2PSend.k_EP2PSendReliable);
+                        break;
                     }
                     Message_JoinRequest joinRequest = packetS.message as Message_JoinRequest;
                     if (players.Contains(csteamID))
                     {
                         Debug.LogError("The player seemed to send two join requests");
-                        return;
+                        break;
                     }
                     if (joinRequest.currentVehicle == "FA-26B")
                     {
@@ -381,29 +408,50 @@ public class Networker : MonoBehaviour
                     }
                     break;
                 case MessageType.Ready:
+                    if (!isHost) {
+                        Debug.Log("We shouldn't have gotten a ready message");
+                        break;
+                    }
                     Debug.Log("case ready");
+                    Message_Ready readyMessage = packetS.message as Message_Ready;
+                    
                     //The client has said they are ready to start, so we change it in the dictionary
                     if (readyDic.ContainsKey(csteamID))
                     {
+                        if (readyDic[csteamID]) {
+                            Debug.Log("Received ready message from the same user twice");
+                            break;
+                        }
+
                         Debug.Log($"{csteamID.m_SteamID} has said they are ready!\nHost ready state {hostReady}");
                         readyDic[csteamID] = true;
                         if (alreadyInGame)
                         {
                             //Someone is trying to join when we are already in game.
                             Debug.Log($"We are already in session, {csteamID} is joining in!");
-                            SendP2P(csteamID, new Message(MessageType.Ready_Result), EP2PSend.k_EP2PSendReliable);
+                            SendP2P(csteamID, new Message(MessageType.AllPlayersReady), EP2PSend.k_EP2PSendReliable);
+
+                            // Send host loaded message right away
+                            SendP2P(csteamID, new Message_HostLoaded(true), EP2PSend.k_EP2PSendReliable);
                             break;
                         }
                         else if (hostReady && EveryoneElseReady())
                         {
                             Debug.Log("The last client has said they are ready, starting");
-                            SendGlobalP2P(new Message(MessageType.Ready_Result), EP2PSend.k_EP2PSendReliable);
+                            if (!allPlayersReadyHasBeenSentFirstTime) {
+                                allPlayersReadyHasBeenSentFirstTime = true;
+                                SendGlobalP2P(new Message(MessageType.AllPlayersReady), EP2PSend.k_EP2PSendReliable);
+                            }
+                            else {
+                                // Send only to this player
+                                SendP2P(csteamID, new Message(MessageType.AllPlayersReady), EP2PSend.k_EP2PSendReliable);
+                            }
                             LoadingSceneController.instance.PlayerReady();
                         }
                         UpdateLoadingText();
                     }
                     break;
-                case MessageType.Ready_Result:
+                case MessageType.AllPlayersReady:
                     Debug.Log("The host said everyone is ready, waiting for the host to load.");
                     hostReady = true;
                     // LoadingSceneController.instance.PlayerReady();
@@ -509,29 +557,24 @@ public class Networker : MonoBehaviour
                     break;
                 case MessageType.HostLoaded:
                     Debug.Log("case host loaded");
-                    if (isHost)
-                    {
-                        Debug.Log("we shouldn't have gotten a host loaded....");
-                    }
-                    else
-                    {
-                        hostLoaded = true;
-                        LoadingSceneController.instance.PlayerReady();
+                    if (!hostLoaded) {
+                        if (isHost) {
+                            Debug.Log("we shouldn't have gotten a host loaded....");
+                        }
+                        else {
+                            hostLoaded = true;
+                            LoadingSceneController.instance.PlayerReady();
+                        }
                     }
                     break;
                 default:
                     Debug.Log("default case");
                     break;
             }
-            if (isHost && packetS.message.type != MessageType.JoinRequest  && packetS.message.type != MessageType.RequestSpawn)
+            if (isHost)
             {
-                PlayerManager.SpawnRequestQueuePublic();
-                foreach (var uID in players)
-                {
-                    if (uID != SteamUser.GetSteamID() && uID != (CSteamID)packet.networkUID)
-                    {
-                        SendP2P(uID, packetS.message, EP2PSend.k_EP2PSendUnreliableNoDelay);
-                    }
+                if (MessageTypeShouldBeForwarded(packetS.message.type)) {
+                    SendExcludeP2P((CSteamID)packetS.networkUID, packetS.message, EP2PSend.k_EP2PSendReliable);
                 }
             }
         }
@@ -680,6 +723,8 @@ public class Networker : MonoBehaviour
         players = new List<CSteamID>();
         readyDic = new Dictionary<CSteamID, bool>();
         hostReady = false;
+        allPlayersReadyHasBeenSentFirstTime = false;
+        readySent = false;
         alreadyInGame = false;
         hostID = new CSteamID(0);
 
