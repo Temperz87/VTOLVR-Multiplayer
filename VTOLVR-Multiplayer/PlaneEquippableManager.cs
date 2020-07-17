@@ -56,7 +56,7 @@ namespace VTOLVR_Multiplayer
                                 missileUIDS.Add(mnSender.networkUID);
                                 break;
                             case HPInfoListGenerateNetworkType.sender:
-                                MissileNetworker_Sender sender = HPml.ml.missiles[i].gameObject.GetComponent<MissileNetworker_Sender>();
+                                MissileNetworker_Sender sender = HPml.ml.missiles[j].gameObject.GetComponent<MissileNetworker_Sender>();
                                 if (sender != null) {
                                     missileUIDS.Add(sender.networkUID);
                                 }

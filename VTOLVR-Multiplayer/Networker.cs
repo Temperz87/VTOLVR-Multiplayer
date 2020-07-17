@@ -21,7 +21,7 @@ public class Networker : MonoBehaviour
     public enum GameState { Menu, Config, Game };
     public static GameState gameState { get; private set; }
     public static List<CSteamID> players { get; private set; } = new List<CSteamID>();
-    public static Dictionary<ulong, bool> readyDic { get; private set; } = new Dictionary<ulong, bool>();
+    public static Dictionary<CSteamID, bool> readyDic { get; private set; } = new Dictionary<CSteamID, bool>();
     public static bool allPlayersReadyHasBeenSentFirstTime;
     public static bool readySent;
     public static bool hostReady, alreadyInGame, hostLoaded;
@@ -368,7 +368,7 @@ public class Networker : MonoBehaviour
                     {
                         Debug.Log($"Accepting {csteamID.m_SteamID}");
                         players.Add(csteamID);
-                        readyDic.Add(csteamID.m_SteamID, false);
+                        readyDic.Add(csteamID, false);
                         UpdateLoadingText();
                         SendP2P(csteamID, new Message_JoinRequest_Result(true), EP2PSend.k_EP2PSendReliable);
                     }
@@ -416,15 +416,15 @@ public class Networker : MonoBehaviour
                     Message_Ready readyMessage = packetS.message as Message_Ready;
                     
                     //The client has said they are ready to start, so we change it in the dictionary
-                    if (readyDic.ContainsKey(readyMessage.UID))
+                    if (readyDic.ContainsKey(csteamID))
                     {
-                        if (readyDic[readyMessage.UID]) {
+                        if (readyDic[csteamID]) {
                             Debug.Log("Received ready message from the same user twice");
                             break;
                         }
 
                         Debug.Log($"{csteamID.m_SteamID} has said they are ready!\nHost ready state {hostReady}");
-                        readyDic[readyMessage.UID] = true;
+                        readyDic[csteamID] = true;
                         if (alreadyInGame)
                         {
                             //Someone is trying to join when we are already in game.
@@ -633,7 +633,7 @@ public class Networker : MonoBehaviour
     {
         for (int i = 0; i < players.Count; i++)
         {
-            if (!readyDic[players[i].m_SteamID])
+            if (!readyDic[players[i]])
                 return false;
         }
         return true;
@@ -677,7 +677,7 @@ public class Networker : MonoBehaviour
         content.AppendLine(SteamFriends.GetPersonaName() + ": " + (hostReady ? "Ready" : "Not Ready") + "\n");
         for (int i = 0; i < players.Count; i++)
         {
-            content.Append(SteamFriends.GetFriendPersonaName(players[i]) + ": " + (readyDic[players[i].m_SteamID]? "Ready": "Not Ready") + "\n");
+            content.Append(SteamFriends.GetFriendPersonaName(players[i]) + ": " + (readyDic[players[i]]? "Ready": "Not Ready") + "\n");
         }
         if (loadingText != null)
             loadingText.text = content.ToString();
@@ -721,7 +721,7 @@ public class Networker : MonoBehaviour
         isHost = false;
         gameState = GameState.Menu;
         players = new List<CSteamID>();
-        readyDic = new Dictionary<ulong, bool>();
+        readyDic = new Dictionary<CSteamID, bool>();
         hostReady = false;
         allPlayersReadyHasBeenSentFirstTime = false;
         readySent = false;
