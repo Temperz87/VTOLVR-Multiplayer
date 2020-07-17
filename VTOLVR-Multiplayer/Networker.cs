@@ -355,7 +355,24 @@ public class Networker : MonoBehaviour
                         SendP2P(csteamID, new Message_JoinRequest_Result(false, notHostStr), EP2PSend.k_EP2PSendReliable);
                         break;
                     }
+
                     Message_JoinRequest joinRequest = packetS.message as Message_JoinRequest;
+                    if (joinRequest.vtolVrVersion != GameStartup.versionString) {
+                        string vtolMismatchVersion = "Failed to Join Player, mismatched vtol vr versions (please both update to latest version)";
+                        SendP2P(csteamID, new Message_JoinRequest_Result(false, vtolMismatchVersion), EP2PSend.k_EP2PSendReliable);
+                        break;
+                    }
+                    if (joinRequest.multiplayerBranch != ModVersionString.ReleaseBranch) {
+                        string branchMismatch = "Failed to Join Player, host branch is )" + joinRequest.multiplayerBranch + ", ours is " + ModVersionString.ReleaseBranch;
+                        SendP2P(csteamID, new Message_JoinRequest_Result(false, branchMismatch), EP2PSend.k_EP2PSendReliable);
+                        break;
+                    }
+                    if (joinRequest.multiplayerModVersion != ModVersionString.ModVersionNumber) {
+                        string multiplayerVersionMismatch = "Failed to Join Player, host version is )" + joinRequest.multiplayerModVersion + ", ours is " + ModVersionString.ModVersionNumber;
+                        SendP2P(csteamID, new Message_JoinRequest_Result(false, multiplayerVersionMismatch), EP2PSend.k_EP2PSendReliable);
+                        break;
+                    }
+
                     if (players.Contains(csteamID))
                     {
                         Debug.LogError("The player seemed to send two join requests");

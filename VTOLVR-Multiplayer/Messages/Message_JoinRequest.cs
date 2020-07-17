@@ -7,13 +7,17 @@ using System.Threading.Tasks;
 [Serializable]
 public class Message_JoinRequest : Message
 {
-    public string currentVehicle, currentScenario, currentCampaign;
+    public string currentVehicle, currentScenario, currentCampaign, vtolVrVersion, multiplayerBranch, multiplayerModVersion;
 
     public Message_JoinRequest(string currentVehicle, string currentScenario, string currentCampaign)
     {
         this.currentVehicle = currentVehicle;
         this.currentScenario = currentScenario;
         this.currentCampaign = currentCampaign;
+        vtolVrVersion = GameStartup.versionString;
+        multiplayerBranch = ModVersionString.ReleaseBranch;
+        multiplayerModVersion = ModVersionString.ModVersionNumber;
+
         type = MessageType.JoinRequest;
     }
 }
