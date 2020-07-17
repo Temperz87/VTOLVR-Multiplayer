@@ -14,6 +14,7 @@ public class PlaneNetworker_Sender : MonoBehaviour
     private AeroController aeroController;
     private VRThrottle vRThrottle;
 
+    private Health health;
     private WeaponManager weaponManager;
     private CountermeasureManager cmManager;
     private FuelTank fuelTank;
@@ -25,6 +26,7 @@ public class PlaneNetworker_Sender : MonoBehaviour
     private Message_WeaponFiring lastFiringMessage;
     private Message_WeaponStoppedFiring lastStoppedFiringMessage;
     private Message_FireCountermeasure lastCountermeasureMessage;
+    private Message_Death lastDeathMessage;
 
     private void Awake()
     {
@@ -33,6 +35,7 @@ public class PlaneNetworker_Sender : MonoBehaviour
         lastFiringMessage = new Message_WeaponFiring(-1, networkUID);
         lastStoppedFiringMessage = new Message_WeaponStoppedFiring(networkUID);
         lastCountermeasureMessage = new Message_FireCountermeasure(true, true, networkUID);
+        lastDeathMessage = new Message_Death(networkUID);
         wheelsController = GetComponent<WheelsController>();
         aeroController = GetComponent<AeroController>();
         vRThrottle = gameObject.GetComponentInChildren<VRThrottle>();
@@ -44,14 +47,19 @@ public class PlaneNetworker_Sender : MonoBehaviour
         weaponManager = GetComponent<WeaponManager>();
         if (weaponManager == null)
             Debug.LogError("Weapon Manager was null on our vehicle");
+
         cmManager = GetComponentInChildren<CountermeasureManager>();
         if (cmManager == null)
-        {
             Debug.LogError("CountermeasureManager was null on our vehicle");
-        }
-        else {
+        else
             cmManager.OnFiredCM += FireCountermeasure;
-        }
+
+        health = GetComponent<Health>();
+        if (health == null)
+            Debug.LogError("health was null on our vehicle");
+        else
+            health.OnDeath.AddListener(Death);
+
         fuelTank = GetComponent<FuelTank>();
         if (fuelTank == null)
             Debug.LogError("FuelTank was null on our vehicle");
@@ -179,11 +187,20 @@ public class PlaneNetworker_Sender : MonoBehaviour
     }
 
     public void FireCountermeasure() {
-        Debug.Log("Sending CM Messsage");
+        lastCountermeasureMessage.UID = networkUID;
         if (Networker.isHost)
             Networker.SendGlobalP2P(lastCountermeasureMessage, Steamworks.EP2PSend.k_EP2PSendReliable);
         else
             Networker.SendP2P(Networker.hostID, lastCountermeasureMessage, Steamworks.EP2PSend.k_EP2PSendReliable);
+    }
+
+    public void Death()
+    {
+        lastDeathMessage.UID = networkUID;
+        if (Networker.isHost)
+            Networker.SendGlobalP2P(lastDeathMessage, Steamworks.EP2PSend.k_EP2PSendReliable);
+        else
+            Networker.SendP2P(Networker.hostID, lastDeathMessage, Steamworks.EP2PSend.k_EP2PSendReliable);
     }
 
     public void OnDestory()

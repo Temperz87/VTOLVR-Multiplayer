@@ -26,5 +26,6 @@ public enum MessageType
     WeaponFiring, //This is saying that the weapon is now firing on this vehicle
     WeaponStoppedFiring, //This is when they have finished firing
     MissileUpdate, //This is when a missile is updating its state across the network.
-    FireCountermeasure //This is when a player fires a countermeasure
+    FireCountermeasure, //This is when a player fires a countermeasure
+    Death //This is when a player dies
 }
