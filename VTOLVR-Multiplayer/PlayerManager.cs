@@ -194,10 +194,11 @@ public static class PlayerManager
             EngineTiltNetworker_Sender tiltSender = localVehicle.AddComponent<EngineTiltNetworker_Sender>();
             tiltSender.networkUID = UID;
         }
-
-        WingFoldNetworker_Sender wingFold = localVehicle.AddComponent<WingFoldNetworker_Sender>();
-        wingFold.wingController = localVehicle.GetComponentInChildren<WingFoldController>().toggler;
-        wingFold.networkUID = UID;
+        if (localVehicle.GetComponentInChildren<WingFoldController>() != null) {
+            WingFoldNetworker_Sender wingFold = localVehicle.AddComponent<WingFoldNetworker_Sender>();
+            wingFold.wingController = localVehicle.GetComponentInChildren<WingFoldController>().toggler;
+            wingFold.networkUID = UID;
+        }
 
         if (Multiplayer.SoloTesting)
             pos += new Vector3(20, 0, 0);
