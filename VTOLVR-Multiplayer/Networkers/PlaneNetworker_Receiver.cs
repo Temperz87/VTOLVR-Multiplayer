@@ -21,7 +21,8 @@ public class PlaneNetworker_Receiver : MonoBehaviour
     private CountermeasureManager cmManager;
     private FuelTank fuelTank;
     private Traverse traverse;
-    int idx;
+    private RadarLockData LockData;
+    private int idx;
     // private RadarLockData radarLockData;
     private void Awake()
     {
@@ -67,6 +68,22 @@ public class PlaneNetworker_Receiver : MonoBehaviour
             aiPilot.catHook.SetState(1);
         else if (!lastMessage.launchBar && aiPilot.catHook.deployed)
             aiPilot.catHook.SetState(0);
+        if (lastMessage.hasRadar)
+        {
+            weaponManager.lockingRadar.radar.debugRadar = true;
+            if (weaponManager.lockingRadar.radar.enabled)
+            {
+                weaponManager.lockingRadar.radar.enabled = true;
+            }
+            if (lastMessage.locked)
+            {
+                weaponManager.lockingRadar.ForceLock(MissileNetworker_Receiver.GetActorAtPosition(lastMessage.radarLock), out LockData);
+            }
+            else if (!lastMessage.locked && weaponManager.lockingRadar.IsLocked())
+            {
+                weaponManager.lockingRadar.Unlock();
+            }
+        }
         for (int i = 0; i < autoPilot.outputs.Length; i++)
         {
             autoPilot.outputs[i].SetPitchYawRoll(new Vector3(lastMessage.pitch, lastMessage.yaw, lastMessage.roll));

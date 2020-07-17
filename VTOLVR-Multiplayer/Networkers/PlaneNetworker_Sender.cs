@@ -28,15 +28,16 @@ public class PlaneNetworker_Sender : MonoBehaviour
     private Tailhook tailhook;
     private CatapultHook launchBar;
     private bool lastFiring = false;
+    private Vector3D radarLock;
     private void Awake()
     {
         if (VTOLAPI.GetPlayersVehicleEnum() != VTOLVehicles.AV42C)
         {
-            lastMessage = new Message_PlaneUpdate(false, 0, 0, 0, 0, 0, 0, false, false, false, networkUID);
+            lastMessage = new Message_PlaneUpdate(false, 0, 0, 0, 0, 0, 0, false, false, false, networkUID, false, false, radarLock);
         }
         else
         {
-            lastMessage = new Message_PlaneUpdate(false, 0, 0, 0, 0, 0, 0, false, false, false, networkUID);
+            lastMessage = new Message_PlaneUpdate(false, 0, 0, 0, 0, 0, 0, false, false, false, networkUID, true, false, radarLock);
         }
         lastFiringMessage = new Message_WeaponFiring(-1, false, networkUID);
         // lastStoppedFiringMessage = new Message_WeaponStoppedFiring(networkUID);
@@ -135,10 +136,10 @@ public class PlaneNetworker_Sender : MonoBehaviour
         lastMessage.networkUID = networkUID;
         lastMessage.tailHook = tailhook.isDeployed;
         lastMessage.launchBar = launchBar.deployed;
-        /*if (lastMessage.hasRadar)
+        if (lastMessage.hasRadar)
         {
-            lastMessage.radarLock.actor = weaponManager.lockingRadar.currentLock.actor;
-        }*/
+            lastMessage.radarLock = VTMapManager.WorldToGlobalPoint(weaponManager.lockingRadar.currentLock.actor.position);
+        }
         if (Networker.isHost)
             Networker.SendGlobalP2P(lastMessage, Steamworks.EP2PSend.k_EP2PSendUnreliable);
         else
