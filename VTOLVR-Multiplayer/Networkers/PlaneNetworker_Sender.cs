@@ -19,21 +19,28 @@ public class PlaneNetworker_Sender : MonoBehaviour
     private CountermeasureManager cmManager;
     private FuelTank fuelTank;
     private Traverse traverse;
-
     private bool previousFiringState;
-
+    private int lastIdx;
     private Message_PlaneUpdate lastMessage;
     private Message_WeaponFiring lastFiringMessage;
-    private Message_WeaponStoppedFiring lastStoppedFiringMessage;
+    // private Message_WeaponStoppedFiring lastStoppedFiringMessage;
     private Message_FireCountermeasure lastCountermeasureMessage;
     private Message_Death lastDeathMessage;
-
+    private Tailhook tailhook;
+    private CatapultHook launchBar;
+    private bool lastFiring = false;
     private void Awake()
     {
-        
-        lastMessage = new Message_PlaneUpdate(false, 0, 0, 0, 0, 0, 0, false, false, networkUID);
-        lastFiringMessage = new Message_WeaponFiring(-1, networkUID);
-        lastStoppedFiringMessage = new Message_WeaponStoppedFiring(networkUID);
+        if (VTOLAPI.GetPlayersVehicleEnum() != VTOLVehicles.AV42C)
+        {
+            lastMessage = new Message_PlaneUpdate(false, 0, 0, 0, 0, 0, 0, false, false, false, networkUID);
+        }
+        else
+        {
+            lastMessage = new Message_PlaneUpdate(false, 0, 0, 0, 0, 0, 0, false, false, false, networkUID);
+        }
+        lastFiringMessage = new Message_WeaponFiring(-1, false, networkUID);
+        // lastStoppedFiringMessage = new Message_WeaponStoppedFiring(networkUID);
         lastCountermeasureMessage = new Message_FireCountermeasure(true, true, networkUID);
         lastDeathMessage = new Message_Death(networkUID);
         wheelsController = GetComponent<WheelsController>();
@@ -68,18 +75,34 @@ public class PlaneNetworker_Sender : MonoBehaviour
 
         traverse = Traverse.Create(weaponManager);
         Debug.Log("Done Plane Sender");
+        tailhook = GetComponentInChildren<Tailhook>();
+        launchBar = GetComponentInChildren<CatapultHook>();
     }
 
     private void Update()
     {
-        if (weaponManager.isFiring != previousFiringState)
+        if (weaponManager.isFiring != previousFiringState | lastIdx != (int)traverse.Field("weaponIdx").GetValue())
+        {
+            previousFiringState = weaponManager.isFiring;
+            lastFiringMessage.weaponIdx = (int)traverse.Field("weaponIdx").GetValue();
+            lastIdx = lastFiringMessage.weaponIdx;
+            Debug.Log("combinedWeaponIdx = " + lastFiringMessage.weaponIdx);
+            lastFiringMessage.UID = networkUID;
+            // lastStoppedFiringMessage.UID = networkUID;
+            lastFiringMessage.isFiring = weaponManager.isFiring;
+            if (Networker.isHost)
+                Networker.SendGlobalP2P(lastFiringMessage, Steamworks.EP2PSend.k_EP2PSendReliable);
+            else
+                Networker.SendP2P(Networker.hostID, lastFiringMessage, Steamworks.EP2PSend.k_EP2PSendReliable);
+        }
+        /*if (weaponManager.isFiring != previousFiringState)
         {
             previousFiringState = weaponManager.isFiring;
             lastFiringMessage.weaponIdx = (int)traverse.Field("weaponIdx").GetValue();
             Debug.Log("combinedWeaponIdx = " + lastFiringMessage.weaponIdx);
             lastFiringMessage.UID = networkUID;
             lastStoppedFiringMessage.UID = networkUID;
-            if (weaponManager.isFiring)
+            if (weaponManager.isFiring | )
             {
                 if (Networker.isHost)
                     Networker.SendGlobalP2P(lastFiringMessage, Steamworks.EP2PSend.k_EP2PSendReliable);
@@ -99,8 +122,7 @@ public class PlaneNetworker_Sender : MonoBehaviour
                     Networker.SendP2P(Networker.hostID, lastStoppedFiringMessage, Steamworks.EP2PSend.k_EP2PSendReliable);
                 }
             }
-            
-        }
+        }*/
     }
 
     private void LateUpdate()
@@ -112,7 +134,12 @@ public class PlaneNetworker_Sender : MonoBehaviour
         lastMessage.breaks = aeroController.brake;
         lastMessage.landingGear = LandingGearState();
         lastMessage.networkUID = networkUID;
-
+        lastMessage.tailHook = tailhook.isDeployed;
+        lastMessage.launchBar = launchBar.deployed;
+        /*if (lastMessage.hasRadar)
+        {
+            lastMessage.radarLock.actor = weaponManager.lockingRadar.currentLock.actor;
+        }*/
         if (Networker.isHost)
             Networker.SendGlobalP2P(lastMessage, Steamworks.EP2PSend.k_EP2PSendUnreliable);
         else
@@ -132,60 +159,17 @@ public class PlaneNetworker_Sender : MonoBehaviour
     public void WeaponSet(Packet packet)
     {
         //This message has only been sent to us so no need to check UID
-        List<HPInfo> hpInfos = new List<HPInfo>();
-        List<int> cm = new List<int>();
-        float fuel = 0.65f;
+        List<HPInfo> hpInfos = VTOLVR_Multiplayer.PlaneEquippableManager.generateHpInfoListFromWeaponManager(weaponManager,
+            VTOLVR_Multiplayer.PlaneEquippableManager.HPInfoListGenerateNetworkType.sender);
 
-        HPEquippable lastEquippable = null;
-        for (int i = 0; i < weaponManager.equipCount; i++)
-        {
-            lastEquippable = weaponManager.GetEquip(i);
-            if (lastEquippable == null)
-            {
-                continue;
-            }
-            List<ulong> missileUIDS = new List<ulong>();
-            if (lastEquippable.weaponType != HPEquippable.WeaponTypes.Gun &&
-                lastEquippable.weaponType != HPEquippable.WeaponTypes.Rocket)
-            {
-                HPEquipMissileLauncher HPml = lastEquippable as HPEquipMissileLauncher;
-                if (HPml.ml == null) //I think this could be null.
-                    break;
-                for (int j = 0; j < HPml.ml.missiles.Length; j++)
-                {
-                    //If they are null, they have been shot.
-                    if (HPml.ml.missiles[j] == null)
-                    {
-                        missileUIDS.Add(0);
-                        continue;
-                    }
+        List<int> cm = VTOLVR_Multiplayer.PlaneEquippableManager.generateCounterMeasuresFromCmManager(cmManager);
 
-                    MissileNetworker_Sender sender = HPml.ml.missiles[i].gameObject.GetComponent<MissileNetworker_Sender>();
-                    if (sender != null)
-                        missileUIDS.Add(sender.networkUID);
-                    else
-                        Debug.LogError($"Failed to get NetworkUID for missile ({HPml.ml.missiles[j].gameObject.name})");
-                }
-            }
-
-            hpInfos.Add(new HPInfo(
-                    lastEquippable.gameObject.name.Replace("(Clone)", ""),
-                    lastEquippable.weaponType,
-                    missileUIDS.ToArray()));
-        }
-
-        for (int i = 0; i < cmManager.countermeasures.Count; i++)
-        {
-            cm.Add(cmManager.countermeasures[i].count);
-        }
-
-        fuel = fuelTank.fuel / fuelTank.totalFuel;
+        float fuel = VTOLVR_Multiplayer.PlaneEquippableManager.generateLocalFuelValue();
 
         Networker.SendP2P(Networker.hostID,
             new Message_WeaponSet_Result(hpInfos.ToArray(), cm.ToArray(), fuel, networkUID),
             Steamworks.EP2PSend.k_EP2PSendReliable);
     }
-
     public void FireCountermeasure() {
         lastCountermeasureMessage.UID = networkUID;
         if (Networker.isHost)
@@ -193,7 +177,6 @@ public class PlaneNetworker_Sender : MonoBehaviour
         else
             Networker.SendP2P(Networker.hostID, lastCountermeasureMessage, Steamworks.EP2PSend.k_EP2PSendReliable);
     }
-
     public void Death()
     {
         lastDeathMessage.UID = networkUID;
@@ -202,8 +185,7 @@ public class PlaneNetworker_Sender : MonoBehaviour
         else
             Networker.SendP2P(Networker.hostID, lastDeathMessage, Steamworks.EP2PSend.k_EP2PSendReliable);
     }
-
-    public void OnDestory()
+    public void OnDestroy()
     {
         Networker.WeaponSet -= WeaponSet;
     }

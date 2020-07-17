@@ -95,11 +95,13 @@
     <Compile Include="Messages\Message_Disconnecting.cs" />
     <Compile Include="Messages\Message_EngineTiltUpdate.cs" />
     <Compile Include="Messages\Message_FireCountermeasure.cs" />
+    <Compile Include="Messages\Message_HostLoaded.cs" />
     <Compile Include="Messages\Message_JoinRequest.cs" />
     <Compile Include="Messages\Message_LoadingTextUpdate.cs" />
     <Compile Include="Messages\Message_LobbyInfoRequest.cs" />
     <Compile Include="Messages\Message_MissileUpdate.cs" />
     <Compile Include="Messages\Message_PlaneUpdate.cs" />
+    <Compile Include="Messages\Message_Ready.cs" />
     <Compile Include="Messages\Message_RequestNetworkUID.cs" />
     <Compile Include="Messages\Message_RequestSpawn.cs" />
     <Compile Include="Messages\Message_RigidbodyUpdate.cs" />
@@ -121,6 +123,7 @@
     <Compile Include="Patches\Patch_LoadingSceneController.cs" />
     <Compile Include="Patches\Patch_VTMapManager.cs" />
     <Compile Include="Patches\Patch_VTTMapTrees.cs" />
+    <Compile Include="PlaneEquippableManager.cs" />
     <Compile Include="PlayerManager.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Networkers\RigidbodyNetworker_Receiver.cs" />
@@ -138,8 +141,7 @@
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent>if EXIST "D:\Vidjagames\steamapps\common\VTOL VR\VTOLVR_ModLoader\mods\" (
-xcopy  "$(ProjectDir)bin\Debug\$(TargetName).dll" "D:\Vidjagames\steamapps\common\VTOL VR\VTOLVR_ModLoader\mods\" /Y
-)</PostBuildEvent>
+    <PostBuildEvent>
+    </PostBuildEvent>
   </PropertyGroup>
 </Project>

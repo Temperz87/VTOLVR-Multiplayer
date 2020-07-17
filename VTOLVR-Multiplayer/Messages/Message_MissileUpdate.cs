@@ -7,9 +7,10 @@ public class Message_MissileUpdate : Message
 {
     public ulong networkUID;
     public Vector3D position, rotation, targetPosition;
-    public bool hasMissed;
+    public bool hasExploded;
     public Missile.GuidanceModes guidanceMode;
-
+    public ulong MissileLauncher;
+    public int idx;
     public Message_MissileUpdate(ulong uid)
     {
         networkUID = uid;

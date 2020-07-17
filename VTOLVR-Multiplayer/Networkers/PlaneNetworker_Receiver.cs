@@ -21,7 +21,8 @@ public class PlaneNetworker_Receiver : MonoBehaviour
     private CountermeasureManager cmManager;
     private FuelTank fuelTank;
     private Traverse traverse;
-
+    int idx;
+    // private RadarLockData radarLockData;
     private void Awake()
     {
         aiPilot = GetComponent<AIPilot>();
@@ -30,7 +31,7 @@ public class PlaneNetworker_Receiver : MonoBehaviour
         Networker.WeaponSet_Result += WeaponSet_Result;
         Networker.Disconnecting += OnDisconnect;
         Networker.WeaponFiring += WeaponFiring;
-        Networker.WeaponStoppedFiring += WeaponStoppedFiring;
+        // Networker.WeaponStoppedFiring += WeaponStoppedFiring;
         Networker.FireCountermeasure += FireCountermeasure;
         Networker.Death += Death;
 
@@ -58,7 +59,14 @@ public class PlaneNetworker_Receiver : MonoBehaviour
             aiPilot.gearAnimator.Extend();
         else
             aiPilot.gearAnimator.Retract();
-
+        if (lastMessage.tailHook && !aiPilot.tailHook.isDeployed)
+            aiPilot.tailHook.ExtendHook();
+        else if (!lastMessage.tailHook && aiPilot.tailHook.isDeployed)
+            aiPilot.tailHook.RetractHook();
+        if (lastMessage.launchBar && !aiPilot.catHook.deployed)
+            aiPilot.catHook.SetState(1);
+        else if (!lastMessage.launchBar && aiPilot.catHook.deployed)
+            aiPilot.catHook.SetState(0);
         for (int i = 0; i < autoPilot.outputs.Length; i++)
         {
             autoPilot.outputs[i].SetPitchYawRoll(new Vector3(lastMessage.pitch, lastMessage.yaw, lastMessage.roll));
@@ -70,6 +78,20 @@ public class PlaneNetworker_Receiver : MonoBehaviour
         {
             autoPilot.engines[i].SetThrottle(lastMessage.throttle);
         }
+        /*if (lastMessage.hasRadar)
+        {
+            if (lastMessage.radarLock != radarLockData.actor.actorID)
+            {
+                if (!lastMessage.locked)
+                {
+                    aiPilot.wm.lockingRadar.Unlock();
+                }
+                else
+                {
+                    aiPilot.wm.lockingRadar.ForceLock(lastMessage.radarLock.actor, out radarLockData);
+                }
+            }
+        }*/
     }
     public void WeaponSet_Result(Packet packet)
     {
@@ -104,25 +126,59 @@ public class PlaneNetworker_Receiver : MonoBehaviour
     public void WeaponFiring(Packet packet)
     {
         Message_WeaponFiring message = ((PacketSingle)packet).message as Message_WeaponFiring;
+        idx = (int)traverse.Field("weaponIdx").GetValue();
         if (message.UID != networkUID)
             return;
-        //To switch weapon, we go back one previous one on the index and then toggle it to go forward one.
+        while (message.weaponIdx != idx)
+        {
+            if (weaponManager.isMasterArmed == false)
+            {
+                weaponManager.ToggleMasterArmed();
+            }
+            weaponManager.CycleActiveWeapons(false);
+            idx = (int)traverse.Field("weaponIdx").GetValue();
+            Debug.Log(idx + " " + message.weaponIdx);
+        }
+        if (message.isFiring != weaponManager.isFiring)
+        {
+            if (message.isFiring)
+            {
+                if (weaponManager.isMasterArmed == false)
+                {
+                    weaponManager.ToggleMasterArmed();
+                }
+                if (weaponManager.currentEquip is HPEquipIRML || weaponManager.currentEquip is HPEquipRadarML)
+                {
+                    weaponManager.SingleFire();
+                }
+                else
+                {
+                    weaponManager.StartFire();
+                }
+            }
+            else
+            {
+                if (!(weaponManager.currentEquip is HPEquipIRML || weaponManager.currentEquip is HPEquipRadarML) || weaponManager.currentEquip is RocketLauncher)
+                    weaponManager.EndFire();
+            }
+        }
+        /*To switch weapon, we go back one previous one on the index and then toggle it to go forward one.
         //So that everything gets called which is in the normal game.
         List<string> uniqueWeapons = traverse.Field("uniqueWeapons").GetValue() as List<string>;
         traverse.Field("weaponIdx").SetValue((message.weaponIdx - 1) % uniqueWeapons.Count);
         weaponManager.CycleActiveWeapons(); //Should move it one forward to the same weapon
         weaponManager.SetMasterArmed(true);
-        weaponManager.StartFire();
+        weaponManager.StartFire();*/
     }
-    public void WeaponStoppedFiring(Packet packet)
+    /*public void WeaponStoppedFiring(Packet packet)
     {
         Message_WeaponStoppedFiring message = ((PacketSingle)packet).message as Message_WeaponStoppedFiring;
         if (message.UID != networkUID)
             return;
         weaponManager.EndFire();
-    }
+    }*/
 
-    public void FireCountermeasure(Packet packet)
+    public void FireCountermeasure(Packet packet) // chez
     {
         Message_FireCountermeasure message = ((PacketSingle)packet).message as Message_FireCountermeasure;
         if (message.UID != networkUID)
@@ -147,67 +203,13 @@ public class PlaneNetworker_Receiver : MonoBehaviour
             return null;
         }
 
-        List<HPInfo> hpInfos = new List<HPInfo>();
-        HPEquippable lastEquippable = null;
-        Debug.LogError("doing for loop");
-        for (int i = 0; i < weaponManager.equipCount; i++)
-        {
-            lastEquippable = weaponManager.GetEquip(i);
-            if (lastEquippable == null)
-            {
-                Debug.Log("last equippable null, continueing loop");
-                continue;
-            }
-            Debug.Log("Last equipable weaopn manager get equip i woohoooooo");
-            List<ulong> missileUIDS = new List<ulong>();
-            Debug.Log("Last equipable weaopn manager get equip i woohoooooo");
-            if (lastEquippable is HPEquipMissileLauncher) // I removed .weapon type because fuck you
-            {
-                Debug.Log("Oh shit we're doing a missile now.");
-                HPEquipMissileLauncher HPml = (HPEquipMissileLauncher)lastEquippable ;
-                Debug.Log("as shit");
-                if (HPml.ml == null)
-                {
-                    Debug.LogError("HPml.ml null");
-                    break;
-                }
-                Debug.Log("entering for loop");
-                for (int j = 0; j < HPml.ml.missiles.Length; j++)
-                {
-                    //If they are null, they have been shot.
-                    if (HPml.ml.missiles[j] == null)
-                    {
-                        Debug.LogError("if statement shot null");
-                        missileUIDS.Add(0);
-                        continue;
-                    }
-                    Debug.Log("after first if in for");
-                    MissileNetworker_Receiver reciever = HPml.ml.missiles[j].gameObject.GetComponent<MissileNetworker_Receiver>();
-                    if (reciever == null)
-                    {
-                        Debug.LogError("reciever null");
-                    }
-                    if (reciever != null)
-                        missileUIDS.Add(reciever.networkUID);
-                    else
-                        Debug.LogError($"Failed to get NetworkUID for missile ({HPml.ml.missiles[j].gameObject.name})");
-                }
-            }
-
-            hpInfos.Add(new HPInfo(
-                    lastEquippable.gameObject.name.Replace("(Clone)", ""),
-                    lastEquippable.weaponType,
-                    missileUIDS.ToArray()));
-            Debug.Log("hpInfos.Add()");
-
-        }
-        Debug.LogError("return time!");
-        return hpInfos.ToArray();
+        return VTOLVR_Multiplayer.PlaneEquippableManager.generateHpInfoListFromWeaponManager(weaponManager, 
+            VTOLVR_Multiplayer.PlaneEquippableManager.HPInfoListGenerateNetworkType.receiver).ToArray();
     }
     public int[] GetCMS()
     {
         //There is only ever 2 counter measures, thats why it's hard coded.
-        return new int[] { cmManager.countermeasures[0].count, cmManager.countermeasures[1].count };
+        return VTOLVR_Multiplayer.PlaneEquippableManager.generateCounterMeasuresFromCmManager(cmManager).ToArray();
     }
     public float GetFuel()
     {
@@ -222,13 +224,13 @@ public class PlaneNetworker_Receiver : MonoBehaviour
         
         Destroy(gameObject);
     }
-    public void OnDestory()
+    public void OnDestroy()
     {
         Networker.PlaneUpdate -= PlaneUpdate;
         Networker.Disconnecting -= OnDisconnect;
         Networker.WeaponSet_Result -= WeaponSet_Result;
         Networker.WeaponFiring -= WeaponFiring;
-        Networker.WeaponStoppedFiring -= WeaponStoppedFiring;
+        // Networker.WeaponStoppedFiring -= WeaponStoppedFiring;
         Networker.FireCountermeasure -= FireCountermeasure;
         Networker.Death -= Death;
         Debug.Log("Destroyed Plane Update");

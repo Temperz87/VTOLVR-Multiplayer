@@ -10,7 +10,7 @@ public enum MessageType
     JoinRequest, //When the client asks if they can join
     JoinRequest_Result, //Responce from the host if the client can join
     Ready, //Clients telling the host that they are ready
-    Ready_Result, //Host telling everyone we are starting
+    AllPlayersReady, //Host telling everyone we are starting
     LoadingTextUpdate, //To Update the loading text to show who is ready.
     RequestSpawn, //Requesting a location to spawn at to the host
     RequestSpawn_Result, //The Result of the host sending to client where they can spawn
@@ -28,4 +28,5 @@ public enum MessageType
     MissileUpdate, //This is when a missile is updating its state across the network.
     FireCountermeasure, //This is when a player fires a countermeasure
     Death //This is when a player dies
+    HostLoaded // This is when the host has loaded and the clients can load
 }
