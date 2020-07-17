@@ -33,5 +33,4 @@ class EngineTiltNetworker_Receiver : MonoBehaviour
         Debug.Log("Destroyed Engine Tilt Update");
         Debug.Log(gameObject.name);
     }
-
 }
