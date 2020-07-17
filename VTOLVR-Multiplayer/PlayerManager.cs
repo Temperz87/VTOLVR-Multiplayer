@@ -47,6 +47,7 @@ public static class PlayerManager
     /// </summary>
     public static IEnumerator MapLoaded()
     {
+        Debug.Log("map loading started");
         while (VTMapManager.fetch == null || !VTMapManager.fetch.scenarioReady || FlightSceneManager.instance.switchingScene)
         {
             yield return null;
@@ -57,10 +58,12 @@ public static class PlayerManager
         SetPrefabs();
         if (!Networker.isHost)
         {
+            Debug.Log($"Sending spawn request to host, host id: {Networker.hostID}, client id: {SteamUser.GetSteamID().m_SteamID}");
             Networker.SendP2P(Networker.hostID, new Message(MessageType.RequestSpawn), EP2PSend.k_EP2PSendReliable);
         }
         else
         {
+            Debug.Log("Starting map loaded host routines");
             Networker.hostLoaded = true;
             Networker.hostReady = true;
             Networker.SendGlobalP2P(new Message_HostLoaded(true), EP2PSend.k_EP2PSendReliable);
@@ -76,17 +79,11 @@ public static class PlayerManager
             if (spawnRequestQueue.Count != 0)
                 SpawnRequestQueue();
             Networker.alreadyInGame = true;
-            
         }
+
         while (playersToSpawnQueue.Count > 0) {
             SpawnVehicle(playersToSpawnQueue.Dequeue());
         }
-
-        yield break;
-    }
-    public static IEnumerator MapLoaded(VTMapCustom _) //Clients and Hosts
-    {
-        return (MapLoaded());
     }
 
     /// <summary>
@@ -203,9 +200,11 @@ public static class PlayerManager
         List<int> cm = VTOLVR_Multiplayer.PlaneEquippableManager.generateCounterMeasuresFromCmManager(cmManager);
         float fuel = VTOLVR_Multiplayer.PlaneEquippableManager.generateLocalFuelValue();
 
+        Debug.Log("Assembled our local vehicle");
         if (!Networker.isHost || Multiplayer.SoloTesting)
         {
             // Not host, so send host the spawn vehicle message
+            Debug.Log($"Sending spawn vehicle message to: {Networker.hostID}");
             Networker.SendP2P(Networker.hostID,
                 new Message_SpawnVehicle(currentVehicle, 
                     new Vector3D(pos), 
@@ -216,6 +215,9 @@ public static class PlayerManager
                     cm.ToArray(), 
                     fuel),
                 EP2PSend.k_EP2PSendReliable);
+        }
+        else {
+            Debug.Log("I am host, no need to immediately forward my assembled vehicle");
         }
     }
     /// <summary>

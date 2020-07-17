@@ -50,10 +50,12 @@ public class Networker : MonoBehaviour
     #endregion
     #region Host Forwarding Suppress By Message Type List
     private List<MessageType> hostMessageForwardingSuppressList = new List<MessageType> {
+        MessageType.None,
         MessageType.JoinRequest,
         MessageType.JoinRequest_Result,
         MessageType.SpawnVehicle,
-        MessageType.None,
+        MessageType.RequestSpawn,
+        MessageType.RequestSpawn_Result,
         MessageType.LobbyInfoRequest,
         MessageType.LobbyInfoRequest_Result,
         MessageType.WeaponsSet_Result,
@@ -72,7 +74,10 @@ public class Networker : MonoBehaviour
         RequestSpawn += PlayerManager.RequestSpawn;
         RequestSpawn_Result += PlayerManager.RequestSpawn_Result;
         SpawnVehicle += PlayerManager.SpawnVehicle;
-        VTCustomMapManager.OnLoadedMap += (customMap) => { StartCoroutine(PlayerManager.MapLoaded(customMap)); };
+
+        // Is this line actually needed?
+        //VTCustomMapManager.OnLoadedMap += (customMap) => { StartCoroutine(PlayerManager.MapLoaded(customMap)); };
+
         VTOLAPI.SceneLoaded += SceneChanged;
     }
     private void OnP2PSessionRequest(P2PSessionRequest_t request)
@@ -80,9 +85,6 @@ public class Networker : MonoBehaviour
         //Yes this is expecting everyone, even if they are not friends...
         SteamNetworking.AcceptP2PSessionWithUser(request.m_steamIDRemote);
         Debug.Log("Accepting P2P with " + SteamFriends.GetFriendPersonaName(request.m_steamIDRemote));
-
-        // Do this here???
-        // StartCoroutine(PlayerManager.MapLoaded());
     }
 
 
@@ -456,7 +458,7 @@ public class Networker : MonoBehaviour
                     // LoadingSceneController.instance.PlayerReady();
                     break;
                 case MessageType.RequestSpawn:
-                    Debug.Log("case request spawn");
+                    Debug.Log($"case request spawn from: {csteamID.m_SteamID}, we are {SteamUser.GetSteamID().m_SteamID}, host is {hostID}");
                     if (RequestSpawn != null)
                         RequestSpawn.Invoke(packet, csteamID);
                     break;
