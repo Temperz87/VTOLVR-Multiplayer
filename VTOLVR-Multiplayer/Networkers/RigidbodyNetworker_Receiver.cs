@@ -15,7 +15,7 @@ public class RigidbodyNetworker_Receiver : MonoBehaviour
 
     private Vector3 targetPosition;
     private Rigidbody rb;
-    private float positionThreshhold = 10;
+    private float positionThreshhold = 5f;
     private void Awake()
     {
         rb = GetComponent<Rigidbody>();

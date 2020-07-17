@@ -1,4 +1,5 @@
-﻿using Steamworks;
+﻿using Harmony;
+using Steamworks;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -8,7 +9,10 @@ public class MissileNetworker_Receiver : MonoBehaviour
 {
     public ulong networkUID;
     private Missile thisMissile;
+    public MissileLauncher thisML;
+    public int idx;
     private Message_MissileUpdate lastMessage;
+    private Traverse traverse;
     // private Rigidbody rigidbody; see missileSender for why i not using rigidbody
 
     private float positionThreshold = 0.5f;
@@ -18,10 +22,19 @@ public class MissileNetworker_Receiver : MonoBehaviour
         thisMissile = GetComponent<Missile>();
         // rigidbody = GetComponent<Rigidbody>();
         Networker.MissileUpdate += MissileUpdate;
+        thisMissile.OnDetonate.AddListener(new UnityEngine.Events.UnityAction(() => { Debug.Log("Missile detonated: " + thisMissile.name); }));
     }
-
     public void MissileUpdate(Packet packet)
     {
+        if (!thisMissile.gameObject.activeSelf)
+        {
+            Debug.LogError(thisMissile.gameObject.name + " isn't active in hiearchy, changing that to active.");
+            thisMissile.gameObject.SetActive(true);
+        }
+        if (traverse == null)
+        {
+            traverse = Traverse.Create(thisML);
+        }
         lastMessage = ((PacketSingle)packet).message as Message_MissileUpdate;
         if (lastMessage.networkUID != networkUID)
         {
@@ -49,7 +62,8 @@ public class MissileNetworker_Receiver : MonoBehaviour
                 }
             }
             Debug.Log("Try fire missile clientside");
-            // thisMissile.Fire();
+            traverse.Field("missileIdx").SetValue(idx);
+            thisML.FireMissile();
         }
 
         if (lastMessage.hasExploded)
@@ -61,14 +75,14 @@ public class MissileNetworker_Receiver : MonoBehaviour
 
         // gameObject.transform.velocity = lastMessage.velocity.toVector3;
         gameObject.transform.rotation = Quaternion.Euler(lastMessage.rotation.toVector3);
-        if (Vector3.Distance(gameObject.transform.position, lastMessage.position.toVector3) > positionThreshold)
+        if (Vector3.Distance(gameObject.transform.position, VTMapManager.GlobalToWorldPoint(lastMessage.position)) > positionThreshold)
         {
             Debug.LogWarning($"Missile ({gameObject.name}) is outside the threshold. Teleporting to position.");
-            gameObject.transform.position = lastMessage.position.toVector3;
+            gameObject.transform.position = VTMapManager.GlobalToWorldPoint(lastMessage.position);
         }
     }
 
-    private Actor GetActorAtPosition(Vector3D globalPos)
+    public static Actor GetActorAtPosition(Vector3D globalPos)
     {
         Vector3 worldPos = VTMapManager.GlobalToWorldPoint(globalPos);
         Actor result = null;
@@ -81,6 +95,10 @@ public class MissileNetworker_Receiver : MonoBehaviour
                 num = sqrMagnitude;
                 result = TargetManager.instance.allActors[i];
             }
+        }
+        if (result == null)
+        {
+            Debug.LogError("Get actor at position returned null, fuck.");
         }
         return result;
     }

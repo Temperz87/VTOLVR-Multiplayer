@@ -192,6 +192,10 @@ public static class PlayerManager
             tiltSender.networkUID = UID;
         }
 
+        WingFoldNetworker_Sender wingFold = localVehicle.AddComponent<WingFoldNetworker_Sender>();
+        wingFold.wingController = localVehicle.GetComponentInChildren<WingFoldController>().toggler;
+        wingFold.networkUID = UID;
+
         if (Multiplayer.SoloTesting)
             pos += new Vector3(20, 0, 0);
 
@@ -360,11 +364,20 @@ public static class PlayerManager
             tiltReceiver.networkUID = message.networkID;
         }
 
+        
 
         Rigidbody rb = newVehicle.GetComponent<Rigidbody>();
         AIPilot aIPilot = newVehicle.GetComponent<AIPilot>();
         Health health = newVehicle.GetComponent<Health>();
         health.invincible = true;
+
+        RotationToggle wingRotator = aIPilot.wingRotator;
+        if (wingRotator != null) {
+            WingFoldNetworker_Receiver wingFoldReceiver = newVehicle.AddComponent<WingFoldNetworker_Receiver>();
+            wingFoldReceiver.networkUID = message.networkID;
+            wingFoldReceiver.wingController = wingRotator;
+        }
+
         foreach (Collider collider in newVehicle.GetComponentsInChildren<Collider>())
         {
             if (collider)
@@ -439,10 +452,10 @@ public static class PlayerManager
                 Debug.Log(equip.name + " is a missile launcher");
                 HPEquipMissileLauncher hpML = equip as HPEquipMissileLauncher;
                 Debug.Log("This missile launcher has " + hpML.ml.missiles.Length + " missiles.");
-                foreach (var missile in hpML.ml.missiles)
+                for(int j = 0; j < hpML.ml.missiles.Length; j++)
                 {
                     Debug.Log("Adding missile reciever");
-                    lastReciever = missile.gameObject.AddComponent<MissileNetworker_Receiver>();
+                    lastReciever = hpML.ml.missiles[j].gameObject.AddComponent<MissileNetworker_Receiver>();
                     foreach (var thingy in message.hpLoadout) // it's a loop... because fuck you!
                     {
                         Debug.Log("Try adding missile reciever uID");
@@ -451,6 +464,8 @@ public static class PlayerManager
                             if (uIDidx < thingy.missileUIDS.Length)
                             {
                                 lastReciever.networkUID = thingy.missileUIDS[uIDidx];
+                                lastReciever.thisML = hpML.ml;
+                                lastReciever.idx = j;
                                 uIDidx++;
                             }
                         }
