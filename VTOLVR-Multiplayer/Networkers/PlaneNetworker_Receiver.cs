@@ -124,21 +124,17 @@ public class PlaneNetworker_Receiver : MonoBehaviour
 
     public void FireCountermeasure(Packet packet)
     {
-        Debug.Log("Recieving CM Messsage");
         Message_FireCountermeasure message = ((PacketSingle)packet).message as Message_FireCountermeasure;
         if (message.UID != networkUID)
             return;
-        Debug.Log("FIRING CMS!");
-        aiPilot.aiSpawn.CountermeasureProgram(message.flares, message.chaff, 1, 0.1f);
+        aiPilot.aiSpawn.CountermeasureProgram(message.flares, message.chaff, 2, 0.1f);
     }
 
     public void Death(Packet packet)
     {
         Message_Death message = ((PacketSingle)packet).message as Message_Death;
-        Debug.Log("Pre dying");
         if (message.UID != networkUID)
                 return;
-        Debug.Log("Dying");
         health.invincible = false;
         health.Kill();
     }

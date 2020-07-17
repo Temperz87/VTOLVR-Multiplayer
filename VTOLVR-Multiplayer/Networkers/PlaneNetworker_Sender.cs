@@ -187,7 +187,7 @@ public class PlaneNetworker_Sender : MonoBehaviour
     }
 
     public void FireCountermeasure() {
-        Debug.Log("Sending CM Messsage");
+        lastCountermeasureMessage.UID = networkUID;
         if (Networker.isHost)
             Networker.SendGlobalP2P(lastCountermeasureMessage, Steamworks.EP2PSend.k_EP2PSendReliable);
         else
@@ -196,6 +196,7 @@ public class PlaneNetworker_Sender : MonoBehaviour
 
     public void Death()
     {
+        lastDeathMessage.UID = networkUID;
         if (Networker.isHost)
             Networker.SendGlobalP2P(lastDeathMessage, Steamworks.EP2PSend.k_EP2PSendReliable);
         else
