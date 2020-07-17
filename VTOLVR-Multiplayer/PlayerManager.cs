@@ -21,9 +21,10 @@ public static class PlayerManager
     /// </summary>
     private static Queue<CSteamID> spawnRequestQueue = new Queue<CSteamID>();
     private static Queue<Packet> playersToSpawnQueue = new Queue<Packet>();
+    private static Queue<CSteamID> playersToSpawnIdQueue = new Queue<CSteamID>();
     public static bool gameLoaded;
     private static GameObject av42cPrefab, fa26bPrefab, f45Prefab;
-    private static List<CSteamID> spawnedVehicles = new List<CSteamID>();
+    private static List<ulong> spawnedVehicles = new List<ulong>();
     public static ulong localUID;
     public struct Player
     {
@@ -82,7 +83,7 @@ public static class PlayerManager
         }
 
         while (playersToSpawnQueue.Count > 0) {
-            SpawnVehicle(playersToSpawnQueue.Dequeue());
+            SpawnVehicle(playersToSpawnQueue.Dequeue(), playersToSpawnIdQueue.Dequeue());
         }
     }
 
@@ -192,9 +193,11 @@ public static class PlayerManager
             tiltSender.networkUID = UID;
         }
 
-        WingFoldNetworker_Sender wingFold = localVehicle.AddComponent<WingFoldNetworker_Sender>();
-        wingFold.wingController = localVehicle.GetComponentInChildren<WingFoldController>().toggler;
-        wingFold.networkUID = UID;
+        if (localVehicle.GetComponentInChildren<WingFoldController>() != null) {
+            WingFoldNetworker_Sender wingFold = localVehicle.AddComponent<WingFoldNetworker_Sender>();
+            wingFold.wingController = localVehicle.GetComponentInChildren<WingFoldController>().toggler;
+            wingFold.networkUID = UID;
+        }
 
         if (Multiplayer.SoloTesting)
             pos += new Vector3(20, 0, 0);
@@ -230,27 +233,31 @@ public static class PlayerManager
     /// be on it.
     /// </summary>
     /// <param name="packet">The message</param>
-    public static void SpawnVehicle(Packet packet) //Both, but never spawns the local vehicle, only executes spawn vehicle messages from other clients
+    public static void SpawnVehicle(Packet packet, CSteamID sender) //Both, but never spawns the local vehicle, only executes spawn vehicle messages from other clients
     {
-        Debug.Log("Recived a Spawn Vehicle Message");
+        // We don't actually need the "sender" id, unless we're a client and want to check that the packet came from the host
+        // which we're not doing right now. 
+
+        Message_SpawnVehicle message = (Message_SpawnVehicle)((PacketSingle)packet).message;
+        Debug.Log($"Recived a Spawn Vehicle Message from: {message.csteamID}");
 
         if (!gameLoaded)
         {
             Debug.LogWarning("Our game isn't loaded, adding spawn vehicle to queue");
             playersToSpawnQueue.Enqueue(packet);
+            playersToSpawnIdQueue.Enqueue(sender);
             return;
         }
-        foreach (CSteamID id in spawnedVehicles)
+        foreach (ulong id in spawnedVehicles)
         {
-            if (id == (CSteamID)packet.networkUID)
+            if (id == message.csteamID)
             {
                 Debug.Log("Got a spawnedVehicle message for a vehicle we have already added! Returning....");
                 return;
             }
         }
-        spawnedVehicles.Add((CSteamID)packet.networkUID);
+        spawnedVehicles.Add(message.csteamID);
         Debug.Log("Got a new spawnVehicle uID.");
-        Message_SpawnVehicle message = (Message_SpawnVehicle)((PacketSingle)packet).message;
         if (Networker.isHost)
         {
             Debug.Log("Generating UIDS for any missiles the new vehicle has");
@@ -566,6 +573,8 @@ public static class PlayerManager
         spawnPoints = new List<Transform>();
         spawnRequestQueue = new Queue<CSteamID>();
         playersToSpawnQueue = new Queue<Packet>();
+        playersToSpawnIdQueue = new Queue<CSteamID>();
+        spawnedVehicles = new List<ulong>();
         Networker.hostLoaded = false;
         gameLoaded = false;
         localUID = 0;

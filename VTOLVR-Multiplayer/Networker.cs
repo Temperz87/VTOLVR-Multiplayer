@@ -35,7 +35,7 @@ public class Networker : MonoBehaviour
     //received for them. They should match the name of the message class they relate to.
     public static event UnityAction<Packet, CSteamID> RequestSpawn;
     public static event UnityAction<Packet> RequestSpawn_Result;
-    public static event UnityAction<Packet> SpawnVehicle;
+    public static event UnityAction<Packet, CSteamID> SpawnVehicle;
     public static event UnityAction<Packet> RigidbodyUpdate;
     public static event UnityAction<Packet> PlaneUpdate;
     public static event UnityAction<Packet> EngineTiltUpdate;
@@ -472,7 +472,7 @@ public class Networker : MonoBehaviour
                 case MessageType.SpawnVehicle:
                     Debug.Log("case spawn vehicle");
                     if (SpawnVehicle != null)
-                        SpawnVehicle.Invoke(packet);
+                        SpawnVehicle.Invoke(packet, csteamID);
                     break;
                 case MessageType.RigidbodyUpdate:
                     // Debug.Log("case rigid body update");
@@ -594,7 +594,7 @@ public class Networker : MonoBehaviour
             if (isHost)
             {
                 if (MessageTypeShouldBeForwarded(packetS.message.type)) {
-                    SendExcludeP2P((CSteamID)packetS.networkUID, packetS.message, EP2PSend.k_EP2PSendReliable);
+                    SendExcludeP2P((CSteamID)packetS.networkUID, packetS.message, EP2PSend.k_EP2PSendUnreliableNoDelay);
                 }
             }
         }
@@ -674,7 +674,7 @@ public class Networker : MonoBehaviour
     {
         if (!isHost)
         {
-            SendP2P(hostID, new Message_RequestNetworkUID(clientsID), EP2PSend.k_EP2PSendReliable);
+            SendP2P(hostID, new Message_RequestNetworkUID(clientsID), EP2PSend.k_EP2PSendUnreliableNoDelay);
             Debug.Log("Requetsed UID from host");
         }
         else
