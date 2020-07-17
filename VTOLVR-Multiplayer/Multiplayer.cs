@@ -170,7 +170,7 @@ public class Multiplayer : VTOLMOD
         joinButtonText = JoinButton.GetComponentInChildren<Text>();
         joinButtonText.text = "Join";
         joinButtonText.resizeTextForBestFit = true;
-        JoinButton.GetComponent<Image>().color = Color.green;
+        JoinButton.GetComponent<Image>().color = Color.blue;
         VRInteractable JoinInteractable = JoinButton.GetComponent<VRInteractable>();
         JoinInteractable.interactableName = "Join Game";
         JoinInteractable.OnInteract = new UnityEngine.Events.UnityEvent();
