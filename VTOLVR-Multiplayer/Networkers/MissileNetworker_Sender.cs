@@ -83,7 +83,7 @@ public class MissileNetworker_Sender : MonoBehaviour
     /// </summary>
     public void OnDestroy()
     {
-        lastMessage.hasMissed = true;
+        lastMessage.hasExploded = true;
         SendMessage(true);
     }
 

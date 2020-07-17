@@ -82,7 +82,7 @@ public class Networker : MonoBehaviour
         Debug.Log("Accepting P2P with " + SteamFriends.GetFriendPersonaName(request.m_steamIDRemote));
 
         // Do this here???
-        StartCoroutine(PlayerManager.MapLoaded());
+        // StartCoroutine(PlayerManager.MapLoaded());
     }
 
 
@@ -213,7 +213,6 @@ public class Networker : MonoBehaviour
         {
             Debug.Log($"Failed to send P2P to {remoteID.m_SteamID}");
         }
-
     }
     private void ReadP2P()
     {
@@ -557,14 +556,21 @@ public class Networker : MonoBehaviour
                     break;
                 case MessageType.HostLoaded:
                     Debug.Log("case host loaded");
-                    if (!hostLoaded) {
-                        if (isHost) {
+                    if (!hostLoaded)
+                    {
+                        if (isHost)
+                        {
                             Debug.Log("we shouldn't have gotten a host loaded....");
                         }
-                        else {
+                        else
+                        {
                             hostLoaded = true;
                             LoadingSceneController.instance.PlayerReady();
                         }
+                    }
+                    else
+                    {
+                        Debug.Log("Host is already loaded");
                     }
                     break;
                 default:

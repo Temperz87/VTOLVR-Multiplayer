@@ -122,13 +122,21 @@ public class PlaneNetworker_Receiver : MonoBehaviour
         Message_WeaponFiring message = ((PacketSingle)packet).message as Message_WeaponFiring;
         if (message.UID != networkUID)
             return;
-        //To switch weapon, we go back one previous one on the index and then toggle it to go forward one.
+        if (message.weaponIdx != (int)traverse.Field("weaponIdx").GetValue())
+        {
+            traverse.Field("weaponIdx").SetValue(message.weaponIdx);
+        }
+        if (message.isFiring != weaponManager.isFiring)
+        {
+            weaponManager.StartFire();
+        }
+        /*To switch weapon, we go back one previous one on the index and then toggle it to go forward one.
         //So that everything gets called which is in the normal game.
         List<string> uniqueWeapons = traverse.Field("uniqueWeapons").GetValue() as List<string>;
         traverse.Field("weaponIdx").SetValue((message.weaponIdx - 1) % uniqueWeapons.Count);
         weaponManager.CycleActiveWeapons(); //Should move it one forward to the same weapon
         weaponManager.SetMasterArmed(true);
-        weaponManager.StartFire();
+        weaponManager.StartFire();*/
     }
     public void WeaponStoppedFiring(Packet packet)
     {

@@ -21,7 +21,6 @@ public static class PlayerManager
     /// </summary>
     private static Queue<CSteamID> spawnRequestQueue = new Queue<CSteamID>();
     private static Queue<Packet> playersToSpawnQueue = new Queue<Packet>();
-    private static bool hostLoaded;
     public static bool gameLoaded;
     private static GameObject av42cPrefab, fa26bPrefab, f45Prefab;
     private static List<CSteamID> spawnedVehicles = new List<CSteamID>();
@@ -64,7 +63,6 @@ public static class PlayerManager
         {
             Networker.hostLoaded = true;
             Networker.hostReady = true;
-            hostLoaded = true;
             Networker.SendGlobalP2P(new Message_HostLoaded(true), EP2PSend.k_EP2PSendReliable);
             GameObject localVehicle = VTOLAPI.GetPlayersVehicleGameObject();
             if (localVehicle != null)
@@ -129,7 +127,7 @@ public static class PlayerManager
     public static void RequestSpawn(Packet packet, CSteamID sender) //Run by Host Only
     {
         Debug.Log("A player has requested for a spawn point");
-        if (!hostLoaded)
+        if (!Networker.hostLoaded)
         {
             Debug.Log("The host isn't ready yet, adding to queue");
             spawnRequestQueue.Enqueue(sender);
@@ -426,10 +424,39 @@ public static class PlayerManager
         loadout.hpLoadout = hpLoadoutNames;
         loadout.cmLoadout = message.cmLoadout;
         weaponManager.EquipWeapons(loadout);
-        typeof(WeaponManager).GetMethod("SetCombinedEquips", BindingFlags.NonPublic | BindingFlags.Instance).Invoke(weaponManager, null); // Fuck you reflection
+        weaponManager.RefreshWeapon();
+        // typeof(WeaponManager).GetMethod("SetCombinedEquips", BindingFlags.NonPublic | BindingFlags.Instance).Invoke(weaponManager, null); // Fuck you reflection
         Debug.Log("Refreshed this weapon manager's weapons.");
         MissileNetworker_Receiver lastReciever;
-        foreach (var equip in weaponManager.GetCombinedEquips())
+        for (int i = 0; i < 30; i++)
+        {
+            int uIDidx = 0;
+            HPEquippable equip = weaponManager.GetEquip(i);
+            if (equip is HPEquipMissileLauncher)
+            {
+                Debug.Log(equip.name + " is a missile launcher");
+                HPEquipMissileLauncher hpML = equip as HPEquipMissileLauncher;
+                Debug.Log("This missile launcher has " + hpML.ml.missiles.Length + " missiles.");
+                foreach (var missile in hpML.ml.missiles)
+                {
+                    Debug.Log("Adding missile reciever");
+                    lastReciever = missile.gameObject.AddComponent<MissileNetworker_Receiver>();
+                    foreach (var thingy in message.hpLoadout) // it's a loop... because fuck you!
+                    {
+                        Debug.Log("Try adding missile reciever uID");
+                        if (equip.hardpointIdx == thingy.hpIdx)
+                        {
+                            if (uIDidx < thingy.missileUIDS.Length)
+                            {
+                                lastReciever.networkUID = thingy.missileUIDS[uIDidx];
+                                uIDidx++;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        /*foreach (var equip in weaponManager.GetCombinedEquips())
         {
             int uIDidx = 0;
             if (equip is HPEquipMissileLauncher)
@@ -457,7 +484,7 @@ public static class PlayerManager
             }
             else
                 Debug.Log(equip.name + " is not a missile launcher.");
-        }
+        }*/
             FuelTank fuelTank = newVehicle.GetComponent<FuelTank>();
         if (fuelTank == null)
             Debug.LogError("Failed to get fuel tank on " + newVehicle.name);
@@ -522,7 +549,7 @@ public static class PlayerManager
         spawnPoints = new List<Transform>();
         spawnRequestQueue = new Queue<CSteamID>();
         playersToSpawnQueue = new Queue<Packet>();
-        hostLoaded = false;
+        Networker.hostLoaded = false;
         gameLoaded = false;
         localUID = 0;
     }

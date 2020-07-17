@@ -76,9 +76,12 @@ public class Multiplayer : VTOLMOD
                 CreateUI();
                 break;
             case VTOLScenes.Akutan:
+                Log("Map Loaded from vtol scenes akutan");
+                StartCoroutine(PlayerManager.MapLoaded());
+                break;
             case VTOLScenes.CustomMapBase:
-                Log("Map Loaded");
-                PlayerManager.MapLoaded();
+                Log("Map Loaded from vtol scenes custom map base");
+                StartCoroutine(PlayerManager.MapLoaded());
                 break;
             case VTOLScenes.LoadingScene:
                 CreateLoadingSceneObjects();

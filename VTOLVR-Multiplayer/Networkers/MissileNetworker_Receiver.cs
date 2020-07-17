@@ -11,7 +11,7 @@ public class MissileNetworker_Receiver : MonoBehaviour
     private Message_MissileUpdate lastMessage;
     // private Rigidbody rigidbody; see missileSender for why i not using rigidbody
 
-    private float positionThreshold = 10f;
+    private float positionThreshold = 0.5f;
 
     private void Start()
     {
@@ -22,14 +22,11 @@ public class MissileNetworker_Receiver : MonoBehaviour
 
     public void MissileUpdate(Packet packet)
     {
-        Debug.Log("MissileUpdate invoked");
         lastMessage = ((PacketSingle)packet).message as Message_MissileUpdate;
         if (lastMessage.networkUID != networkUID)
         {
-            Debug.Log("Returning...");
             return; 
         }
-        Debug.Log("Didn't return");
         if (!thisMissile.fired)
         {
             Debug.Log("Missile fired on one end but not another, firing here.");
@@ -43,11 +40,18 @@ public class MissileNetworker_Receiver : MonoBehaviour
                 lockData.radarSymbol = GetComponentInChildren<Radar>().radarSymbol; //I'm just guessing they are
                 thisMissile.SetRadarLock(lockData);
             }
+            if (lastMessage.guidanceMode == Missile.GuidanceModes.Optical)
+            {
+                foreach (var collider in thisMissile.gameObject.GetComponentsInChildren<Collider>())
+                {
+                    collider.gameObject.layer = 9;
+                }
+            }
             Debug.Log("Try fire missile clientside");
             thisMissile.Fire();
         }
 
-        if (lastMessage.hasMissed)
+        if (lastMessage.hasExploded)
         {
             thisMissile.Detonate();
             return;
