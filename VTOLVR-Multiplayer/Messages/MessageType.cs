@@ -27,6 +27,7 @@ public enum MessageType
     WeaponStoppedFiring, //This is when they have finished firing
     MissileUpdate, //This is when a missile is updating its state across the network.
     FireCountermeasure, //This is when a player fires a countermeasure
-    Death //This is when a player dies
-    HostLoaded // This is when the host has loaded and the clients can load
+    Death, //This is when a player dies
+    HostLoaded, // This is when the host has loaded and the clients can load
+    WingFold
 }

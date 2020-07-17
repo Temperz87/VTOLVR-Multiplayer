@@ -109,7 +109,9 @@
     <Compile Include="Messages\Message_WeaponFiring.cs" />
     <Compile Include="Messages\Message_WeaponSet.cs" />
     <Compile Include="Messages\Message_WeaponStoppedFiring.cs" />
+    <Compile Include="Messages\Message_WingFold.cs" />
     <Compile Include="Messages\Packet.cs" />
+    <Compile Include="Networkers\WingFoldNetworker_Sender.cs" />
     <Compile Include="Multiplayer.cs" />
     <Compile Include="Nametag.cs" />
     <Compile Include="Networker.cs" />
@@ -120,6 +122,7 @@
     <Compile Include="Networkers\PlaneNetworker_Receiver.cs" />
     <Compile Include="Networkers\PlaneNetworker_Sender.cs" />
     <Compile Include="Networkers\RigidbodyNetworker_Sender.cs" />
+    <Compile Include="Networkers\WingFoldNetworker_Receiver.cs" />
     <Compile Include="Patches\Patch_LoadingSceneController.cs" />
     <Compile Include="Patches\Patch_VTMapManager.cs" />
     <Compile Include="Patches\Patch_VTTMapTrees.cs" />
