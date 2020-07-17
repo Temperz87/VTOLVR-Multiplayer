@@ -23,10 +23,6 @@ public class MissileNetworker_Sender : MonoBehaviour
 
     private void Update()
     {
-        if (thisMissile.fired)
-        {
-            Debug.Log("Missile fired but not in main function and request uID is " + receivedGlobalUID.ToString());
-        }
         if (thisMissile == null)
         {
             Debug.LogError("thisMissile null.");

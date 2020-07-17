@@ -7,6 +7,7 @@ using UnityEngine;
 using Steamworks;
 using Harmony;
 using System.Collections;
+using System.Reflection;
 
 public static class PlayerManager
 {
@@ -23,6 +24,7 @@ public static class PlayerManager
     private static bool hostLoaded;
     public static bool gameLoaded;
     private static GameObject av42cPrefab, fa26bPrefab, f45Prefab;
+    private static List<CSteamID> spawnedVehicles = new List<CSteamID>();
     public static ulong localUID;
     public struct Player
     {
@@ -320,7 +322,16 @@ public static class PlayerManager
             playersToSpawnQueue.Enqueue(packet);
             return;
         }
-
+        foreach (CSteamID id in spawnedVehicles)
+        {
+            if (id == (CSteamID)packet.networkUID)
+            {
+                Debug.Log("Got a spawnedVehicle message for a vehicle we have already added! Returning....");
+                return;
+            }
+        }
+        spawnedVehicles.Add((CSteamID)packet.networkUID);
+        Debug.Log("Got a new spawnVehicle uID.");
         Message_SpawnVehicle message = (Message_SpawnVehicle)((PacketSingle)packet).message;
         if (Networker.isHost)
         {
@@ -561,7 +572,7 @@ public static class PlayerManager
         loadout.hpLoadout = hpLoadoutNames;
         loadout.cmLoadout = message.cmLoadout;
         weaponManager.EquipWeapons(loadout);
-        weaponManager.RefreshWeapon();
+        typeof(WeaponManager).GetMethod("SetCombinedEquips", BindingFlags.NonPublic | BindingFlags.Instance).Invoke(weaponManager, null); // Fuck you reflection
         Debug.Log("Refreshed this weapon manager's weapons.");
         MissileNetworker_Receiver lastReciever;
         foreach (var equip in weaponManager.GetCombinedEquips())
