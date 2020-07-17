@@ -694,10 +694,10 @@ public class Networker : MonoBehaviour
         if (!isHost)
             return;
         StringBuilder content = new StringBuilder("Players:\n");
-        content.AppendLine(SteamFriends.GetPersonaName() + ": " + (hostReady ? "Ready" : "Not Ready") + "\n");
+        content.AppendLine(SteamFriends.GetPersonaName() + ": " + (hostReady ? "<color=\"green\">Ready" : "<color=\"red\">Not Ready") + "\n");
         for (int i = 0; i < players.Count; i++)
         {
-            content.Append(SteamFriends.GetFriendPersonaName(players[i]) + ": " + (readyDic[players[i]]? "Ready": "Not Ready") + "\n");
+            content.Append(SteamFriends.GetFriendPersonaName(players[i]) + ": " + (readyDic[players[i]]? "<color=\"green\">Ready" : "<color=\"red\">Not Ready") + "\n");
         }
         if (loadingText != null)
             loadingText.text = content.ToString();
