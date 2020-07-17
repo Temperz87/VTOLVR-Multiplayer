@@ -195,6 +195,10 @@ public static class PlayerManager
             tiltSender.networkUID = UID;
         }
 
+        WingFoldNetworker_Sender wingFold = localVehicle.AddComponent<WingFoldNetworker_Sender>();
+        wingFold.wingController = localVehicle.GetComponentInChildren<WingFoldController>().toggler;
+        wingFold.networkUID = UID;
+
         if (Multiplayer.SoloTesting)
             pos += new Vector3(20, 0, 0);
 
@@ -358,11 +362,20 @@ public static class PlayerManager
             tiltReceiver.networkUID = message.networkID;
         }
 
+        
 
         Rigidbody rb = newVehicle.GetComponent<Rigidbody>();
         AIPilot aIPilot = newVehicle.GetComponent<AIPilot>();
         Health health = newVehicle.GetComponent<Health>();
         health.invincible = true;
+
+        RotationToggle wingRotator = aIPilot.wingRotator;
+        if (wingRotator != null) {
+            WingFoldNetworker_Receiver wingFoldReceiver = newVehicle.AddComponent<WingFoldNetworker_Receiver>();
+            wingFoldReceiver.networkUID = message.networkID;
+            wingFoldReceiver.wingController = wingRotator;
+        }
+
         foreach (Collider collider in newVehicle.GetComponentsInChildren<Collider>())
         {
             if (collider)
