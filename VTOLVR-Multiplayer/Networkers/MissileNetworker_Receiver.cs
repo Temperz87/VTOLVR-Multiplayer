@@ -49,7 +49,7 @@ public class MissileNetworker_Receiver : MonoBehaviour
                 }
             }
             Debug.Log("Try fire missile clientside");
-            thisMissile.Fire();
+            // thisMissile.Fire();
         }
 
         if (lastMessage.hasExploded)

@@ -13,7 +13,6 @@ public class PlaneNetworker_Sender : MonoBehaviour
     private WheelsController wheelsController;
     private AeroController aeroController;
     private VRThrottle vRThrottle;
-
     private Health health;
     private WeaponManager weaponManager;
     private CountermeasureManager cmManager;
