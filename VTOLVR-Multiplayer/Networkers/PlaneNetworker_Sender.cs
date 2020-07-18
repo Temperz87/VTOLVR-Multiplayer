@@ -31,25 +31,27 @@ public class PlaneNetworker_Sender : MonoBehaviour
     private bool lastFiring = false;
     private string radarLock;
     private Traverse traverseThrottle;
+    private Actor actor;
     private void Awake()
     {
-        if (VTOLAPI.GetPlayersVehicleEnum() == VTOLVehicles.AV42C)
-        {
-            lastMessage = new Message_PlaneUpdate(false, 0, 0, 0, 0, 0, 0, false, false, false, networkUID, false, false, radarLock);
-        }
-        else
-        {
-            lastMessage = new Message_PlaneUpdate(false, 0, 0, 0, 0, 0, 0, false, false, false, networkUID, true, false, radarLock);
-        }
+        actor = gameObject.GetComponent<Actor>();
         lastFiringMessage = new Message_WeaponFiring(-1, false, networkUID);
         // lastStoppedFiringMessage = new Message_WeaponStoppedFiring(networkUID);
         lastCountermeasureMessage = new Message_FireCountermeasure(true, true, networkUID);
         lastDeathMessage = new Message_Death(networkUID);
         wheelsController = GetComponent<WheelsController>();
         aeroController = GetComponent<AeroController>();
-        isPlayer = base.gameObject.GetComponent<Actor>().isPlayer;
+        isPlayer = actor.isPlayer;
         if (isPlayer)
         {
+            if (VTOLAPI.GetPlayersVehicleEnum() == VTOLVehicles.AV42C)
+            {
+                lastMessage = new Message_PlaneUpdate(false, 0, 0, 0, 0, 0, 0, false, false, false, networkUID, false, false, radarLock);
+            }
+            else
+            {
+                lastMessage = new Message_PlaneUpdate(false, 0, 0, 0, 0, 0, 0, false, false, false, networkUID, true, false, radarLock);
+            }
             vRThrottle = gameObject.GetComponentInChildren<VRThrottle>();
             if (vRThrottle == null)
                 Debug.Log("Throttle was null on vehicle " + gameObject.name);
@@ -58,6 +60,14 @@ public class PlaneNetworker_Sender : MonoBehaviour
         }
         else
         {
+            if (actor.hasRadar)
+            {
+                lastMessage = new Message_PlaneUpdate(false, 0, 0, 0, 0, 0, 0, false, false, false, networkUID, true, false, radarLock);
+            }
+            else
+            {
+                lastMessage = new Message_PlaneUpdate(false, 0, 0, 0, 0, 0, 0, false, false, false, networkUID, false, false, radarLock);
+            }
             aIPilot = gameObject.GetComponent<AIPilot>();
             if (aIPilot == null)
             { Debug.Log("Aipilot was null on vehicle " + gameObject.name); }
@@ -119,7 +129,7 @@ public class PlaneNetworker_Sender : MonoBehaviour
         lastMessage.breaks = aeroController.brake;
         lastMessage.landingGear = LandingGearState();
         lastMessage.networkUID = networkUID;
-        if (isAI)
+        if (!isPlayer)
         {
             SetThrottle((float)traverseThrottle.Field("throttle").GetValue());
         }
