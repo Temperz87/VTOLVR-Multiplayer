@@ -149,11 +149,6 @@ public class PlaneNetworker_Sender : MonoBehaviour
             lastMessage.fuelPort = refuelPort.open;
         }
 
-        if (lastMessage.hasRadar) {
-            // This line will cause a null for AV-42C's
-            lastMessage.radarLock = VTMapManager.WorldToGlobalPoint(weaponManager.lockingRadar.currentLock.actor.position);
-        }
-
         if (Networker.isHost)
             Networker.SendGlobalP2P(lastMessage, Steamworks.EP2PSend.k_EP2PSendUnreliable);
         else

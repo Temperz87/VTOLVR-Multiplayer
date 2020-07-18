@@ -232,6 +232,13 @@ public static class PlayerManager
             extLight.networkUID = UID;
         }
 
+        if (localVehicle.GetComponentInChildren<LockingRadar>() != null)
+        {
+            LockingRadarNetworker_Sender radarSender = localVehicle.AddComponent<LockingRadarNetworker_Sender>();
+            radarSender.radar = localVehicle.GetComponentInChildren<LockingRadar>();
+            radarSender.networkUID = UID;
+        }
+
         if (Multiplayer.SoloTesting)
             pos += new Vector3(20, 0, 0);
 
@@ -424,6 +431,14 @@ public static class PlayerManager
             ExtLight_Receiver extLightReceiver = newVehicle.AddComponent<ExtLight_Receiver>();
             extLightReceiver.lightsController = extLight;
             extLightReceiver.networkUID = message.networkID;
+        }
+
+        LockingRadar lockingRadar = newVehicle.GetComponentInChildren<LockingRadar>();
+        if (lockingRadar != null)
+        {
+            LockingRadarNetworker_Receiver lockingRadarReceiver = newVehicle.AddComponent<LockingRadarNetworker_Receiver>();
+            lockingRadarReceiver.lockingRadar = lockingRadar;
+            lockingRadarReceiver.networkUID = message.networkID;
         }
 
         foreach (Collider collider in newVehicle.GetComponentsInChildren<Collider>())
