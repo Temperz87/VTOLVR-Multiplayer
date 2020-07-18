@@ -97,6 +97,7 @@
     <Compile Include="Messages\Message_Death.cs" />
     <Compile Include="Messages\Message_Disconnecting.cs" />
     <Compile Include="Messages\Message_EngineTiltUpdate.cs" />
+    <Compile Include="Messages\Message_ExtLight.cs" />
     <Compile Include="Messages\Message_FireCountermeasure.cs" />
     <Compile Include="Messages\Message_HostLoaded.cs" />
     <Compile Include="Messages\Message_JoinRequest.cs" />
@@ -114,6 +115,9 @@
     <Compile Include="Messages\Message_WeaponStoppedFiring.cs" />
     <Compile Include="Messages\Message_WingFold.cs" />
     <Compile Include="Messages\Packet.cs" />
+    <Compile Include="Networkers\ExtLightNetworker_Receiver.cs" />
+    <Compile Include="Networkers\ExtLightNetworker_Sender.cs" />
+    <Compile Include="ModVersionString.cs" />
     <Compile Include="Networkers\WingFoldNetworker_Sender.cs" />
     <Compile Include="Multiplayer.cs" />
     <Compile Include="Nametag.cs" />
