@@ -8,6 +8,7 @@ using Steamworks;
 using Harmony;
 using System.Collections;
 using System.Reflection;
+using UnityEngine.SceneManagement;
 
 public static class PlayerManager
 {
@@ -26,10 +27,15 @@ public static class PlayerManager
     private static GameObject av42cPrefab, fa26bPrefab, f45Prefab;
     private static List<ulong> spawnedVehicles = new List<ulong>();
     public static ulong localUID;
+
+    public static VTScenario currentScenario;
+    public static GameObject worldData;
+
     public struct Player
     {
         public CSteamID cSteamID;
         public GameObject vehicle;
+        
         public VTOLVehicles vehicleName;
         public ulong vehicleUID;
 
@@ -80,11 +86,35 @@ public static class PlayerManager
             if (spawnRequestQueue.Count != 0)
                 SpawnRequestQueue();
             Networker.alreadyInGame = true;
+
+
+
         }
 
         while (playersToSpawnQueue.Count > 0) {
             SpawnVehicle(playersToSpawnQueue.Dequeue(), playersToSpawnIdQueue.Dequeue());
         }
+
+        
+        if (!Networker.isHost)
+        {
+            // If the player is not the host, they only need a receiver?
+
+            worldData = new GameObject();
+            WorldDataNetworker_Receiver WorldDataNetworker = worldData.AddComponent<WorldDataNetworker_Receiver>();
+            WorldDataNetworker.networkUID = Networker.GenerateNetworkUID();
+        }
+        else
+        {
+            // If the player is the host, setup the sender so they can send world data
+
+            worldData = new GameObject();
+            WorldDataNetworker_Sender WorldDataNetworker = worldData.AddComponent<WorldDataNetworker_Sender>();
+            WorldDataNetworker.networkUID = Networker.GenerateNetworkUID();
+
+        }
+        
+
     }
 
     /// <summary>

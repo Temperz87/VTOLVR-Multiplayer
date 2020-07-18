@@ -29,5 +29,6 @@ public enum MessageType
     FireCountermeasure, //This is when a player fires a countermeasure
     Death, //This is when a player dies
     HostLoaded, // This is when the host has loaded and the clients can load
-    WingFold //this is when a player folds or unfolds their wings
+    WingFold, //this is when a player folds or unfolds their wings
+    WorldData // This is timescale sync data
 }
