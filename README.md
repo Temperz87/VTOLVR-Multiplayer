@@ -1,16 +1,16 @@
 # VTOL VR Multiplayer Mod
 [![Discord](https://img.shields.io/discord/597153468834119710?label=VTOL%20VR%20Modding&logo=discord&style=flat-square)](https://discord.gg/XZeeafp "Discord Invite") [![](https://img.shields.io/badge/Steam-Networking-lightgrey?style=flat-square)](https://partner.steamgames.com/doc/api/ISteamNetworking "Steam Networking Docs") [![](https://img.shields.io/badge/Steamworks-.NET-blue?style=flat-square)](https://steamworks.github.io/installation/ "Steamworks C# Wrapper")
 
-This is the repository for the modded multiplayer in VTOL VR. The multiplayer is currently sperate from the mod loader its self but once it is at a playable state, it will be merged in with the mod loader. 
+This is the repository for the modded multiplayer in VTOL VR. The multiplayer is currently separate from the mod loader itself but once it is at a playable state, it will be merged in with the mod loader. 
 
-The mod uses steams networking library meaning players don't need to install additional dependencies to play multiplayer, just the mod loader and multiplayer mod is needed.
+The mod uses the steams networking library meaning players don't need to install additional dependencies to play multiplayer, just the mod loader and multiplayer mod is needed.
 
 ## Installation
 Once you have cloned the repository, you will need to head over to your VTOL VR games directory and copy the listed dlls from the `Steam\steamapps\common\VTOL VR\VTOLVR_Data\Managed` folder to the `Dependencies` folder. The list of what you need can be found inside of the `Dependencies` folder.
 
-You also need to have .net 4.5 installed to build the mod.
+You also need to have .Net 4.5 installed to build the mod.
 
-To get pasted the super basic tester check, you just need to build the mod in debug mode, this should go past the check I put in place just to stop people sharing the dll with their friends and then complaining that things are buggy or keep asking how to use it. 
+Because the mod is currently in pre-alpha testing phase, the dll is not provided directly. To get past the super basic tester check and try it out, you just need to build the mod in debug mode, this should go past the check I put in place just to stop people sharing the dll with their friends and then complaining that things are buggy or keep asking how to use it. 
 
 ## Contributors
 
