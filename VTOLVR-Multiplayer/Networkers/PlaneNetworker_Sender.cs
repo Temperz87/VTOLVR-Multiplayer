@@ -8,8 +8,8 @@ using Harmony;
 public class PlaneNetworker_Sender : MonoBehaviour
 {
     public ulong networkUID;
-    public bool isAI;
     //Classes we use to find the information out
+    private bool isPlayer;
     private AIPilot aIPilot;
     private WheelsController wheelsController;
     private AeroController aeroController;
@@ -47,7 +47,8 @@ public class PlaneNetworker_Sender : MonoBehaviour
         lastDeathMessage = new Message_Death(networkUID);
         wheelsController = GetComponent<WheelsController>();
         aeroController = GetComponent<AeroController>();
-        if (isAI)
+        isPlayer = base.gameObject.GetComponent<Actor>().isPlayer;
+        if (isPlayer)
         {
             vRThrottle = gameObject.GetComponentInChildren<VRThrottle>();
             if (vRThrottle == null)
@@ -93,7 +94,7 @@ public class PlaneNetworker_Sender : MonoBehaviour
 
     private void Update()
     {
-        if (weaponManager.isFiring != previousFiringState | lastIdx != (int)traverse.Field("weaponIdx").GetValue())
+        if ( weaponManager != null && weaponManager.isFiring != previousFiringState || lastIdx != (int)traverse.Field("weaponIdx").GetValue())
         {
             previousFiringState = weaponManager.isFiring;
             lastFiringMessage.weaponIdx = (int)traverse.Field("weaponIdx").GetValue();
@@ -102,10 +103,6 @@ public class PlaneNetworker_Sender : MonoBehaviour
             lastFiringMessage.UID = networkUID;
             // lastStoppedFiringMessage.UID = networkUID;
             lastFiringMessage.isFiring = weaponManager.isFiring;
-            if (isAI)
-            {
-                SetThrottle((float)traverseThrottle.Field("throttle").GetValue());
-            }
             if (Networker.isHost)
                 Networker.SendGlobalP2P(lastFiringMessage, Steamworks.EP2PSend.k_EP2PSendUnreliableNoDelay);
             else
@@ -120,9 +117,12 @@ public class PlaneNetworker_Sender : MonoBehaviour
         lastMessage.yaw = Mathf.Round(aeroController.input.y * 100000f) / 100000f;
         lastMessage.roll = Mathf.Round(aeroController.input.z * 100000f) / 100000f;
         lastMessage.breaks = aeroController.brake;
-
         lastMessage.landingGear = LandingGearState();
         lastMessage.networkUID = networkUID;
+        if (isAI)
+        {
+            SetThrottle((float)traverseThrottle.Field("throttle").GetValue());
+        }
         if (tailhook != null) {
             lastMessage.tailHook = tailhook.isDeployed;
         }

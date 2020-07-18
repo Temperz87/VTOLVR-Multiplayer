@@ -88,7 +88,7 @@ public static class PlayerManager
             foreach (var actor in TargetManager.instance.allActors)
             {
                 if (!actor.isPlayer)
-                { GameObject.Destroy(actor.gameObject); }
+                { actor.gameObject.SetActive(false); }
             }
             Networker.SendP2P(Networker.hostID, new Message(MessageType.RequestSpawn), EP2PSend.k_EP2PSendReliable);
         }
@@ -522,10 +522,6 @@ public static class PlayerManager
             hpLoadoutNames[equip.hpIdx] = equip.hpName;
             debugInteger++;
         }
-        /*for (int i = 0; i < message.hpLoadout.Length; i++)
-        {
-            hpLoadoutNames.Add(message.hpLoadout[i].hpName);
-        }*/
 
         Debug.Log("Setting Loadout on this new vehicle spawned");
         for (int i = 0; i < hpLoadoutNames.Length; i++)
@@ -539,7 +535,6 @@ public static class PlayerManager
         loadout.cmLoadout = message.cmLoadout;
         weaponManager.EquipWeapons(loadout);
         weaponManager.RefreshWeapon();
-        // typeof(WeaponManager).GetMethod("SetCombinedEquips", BindingFlags.NonPublic | BindingFlags.Instance).Invoke(weaponManager, null); // Fuck you reflection
         Debug.Log("Refreshed this weapon manager's weapons.");
         MissileNetworker_Receiver lastReciever;
         for (int i = 0; i < 30; i++)
@@ -637,12 +632,13 @@ public static class PlayerManager
         }
 
         spawnedVehicles.Add(message.networkID);
-        Debug.Log("Got a new spawnVehicle uID.");
+        Debug.Log("Got a new aiSpawnVehicle uID.");
         if (message.unitName == "Player")
         {
             Debug.LogWarning("Player shouldn't be sent to someone client....");
             return;
         }
+        Debug.Log("Trying to spawn AI " + message.aiVehicleName);
         GameObject newVehicle = UnitCatalogue.GetUnitPrefab(message.unitName);
         if (newVehicle == null)
         {
