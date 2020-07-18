@@ -99,21 +99,17 @@ public static class PlayerManager
         if (!Networker.isHost)
         {
             // If the player is not the host, they only need a receiver?
-
+            Debug.Log($"Player not the host, adding world data receiver");
             worldData = new GameObject();
             WorldDataNetworker_Receiver WorldDataNetworker = worldData.AddComponent<WorldDataNetworker_Receiver>();
-            WorldDataNetworker.networkUID = Networker.GenerateNetworkUID();
         }
         else
         {
             // If the player is the host, setup the sender so they can send world data
-
+            Debug.Log($"Player is the host, setting up the world data sender");
             worldData = new GameObject();
             WorldDataNetworker_Sender WorldDataNetworker = worldData.AddComponent<WorldDataNetworker_Sender>();
-            WorldDataNetworker.networkUID = Networker.GenerateNetworkUID();
-
         }
-        
 
     }
 

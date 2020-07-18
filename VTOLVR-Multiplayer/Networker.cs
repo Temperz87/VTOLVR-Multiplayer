@@ -491,7 +491,7 @@ public class Networker : MonoBehaviour
                         EngineTiltUpdate.Invoke(packet);
                     break;
                 case MessageType.WorldData:
-                    // Debug.Log("case engine tilt update");
+                    Debug.Log("case world data");
                     if (WorldDataUpdate != null)
                         WorldDataUpdate.Invoke(packet);
                     break;

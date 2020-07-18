@@ -11,7 +11,7 @@ using Steamworks;
 /// </summary>
 public class WorldDataNetworker_Receiver : MonoBehaviour
 {
-    public ulong networkUID;
+    private float serverTimescale = 1f;
 
     private void Awake()
     {
@@ -20,13 +20,25 @@ public class WorldDataNetworker_Receiver : MonoBehaviour
 
     }
 
+    // If this sucks (it probably does) find a better solution (I.E. Harmony Patch SteamVR Pausing) :sick:
+    public void Update()
+    {
+        // If the client's time scale is different than the servers timescale, force the clients to match
+        if (Time.timeScale != serverTimescale)
+        {
+            Debug.Log($"Client timescale { Time.timeScale } mismatch with server { serverTimescale } - Forcing client update");
+            Time.timeScale = serverTimescale;
+        }
+    }
+
     public void WorldDataUpdate(Packet packet)
     {
 
         Message_WorldData worldDataUpdate = (Message_WorldData)((PacketSingle)packet).message;
-
-
         Time.timeScale = worldDataUpdate.timeScale;
+        serverTimescale = worldDataUpdate.timeScale;
+
+        Debug.Log($"Set the timescale {worldDataUpdate.timeScale}");
 
     }
 
