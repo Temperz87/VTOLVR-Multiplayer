@@ -22,9 +22,9 @@ class LockingRadarNetworker_Sender : MonoBehaviour
 
     void FixedUpdate()
     {
-        lastMessage.UID = networkUID;
         if (radar.radar.radarEnabled != lastOn || radar.radar.sweepFov != lastFov)
         {
+            lastMessage.UID = networkUID;
             lastMessage.on = radar.radar.radarEnabled;
             lastMessage.fov = radar.radar.sweepFov;
 

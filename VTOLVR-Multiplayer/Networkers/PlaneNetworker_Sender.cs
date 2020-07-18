@@ -137,11 +137,6 @@ public class PlaneNetworker_Sender : MonoBehaviour
         lastMessage.networkUID = networkUID;
         lastMessage.tailHook = tailhook.isDeployed;
         lastMessage.launchBar = launchBar.deployed;
-        
-        if (lastMessage.hasRadar) {
-            // This line will cause a null for AV-42C's
-            lastMessage.radarLock = VTMapManager.WorldToGlobalPoint(weaponManager.lockingRadar.currentLock.actor.position);
-        }
 
         if (Networker.isHost)
             Networker.SendGlobalP2P(lastMessage, Steamworks.EP2PSend.k_EP2PSendUnreliable);
