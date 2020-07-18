@@ -98,6 +98,7 @@ public class Networker : MonoBehaviour
     public static event UnityAction<Packet> WingFold;
     public static event UnityAction<Packet> ExtLight;
     public static event UnityAction<Packet> MissileUpdate;
+    public static event UnityAction<Packet> WorldDataUpdate;
     public static event UnityAction<Packet> RequestNetworkUID;
     #endregion
     #region Host Forwarding Suppress By Message Type List
@@ -496,6 +497,11 @@ public class Networker : MonoBehaviour
                     // Debug.Log("case engine tilt update");
                     if (EngineTiltUpdate != null)
                         EngineTiltUpdate.Invoke(packet);
+                    break;
+                case MessageType.WorldData:
+                    Debug.Log("case world data");
+                    if (WorldDataUpdate != null)
+                        WorldDataUpdate.Invoke(packet);
                     break;
                 case MessageType.Disconnecting:
                     Debug.Log("case disconnecting");
