@@ -31,7 +31,7 @@ public class PlaneNetworker_Sender : MonoBehaviour
     private Vector3D radarLock;
     private void Awake()
     {
-        if (VTOLAPI.GetPlayersVehicleEnum() != VTOLVehicles.AV42C)
+        if (VTOLAPI.GetPlayersVehicleEnum() == VTOLVehicles.AV42C)
         {
             lastMessage = new Message_PlaneUpdate(false, 0, 0, 0, 0, 0, 0, false, false, false, networkUID, false, false, radarLock);
         }

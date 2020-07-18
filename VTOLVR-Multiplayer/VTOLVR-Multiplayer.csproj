@@ -86,11 +86,15 @@
     <Reference Include="UnityEngine.UI">
       <HintPath>..\Dependencies\UnityEngine.UI.dll</HintPath>
     </Reference>
+    <Reference Include="Valve.Newtonsoft.Json">
+      <HintPath>..\Dependencies\Valve.Newtonsoft.Json.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="HPInfo.cs" />
     <Compile Include="Messages\Message.cs" />
     <Compile Include="Messages\MessageType.cs" />
+    <Compile Include="Messages\Message_ActorSync.cs" />
     <Compile Include="Messages\Message_Death.cs" />
     <Compile Include="Messages\Message_Disconnecting.cs" />
     <Compile Include="Messages\Message_EngineTiltUpdate.cs" />
@@ -111,6 +115,8 @@
     <Compile Include="Messages\Message_WeaponStoppedFiring.cs" />
     <Compile Include="Messages\Message_WingFold.cs" />
     <Compile Include="Messages\Packet.cs" />
+    <Compile Include="Networkers\ActorNetworker_Reciever.cs" />
+    <Compile Include="Networkers\ActorNetworker_Sender.cs" />
     <Compile Include="Networkers\WingFoldNetworker_Sender.cs" />
     <Compile Include="Multiplayer.cs" />
     <Compile Include="Nametag.cs" />

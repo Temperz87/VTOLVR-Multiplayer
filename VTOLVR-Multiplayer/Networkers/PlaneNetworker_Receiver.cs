@@ -35,7 +35,6 @@ public class PlaneNetworker_Receiver : MonoBehaviour
         // Networker.WeaponStoppedFiring += WeaponStoppedFiring;
         Networker.FireCountermeasure += FireCountermeasure;
         Networker.Death += Death;
-
         weaponManager = GetComponent<WeaponManager>();
         if (weaponManager == null)
             Debug.LogError("Weapon Manager was null on " + gameObject.name);

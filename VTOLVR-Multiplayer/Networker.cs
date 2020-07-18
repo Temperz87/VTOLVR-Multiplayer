@@ -49,6 +49,7 @@ public class Networker : MonoBehaviour
     public static event UnityAction<Packet> WingFold;
     public static event UnityAction<Packet> MissileUpdate;
     public static event UnityAction<Packet> RequestNetworkUID;
+    public static event UnityAction<Packet> ActorSync;
     #endregion
     #region Host Forwarding Suppress By Message Type List
     private List<MessageType> hostMessageForwardingSuppressList = new List<MessageType> {
@@ -462,7 +463,8 @@ public class Networker : MonoBehaviour
                 case MessageType.RequestSpawn:
                     Debug.Log($"case request spawn from: {csteamID.m_SteamID}, we are {SteamUser.GetSteamID().m_SteamID}, host is {hostID}");
                     if (RequestSpawn != null)
-                        RequestSpawn.Invoke(packet, csteamID);
+                    { RequestSpawn.Invoke(packet, csteamID); }
+                    ActorNetworker_Sender.SendDictionary(csteamID);
                     break;
                 case MessageType.RequestSpawn_Result:
                     Debug.Log("case request spawn result");
@@ -586,6 +588,15 @@ public class Networker : MonoBehaviour
                     {
                         Debug.Log("Host is already loaded");
                     }
+                    break;
+                case MessageType.ActorSync:
+                    Debug.Log("case actor sync");
+                    if (isHost)
+                    {
+                        Debug.LogWarning("Host shouldn't get an actor sync...");
+                        break;
+                    }
+                    ActorNetworker_Reciever.syncActors(packet);
                     break;
                 default:
                     Debug.Log("default case");

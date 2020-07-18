@@ -67,6 +67,10 @@ public static class PlayerManager
             Debug.Log("Starting map loaded host routines");
             Networker.hostLoaded = true;
             Networker.hostReady = true;
+            foreach (var actor in TargetManager.instance.allActors)
+            {
+                actor.gameObject.AddComponent<ActorNetworker_Sender>();
+            }
             Networker.SendGlobalP2P(new Message_HostLoaded(true), EP2PSend.k_EP2PSendReliable);
             GameObject localVehicle = VTOLAPI.GetPlayersVehicleGameObject();
             if (localVehicle != null)
