@@ -365,12 +365,12 @@ public class Networker : MonoBehaviour
                         break;
                     }
                     if (joinRequest.multiplayerBranch != ModVersionString.ReleaseBranch) {
-                        string branchMismatch = "Failed to Join Player, host branch is )" + joinRequest.multiplayerBranch + ", ours is " + ModVersionString.ReleaseBranch;
+                        string branchMismatch = "Failed to Join Player, host branch is )" + ModVersionString.ReleaseBranch + ", client is " + joinRequest.multiplayerBranch;
                         SendP2P(csteamID, new Message_JoinRequestRejected_Result(branchMismatch), EP2PSend.k_EP2PSendReliable);
                         break;
                     }
                     if (joinRequest.multiplayerModVersion != ModVersionString.ModVersionNumber) {
-                        string multiplayerVersionMismatch = "Failed to Join Player, host version is )" + joinRequest.multiplayerModVersion + ", ours is " + ModVersionString.ModVersionNumber;
+                        string multiplayerVersionMismatch = "Failed to Join Player, host version is )" + ModVersionString.ModVersionNumber + ", client is " + joinRequest.multiplayerModVersion;
                         SendP2P(csteamID, new Message_JoinRequestRejected_Result(multiplayerVersionMismatch), EP2PSend.k_EP2PSendReliable);
                         break;
                     }
@@ -378,6 +378,17 @@ public class Networker : MonoBehaviour
                     if (players.Contains(csteamID))
                     {
                         Debug.LogError("The player seemed to send two join requests");
+                        break;
+                    }
+
+
+
+                    if (joinRequest.currentVehicle == "FA-26B") {
+                        joinRequest.currentVehicle = "F/A-26B";
+                    }
+                    if (joinRequest.currentVehicle != PilotSaveManager.currentVehicle.vehicleName) {
+                        string wrongVehicle = "Failed to Join Player, host vehicle is )" + PilotSaveManager.currentVehicle.vehicleName + ", client is " + joinRequest.currentVehicle;
+                        SendP2P(csteamID, new Message_JoinRequestRejected_Result(wrongVehicle), EP2PSend.k_EP2PSendReliable);
                         break;
                     }
 #if false
@@ -677,13 +688,16 @@ public class Networker : MonoBehaviour
 
     private IEnumerator FlyButton()
     {
-        PilotSaveManager.currentScenario = PSMC;
+        if (isHost) {
+            PilotSaveManager.currentScenario = PSMC;
+        }
         if (PilotSaveManager.currentScenario == null)
         {
             Debug.LogError("A null scenario was used on flight button!");
             yield break;
         }
-           ControllerEventHandler.PauseEvents();
+        
+        ControllerEventHandler.PauseEvents();
         ScreenFader.FadeOut(Color.black, 0.85f);
         yield return new WaitForSeconds(1f);
         Debug.Log("Continueing fly button lmao i typod like marsh.");
@@ -704,8 +718,7 @@ public class Networker : MonoBehaviour
             };
             if (PilotSaveManager.currentScenario.forcedEquips != null)
             {
-                foreach (CampaignScenario.ForcedEquip forcedEquip in PilotSaveManager.currentScenario.forcedEquips)
-                {
+                foreach (CampaignScenario.ForcedEquip forcedEquip in PilotSaveManager.currentScenario.forcedEquips) {
                     loadout.hpLoadout[forcedEquip.hardpointIdx] = forcedEquip.weaponName;
                 }
             }
