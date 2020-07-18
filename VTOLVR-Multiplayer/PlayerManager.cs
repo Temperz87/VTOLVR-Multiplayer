@@ -194,10 +194,18 @@ public static class PlayerManager
             EngineTiltNetworker_Sender tiltSender = localVehicle.AddComponent<EngineTiltNetworker_Sender>();
             tiltSender.networkUID = UID;
         }
+
         if (localVehicle.GetComponentInChildren<WingFoldController>() != null) {
             WingFoldNetworker_Sender wingFold = localVehicle.AddComponent<WingFoldNetworker_Sender>();
             wingFold.wingController = localVehicle.GetComponentInChildren<WingFoldController>().toggler;
             wingFold.networkUID = UID;
+        }
+
+        if (localVehicle.GetComponentInChildren<StrobeLightController>() != null)
+        {
+            ExtLight_Sender extLight = localVehicle.AddComponent<ExtLight_Sender>();
+            extLight.strobeLight = localVehicle.GetComponentInChildren<StrobeLightController>();
+            extLight.networkUID = UID;
         }
 
         if (Multiplayer.SoloTesting)
@@ -375,6 +383,14 @@ public static class PlayerManager
             WingFoldNetworker_Receiver wingFoldReceiver = newVehicle.AddComponent<WingFoldNetworker_Receiver>();
             wingFoldReceiver.networkUID = message.networkID;
             wingFoldReceiver.wingController = wingRotator;
+        }
+
+        ExteriorLightsController extLight = newVehicle.GetComponentInChildren<ExteriorLightsController>();
+        if (extLight != null)
+        {
+            ExtLight_Receiver extLightReceiver = newVehicle.AddComponent<ExtLight_Receiver>();
+            extLightReceiver.lightsController = extLight;
+            extLightReceiver.networkUID = message.networkID;
         }
 
         foreach (Collider collider in newVehicle.GetComponentsInChildren<Collider>())

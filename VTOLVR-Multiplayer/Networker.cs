@@ -47,6 +47,7 @@ public class Networker : MonoBehaviour
     public static event UnityAction<Packet> FireCountermeasure;
     public static event UnityAction<Packet> Death;
     public static event UnityAction<Packet> WingFold;
+    public static event UnityAction<Packet> ExtLight;
     public static event UnityAction<Packet> MissileUpdate;
     public static event UnityAction<Packet> RequestNetworkUID;
     #endregion
@@ -550,6 +551,11 @@ public class Networker : MonoBehaviour
                     Debug.Log("case wingfold");
                     if (WingFold != null)
                         WingFold.Invoke(packet);
+                    break;
+                case MessageType.ExtLight:
+                    Debug.Log("case external light");
+                    if (ExtLight != null)
+                        ExtLight.Invoke(packet);
                     break;
                 case MessageType.MissileUpdate:
                     Debug.Log("case missile update");
