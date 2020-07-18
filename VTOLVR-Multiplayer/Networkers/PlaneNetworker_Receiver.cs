@@ -56,18 +56,36 @@ public class PlaneNetworker_Receiver : MonoBehaviour
         lastMessage = (Message_PlaneUpdate)((PacketSingle)packet).message;
         if (lastMessage.networkUID != networkUID)
             return;
+
+
         if (lastMessage.landingGear)
             aiPilot.gearAnimator.Extend();
         else
             aiPilot.gearAnimator.Retract();
-        if (lastMessage.tailHook && !aiPilot.tailHook.isDeployed)
-            aiPilot.tailHook.ExtendHook();
-        else if (!lastMessage.tailHook && aiPilot.tailHook.isDeployed)
-            aiPilot.tailHook.RetractHook();
-        if (lastMessage.launchBar && !aiPilot.catHook.deployed)
-            aiPilot.catHook.SetState(1);
-        else if (!lastMessage.launchBar && aiPilot.catHook.deployed)
-            aiPilot.catHook.SetState(0);
+
+        if (aiPilot.tailHook != null) {
+            if (lastMessage.tailHook)
+                aiPilot.tailHook.ExtendHook();
+            else
+                aiPilot.tailHook.RetractHook();
+        }
+
+        if (aiPilot.catHook != null)
+        {
+            if (lastMessage.launchBar)
+                aiPilot.catHook.SetState(1);
+            else
+                aiPilot.catHook.SetState(0);
+        }
+
+        if (aiPilot.refuelPort != null)
+        {
+            if (lastMessage.fuelPort)
+                aiPilot.refuelPort.Open();
+            else
+                aiPilot.refuelPort.Close();
+        }
+
         if (lastMessage.hasRadar)
         {
             weaponManager.lockingRadar.radar.debugRadar = true;
