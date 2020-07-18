@@ -23,7 +23,6 @@ class ExtLight_Receiver : MonoBehaviour
         lastMessage = (Message_ExtLight)((PacketSingle)packet).message;
         if (lastMessage.UID != networkUID)
             return;
-        Debug.Log("Light state changed");
         if (lastMessage.nav)
         {
             lightsController.SetNavLights(1);

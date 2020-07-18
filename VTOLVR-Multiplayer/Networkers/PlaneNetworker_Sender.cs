@@ -147,20 +147,7 @@ public class PlaneNetworker_Sender : MonoBehaviour
         {
             lastMessage.fuelPort = refuelPort.open;
         }
-
-        if (lastMessage.hasRadar) {
-            // This line will cause a null for AV-42C's
-            lastMessage.locked = weaponManager.lockingRadar.IsLocked();
-            if (weaponManager.lockingRadar.IsLocked())
-            {
-                lastMessage.radarLock = weaponManager.lockingRadar.currentLock.actor.name;
-            }
-            else
-            {
-                lastMessage.radarLock = "";
-            }
-        }
-
+        
         if (Networker.isHost)
             Networker.SendGlobalP2P(lastMessage, Steamworks.EP2PSend.k_EP2PSendUnreliable);
         else

@@ -34,5 +34,6 @@ public enum MessageType
     WingFold, //this is when a player folds or unfolds their wings
     ActorSync, // This updates actors
     WorldData, // This is timescale sync data
-    ExtLight //this is when a player changes their external lights
+    ExtLight, //this is when a player changes their external lights
+    RadarUpdate //this is when the radar is turned on or off, or the fov is changed, make a messsage called LockingRadarUpdate in the future to deal with locks
 }
