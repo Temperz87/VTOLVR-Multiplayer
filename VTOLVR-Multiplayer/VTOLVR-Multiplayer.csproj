@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
@@ -77,6 +77,9 @@
     <Reference Include="UnityEngine.CoreModule">
       <HintPath>..\Dependencies\UnityEngine.CoreModule.dll</HintPath>
     </Reference>
+    <Reference Include="UnityEngine.CrashReportingModule">
+      <HintPath>..\Dependencies\UnityEngine.CrashReportingModule.dll</HintPath>
+    </Reference>
     <Reference Include="UnityEngine.PhysicsModule">
       <HintPath>..\Dependencies\UnityEngine.PhysicsModule.dll</HintPath>
     </Reference>
@@ -98,6 +101,7 @@
     <Compile Include="Messages\Message_Death.cs" />
     <Compile Include="Messages\Message_Disconnecting.cs" />
     <Compile Include="Messages\Message_EngineTiltUpdate.cs" />
+    <Compile Include="Messages\Message_ExtLight.cs" />
     <Compile Include="Messages\Message_FireCountermeasure.cs" />
     <Compile Include="Messages\Message_HostLoaded.cs" />
     <Compile Include="Messages\Message_JoinRequest.cs" />
@@ -118,6 +122,9 @@
     <Compile Include="Messages\Packet.cs" />
     <Compile Include="Networkers\ActorNetworker_Reciever.cs" />
     <Compile Include="Networkers\ActorNetworker_Sender.cs" />
+    <Compile Include="Networkers\ExtLightNetworker_Receiver.cs" />
+    <Compile Include="Networkers\ExtLightNetworker_Sender.cs" />
+    <Compile Include="ModVersionString.cs" />
     <Compile Include="Networkers\WingFoldNetworker_Sender.cs" />
     <Compile Include="Multiplayer.cs" />
     <Compile Include="Nametag.cs" />

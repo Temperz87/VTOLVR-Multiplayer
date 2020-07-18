@@ -26,8 +26,9 @@ public class PlaneNetworker_Sender : MonoBehaviour
     private Message_Death lastDeathMessage;
     private Tailhook tailhook;
     private CatapultHook launchBar;
+    private RefuelPort refuelPort;
+    private bool lastFiring = false;
     private string radarLock;
-    private bool radarLocked = false;
     private void Awake()
     {
         if (VTOLAPI.GetPlayersVehicleEnum() == VTOLVehicles.AV42C)
@@ -76,6 +77,7 @@ public class PlaneNetworker_Sender : MonoBehaviour
         Debug.Log("Done Plane Sender");
         tailhook = GetComponentInChildren<Tailhook>();
         launchBar = GetComponentInChildren<CatapultHook>();
+        refuelPort = GetComponentInChildren<RefuelPort>();
     }
 
     private void Update()
@@ -134,17 +136,19 @@ public class PlaneNetworker_Sender : MonoBehaviour
 
         lastMessage.landingGear = LandingGearState();
         lastMessage.networkUID = networkUID;
-        if (tailhook != null)
-        {
+        if (tailhook != null) {
             lastMessage.tailHook = tailhook.isDeployed;
         }
         if (launchBar != null)
         {
             lastMessage.launchBar = launchBar.deployed;
         }
-        Debug.Log("doing radar.");
-        if (lastMessage.hasRadar)
+        if (refuelPort != null)
         {
+            lastMessage.fuelPort = refuelPort.open;
+        }
+
+        if (lastMessage.hasRadar) {
             // This line will cause a null for AV-42C's
             lastMessage.locked = weaponManager.lockingRadar.IsLocked();
             if (weaponManager.lockingRadar.IsLocked())

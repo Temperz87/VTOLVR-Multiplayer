@@ -1,9 +1,9 @@
 Dependencies needed:
+	ModLoader.dll
 	0Harmony.dll (v1.2)
 	Assembly-CSharp-firstpass.dll
 	Assembly-CSharp.dll
 	netstandard.dll
-	ModLoader.dll
 	Unity.TextMeshPro.dll
 	UnityEngine.AudioModule.dll
 	UnityEngine.CoreModule.dll
