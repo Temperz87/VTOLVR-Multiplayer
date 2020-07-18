@@ -64,7 +64,8 @@ static class MapAndScenarioVersionChecker
 
 public class Networker : MonoBehaviour
 {
-    private CampaignScenario PSMC;
+    private Campaign pilotSaveManagerControllerCampaign;
+    private CampaignScenario pilotSaveManagerControllerCampaignScenario;
     public static Networker _instance { get; private set; }
     public static bool isHost { get; private set; }
     public enum GameState { Menu, Config, Game };
@@ -146,10 +147,13 @@ public class Networker : MonoBehaviour
 
     private void Update()
     {
-        if (PilotSaveManager.currentScenario != null)
-        {
-            if (PSMC != PilotSaveManager.currentScenario)
-            { PSMC = PilotSaveManager.currentScenario; }
+        if (PilotSaveManager.currentScenario != null) {
+            if (pilotSaveManagerControllerCampaign != PilotSaveManager.currentCampaign) {
+                pilotSaveManagerControllerCampaign = PilotSaveManager.currentCampaign;
+            }
+            if (pilotSaveManagerControllerCampaignScenario != PilotSaveManager.currentScenario) {
+                pilotSaveManagerControllerCampaignScenario = PilotSaveManager.currentScenario;
+            }
         }
         ReadP2P();  
     }
@@ -643,7 +647,8 @@ public class Networker : MonoBehaviour
 
     private IEnumerator FlyButton()
     {
-        PilotSaveManager.currentScenario = PSMC;
+        PilotSaveManager.currentCampaign = pilotSaveManagerControllerCampaign;
+        PilotSaveManager.currentScenario = pilotSaveManagerControllerCampaignScenario;
 
         if (PilotSaveManager.currentScenario == null)
         {
