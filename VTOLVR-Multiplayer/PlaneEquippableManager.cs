@@ -18,7 +18,7 @@ namespace VTOLVR_Multiplayer
             receiver
         }
 
-        public static List<HPInfo> generateHpInfoListFromWeaponManager(WeaponManager weaponManager, HPInfoListGenerateNetworkType networkType) {
+        public static List<HPInfo> generateHpInfoListFromWeaponManager(WeaponManager weaponManager, HPInfoListGenerateNetworkType networkType, ulong networkID = 0) {
             List<HPInfo> hpInfos = new List<HPInfo>();
             HPEquippable lastEquippable;
 
@@ -74,6 +74,24 @@ namespace VTOLVR_Multiplayer
                                 }
                                 break;
                         }
+                    }
+                }
+                else if (lastEquippable is HPEquipGunTurret HPm230 && networkID != 0) {
+                    switch (networkType)
+                    {
+                        case HPInfoListGenerateNetworkType.sender:
+                            TurretNetworker_Sender sender = HPm230.gameObject.AddComponent<TurretNetworker_Sender>();
+                            sender.networkUID = networkID;
+                            sender.turret = HPm230.GetComponent<ModuleTurret>();
+                            break;
+                        case HPInfoListGenerateNetworkType.receiver:
+                            TurretNetworker_Sender reciever = HPm230.gameObject.AddComponent<TurretNetworker_Sender>();
+                            reciever.networkUID = networkID;
+                            reciever.turret = HPm230.GetComponent<ModuleTurret>();
+                            HPm230.enabled = false;
+                            break;
+                        default:
+                            break;
                     }
                 }
 

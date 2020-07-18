@@ -98,6 +98,7 @@ public class Networker : MonoBehaviour
     public static event UnityAction<Packet> WingFold;
     public static event UnityAction<Packet> ExtLight;
     public static event UnityAction<Packet> RadarUpdate;
+    public static event UnityAction<Packet> TurretUpdate;
     public static event UnityAction<Packet> MissileUpdate;
     public static event UnityAction<Packet> WorldDataUpdate;
     public static event UnityAction<Packet> RequestNetworkUID;
@@ -577,6 +578,11 @@ public class Networker : MonoBehaviour
                     Debug.Log("case radar update");
                     if (RadarUpdate != null)
                         RadarUpdate.Invoke(packet);
+                    break;
+                case MessageType.TurretUpdate:
+                    Debug.Log("turret update update");
+                    if (TurretUpdate != null)
+                        TurretUpdate.Invoke(packet);
                     break;
                 case MessageType.MissileUpdate:
                     Debug.Log("case missile update");
