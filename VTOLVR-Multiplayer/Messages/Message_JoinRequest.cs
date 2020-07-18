@@ -22,20 +22,35 @@ public class Message_JoinRequest : Message
     }
 }
 [Serializable]
-public class Message_JoinRequest_Result : Message
+public class Message_JoinRequestAccepted_Result : Message
 {
-    public bool canJoin;
     public string reason;
-    public Message_JoinRequest_Result(bool canJoin)
-    {
-        this.canJoin = canJoin;
-        type = MessageType.JoinRequest_Result;
-    }
+    public string campaignId;
+    public string scenarioId;
 
-    public Message_JoinRequest_Result(bool canJoin, string reason)
-    {
-        this.canJoin = canJoin;
+    public Message_JoinRequestAccepted_Result(string campaignId, string scenarioId) {
+        this.campaignId = campaignId;
+        this.scenarioId = scenarioId;
+        type = MessageType.JoinRequestAccepted_Result;
+    }
+}
+[Serializable]
+public class Message_JoinRequestRejected_Result : Message
+{
+    public string reason;
+
+    public Message_JoinRequestRejected_Result(string reason) {
         this.reason = reason;
-        type = MessageType.JoinRequest_Result;
+        type = MessageType.JoinRequestRejected_Result;
+    }
+}
+[Serializable]
+public class Message_JoinRequestClientFinal_Result : Message
+{
+    public bool joined;
+
+    public Message_JoinRequestClientFinal_Result(bool joined) {
+        this.joined = joined;
+        type = MessageType.JoinRequestClientFinal_Result;
     }
 }

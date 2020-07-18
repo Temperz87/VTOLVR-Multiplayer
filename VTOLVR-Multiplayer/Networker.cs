@@ -54,7 +54,9 @@ public class Networker : MonoBehaviour
     private List<MessageType> hostMessageForwardingSuppressList = new List<MessageType> {
         MessageType.None,
         MessageType.JoinRequest,
-        MessageType.JoinRequest_Result,
+        MessageType.JoinRequestAccepted_Result,
+        MessageType.JoinRequestRejected_Result,
+        MessageType.JoinRequestClientFinal_Result,
         MessageType.SpawnVehicle,
         MessageType.RequestSpawn,
         MessageType.RequestSpawn_Result,
@@ -352,24 +354,24 @@ public class Networker : MonoBehaviour
                     {
                         Debug.LogError($"Recived Join Request when we are not the host");
                         string notHostStr = "Failed to Join Player, they are not hosting a lobby";
-                        SendP2P(csteamID, new Message_JoinRequest_Result(false, notHostStr), EP2PSend.k_EP2PSendReliable);
+                        SendP2P(csteamID, new Message_JoinRequestRejected_Result(notHostStr), EP2PSend.k_EP2PSendReliable);
                         break;
                     }
 
                     Message_JoinRequest joinRequest = packetS.message as Message_JoinRequest;
                     if (joinRequest.vtolVrVersion != GameStartup.versionString) {
                         string vtolMismatchVersion = "Failed to Join Player, mismatched vtol vr versions (please both update to latest version)";
-                        SendP2P(csteamID, new Message_JoinRequest_Result(false, vtolMismatchVersion), EP2PSend.k_EP2PSendReliable);
+                        SendP2P(csteamID, new Message_JoinRequestRejected_Result(vtolMismatchVersion), EP2PSend.k_EP2PSendReliable);
                         break;
                     }
                     if (joinRequest.multiplayerBranch != ModVersionString.ReleaseBranch) {
                         string branchMismatch = "Failed to Join Player, host branch is )" + joinRequest.multiplayerBranch + ", ours is " + ModVersionString.ReleaseBranch;
-                        SendP2P(csteamID, new Message_JoinRequest_Result(false, branchMismatch), EP2PSend.k_EP2PSendReliable);
+                        SendP2P(csteamID, new Message_JoinRequestRejected_Result(branchMismatch), EP2PSend.k_EP2PSendReliable);
                         break;
                     }
                     if (joinRequest.multiplayerModVersion != ModVersionString.ModVersionNumber) {
                         string multiplayerVersionMismatch = "Failed to Join Player, host version is )" + joinRequest.multiplayerModVersion + ", ours is " + ModVersionString.ModVersionNumber;
-                        SendP2P(csteamID, new Message_JoinRequest_Result(false, multiplayerVersionMismatch), EP2PSend.k_EP2PSendReliable);
+                        SendP2P(csteamID, new Message_JoinRequestRejected_Result(multiplayerVersionMismatch), EP2PSend.k_EP2PSendReliable);
                         break;
                     }
 
@@ -378,6 +380,7 @@ public class Networker : MonoBehaviour
                         Debug.LogError("The player seemed to send two join requests");
                         break;
                     }
+#if false
                     if (joinRequest.currentVehicle == "FA-26B")
                     {
                         joinRequest.currentVehicle = "F/A-26B";
@@ -390,7 +393,7 @@ public class Networker : MonoBehaviour
                         players.Add(csteamID);
                         readyDic.Add(csteamID, false);
                         UpdateLoadingText();
-                        SendP2P(csteamID, new Message_JoinRequest_Result(true), EP2PSend.k_EP2PSendReliable);
+                        SendP2P(csteamID, new Message_JoinRequestAccepted_Result(true), EP2PSend.k_EP2PSendReliable);
                     }
                     else
                     {
@@ -408,23 +411,58 @@ public class Networker : MonoBehaviour
                             reason += "\nWrong Scenario.";
                         if (joinRequest.currentCampaign != PilotSaveManager.currentCampaign.campaignID)
                             reason += "\nWrong Campaign.";
-                        SendP2P(csteamID, new Message_JoinRequest_Result(false, reason), EP2PSend.k_EP2PSendReliable);
+                        SendP2P(csteamID, new Message_JoinRequestAccepted_Result(false, reason), EP2PSend.k_EP2PSendReliable);
                         Debug.Log($"Denied {csteamID}, reason\n{reason}");
                     }
+#else
+                    Debug.Log($"Accepting {csteamID.m_SteamID}");
+                    SendP2P(csteamID, new Message_JoinRequestAccepted_Result(PilotSaveManager.currentCampaign.campaignID, PilotSaveManager.currentScenario.scenarioID), EP2PSend.k_EP2PSendReliable);
+#endif
                     break;
-                case MessageType.JoinRequest_Result:
-                    Debug.Log("case join request result");
-                    Message_JoinRequest_Result joinResult = packetS.message as Message_JoinRequest_Result;
+                case MessageType.JoinRequestAccepted_Result:
+                    Debug.Log("case join request accepted result");
+                    Message_JoinRequestAccepted_Result joinResultAccepted = packetS.message as Message_JoinRequestAccepted_Result;
                     Debug.Log("join result = packetS.message");
-                    if (joinResult.canJoin)
-                    {
-                        Debug.Log($"Joining {csteamID.m_SteamID}");
-                        hostID = csteamID;
-                        StartCoroutine(FlyButton());
+
+                    VTCampaignInfo campaign = VTResources.GetCustomCampaign(joinResultAccepted.campaignId);
+                    if (null == campaign) {
+                        Debug.Log("Did not recognize server campaign, not joining");
+                        SendP2P(csteamID, new Message_JoinRequestClientFinal_Result(false), EP2PSend.k_EP2PSendReliable);
+                        break;
                     }
-                    else
-                    {
-                        Debug.LogWarning($"We can't join {csteamID.m_SteamID} reason = \n{joinResult.reason}");
+                    VTScenarioInfo scenario = VTResources.GetCustomScenario(joinResultAccepted.scenarioId, joinResultAccepted.campaignId);
+                    if (null == scenario) {
+                        Debug.Log("Did not recognize server scenario, not joining");
+                        SendP2P(csteamID, new Message_JoinRequestClientFinal_Result(false), EP2PSend.k_EP2PSendReliable);
+                        break;
+                    }
+
+                    Debug.Log($"Joining {csteamID.m_SteamID}");
+                    hostID = csteamID;
+                    PilotSaveManager.currentCampaign = campaign.ToIngameCampaign();
+                    PilotSaveManager.currentScenario = scenario.ToIngameScenario(campaign);
+                    SendP2P(csteamID, new Message_JoinRequestClientFinal_Result(true), EP2PSend.k_EP2PSendReliable);
+
+                    StartCoroutine(FlyButton());
+                    break;
+                case MessageType.JoinRequestRejected_Result:
+                    Debug.Log("case join request rejected result");
+                    Message_JoinRequestRejected_Result joinResultRejected = packetS.message as Message_JoinRequestRejected_Result;
+                    Debug.LogWarning($"We can't join {csteamID.m_SteamID} reason = \n{joinResultRejected.reason}");
+                    break;
+                case MessageType.JoinRequestClientFinal_Result:
+                    Debug.Log("case join request client final result");
+                    if (isHost) {
+                        Message_JoinRequestClientFinal_Result joinRequestClientFinal = packetS.message as Message_JoinRequestClientFinal_Result;
+                        if (joinRequestClientFinal.joined) {
+                            Debug.Log($"Adding {csteamID.m_SteamID} to players list");
+                            players.Add(csteamID);
+                            readyDic.Add(csteamID, false);
+                            UpdateLoadingText();
+                        }
+                        else {
+                            Debug.Log($"Client {csteamID.m_SteamID} changed their mind about joining");
+                        }
                     }
                     break;
                 case MessageType.Ready:
