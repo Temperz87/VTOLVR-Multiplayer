@@ -580,7 +580,7 @@ public class Networker : MonoBehaviour
                         RadarUpdate.Invoke(packet);
                     break;
                 case MessageType.TurretUpdate:
-                    Debug.Log("turret update update");
+                    //Debug.Log("turret update update");
                     if (TurretUpdate != null)
                         TurretUpdate.Invoke(packet);
                     break;

@@ -242,7 +242,7 @@ public static class PlayerManager
         if (Multiplayer.SoloTesting)
             pos += new Vector3(20, 0, 0);
 
-        List<HPInfo> hpInfos = VTOLVR_Multiplayer.PlaneEquippableManager.generateLocalHpInfoList();
+        List<HPInfo> hpInfos = VTOLVR_Multiplayer.PlaneEquippableManager.generateLocalHpInfoList(UID);
         CountermeasureManager cmManager = localVehicle.GetComponentInChildren<CountermeasureManager>();
         List<int> cm = VTOLVR_Multiplayer.PlaneEquippableManager.generateCounterMeasuresFromCmManager(cmManager);
         float fuel = VTOLVR_Multiplayer.PlaneEquippableManager.generateLocalFuelValue();
@@ -515,7 +515,7 @@ public static class PlayerManager
                 Debug.Log(equip.name + " is a missile launcher");
                 HPEquipMissileLauncher hpML = equip as HPEquipMissileLauncher;
                 Debug.Log("This missile launcher has " + hpML.ml.missiles.Length + " missiles.");
-                for(int j = 0; j < hpML.ml.missiles.Length; j++)
+                for (int j = 0; j < hpML.ml.missiles.Length; j++)
                 {
                     Debug.Log("Adding missile reciever");
                     lastReciever = hpML.ml.missiles[j].gameObject.AddComponent<MissileNetworker_Receiver>();
@@ -534,6 +534,12 @@ public static class PlayerManager
                         }
                     }
                 }
+            }
+            else if (equip is HPEquipGunTurret) {//dear god when this gets cleaned up move to PlaneEquippableManager
+                TurretNetworker_Receiver reciever = equip.gameObject.AddComponent<TurretNetworker_Receiver>();
+                reciever.networkUID = message.networkID;
+                reciever.turret = equip.GetComponent<ModuleTurret>();
+                equip.enabled = false;
             }
         }
         /*foreach (var equip in weaponManager.GetCombinedEquips())

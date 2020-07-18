@@ -79,16 +79,12 @@ namespace VTOLVR_Multiplayer
                 else if (lastEquippable is HPEquipGunTurret HPm230 && networkID != 0) {
                     switch (networkType)
                     {
-                        case HPInfoListGenerateNetworkType.sender:
+                        case HPInfoListGenerateNetworkType.generate:
                             TurretNetworker_Sender sender = HPm230.gameObject.AddComponent<TurretNetworker_Sender>();
                             sender.networkUID = networkID;
                             sender.turret = HPm230.GetComponent<ModuleTurret>();
                             break;
                         case HPInfoListGenerateNetworkType.receiver:
-                            TurretNetworker_Sender reciever = HPm230.gameObject.AddComponent<TurretNetworker_Sender>();
-                            reciever.networkUID = networkID;
-                            reciever.turret = HPm230.GetComponent<ModuleTurret>();
-                            HPm230.enabled = false;
                             break;
                         default:
                             break;
@@ -105,10 +101,10 @@ namespace VTOLVR_Multiplayer
             return hpInfos;
         }
 
-        public static List<HPInfo> generateLocalHpInfoList() {
+        public static List<HPInfo> generateLocalHpInfoList(ulong UID = 0) {
             GameObject localVehicle = VTOLAPI.GetPlayersVehicleGameObject();
             WeaponManager localWeaponManager = localVehicle.GetComponent<WeaponManager>();
-            return generateHpInfoListFromWeaponManager(localWeaponManager, HPInfoListGenerateNetworkType.generate);
+            return generateHpInfoListFromWeaponManager(localWeaponManager, HPInfoListGenerateNetworkType.generate, UID);
         }
 
         public static List<int> generateCounterMeasuresFromCmManager(CountermeasureManager cmManager) {
