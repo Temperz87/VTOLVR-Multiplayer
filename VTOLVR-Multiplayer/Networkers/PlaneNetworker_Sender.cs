@@ -104,7 +104,8 @@ public class PlaneNetworker_Sender : MonoBehaviour
 
     private void Update()
     {
-        if ( weaponManager != null && weaponManager.isFiring != previousFiringState || lastIdx != (int)traverse.Field("weaponIdx").GetValue())
+        Debug.Log("Doing update function for vehicle " + gameObject.name);
+        if (weaponManager != null && weaponManager.isFiring != previousFiringState || lastIdx != (int)traverse.Field("weaponIdx").GetValue())
         {
             previousFiringState = weaponManager.isFiring;
             lastFiringMessage.weaponIdx = (int)traverse.Field("weaponIdx").GetValue();

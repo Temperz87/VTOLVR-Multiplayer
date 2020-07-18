@@ -412,6 +412,7 @@ public static class PlayerManager
                     EP2PSend.k_EP2PSendReliable);
                 Debug.Log($"We have asked {players[i].cSteamID.m_SteamID} what their current weapons are, and now waiting for a responce."); // marsh typo response lmaooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo
             }
+            PlayerManager.TellClientAboutAI((CSteamID)message.csteamID);
         }
 
         GameObject newVehicle = null;
@@ -762,7 +763,7 @@ public static class PlayerManager
         AIVehicles.Add(new AI(new CSteamID(message.networkID), newVehicle, message.aiVehicleName, message.networkID));
     }
     /// <summary>
-    /// Tell the connected clients about all the vehicles the host has.
+    /// Tell the connected clients about all the vehicles the host has. This code should never be run on a client.
     /// </summary>
     public static void TellClientAboutAI(CSteamID steamID)
     { 
@@ -771,6 +772,7 @@ public static class PlayerManager
             Debug.LogWarning("The client shouldn't be trying to tell everyone about AI");
             return;
         }
+        Debug.Log("Trying sending AI's to client " + steamID);
         PlaneNetworker_Sender lastSender;
         foreach (var actor in TargetManager.instance.allActors)
         {
@@ -786,6 +788,7 @@ public static class PlayerManager
                     cmLoadout = VTOLVR_Multiplayer.PlaneEquippableManager.generateCounterMeasuresFromCmManager(cm);
                 }
 
+                Debug.Log("Finally sending AI's to client " + steamID);
                 Networker.SendP2P(steamID, new Message_SpawnAIVehicle(actor.name, actor.unitSpawn.unitName, VTMapManager.WorldToGlobalPoint(actor.gameObject.transform.position), new Vector3D(actor.gameObject.transform.rotation.eulerAngles), lastSender.networkUID, hPInfos.ToArray(), cmLoadout.ToArray(), 0.65f), EP2PSend.k_EP2PSendReliable);
             }
         }

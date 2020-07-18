@@ -472,7 +472,6 @@ public class Networker : MonoBehaviour
                     Debug.Log($"case request spawn from: {csteamID.m_SteamID}, we are {SteamUser.GetSteamID().m_SteamID}, host is {hostID}");
                     if (RequestSpawn != null)
                     { RequestSpawn.Invoke(packet, csteamID); }
-                    PlayerManager.TellClientAboutAI(csteamID);
                     break;
                 case MessageType.RequestSpawn_Result:
                     Debug.Log("case request spawn result");
