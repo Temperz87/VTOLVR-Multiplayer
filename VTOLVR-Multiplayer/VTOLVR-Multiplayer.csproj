@@ -105,6 +105,7 @@
     <Compile Include="Messages\Message_LobbyInfoRequest.cs" />
     <Compile Include="Messages\Message_MissileUpdate.cs" />
     <Compile Include="Messages\Message_PlaneUpdate.cs" />
+    <Compile Include="Messages\Message_RadarUpdate.cs" />
     <Compile Include="Messages\Message_Ready.cs" />
     <Compile Include="Messages\Message_RequestNetworkUID.cs" />
     <Compile Include="Messages\Message_RequestSpawn.cs" />
@@ -118,6 +119,8 @@
     <Compile Include="Networkers\ExtLightNetworker_Receiver.cs" />
     <Compile Include="Networkers\ExtLightNetworker_Sender.cs" />
     <Compile Include="ModVersionString.cs" />
+    <Compile Include="Networkers\LockingRadarNetworker_Reciever.cs" />
+    <Compile Include="Networkers\LockingRadarNetworker_Sender.cs" />
     <Compile Include="Networkers\WingFoldNetworker_Sender.cs" />
     <Compile Include="Multiplayer.cs" />
     <Compile Include="Nametag.cs" />
