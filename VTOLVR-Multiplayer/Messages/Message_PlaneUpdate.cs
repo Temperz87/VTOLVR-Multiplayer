@@ -14,8 +14,8 @@ public class Message_PlaneUpdate : Message
     public ulong networkUID;
     public bool hasRadar;
     public bool locked;
-    public Vector3D radarLock;
-    public Message_PlaneUpdate(bool landingGear, float flaps, float pitch, float roll, float yaw, float breaks, float throttle, bool tailHook, bool launchBar, bool fuelPort, ulong networkUID, bool hasRadar, bool locked, Vector3D radarLock)
+    public string radarLock;
+    public Message_PlaneUpdate(bool landingGear, float flaps, float pitch, float roll, float yaw, float breaks, float throttle, bool tailHook, bool launchBar, bool fuelPort, ulong networkUID, bool hasRadar, bool locked, string radarLock)
     {
         this.landingGear = landingGear;
         this.flaps = flaps;

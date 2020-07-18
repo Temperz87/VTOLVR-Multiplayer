@@ -27,8 +27,8 @@ public class PlaneNetworker_Sender : MonoBehaviour
     private Message_Death lastDeathMessage;
     private Tailhook tailhook;
     private CatapultHook launchBar;
-    private bool lastFiring = false;
-    private Vector3D radarLock;
+    private string radarLock;
+    private bool radarLocked = false;
     private void Awake()
     {
         if (VTOLAPI.GetPlayersVehicleEnum() == VTOLVehicles.AV42C)
@@ -137,16 +137,28 @@ public class PlaneNetworker_Sender : MonoBehaviour
         lastMessage.networkUID = networkUID;
         lastMessage.tailHook = tailhook.isDeployed;
         lastMessage.launchBar = launchBar.deployed;
-        
-        if (lastMessage.hasRadar) {
+
+        Debug.Log("doing radar.");
+        if (lastMessage.hasRadar)
+        {
             // This line will cause a null for AV-42C's
-            lastMessage.radarLock = VTMapManager.WorldToGlobalPoint(weaponManager.lockingRadar.currentLock.actor.position);
+            lastMessage.locked = weaponManager.lockingRadar.IsLocked();
+            if (weaponManager.lockingRadar.IsLocked())
+            {
+                lastMessage.radarLock = weaponManager.lockingRadar.currentLock.actor.name;
+            }
+            else
+            {
+                lastMessage.radarLock = "";
+            }
         }
 
         if (Networker.isHost)
             Networker.SendGlobalP2P(lastMessage, Steamworks.EP2PSend.k_EP2PSendUnreliable);
         else
+        {
             Networker.SendP2P(Networker.hostID, lastMessage, Steamworks.EP2PSend.k_EP2PSendUnreliable);
+        }
     }
 
     private bool LandingGearState()

@@ -47,11 +47,19 @@ public class MissileNetworker_Receiver : MonoBehaviour
             {
                 Debug.Log("Guidance mode radar");
                 RadarLockData lockData = new RadarLockData();
-                lockData.actor = GetActorAtPosition(lastMessage.targetPosition);
-                lockData.locked = true;
-                lockData.lockingRadar = GetComponentInChildren<LockingRadar>();     //Unsure if these are on a child or not
-                lockData.radarSymbol = GetComponentInChildren<Radar>().radarSymbol; //I'm just guessing they are
-                thisMissile.SetRadarLock(lockData);
+                // lockData.locked = true;
+                // lockData.lockingRadar = GetComponentInChildren<LockingRadar>();     //Unsure if these are on a child or not
+                //lockData.radarSymbol = GetComponentInChildren<Radar>().radarSymbol; //I'm just guessing they are*/
+                LockingRadar radar = thisMissile.lockingRadar;
+
+                foreach (Actor actor in TargetManager.instance.allActors)
+                {
+                    if (actor.name == lastMessage.radarLock)
+                    {
+                        Debug.Log("Missile found its lock on actor " + actor.name + " while trying to lock " + lastMessage.radarLock);
+                        radar.ForceLock(actor, out lockData);
+                    }
+                }
             }
             if (lastMessage.guidanceMode == Missile.GuidanceModes.Optical)
             {

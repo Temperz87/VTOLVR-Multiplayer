@@ -74,12 +74,20 @@ public class PlaneNetworker_Receiver : MonoBehaviour
             {
                 weaponManager.lockingRadar.radar.enabled = true;
             }
-            if (lastMessage.locked)
+            if (lastMessage.locked && weaponManager.lockingRadar.currentLock.actor.name != lastMessage.radarLock && lastMessage.radarLock != "")
             {
-                weaponManager.lockingRadar.ForceLock(MissileNetworker_Receiver.GetActorAtPosition(lastMessage.radarLock), out LockData);
+                foreach (Actor actor in TargetManager.instance.allActors)
+                {
+                    if (actor.name == lastMessage.radarLock)
+                    {
+                        Debug.Log("Forcing lock on actor " + actor.name);
+                        weaponManager.lockingRadar.ForceLock(actor, out LockData);
+                    }
+                }
             }
             else if (!lastMessage.locked && weaponManager.lockingRadar.IsLocked())
             {
+                Debug.Log("Unlocking radar");
                 weaponManager.lockingRadar.Unlock();
             }
         }
