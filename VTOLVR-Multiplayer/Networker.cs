@@ -19,8 +19,6 @@ static class MapAndScenarioVersionChecker
     static private SHA256 hashCalculator = SHA256.Create();
     static private string filePath;
 
-    static public bool NeedsToRun = true;
-
     static public bool builtInCampaign = false;
     static public string scenarioId;
     static public byte[] mapHash;
@@ -29,36 +27,32 @@ static class MapAndScenarioVersionChecker
 
     // Make hashes of the map, scenario and campaign IDs so the server can check that we're loading the right mission
     public static void CreateHashes() {
-        if (NeedsToRun) {
-            NeedsToRun = false;
-
-            if (PilotSaveManager.currentCampaign.isBuiltIn) {
-                // Only need to get the scenario ID in this case
-                builtInCampaign = true;
-                // Don't send null arrays over network
-                mapHash = new byte[0];
-                scenarioHash = new byte[0];
-                campaignHash = new byte[0];
-            }
-            else {
-                filePath = VTResources.GetMapFilePath(PilotSaveManager.currentScenario.customScenarioInfo.mapID);
-                using (FileStream mapFile = File.OpenRead(filePath)) {
-                    mapHash = hashCalculator.ComputeHash(mapFile);
-                }
-
-                filePath = PilotSaveManager.currentScenario.customScenarioInfo.filePath;
-                using (FileStream scenarioFile = File.OpenRead(filePath)) {
-                    scenarioHash = hashCalculator.ComputeHash(scenarioFile);
-                }
-
-                filePath = VTResources.GetCustomCampaigns().Find(id => id.campaignID == PilotSaveManager.currentCampaign.campaignID).filePath;
-                using (FileStream campaignFile = File.OpenRead(filePath)) {
-                    campaignHash = hashCalculator.ComputeHash(campaignFile);
-                }
-            }
-
-            scenarioId = PilotSaveManager.currentScenario.scenarioID;
+        if (PilotSaveManager.currentCampaign.isBuiltIn) {
+            // Only need to get the scenario ID in this case
+            builtInCampaign = true;
+            // Don't send null arrays over network
+            mapHash = new byte[0];
+            scenarioHash = new byte[0];
+            campaignHash = new byte[0];
         }
+        else {
+            filePath = VTResources.GetMapFilePath(PilotSaveManager.currentScenario.customScenarioInfo.mapID);
+            using (FileStream mapFile = File.OpenRead(filePath)) {
+                mapHash = hashCalculator.ComputeHash(mapFile);
+            }
+
+            filePath = PilotSaveManager.currentScenario.customScenarioInfo.filePath;
+            using (FileStream scenarioFile = File.OpenRead(filePath)) {
+                scenarioHash = hashCalculator.ComputeHash(scenarioFile);
+            }
+
+            filePath = VTResources.GetCustomCampaigns().Find(id => id.campaignID == PilotSaveManager.currentCampaign.campaignID).filePath;
+            using (FileStream campaignFile = File.OpenRead(filePath)) {
+                campaignHash = hashCalculator.ComputeHash(campaignFile);
+            }
+        }
+
+        scenarioId = PilotSaveManager.currentScenario.scenarioID;
     }
 }
 
@@ -155,7 +149,7 @@ public class Networker : MonoBehaviour
                 pilotSaveManagerControllerCampaignScenario = PilotSaveManager.currentScenario;
             }
         }
-        ReadP2P();  
+        ReadP2P();
     }
 
     public static void HostGame()
