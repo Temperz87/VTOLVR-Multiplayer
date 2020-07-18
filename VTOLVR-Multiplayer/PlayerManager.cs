@@ -278,7 +278,7 @@ public static class PlayerManager
         if (Multiplayer.SoloTesting)
             pos += new Vector3(20, 0, 0);
 
-        List<HPInfo> hpInfos = VTOLVR_Multiplayer.PlaneEquippableManager.generateLocalHpInfoList();
+        List<HPInfo> hpInfos = VTOLVR_Multiplayer.PlaneEquippableManager.generateLocalHpInfoList(UID);
         CountermeasureManager cmManager = localVehicle.GetComponentInChildren<CountermeasureManager>();
         List<int> cm = VTOLVR_Multiplayer.PlaneEquippableManager.generateCounterMeasuresFromCmManager(cmManager);
         float fuel = VTOLVR_Multiplayer.PlaneEquippableManager.generateLocalFuelValue();
@@ -750,6 +750,14 @@ public static class PlayerManager
                                 lastReciever.idx = j;
                                 uIDidx++;
                             }
+                        }
+
+                        else if (equip is HPEquipGunTurret)
+                        {//dear god when this gets cleaned up move to PlaneEquippableManager
+                            TurretNetworker_Receiver reciever = equip.gameObject.AddComponent<TurretNetworker_Receiver>();
+                            reciever.networkUID = message.networkID;
+                            reciever.turret = equip.GetComponent<ModuleTurret>();
+                            equip.enabled = false;
                         }
                     }
                 }
