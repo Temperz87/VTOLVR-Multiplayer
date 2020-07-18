@@ -98,6 +98,7 @@ public class Networker : MonoBehaviour
     public static event UnityAction<Packet> WingFold;
     public static event UnityAction<Packet> ExtLight;
     public static event UnityAction<Packet> MissileUpdate;
+    public static event UnityAction<Packet> WorldDataUpdate;
     public static event UnityAction<Packet> RequestNetworkUID;
     public static event UnityAction<Packet> ActorSync;
     #endregion
@@ -503,6 +504,11 @@ public class Networker : MonoBehaviour
                     if (EngineTiltUpdate != null)
                         EngineTiltUpdate.Invoke(packet);
                     break;
+                case MessageType.WorldData:
+                    Debug.Log("case world data");
+                    if (WorldDataUpdate != null)
+                        WorldDataUpdate.Invoke(packet);
+                    break;
                 case MessageType.Disconnecting:
                     Debug.Log("case disconnecting");
                     if (isHost)
@@ -724,10 +730,10 @@ public class Networker : MonoBehaviour
         if (!isHost)
             return;
         StringBuilder content = new StringBuilder("Players:\n");
-        content.AppendLine(SteamFriends.GetPersonaName() + ": " + (hostReady ? "Ready" : "Not Ready") + "\n");
+        content.AppendLine("<b>"+SteamFriends.GetPersonaName() + "</b>" + ": " + (hostReady ? "<color=\"green\">Ready</color>" : "<color=\"red\">Not Ready</color>") + "\n");
         for (int i = 0; i < players.Count; i++)
         {
-            content.Append(SteamFriends.GetFriendPersonaName(players[i]) + ": " + (readyDic[players[i]]? "Ready": "Not Ready") + "\n");
+            content.Append("<b>" + SteamFriends.GetFriendPersonaName(players[i]) + "</b>" + ": " + (readyDic[players[i]]? "<color=\"green\">Ready</color>" : "<color=\"red\">Not Ready</color>") + "\n");
         }
         if (loadingText != null)
             loadingText.text = content.ToString();
