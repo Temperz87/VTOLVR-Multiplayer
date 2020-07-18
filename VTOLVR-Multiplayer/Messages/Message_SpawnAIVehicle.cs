@@ -29,6 +29,6 @@ public class Message_SpawnAIVehicle : Message
         this.cmLoadout = cmLoadout;
         this.normalizedFuel = normalizedFuel;
         // this.playerCount = playerCount;
-        type = MessageType.SpawnPlayerVehicle;
+        type = MessageType.SpawnAiVehicle;
     }
 }
