@@ -643,9 +643,8 @@ public class Networker : MonoBehaviour
 
     private IEnumerator FlyButton()
     {
-        if (isHost) {
-            PilotSaveManager.currentScenario = PSMC;
-        }
+        PilotSaveManager.currentScenario = PSMC;
+
         if (PilotSaveManager.currentScenario == null)
         {
             Debug.LogError("A null scenario was used on flight button!");
