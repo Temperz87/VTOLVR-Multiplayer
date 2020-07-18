@@ -27,6 +27,7 @@ public class PlaneNetworker_Sender : MonoBehaviour
     private Message_Death lastDeathMessage;
     private Tailhook tailhook;
     private CatapultHook launchBar;
+    private RefuelPort refuelPort;
     private bool lastFiring = false;
     private Vector3D radarLock;
     private void Awake()
@@ -77,6 +78,7 @@ public class PlaneNetworker_Sender : MonoBehaviour
         Debug.Log("Done Plane Sender");
         tailhook = GetComponentInChildren<Tailhook>();
         launchBar = GetComponentInChildren<CatapultHook>();
+        refuelPort = GetComponentInChildren<RefuelPort>();
     }
 
     private void Update()
@@ -135,8 +137,17 @@ public class PlaneNetworker_Sender : MonoBehaviour
 
         lastMessage.landingGear = LandingGearState();
         lastMessage.networkUID = networkUID;
-        lastMessage.tailHook = tailhook.isDeployed;
-        lastMessage.launchBar = launchBar.deployed;
+        if (tailhook != null) {
+            lastMessage.tailHook = tailhook.isDeployed;
+        }
+        if (launchBar != null)
+        {
+            lastMessage.launchBar = launchBar.deployed;
+        }
+        if (refuelPort != null)
+        {
+            lastMessage.fuelPort = refuelPort.open;
+        }
 
         if (Networker.isHost)
             Networker.SendGlobalP2P(lastMessage, Steamworks.EP2PSend.k_EP2PSendUnreliable);
