@@ -15,7 +15,6 @@ public class PlaneNetworker_Receiver : MonoBehaviour
     //Classes we use to set the information
     private AIPilot aiPilot;
     private AutoPilot autoPilot;
-
     private Health health;
     private WeaponManager weaponManager;
     private CountermeasureManager cmManager;
@@ -38,6 +37,8 @@ public class PlaneNetworker_Receiver : MonoBehaviour
         weaponManager = GetComponent<WeaponManager>();
         if (weaponManager == null)
             Debug.LogError("Weapon Manager was null on " + gameObject.name);
+        else
+            traverse = Traverse.Create(weaponManager);
         cmManager = GetComponentInChildren<CountermeasureManager>();
         if (cmManager == null)
             Debug.LogError("CountermeasureManager was null on " + gameObject.name);
@@ -46,9 +47,7 @@ public class PlaneNetworker_Receiver : MonoBehaviour
             Debug.LogError("FuelTank was null on " + gameObject.name);
         health = GetComponent<Health>();
         if (health == null)
-            Debug.LogError("health was null on our vehicle");
-
-        traverse = Traverse.Create(weaponManager);
+            Debug.LogError("health was null on vehicle " + gameObject.name);
     }
     public void PlaneUpdate(Packet packet)
     {
@@ -85,7 +84,7 @@ public class PlaneNetworker_Receiver : MonoBehaviour
                 aiPilot.refuelPort.Close();
         }
 
-        if (lastMessage.hasRadar)
+        if (lastMessage.hasRadar && weaponManager != null)
         {
             weaponManager.lockingRadar.radar.debugRadar = true;
             if (!weaponManager.lockingRadar.radar.enabled)
@@ -152,6 +151,10 @@ public class PlaneNetworker_Receiver : MonoBehaviour
         loadout.hpLoadout = hpLoadoutNames.ToArray();
         loadout.cmLoadout = message.cmLoadout;
         loadout.normalizedFuel = message.normalizedFuel;
+        if (weaponManager == null)
+        {
+            Debug.LogError("Weapon set was called this vehicle which has a null weapon manager " + gameObject.name);
+        }
         weaponManager.EquipWeapons(loadout);
 
         for (int i = 0; i < cmManager.countermeasures.Count; i++)

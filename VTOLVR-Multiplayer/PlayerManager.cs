@@ -99,8 +99,11 @@ public static class PlayerManager
             PlaneNetworker_Sender lastSender;
             foreach (var actor in TargetManager.instance.allActors)
             {
-                lastSender = actor.gameObject.AddComponent<PlaneNetworker_Sender>();
-                lastSender.networkUID = Networker.GenerateNetworkUID();
+                if (!actor.isPlayer && actor.role == Actor.Roles.Air)
+                {
+                    lastSender = actor.gameObject.AddComponent<PlaneNetworker_Sender>();
+                    lastSender.networkUID = Networker.GenerateNetworkUID();
+                }
             }
             Networker.SendGlobalP2P(new Message_HostLoaded(true), EP2PSend.k_EP2PSendReliable);
             GameObject localVehicle = VTOLAPI.GetPlayersVehicleGameObject();
@@ -634,8 +637,17 @@ public static class PlayerManager
 
         spawnedVehicles.Add(message.networkID);
         Debug.Log("Got a new spawnVehicle uID.");
-
+        if (message.unitName == "Player")
+        {
+            Debug.LogWarning("Player shouldn't be sent to someone client....");
+            return;
+        }
         GameObject newVehicle = UnitCatalogue.GetUnitPrefab(message.unitName);
+        if (newVehicle == null)
+        {
+            Debug.LogError(message.unitName + " was not found.");
+            return;
+        }
         Debug.Log("Setting vehicle name");
         newVehicle.name = message.aiVehicleName;
         Debug.Log($"Spawned new vehicle at {newVehicle.transform.position}");
@@ -765,16 +777,20 @@ public static class PlayerManager
         PlaneNetworker_Sender lastSender;
         foreach (var actor in TargetManager.instance.allActors)
         {
-            lastSender = actor.gameObject.GetComponent<PlaneNetworker_Sender>();
-            List<HPInfo> hPInfos = VTOLVR_Multiplayer.PlaneEquippableManager.generateHpInfoListFromWeaponManager(actor.weaponManager, VTOLVR_Multiplayer.PlaneEquippableManager.HPInfoListGenerateNetworkType.sender);
-            CountermeasureManager cm;
-            cm = actor.gameObject.GetComponent<CountermeasureManager>();
-            List<int> cmLoadout = null;
-            if (cm)
+            if (!actor.isPlayer && actor.role == Actor.Roles.Air)
             {
-                cmLoadout = VTOLVR_Multiplayer.PlaneEquippableManager.generateCounterMeasuresFromCmManager(cm);
+                lastSender = actor.gameObject.GetComponent<PlaneNetworker_Sender>();
+                List<HPInfo> hPInfos = VTOLVR_Multiplayer.PlaneEquippableManager.generateHpInfoListFromWeaponManager(actor.weaponManager, VTOLVR_Multiplayer.PlaneEquippableManager.HPInfoListGenerateNetworkType.sender);
+                CountermeasureManager cm;
+                cm = actor.gameObject.GetComponent<CountermeasureManager>();
+                List<int> cmLoadout = null;
+                if (cm)
+                {
+                    cmLoadout = VTOLVR_Multiplayer.PlaneEquippableManager.generateCounterMeasuresFromCmManager(cm);
+                }
+
+                Networker.SendP2P(steamID, new Message_SpawnAIVehicle(actor.name, actor.unitSpawn.unitName, VTMapManager.WorldToGlobalPoint(actor.gameObject.transform.position), new Vector3D(actor.gameObject.transform.rotation.eulerAngles), lastSender.networkUID, hPInfos.ToArray(), cmLoadout.ToArray(), 0.65f), EP2PSend.k_EP2PSendReliable);
             }
-            Networker.SendP2P(steamID, new Message_SpawnAIVehicle(actor.name, actor.unitSpawn.unitName, VTMapManager.WorldToGlobalPoint(actor.gameObject.transform.position), new Vector3D(actor.gameObject.transform.rotation.eulerAngles), lastSender.networkUID, hPInfos.ToArray(), cmLoadout.ToArray(), 0.65f), EP2PSend.k_EP2PSendReliable);
         }
     }
     /// <summary>
