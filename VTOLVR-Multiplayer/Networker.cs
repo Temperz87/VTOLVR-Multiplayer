@@ -422,19 +422,38 @@ public class Networker : MonoBehaviour
                 case MessageType.JoinRequestAccepted_Result:
                     Debug.Log("case join request accepted result");
                     Message_JoinRequestAccepted_Result joinResultAccepted = packetS.message as Message_JoinRequestAccepted_Result;
-                    Debug.Log("join result = packetS.message");
+                    Debug.Log("join result = true");
 
-                    VTCampaignInfo campaign = VTResources.GetCustomCampaign(joinResultAccepted.campaignId);
+                    VTCampaignInfo campaign;
+                    VTScenarioInfo scenario;
+
+                    campaign = VTResources.GetCustomCampaign(joinResultAccepted.campaignId);
                     if (null == campaign) {
-                        Debug.Log("Did not recognize server campaign, not joining");
-                        SendP2P(csteamID, new Message_JoinRequestClientFinal_Result(false), EP2PSend.k_EP2PSendReliable);
-                        break;
+                        // Built in?
+                        campaign = VTResources.GetBuiltInCampaign(joinResultAccepted.campaignId);
+                        if (null == campaign) {
+                            Debug.Log("Did not recognize server campaign, not joining");
+                            SendP2P(csteamID, new Message_JoinRequestClientFinal_Result(false), EP2PSend.k_EP2PSendReliable);
+                            break;
+                        }
+                        else {
+                            // Built in
+                            scenario = VTResources.GetBuiltInScenario(joinResultAccepted.scenarioId, joinResultAccepted.campaignId);
+                            if (null == scenario) {
+                                Debug.Log("Did not recognize server scenario, not joining");
+                                SendP2P(csteamID, new Message_JoinRequestClientFinal_Result(false), EP2PSend.k_EP2PSendReliable);
+                                break;
+                            }
+                        }
                     }
-                    VTScenarioInfo scenario = VTResources.GetCustomScenario(joinResultAccepted.scenarioId, joinResultAccepted.campaignId);
-                    if (null == scenario) {
-                        Debug.Log("Did not recognize server scenario, not joining");
-                        SendP2P(csteamID, new Message_JoinRequestClientFinal_Result(false), EP2PSend.k_EP2PSendReliable);
-                        break;
+                    else {
+                        // Custom campaign
+                        scenario = VTResources.GetCustomScenario(joinResultAccepted.scenarioId, joinResultAccepted.campaignId);
+                        if (null == scenario) {
+                            Debug.Log("Did not recognize server scenario, not joining");
+                            SendP2P(csteamID, new Message_JoinRequestClientFinal_Result(false), EP2PSend.k_EP2PSendReliable);
+                            break;
+                        }
                     }
 
                     Debug.Log($"Joining {csteamID.m_SteamID}");
