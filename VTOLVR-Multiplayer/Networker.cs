@@ -56,7 +56,7 @@ public class Networker : MonoBehaviour
         MessageType.None,
         MessageType.JoinRequest,
         MessageType.JoinRequest_Result,
-        MessageType.SpawnVehicle,
+        MessageType.SpawnPlayerVehicle,
         MessageType.RequestSpawn,
         MessageType.RequestSpawn_Result,
         MessageType.LobbyInfoRequest,
@@ -76,7 +76,7 @@ public class Networker : MonoBehaviour
 
         RequestSpawn += PlayerManager.RequestSpawn;
         RequestSpawn_Result += PlayerManager.RequestSpawn_Result;
-        SpawnVehicle += PlayerManager.SpawnVehicle;
+        SpawnVehicle += PlayerManager.SpawnPlayerVehicle;
 
         // Is this line actually needed?
         //VTCustomMapManager.OnLoadedMap += (customMap) => { StartCoroutine(PlayerManager.MapLoaded(customMap)); };
@@ -464,14 +464,18 @@ public class Networker : MonoBehaviour
                     Debug.Log($"case request spawn from: {csteamID.m_SteamID}, we are {SteamUser.GetSteamID().m_SteamID}, host is {hostID}");
                     if (RequestSpawn != null)
                     { RequestSpawn.Invoke(packet, csteamID); }
-                    ActorNetworker_Sender.SendDictionary(csteamID);
+                    PlayerManager.TellClientAboutAI(csteamID);
                     break;
                 case MessageType.RequestSpawn_Result:
                     Debug.Log("case request spawn result");
                     if (RequestSpawn_Result != null)
                         RequestSpawn_Result.Invoke(packet);
                     break;
-                case MessageType.SpawnVehicle:
+                case MessageType.SpawnAiVehicle:
+                    Debug.Log("case spawn ai vehicle");
+                    PlayerManager.SpawnAIVehicle(packet);
+                    break;
+                case MessageType.SpawnPlayerVehicle:
                     Debug.Log("case spawn vehicle");
                     if (SpawnVehicle != null)
                         SpawnVehicle.Invoke(packet, csteamID);

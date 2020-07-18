@@ -59,18 +59,18 @@ public class PlaneNetworker_Receiver : MonoBehaviour
             aiPilot.gearAnimator.Extend();
         else
             aiPilot.gearAnimator.Retract();
-        if (lastMessage.tailHook && !aiPilot.tailHook.isDeployed)
+        if (aiPilot.tailHook && lastMessage.tailHook && !aiPilot.tailHook.isDeployed)
             aiPilot.tailHook.ExtendHook();
-        else if (!lastMessage.tailHook && aiPilot.tailHook.isDeployed)
+        else if (aiPilot.tailHook && !lastMessage.tailHook && aiPilot.tailHook.isDeployed)
             aiPilot.tailHook.RetractHook();
-        if (lastMessage.launchBar && !aiPilot.catHook.deployed)
+        if (aiPilot.catHook && lastMessage.launchBar && !aiPilot.catHook.deployed)
             aiPilot.catHook.SetState(1);
-        else if (!lastMessage.launchBar && aiPilot.catHook.deployed)
+        else if (aiPilot.catHook && !lastMessage.launchBar && aiPilot.catHook.deployed)
             aiPilot.catHook.SetState(0);
         if (lastMessage.hasRadar)
         {
             weaponManager.lockingRadar.radar.debugRadar = true;
-            if (weaponManager.lockingRadar.radar.enabled)
+            if (!weaponManager.lockingRadar.radar.enabled)
             {
                 weaponManager.lockingRadar.radar.enabled = true;
             }
@@ -186,22 +186,7 @@ public class PlaneNetworker_Receiver : MonoBehaviour
                     weaponManager.EndFire();
             }
         }
-        /*To switch weapon, we go back one previous one on the index and then toggle it to go forward one.
-        //So that everything gets called which is in the normal game.
-        List<string> uniqueWeapons = traverse.Field("uniqueWeapons").GetValue() as List<string>;
-        traverse.Field("weaponIdx").SetValue((message.weaponIdx - 1) % uniqueWeapons.Count);
-        weaponManager.CycleActiveWeapons(); //Should move it one forward to the same weapon
-        weaponManager.SetMasterArmed(true);
-        weaponManager.StartFire();*/
     }
-    /*public void WeaponStoppedFiring(Packet packet)
-    {
-        Message_WeaponStoppedFiring message = ((PacketSingle)packet).message as Message_WeaponStoppedFiring;
-        if (message.UID != networkUID)
-            return;
-        weaponManager.EndFire();
-    }*/
-
     public void FireCountermeasure(Packet packet) // chez
     {
         Message_FireCountermeasure message = ((PacketSingle)packet).message as Message_FireCountermeasure;

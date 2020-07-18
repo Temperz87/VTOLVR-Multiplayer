@@ -13,13 +13,13 @@ class ActorNetworker_Sender : MonoBehaviour
     public ulong networkUID;
     public Actor actor;
     private Message_ActorSync lastMessage;
-    public static Dictionary<String, ulong> allActors = new Dictionary<String, ulong>();
+    public static Dictionary<ulong, string> allActors = new Dictionary<ulong, string>();
     private void Awake()
     {
         networkUID = Networker.GenerateNetworkUID();
         actor = base.GetComponent<Actor>();
         Debug.Log("Adding " + actor.name + " to the dictionary.");
-        allActors.Add(actor.name, networkUID);
+        allActors.Add(networkUID, actor.name);
     }
     public static void SendDictionary(CSteamID uID) // Host Only
     {

@@ -22,9 +22,11 @@ public static class PlayerManager
     private static Queue<CSteamID> spawnRequestQueue = new Queue<CSteamID>();
     private static Queue<Packet> playersToSpawnQueue = new Queue<Packet>();
     private static Queue<CSteamID> playersToSpawnIdQueue = new Queue<CSteamID>();
+    private static Queue<Packet> AIsToSpawnQueue = new Queue<Packet>();
     public static bool gameLoaded;
     private static GameObject av42cPrefab, fa26bPrefab, f45Prefab;
     private static List<ulong> spawnedVehicles = new List<ulong>();
+    private static List<ulong> spawnedAI = new List<ulong>();
     public static ulong localUID;
     public struct Player
     {
@@ -41,7 +43,23 @@ public static class PlayerManager
             this.vehicleUID = vehicleUID;
         }
     }
+    public struct AI
+    {
+        public CSteamID cSteamID;
+        public GameObject vehicle;
+        public string vehicleName;
+        public ulong vehicleUID;
+
+        public  AI(CSteamID cSteamID, GameObject vehicle, string vehicleName, ulong vehicleUID)
+        {
+            this.cSteamID = cSteamID;
+            this.vehicle = vehicle;
+            this.vehicleName = vehicleName;
+            this.vehicleUID = vehicleUID;
+        }
+    }
     public static List<Player> players = new List<Player>(); //This is the list of players
+    public static List<AI> AIVehicles = new List<AI>(); //This is the list of all AI
     /// <summary>
     /// This runs when the map has finished loading and hopefully 
     /// when the player first can interact with the vehicle.
@@ -60,6 +78,11 @@ public static class PlayerManager
         if (!Networker.isHost)
         {
             Debug.Log($"Sending spawn request to host, host id: {Networker.hostID}, client id: {SteamUser.GetSteamID().m_SteamID}");
+            Debug.Log("Killing all units currently on the map.");
+            foreach (var actor in TargetManager.instance.allActors)
+            {
+                GameObject.Destroy(actor.gameObject);
+            }
             Networker.SendP2P(Networker.hostID, new Message(MessageType.RequestSpawn), EP2PSend.k_EP2PSendReliable);
         }
         else
@@ -67,9 +90,11 @@ public static class PlayerManager
             Debug.Log("Starting map loaded host routines");
             Networker.hostLoaded = true;
             Networker.hostReady = true;
+            PlaneNetworker_Sender lastSender;
             foreach (var actor in TargetManager.instance.allActors)
             {
-                actor.gameObject.AddComponent<ActorNetworker_Sender>();
+                lastSender = actor.gameObject.AddComponent<PlaneNetworker_Sender>();
+                lastSender.networkUID = Networker.GenerateNetworkUID();
             }
             Networker.SendGlobalP2P(new Message_HostLoaded(true), EP2PSend.k_EP2PSendReliable);
             GameObject localVehicle = VTOLAPI.GetPlayersVehicleGameObject();
@@ -86,8 +111,12 @@ public static class PlayerManager
             Networker.alreadyInGame = true;
         }
 
+        while (AIsToSpawnQueue.Count > 0)
+        {
+            SpawnAIVehicle(AIsToSpawnQueue.Dequeue());
+        }
         while (playersToSpawnQueue.Count > 0) {
-            SpawnVehicle(playersToSpawnQueue.Dequeue(), playersToSpawnIdQueue.Dequeue());
+            SpawnPlayerVehicle(playersToSpawnQueue.Dequeue(), playersToSpawnIdQueue.Dequeue());
         }
     }
 
@@ -217,7 +246,7 @@ public static class PlayerManager
             // Not host, so send host the spawn vehicle message
             Debug.Log($"Sending spawn vehicle message to: {Networker.hostID}");
             Networker.SendP2P(Networker.hostID,
-                new Message_SpawnVehicle(currentVehicle, 
+                new Message_SpawnPlayerVehicle(currentVehicle, 
                     new Vector3D(pos), 
                     new Vector3D(rot), 
                     SteamUser.GetSteamID().m_SteamID, 
@@ -232,17 +261,17 @@ public static class PlayerManager
         }
     }
     /// <summary>
-    /// When the user has received a message of spawn vehicle, 
-    /// this creates the vehilc and removes any thing which shouldn't
-    /// be on it.
+    /// When the user has received a message of spawn player vehicle, 
+    /// this creates the player vehicle and removes any thing which shouldn't
+    /// be on it. 
     /// </summary>
     /// <param name="packet">The message</param>
-    public static void SpawnVehicle(Packet packet, CSteamID sender) //Both, but never spawns the local vehicle, only executes spawn vehicle messages from other clients
+    public static void SpawnPlayerVehicle(Packet packet, CSteamID sender) //Both, but never spawns the local vehicle, only executes spawn vehicle messages from other clients
     {
         // We don't actually need the "sender" id, unless we're a client and want to check that the packet came from the host
         // which we're not doing right now. 
 
-        Message_SpawnVehicle message = (Message_SpawnVehicle)((PacketSingle)packet).message;
+        Message_SpawnPlayerVehicle message = (Message_SpawnPlayerVehicle)((PacketSingle)packet).message;
         Debug.Log($"Recived a Spawn Vehicle Message from: {message.csteamID}");
 
         if (!gameLoaded)
@@ -302,7 +331,7 @@ public static class PlayerManager
                     float fuel = VTOLVR_Multiplayer.PlaneEquippableManager.generateLocalFuelValue();
 
                     Networker.SendP2P(new CSteamID(message.csteamID),
-                        new Message_SpawnVehicle(
+                        new Message_SpawnPlayerVehicle(
                             players[i].vehicleName,
                             VTMapManager.WorldToGlobalPoint(players[i].vehicle.transform.position),
                             new Vector3D(players[i].vehicle.transform.rotation.eulerAngles),
@@ -322,7 +351,7 @@ public static class PlayerManager
                 Networker.SendP2P(players[i].cSteamID, message, EP2PSend.k_EP2PSendReliable);
                 //Then we send this current player to the new player.
                 Networker.SendP2P(new CSteamID(message.csteamID),
-                    new Message_SpawnVehicle(
+                    new Message_SpawnPlayerVehicle(
                         players[i].vehicleName,
                         VTMapManager.WorldToGlobalPoint(players[i].vehicle.transform.position),
                         new Vector3D(players[i].vehicle.transform.rotation.eulerAngles),
@@ -522,6 +551,178 @@ public static class PlayerManager
         players.Add(new Player(new CSteamID(message.csteamID), newVehicle, message.vehicle, message.networkID));
     }
     /// <summary>
+    /// This is used by the host and only the host to spawn ai vehicles.
+    /// </summary>
+    public static void SpawnAIVehicle(Packet packet) // This should never run on the host
+    {
+        if (Networker.isHost)
+        {
+            Debug.LogWarning("Host shouldn't be trying to spawn an ai vehicle.");
+            return;
+        }
+        Message_SpawnAIVehicle message = (Message_SpawnAIVehicle)((PacketSingle)packet).message;
+
+        if (!gameLoaded)
+        {
+            Debug.LogWarning("Our game isn't loaded, adding spawn vehicle to queue");
+            AIsToSpawnQueue.Enqueue(packet);
+            return;
+        }
+        foreach (ulong id in spawnedAI)
+        {
+            if (id == message.networkID)
+            {
+                Debug.Log("Got a spawnAI message for a vehicle we have already added! Returning....");
+                return;
+            }
+        }
+
+        spawnedVehicles.Add(message.networkID);
+        Debug.Log("Got a new spawnVehicle uID.");
+
+        GameObject newVehicle = UnitCatalogue.GetUnitPrefab(message.unitName);
+        Debug.Log("Setting vehicle name");
+        newVehicle.name = message.aiVehicleName;
+        Debug.Log($"Spawned new vehicle at {newVehicle.transform.position}");
+
+        RigidbodyNetworker_Receiver rbNetworker = newVehicle.AddComponent<RigidbodyNetworker_Receiver>();
+        rbNetworker.networkUID = message.networkID;
+
+        PlaneNetworker_Receiver planeReceiver = newVehicle.AddComponent<PlaneNetworker_Receiver>();
+        planeReceiver.networkUID = message.networkID;
+
+        if (newVehicle.GetComponent<AIPilot>().isVtol)
+        {
+            Debug.Log("Adding Tilt Controller to this vehicle " + message.networkID);
+            EngineTiltNetworker_Receiver tiltReceiver = newVehicle.AddComponent<EngineTiltNetworker_Receiver>();
+            tiltReceiver.networkUID = message.networkID;
+        }
+
+
+
+        Rigidbody rb = newVehicle.GetComponent<Rigidbody>();
+        AIPilot aIPilot = newVehicle.GetComponent<AIPilot>();
+        Health health = newVehicle.GetComponent<Health>();
+        health.invincible = false;
+
+        RotationToggle wingRotator = aIPilot.wingRotator;
+        if (wingRotator != null)
+        {
+            WingFoldNetworker_Receiver wingFoldReceiver = newVehicle.AddComponent<WingFoldNetworker_Receiver>();
+            wingFoldReceiver.networkUID = message.networkID;
+            wingFoldReceiver.wingController = wingRotator;
+        }
+
+        foreach (Collider collider in newVehicle.GetComponentsInChildren<Collider>())
+        {
+            if (collider)
+            {
+                collider.gameObject.layer = 9;
+            }
+        }
+
+        Debug.Log($"Changing {newVehicle.name}'s position and rotation\nPos:{rb.position} Rotation:{rb.rotation.eulerAngles}");
+        aIPilot.kPlane.SetToKinematic();
+        aIPilot.kPlane.enabled = false;
+        rb.interpolation = RigidbodyInterpolation.None;
+        aIPilot.commandState = AIPilot.CommandStates.Override;
+        rb.position = message.position.toVector3;
+        rb.rotation = Quaternion.Euler(message.rotation.toVector3);
+        aIPilot.kPlane.enabled = true;
+        aIPilot.kPlane.SetVelocity(Vector3.zero);
+        aIPilot.kPlane.SetToDynamic();
+        rb.interpolation = RigidbodyInterpolation.Interpolate;
+        Debug.Log($"Finished changing {newVehicle.name}\n Pos:{rb.position} Rotation:{rb.rotation.eulerAngles}");
+        Debug.Log("Doing weapon manager shit on " + newVehicle.name + ".");
+        WeaponManager weaponManager = newVehicle.GetComponent<WeaponManager>();
+        if (weaponManager == null)
+            Debug.LogError("Failed to get weapon manager on " + newVehicle.name);
+        string[] hpLoadoutNames = new string[30];
+        Debug.Log("foreach var equip in message.hpLoadout");
+        int debugInteger = 0;
+        foreach (var equip in message.hpLoadout)
+        {
+            Debug.Log(debugInteger);
+            hpLoadoutNames[equip.hpIdx] = equip.hpName;
+            debugInteger++;
+        }
+        Debug.Log("Setting Loadout on this new vehicle spawned");
+        for (int i = 0; i < hpLoadoutNames.Length; i++)
+        {
+            Debug.Log("HP " + i + " Name: " + hpLoadoutNames[i]);
+        }
+        Debug.Log("Now doing loadout shit.");
+        Loadout loadout = new Loadout();
+        loadout.normalizedFuel = message.normalizedFuel;
+        loadout.hpLoadout = hpLoadoutNames;
+        loadout.cmLoadout = message.cmLoadout;
+        weaponManager.EquipWeapons(loadout);
+        weaponManager.RefreshWeapon();
+        Debug.Log("Refreshed this weapon manager's weapons.");
+        MissileNetworker_Receiver lastReciever;
+        for (int i = 0; i < 30; i++)
+        {
+            int uIDidx = 0;
+            HPEquippable equip = weaponManager.GetEquip(i);
+            if (equip is HPEquipMissileLauncher)
+            {
+                Debug.Log(equip.name + " is a missile launcher");
+                HPEquipMissileLauncher hpML = equip as HPEquipMissileLauncher;
+                Debug.Log("This missile launcher has " + hpML.ml.missiles.Length + " missiles.");
+                for (int j = 0; j < hpML.ml.missiles.Length; j++)
+                {
+                    Debug.Log("Adding missile reciever");
+                    lastReciever = hpML.ml.missiles[j].gameObject.AddComponent<MissileNetworker_Receiver>();
+                    foreach (var thingy in message.hpLoadout) // it's a loop... because fuck you!
+                    {
+                        Debug.Log("Try adding missile reciever uID");
+                        if (equip.hardpointIdx == thingy.hpIdx)
+                        {
+                            if (uIDidx < thingy.missileUIDS.Length)
+                            {
+                                lastReciever.networkUID = thingy.missileUIDS[uIDidx];
+                                lastReciever.thisML = hpML.ml;
+                                lastReciever.idx = j;
+                                uIDidx++;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        FuelTank fuelTank = newVehicle.GetComponent<FuelTank>();
+        if (fuelTank == null)
+            Debug.LogError("Failed to get fuel tank on " + newVehicle.name);
+        fuelTank.startingFuel = loadout.normalizedFuel * fuelTank.maxFuel;
+        fuelTank.SetNormFuel(loadout.normalizedFuel);
+        AIVehicles.Add(new AI(new CSteamID(message.networkID), newVehicle, message.aiVehicleName, message.networkID));
+    }
+    /// <summary>
+    /// Tell the connected clients about all the vehicles the host has.
+    /// </summary>
+    public static void TellClientAboutAI(CSteamID steamID)
+    { 
+        if (!Networker.isHost)
+        {
+            Debug.LogWarning("The client shouldn't be trying to tell everyone about AI");
+            return;
+        }
+        PlaneNetworker_Sender lastSender;
+        foreach (var actor in TargetManager.instance.allActors)
+        {
+            lastSender = actor.gameObject.GetComponent<PlaneNetworker_Sender>();
+            List<HPInfo> hPInfos = VTOLVR_Multiplayer.PlaneEquippableManager.generateHpInfoListFromWeaponManager(actor.weaponManager, VTOLVR_Multiplayer.PlaneEquippableManager.HPInfoListGenerateNetworkType.sender);
+            CountermeasureManager cm;
+            cm = actor.gameObject.GetComponent<CountermeasureManager>();
+            List<int> cmLoadout = null;
+            if (cm)
+            {
+                cmLoadout = VTOLVR_Multiplayer.PlaneEquippableManager.generateCounterMeasuresFromCmManager(cm);
+            }
+            Networker.SendP2P(steamID, new Message_SpawnAIVehicle(actor.name, actor.unitSpawn.unitName, VTMapManager.WorldToGlobalPoint(actor.gameObject.transform.position), new Vector3D(actor.gameObject.transform.rotation.eulerAngles), lastSender.networkUID, hPInfos.ToArray(), cmLoadout.ToArray(), 0.65f), EP2PSend.k_EP2PSendReliable);
+        }
+    }
+    /// <summary>
     /// Finds the prefabs which are used for spawning the other players on our client
     /// </summary>
     private static void SetPrefabs()
@@ -578,6 +779,7 @@ public static class PlayerManager
         spawnRequestQueue = new Queue<CSteamID>();
         playersToSpawnQueue = new Queue<Packet>();
         playersToSpawnIdQueue = new Queue<CSteamID>();
+        AIsToSpawnQueue = new Queue<Packet>();
         spawnedVehicles = new List<ulong>();
         Networker.hostLoaded = false;
         gameLoaded = false;

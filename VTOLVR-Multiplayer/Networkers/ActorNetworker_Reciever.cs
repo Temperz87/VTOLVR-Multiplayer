@@ -27,9 +27,23 @@ class ActorNetworker_Reciever : MonoBehaviour // Client Only
             return;
         }
         Message_ActorSync lastMessage = (Message_ActorSync)((PacketSingle)packet).message;
-        ActorNetworker_Sender.allActors = JsonConvert.DeserializeObject<Dictionary<string, ulong>>(lastMessage.allActors);
+        ActorNetworker_Sender.allActors = JsonConvert.DeserializeObject<Dictionary<ulong, string>>(lastMessage.allActors);
         ActorNetworker_Reciever lastReciever;
-        ulong lastUID;
+        string lastString;
+        foreach (var actor in TargetManager.instance.allActors)
+        {
+            foreach (var uID in ActorNetworker_Sender.allActors.Keys)
+            {
+                ActorNetworker_Sender.allActors.TryGetValue(uID, out lastString);
+                if (actor.name == lastString)
+                {
+                    lastReciever = actor.gameObject.AddComponent<ActorNetworker_Reciever>();
+                    lastReciever.networkUID = uID;
+                    break;
+                }
+            }
+        }
+        /*
         foreach (var actor in TargetManager.instance.allActors)
         {
             if (ActorNetworker_Sender.allActors.ContainsKey(actor.name))
@@ -43,6 +57,6 @@ class ActorNetworker_Reciever : MonoBehaviour // Client Only
             {
                 Debug.LogError(actor.name + " was not found in the dictionary.");
             }
-        }
+        }*/
     }
 }

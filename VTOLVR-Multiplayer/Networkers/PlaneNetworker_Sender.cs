@@ -22,7 +22,6 @@ public class PlaneNetworker_Sender : MonoBehaviour
     private int lastIdx;
     private Message_PlaneUpdate lastMessage;
     private Message_WeaponFiring lastFiringMessage;
-    // private Message_WeaponStoppedFiring lastStoppedFiringMessage;
     private Message_FireCountermeasure lastCountermeasureMessage;
     private Message_Death lastDeathMessage;
     private Tailhook tailhook;
@@ -135,9 +134,14 @@ public class PlaneNetworker_Sender : MonoBehaviour
 
         lastMessage.landingGear = LandingGearState();
         lastMessage.networkUID = networkUID;
-        lastMessage.tailHook = tailhook.isDeployed;
-        lastMessage.launchBar = launchBar.deployed;
-
+        if (tailhook != null)
+        {
+            lastMessage.tailHook = tailhook.isDeployed;
+        }
+        if (launchBar != null)
+        {
+            lastMessage.launchBar = launchBar.deployed;
+        }
         Debug.Log("doing radar.");
         if (lastMessage.hasRadar)
         {

@@ -109,7 +109,8 @@
     <Compile Include="Messages\Message_RequestNetworkUID.cs" />
     <Compile Include="Messages\Message_RequestSpawn.cs" />
     <Compile Include="Messages\Message_RigidbodyUpdate.cs" />
-    <Compile Include="Messages\Message_SpawnVehicle.cs" />
+    <Compile Include="Messages\Message_SpawnAIVehicle.cs" />
+    <Compile Include="Messages\Message_SpawnPlayerVehicle.cs" />
     <Compile Include="Messages\Message_WeaponFiring.cs" />
     <Compile Include="Messages\Message_WeaponSet.cs" />
     <Compile Include="Messages\Message_WeaponStoppedFiring.cs" />
