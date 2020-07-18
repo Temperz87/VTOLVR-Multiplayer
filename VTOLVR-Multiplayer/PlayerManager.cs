@@ -21,9 +21,10 @@ public static class PlayerManager
     /// </summary>
     private static Queue<CSteamID> spawnRequestQueue = new Queue<CSteamID>();
     private static Queue<Packet> playersToSpawnQueue = new Queue<Packet>();
+    private static Queue<CSteamID> playersToSpawnIdQueue = new Queue<CSteamID>();
     public static bool gameLoaded;
     private static GameObject av42cPrefab, fa26bPrefab, f45Prefab;
-    private static List<CSteamID> spawnedVehicles = new List<CSteamID>();
+    private static List<ulong> spawnedVehicles = new List<ulong>();
     public static ulong localUID;
     public struct Player
     {
@@ -47,6 +48,7 @@ public static class PlayerManager
     /// </summary>
     public static IEnumerator MapLoaded()
     {
+        Debug.Log("map loading started");
         while (VTMapManager.fetch == null || !VTMapManager.fetch.scenarioReady || FlightSceneManager.instance.switchingScene)
         {
             yield return null;
@@ -57,10 +59,12 @@ public static class PlayerManager
         SetPrefabs();
         if (!Networker.isHost)
         {
+            Debug.Log($"Sending spawn request to host, host id: {Networker.hostID}, client id: {SteamUser.GetSteamID().m_SteamID}");
             Networker.SendP2P(Networker.hostID, new Message(MessageType.RequestSpawn), EP2PSend.k_EP2PSendReliable);
         }
         else
         {
+            Debug.Log("Starting map loaded host routines");
             Networker.hostLoaded = true;
             Networker.hostReady = true;
             Networker.SendGlobalP2P(new Message_HostLoaded(true), EP2PSend.k_EP2PSendReliable);
@@ -76,17 +80,11 @@ public static class PlayerManager
             if (spawnRequestQueue.Count != 0)
                 SpawnRequestQueue();
             Networker.alreadyInGame = true;
-            
-        }
-        while (playersToSpawnQueue.Count > 0) {
-            SpawnVehicle(playersToSpawnQueue.Dequeue());
         }
 
-        yield break;
-    }
-    public static IEnumerator MapLoaded(VTMapCustom _) //Clients and Hosts
-    {
-        return (MapLoaded());
+        while (playersToSpawnQueue.Count > 0) {
+            SpawnVehicle(playersToSpawnQueue.Dequeue(), playersToSpawnIdQueue.Dequeue());
+        }
     }
 
     /// <summary>
@@ -216,9 +214,11 @@ public static class PlayerManager
         List<int> cm = VTOLVR_Multiplayer.PlaneEquippableManager.generateCounterMeasuresFromCmManager(cmManager);
         float fuel = VTOLVR_Multiplayer.PlaneEquippableManager.generateLocalFuelValue();
 
+        Debug.Log("Assembled our local vehicle");
         if (!Networker.isHost || Multiplayer.SoloTesting)
         {
             // Not host, so send host the spawn vehicle message
+            Debug.Log($"Sending spawn vehicle message to: {Networker.hostID}");
             Networker.SendP2P(Networker.hostID,
                 new Message_SpawnVehicle(currentVehicle, 
                     new Vector3D(pos), 
@@ -230,6 +230,9 @@ public static class PlayerManager
                     fuel),
                 EP2PSend.k_EP2PSendReliable);
         }
+        else {
+            Debug.Log("I am host, no need to immediately forward my assembled vehicle");
+        }
     }
     /// <summary>
     /// When the user has received a message of spawn vehicle, 
@@ -237,27 +240,31 @@ public static class PlayerManager
     /// be on it.
     /// </summary>
     /// <param name="packet">The message</param>
-    public static void SpawnVehicle(Packet packet) //Both, but never spawns the local vehicle, only executes spawn vehicle messages from other clients
+    public static void SpawnVehicle(Packet packet, CSteamID sender) //Both, but never spawns the local vehicle, only executes spawn vehicle messages from other clients
     {
-        Debug.Log("Recived a Spawn Vehicle Message");
+        // We don't actually need the "sender" id, unless we're a client and want to check that the packet came from the host
+        // which we're not doing right now. 
+
+        Message_SpawnVehicle message = (Message_SpawnVehicle)((PacketSingle)packet).message;
+        Debug.Log($"Recived a Spawn Vehicle Message from: {message.csteamID}");
 
         if (!gameLoaded)
         {
             Debug.LogWarning("Our game isn't loaded, adding spawn vehicle to queue");
             playersToSpawnQueue.Enqueue(packet);
+            playersToSpawnIdQueue.Enqueue(sender);
             return;
         }
-        foreach (CSteamID id in spawnedVehicles)
+        foreach (ulong id in spawnedVehicles)
         {
-            if (id == (CSteamID)packet.networkUID)
+            if (id == message.csteamID)
             {
                 Debug.Log("Got a spawnedVehicle message for a vehicle we have already added! Returning....");
                 return;
             }
         }
-        spawnedVehicles.Add((CSteamID)packet.networkUID);
+        spawnedVehicles.Add(message.csteamID);
         Debug.Log("Got a new spawnVehicle uID.");
-        Message_SpawnVehicle message = (Message_SpawnVehicle)((PacketSingle)packet).message;
         if (Networker.isHost)
         {
             Debug.Log("Generating UIDS for any missiles the new vehicle has");
@@ -467,10 +474,10 @@ public static class PlayerManager
                 Debug.Log(equip.name + " is a missile launcher");
                 HPEquipMissileLauncher hpML = equip as HPEquipMissileLauncher;
                 Debug.Log("This missile launcher has " + hpML.ml.missiles.Length + " missiles.");
-                foreach (var missile in hpML.ml.missiles)
+                for(int j = 0; j < hpML.ml.missiles.Length; j++)
                 {
                     Debug.Log("Adding missile reciever");
-                    lastReciever = missile.gameObject.AddComponent<MissileNetworker_Receiver>();
+                    lastReciever = hpML.ml.missiles[j].gameObject.AddComponent<MissileNetworker_Receiver>();
                     foreach (var thingy in message.hpLoadout) // it's a loop... because fuck you!
                     {
                         Debug.Log("Try adding missile reciever uID");
@@ -479,6 +486,8 @@ public static class PlayerManager
                             if (uIDidx < thingy.missileUIDS.Length)
                             {
                                 lastReciever.networkUID = thingy.missileUIDS[uIDidx];
+                                lastReciever.thisML = hpML.ml;
+                                lastReciever.idx = j;
                                 uIDidx++;
                             }
                         }
@@ -579,6 +588,8 @@ public static class PlayerManager
         spawnPoints = new List<Transform>();
         spawnRequestQueue = new Queue<CSteamID>();
         playersToSpawnQueue = new Queue<Packet>();
+        playersToSpawnIdQueue = new Queue<CSteamID>();
+        spawnedVehicles = new List<ulong>();
         Networker.hostLoaded = false;
         gameLoaded = false;
         localUID = 0;

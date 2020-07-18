@@ -35,7 +35,7 @@ public class Networker : MonoBehaviour
     //received for them. They should match the name of the message class they relate to.
     public static event UnityAction<Packet, CSteamID> RequestSpawn;
     public static event UnityAction<Packet> RequestSpawn_Result;
-    public static event UnityAction<Packet> SpawnVehicle;
+    public static event UnityAction<Packet, CSteamID> SpawnVehicle;
     public static event UnityAction<Packet> RigidbodyUpdate;
     public static event UnityAction<Packet> PlaneUpdate;
     public static event UnityAction<Packet> EngineTiltUpdate;
@@ -53,10 +53,12 @@ public class Networker : MonoBehaviour
     #endregion
     #region Host Forwarding Suppress By Message Type List
     private List<MessageType> hostMessageForwardingSuppressList = new List<MessageType> {
+        MessageType.None,
         MessageType.JoinRequest,
         MessageType.JoinRequest_Result,
         MessageType.SpawnVehicle,
-        MessageType.None,
+        MessageType.RequestSpawn,
+        MessageType.RequestSpawn_Result,
         MessageType.LobbyInfoRequest,
         MessageType.LobbyInfoRequest_Result,
         MessageType.WeaponsSet_Result,
@@ -75,7 +77,10 @@ public class Networker : MonoBehaviour
         RequestSpawn += PlayerManager.RequestSpawn;
         RequestSpawn_Result += PlayerManager.RequestSpawn_Result;
         SpawnVehicle += PlayerManager.SpawnVehicle;
-        VTCustomMapManager.OnLoadedMap += (customMap) => { StartCoroutine(PlayerManager.MapLoaded(customMap)); };
+
+        // Is this line actually needed?
+        //VTCustomMapManager.OnLoadedMap += (customMap) => { StartCoroutine(PlayerManager.MapLoaded(customMap)); };
+
         VTOLAPI.SceneLoaded += SceneChanged;
     }
     private void OnP2PSessionRequest(P2PSessionRequest_t request)
@@ -83,9 +88,6 @@ public class Networker : MonoBehaviour
         //Yes this is expecting everyone, even if they are not friends...
         SteamNetworking.AcceptP2PSessionWithUser(request.m_steamIDRemote);
         Debug.Log("Accepting P2P with " + SteamFriends.GetFriendPersonaName(request.m_steamIDRemote));
-
-        // Do this here???
-        // StartCoroutine(PlayerManager.MapLoaded());
     }
 
 
@@ -354,7 +356,24 @@ public class Networker : MonoBehaviour
                         SendP2P(csteamID, new Message_JoinRequest_Result(false, notHostStr), EP2PSend.k_EP2PSendReliable);
                         break;
                     }
+
                     Message_JoinRequest joinRequest = packetS.message as Message_JoinRequest;
+                    if (joinRequest.vtolVrVersion != GameStartup.versionString) {
+                        string vtolMismatchVersion = "Failed to Join Player, mismatched vtol vr versions (please both update to latest version)";
+                        SendP2P(csteamID, new Message_JoinRequest_Result(false, vtolMismatchVersion), EP2PSend.k_EP2PSendReliable);
+                        break;
+                    }
+                    if (joinRequest.multiplayerBranch != ModVersionString.ReleaseBranch) {
+                        string branchMismatch = "Failed to Join Player, host branch is )" + joinRequest.multiplayerBranch + ", ours is " + ModVersionString.ReleaseBranch;
+                        SendP2P(csteamID, new Message_JoinRequest_Result(false, branchMismatch), EP2PSend.k_EP2PSendReliable);
+                        break;
+                    }
+                    if (joinRequest.multiplayerModVersion != ModVersionString.ModVersionNumber) {
+                        string multiplayerVersionMismatch = "Failed to Join Player, host version is )" + joinRequest.multiplayerModVersion + ", ours is " + ModVersionString.ModVersionNumber;
+                        SendP2P(csteamID, new Message_JoinRequest_Result(false, multiplayerVersionMismatch), EP2PSend.k_EP2PSendReliable);
+                        break;
+                    }
+
                     if (players.Contains(csteamID))
                     {
                         Debug.LogError("The player seemed to send two join requests");
@@ -459,7 +478,7 @@ public class Networker : MonoBehaviour
                     // LoadingSceneController.instance.PlayerReady();
                     break;
                 case MessageType.RequestSpawn:
-                    Debug.Log("case request spawn");
+                    Debug.Log($"case request spawn from: {csteamID.m_SteamID}, we are {SteamUser.GetSteamID().m_SteamID}, host is {hostID}");
                     if (RequestSpawn != null)
                         RequestSpawn.Invoke(packet, csteamID);
                     break;
@@ -471,7 +490,7 @@ public class Networker : MonoBehaviour
                 case MessageType.SpawnVehicle:
                     Debug.Log("case spawn vehicle");
                     if (SpawnVehicle != null)
-                        SpawnVehicle.Invoke(packet);
+                        SpawnVehicle.Invoke(packet, csteamID);
                     break;
                 case MessageType.RigidbodyUpdate:
                     // Debug.Log("case rigid body update");
@@ -598,7 +617,7 @@ public class Networker : MonoBehaviour
             if (isHost)
             {
                 if (MessageTypeShouldBeForwarded(packetS.message.type)) {
-                    SendExcludeP2P((CSteamID)packetS.networkUID, packetS.message, EP2PSend.k_EP2PSendReliable);
+                    SendExcludeP2P((CSteamID)packetS.networkUID, packetS.message, EP2PSend.k_EP2PSendUnreliableNoDelay);
                 }
             }
         }
@@ -678,7 +697,7 @@ public class Networker : MonoBehaviour
     {
         if (!isHost)
         {
-            SendP2P(hostID, new Message_RequestNetworkUID(clientsID), EP2PSend.k_EP2PSendReliable);
+            SendP2P(hostID, new Message_RequestNetworkUID(clientsID), EP2PSend.k_EP2PSendUnreliableNoDelay);
             Debug.Log("Requetsed UID from host");
         }
         else

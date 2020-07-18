@@ -28,15 +28,16 @@ public class PlaneNetworker_Sender : MonoBehaviour
     private Tailhook tailhook;
     private CatapultHook launchBar;
     private bool lastFiring = false;
+    private Vector3D radarLock;
     private void Awake()
     {
-        if (VTOLAPI.GetPlayersVehicleEnum() != VTOLVehicles.AV42C)
+        if (VTOLAPI.GetPlayersVehicleEnum() == VTOLVehicles.AV42C)
         {
-            lastMessage = new Message_PlaneUpdate(false, 0, 0, 0, 0, 0, 0, false, false, false, networkUID);
+            lastMessage = new Message_PlaneUpdate(false, 0, 0, 0, 0, 0, 0, false, false, false, networkUID, false, false, radarLock);
         }
         else
         {
-            lastMessage = new Message_PlaneUpdate(false, 0, 0, 0, 0, 0, 0, false, false, false, networkUID);
+            lastMessage = new Message_PlaneUpdate(false, 0, 0, 0, 0, 0, 0, false, false, false, networkUID, true, false, radarLock);
         }
         lastFiringMessage = new Message_WeaponFiring(-1, false, networkUID);
         // lastStoppedFiringMessage = new Message_WeaponStoppedFiring(networkUID);
@@ -90,9 +91,9 @@ public class PlaneNetworker_Sender : MonoBehaviour
             // lastStoppedFiringMessage.UID = networkUID;
             lastFiringMessage.isFiring = weaponManager.isFiring;
             if (Networker.isHost)
-                Networker.SendGlobalP2P(lastFiringMessage, Steamworks.EP2PSend.k_EP2PSendReliable);
+                Networker.SendGlobalP2P(lastFiringMessage, Steamworks.EP2PSend.k_EP2PSendUnreliableNoDelay);
             else
-                Networker.SendP2P(Networker.hostID, lastFiringMessage, Steamworks.EP2PSend.k_EP2PSendReliable);
+                Networker.SendP2P(Networker.hostID, lastFiringMessage, Steamworks.EP2PSend.k_EP2PSendUnreliableNoDelay);
         }
         /*if (weaponManager.isFiring != previousFiringState)
         {
@@ -131,14 +132,17 @@ public class PlaneNetworker_Sender : MonoBehaviour
         lastMessage.yaw = Mathf.Round(aeroController.input.y * 100000f) / 100000f;
         lastMessage.roll = Mathf.Round(aeroController.input.z * 100000f) / 100000f;
         lastMessage.breaks = aeroController.brake;
+
         lastMessage.landingGear = LandingGearState();
         lastMessage.networkUID = networkUID;
         lastMessage.tailHook = tailhook.isDeployed;
         lastMessage.launchBar = launchBar.deployed;
-        /*if (lastMessage.hasRadar)
-        {
-            lastMessage.radarLock.actor = weaponManager.lockingRadar.currentLock.actor;
-        }*/
+        
+        if (lastMessage.hasRadar) {
+            // This line will cause a null for AV-42C's
+            lastMessage.radarLock = VTMapManager.WorldToGlobalPoint(weaponManager.lockingRadar.currentLock.actor.position);
+        }
+
         if (Networker.isHost)
             Networker.SendGlobalP2P(lastMessage, Steamworks.EP2PSend.k_EP2PSendUnreliable);
         else
@@ -172,9 +176,9 @@ public class PlaneNetworker_Sender : MonoBehaviour
     public void FireCountermeasure() {
         lastCountermeasureMessage.UID = networkUID;
         if (Networker.isHost)
-            Networker.SendGlobalP2P(lastCountermeasureMessage, Steamworks.EP2PSend.k_EP2PSendReliable);
+            Networker.SendGlobalP2P(lastCountermeasureMessage, Steamworks.EP2PSend.k_EP2PSendUnreliableNoDelay);
         else
-            Networker.SendP2P(Networker.hostID, lastCountermeasureMessage, Steamworks.EP2PSend.k_EP2PSendReliable);
+            Networker.SendP2P(Networker.hostID, lastCountermeasureMessage, Steamworks.EP2PSend.k_EP2PSendUnreliableNoDelay);
     }
     public void Death()
     {
