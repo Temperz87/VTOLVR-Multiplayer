@@ -87,7 +87,8 @@ public static class PlayerManager
             Debug.Log("Killing all units currently on the map.");
             foreach (var actor in TargetManager.instance.allActors)
             {
-                GameObject.Destroy(actor.gameObject);
+                if (!actor.isPlayer)
+                { GameObject.Destroy(actor.gameObject); }
             }
             Networker.SendP2P(Networker.hostID, new Message(MessageType.RequestSpawn), EP2PSend.k_EP2PSendReliable);
         }
