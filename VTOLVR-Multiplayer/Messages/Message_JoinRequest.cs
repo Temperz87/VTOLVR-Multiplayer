@@ -7,13 +7,18 @@ using System.Threading.Tasks;
 [Serializable]
 public class Message_JoinRequest : Message
 {
-    public string currentVehicle, currentScenario, currentCampaign, vtolVrVersion, multiplayerBranch, multiplayerModVersion;
+    public string currentVehicle, vtolVrVersion, multiplayerBranch, multiplayerModVersion, scenarioId;
+    public byte[] mapHash, scenarioHash, campaignHash;
+    public bool builtInCampaign;
 
-    public Message_JoinRequest(string currentVehicle, string currentScenario, string currentCampaign)
+    public Message_JoinRequest(string currentVehicle, bool builtInCampaign, string scenarioId, byte[] mapHash, byte[] scenarioHash, byte[] campaignHash)
     {
         this.currentVehicle = currentVehicle;
-        this.currentScenario = currentScenario;
-        this.currentCampaign = currentCampaign;
+        this.builtInCampaign = builtInCampaign;
+        this.scenarioId = scenarioId;
+        this.mapHash = mapHash;
+        this.scenarioHash = scenarioHash;
+        this.campaignHash = campaignHash;
         vtolVrVersion = GameStartup.versionString;
         multiplayerBranch = ModVersionString.ReleaseBranch;
         multiplayerModVersion = ModVersionString.ModVersionNumber;
@@ -24,13 +29,7 @@ public class Message_JoinRequest : Message
 [Serializable]
 public class Message_JoinRequestAccepted_Result : Message
 {
-    public string reason;
-    public string campaignId;
-    public string scenarioId;
-
-    public Message_JoinRequestAccepted_Result(string campaignId, string scenarioId) {
-        this.campaignId = campaignId;
-        this.scenarioId = scenarioId;
+    public Message_JoinRequestAccepted_Result() {
         type = MessageType.JoinRequestAccepted_Result;
     }
 }
@@ -42,15 +41,5 @@ public class Message_JoinRequestRejected_Result : Message
     public Message_JoinRequestRejected_Result(string reason) {
         this.reason = reason;
         type = MessageType.JoinRequestRejected_Result;
-    }
-}
-[Serializable]
-public class Message_JoinRequestClientFinal_Result : Message
-{
-    public bool joined;
-
-    public Message_JoinRequestClientFinal_Result(bool joined) {
-        this.joined = joined;
-        type = MessageType.JoinRequestClientFinal_Result;
     }
 }

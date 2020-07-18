@@ -10,7 +10,6 @@ public enum MessageType
     JoinRequest, //When the client asks if they can join
     JoinRequestAccepted_Result, //Responce from the host if the client can join
     JoinRequestRejected_Result, //Responce from the host if the client is rejected
-    JoinRequestClientFinal_Result, // Tells host whether the map and scenario were accepted
     Ready, //Clients telling the host that they are ready
     AllPlayersReady, //Host telling everyone we are starting
     LoadingTextUpdate, //To Update the loading text to show who is ready.
