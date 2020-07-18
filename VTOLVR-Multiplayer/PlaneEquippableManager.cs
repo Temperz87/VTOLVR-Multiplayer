@@ -18,7 +18,7 @@ namespace VTOLVR_Multiplayer
             receiver
         }
 
-        public static List<HPInfo> generateHpInfoListFromWeaponManager(WeaponManager weaponManager, HPInfoListGenerateNetworkType networkType) {
+        public static List<HPInfo> generateHpInfoListFromWeaponManager(WeaponManager weaponManager, HPInfoListGenerateNetworkType networkType, ulong networkID = 0) {
             List<HPInfo> hpInfos = new List<HPInfo>();
             HPEquippable lastEquippable;
 
@@ -76,6 +76,20 @@ namespace VTOLVR_Multiplayer
                         }
                     }
                 }
+                else if (lastEquippable is HPEquipGunTurret HPm230 && networkID != 0) {
+                    switch (networkType)
+                    {
+                        case HPInfoListGenerateNetworkType.generate:
+                            TurretNetworker_Sender sender = HPm230.gameObject.AddComponent<TurretNetworker_Sender>();
+                            sender.networkUID = networkID;
+                            sender.turret = HPm230.GetComponent<ModuleTurret>();
+                            break;
+                        case HPInfoListGenerateNetworkType.receiver:
+                            break;
+                        default:
+                            break;
+                    }
+                }
 
                 hpInfos.Add(new HPInfo(
                         lastEquippable.gameObject.name.Replace("(Clone)", ""),
@@ -87,10 +101,10 @@ namespace VTOLVR_Multiplayer
             return hpInfos;
         }
 
-        public static List<HPInfo> generateLocalHpInfoList() {
+        public static List<HPInfo> generateLocalHpInfoList(ulong UID = 0) {
             GameObject localVehicle = VTOLAPI.GetPlayersVehicleGameObject();
             WeaponManager localWeaponManager = localVehicle.GetComponent<WeaponManager>();
-            return generateHpInfoListFromWeaponManager(localWeaponManager, HPInfoListGenerateNetworkType.generate);
+            return generateHpInfoListFromWeaponManager(localWeaponManager, HPInfoListGenerateNetworkType.generate, UID);
         }
 
         public static List<int> generateCounterMeasuresFromCmManager(CountermeasureManager cmManager) {
