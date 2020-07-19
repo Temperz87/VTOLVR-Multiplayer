@@ -15,7 +15,8 @@ public enum MessageType
     LoadingTextUpdate, //To Update the loading text to show who is ready.
     RequestSpawn, //Requesting a location to spawn at to the host
     RequestSpawn_Result, //The Result of the host sending to client where they can spawn
-    SpawnVehicle, //When someone is telling everyone to spawn a new vehicle on their game
+    SpawnPlayerVehicle, //When someone is telling everyone to spawn a new vehicle on their game
+    SpawnAiVehicle, // When the host is telling the clients about an AI vehicle
     RequestAllCurrrentPlayers, //When someone joins the host needs to send them all the current players in the game.
     RigidbodyUpdate, //When a RigidbodyNetworker is updating
     PlaneUpdate, //This is when the base plane script is updating
@@ -31,8 +32,9 @@ public enum MessageType
     Death, //This is when a player dies
     HostLoaded, // This is when the host has loaded and the clients can load
     WingFold, //this is when a player folds or unfolds their wings
+    ActorSync, // This updates actors
+    WorldData, // This is timescale sync data
     ExtLight, //this is when a player changes their external lights
     RadarUpdate, //this is when the radar is turned on or off, or the fov is changed, make a messsage called LockingRadarUpdate in the future to deal with locks
-    WorldData, // This is timescale sync data
     TurretUpdate //This is turret aiming data
 }

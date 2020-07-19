@@ -19,8 +19,6 @@ static class MapAndScenarioVersionChecker
     static private SHA256 hashCalculator = SHA256.Create();
     static private string filePath;
 
-    static public bool NeedsToRun = true;
-
     static public bool builtInCampaign = false;
     static public string scenarioId;
     static public byte[] mapHash;
@@ -29,42 +27,39 @@ static class MapAndScenarioVersionChecker
 
     // Make hashes of the map, scenario and campaign IDs so the server can check that we're loading the right mission
     public static void CreateHashes() {
-        if (NeedsToRun) {
-            NeedsToRun = false;
-
-            if (PilotSaveManager.currentCampaign.isBuiltIn) {
-                // Only need to get the scenario ID in this case
-                builtInCampaign = true;
-                // Don't send null arrays over network
-                mapHash = new byte[0];
-                scenarioHash = new byte[0];
-                campaignHash = new byte[0];
-            }
-            else {
-                filePath = VTResources.GetMapFilePath(PilotSaveManager.currentScenario.customScenarioInfo.mapID);
-                using (FileStream mapFile = File.OpenRead(filePath)) {
-                    mapHash = hashCalculator.ComputeHash(mapFile);
-                }
-
-                filePath = PilotSaveManager.currentScenario.customScenarioInfo.filePath;
-                using (FileStream scenarioFile = File.OpenRead(filePath)) {
-                    scenarioHash = hashCalculator.ComputeHash(scenarioFile);
-                }
-
-                filePath = VTResources.GetCustomCampaigns().Find(id => id.campaignID == PilotSaveManager.currentCampaign.campaignID).filePath;
-                using (FileStream campaignFile = File.OpenRead(filePath)) {
-                    campaignHash = hashCalculator.ComputeHash(campaignFile);
-                }
-            }
-
-            scenarioId = PilotSaveManager.currentScenario.scenarioID;
+        if (PilotSaveManager.currentCampaign.isBuiltIn) {
+            // Only need to get the scenario ID in this case
+            builtInCampaign = true;
+            // Don't send null arrays over network
+            mapHash = new byte[0];
+            scenarioHash = new byte[0];
+            campaignHash = new byte[0];
         }
+        else {
+            filePath = VTResources.GetMapFilePath(PilotSaveManager.currentScenario.customScenarioInfo.mapID);
+            using (FileStream mapFile = File.OpenRead(filePath)) {
+                mapHash = hashCalculator.ComputeHash(mapFile);
+            }
+
+            filePath = PilotSaveManager.currentScenario.customScenarioInfo.filePath;
+            using (FileStream scenarioFile = File.OpenRead(filePath)) {
+                scenarioHash = hashCalculator.ComputeHash(scenarioFile);
+            }
+
+            filePath = VTResources.GetCustomCampaigns().Find(id => id.campaignID == PilotSaveManager.currentCampaign.campaignID).filePath;
+            using (FileStream campaignFile = File.OpenRead(filePath)) {
+                campaignHash = hashCalculator.ComputeHash(campaignFile);
+            }
+        }
+
+        scenarioId = PilotSaveManager.currentScenario.scenarioID;
     }
 }
 
 public class Networker : MonoBehaviour
 {
-    private CampaignScenario PSMC;
+    private Campaign pilotSaveManagerControllerCampaign;
+    private CampaignScenario pilotSaveManagerControllerCampaignScenario;
     public static Networker _instance { get; private set; }
     public static bool isHost { get; private set; }
     public enum GameState { Menu, Config, Game };
@@ -102,6 +97,7 @@ public class Networker : MonoBehaviour
     public static event UnityAction<Packet> MissileUpdate;
     public static event UnityAction<Packet> WorldDataUpdate;
     public static event UnityAction<Packet> RequestNetworkUID;
+    public static event UnityAction<Packet> ActorSync;
     #endregion
     #region Host Forwarding Suppress By Message Type List
     private List<MessageType> hostMessageForwardingSuppressList = new List<MessageType> {
@@ -109,7 +105,7 @@ public class Networker : MonoBehaviour
         MessageType.JoinRequest,
         MessageType.JoinRequestAccepted_Result,
         MessageType.JoinRequestRejected_Result,
-        MessageType.SpawnVehicle,
+        MessageType.SpawnPlayerVehicle,
         MessageType.RequestSpawn,
         MessageType.RequestSpawn_Result,
         MessageType.LobbyInfoRequest,
@@ -129,7 +125,7 @@ public class Networker : MonoBehaviour
 
         RequestSpawn += PlayerManager.RequestSpawn;
         RequestSpawn_Result += PlayerManager.RequestSpawn_Result;
-        SpawnVehicle += PlayerManager.SpawnVehicle;
+        SpawnVehicle += PlayerManager.SpawnPlayerVehicle;
 
         // Is this line actually needed?
         //VTCustomMapManager.OnLoadedMap += (customMap) => { StartCoroutine(PlayerManager.MapLoaded(customMap)); };
@@ -146,12 +142,15 @@ public class Networker : MonoBehaviour
 
     private void Update()
     {
-        if (PilotSaveManager.currentScenario != null)
-        {
-            if (PSMC != PilotSaveManager.currentScenario)
-            { PSMC = PilotSaveManager.currentScenario; }
+        if (PilotSaveManager.currentScenario != null) {
+            if (pilotSaveManagerControllerCampaign != PilotSaveManager.currentCampaign) {
+                pilotSaveManagerControllerCampaign = PilotSaveManager.currentCampaign;
+            }
+            if (pilotSaveManagerControllerCampaignScenario != PilotSaveManager.currentScenario) {
+                pilotSaveManagerControllerCampaignScenario = PilotSaveManager.currentScenario;
+            }
         }
-        ReadP2P();  
+        ReadP2P();
     }
 
     public static void HostGame()
@@ -473,14 +472,18 @@ public class Networker : MonoBehaviour
                 case MessageType.RequestSpawn:
                     Debug.Log($"case request spawn from: {csteamID.m_SteamID}, we are {SteamUser.GetSteamID().m_SteamID}, host is {hostID}");
                     if (RequestSpawn != null)
-                        RequestSpawn.Invoke(packet, csteamID);
+                    { RequestSpawn.Invoke(packet, csteamID); }
                     break;
                 case MessageType.RequestSpawn_Result:
                     Debug.Log("case request spawn result");
                     if (RequestSpawn_Result != null)
                         RequestSpawn_Result.Invoke(packet);
                     break;
-                case MessageType.SpawnVehicle:
+                case MessageType.SpawnAiVehicle:
+                    Debug.Log("case spawn ai vehicle");
+                    AIManager.SpawnAIVehicle(packet);
+                    break;
+                case MessageType.SpawnPlayerVehicle:
                     Debug.Log("case spawn vehicle");
                     if (SpawnVehicle != null)
                         SpawnVehicle.Invoke(packet, csteamID);
@@ -618,6 +621,15 @@ public class Networker : MonoBehaviour
                         Debug.Log("Host is already loaded");
                     }
                     break;
+                case MessageType.ActorSync:
+                    Debug.Log("case actor sync");
+                    if (isHost)
+                    {
+                        Debug.LogWarning("Host shouldn't get an actor sync...");
+                        break;
+                    }
+                    ActorNetworker_Reciever.syncActors(packet);
+                    break;
                 default:
                     Debug.Log("default case");
                     break;
@@ -634,9 +646,9 @@ public class Networker : MonoBehaviour
 
     private IEnumerator FlyButton()
     {
-        if (isHost) {
-            PilotSaveManager.currentScenario = PSMC;
-        }
+        PilotSaveManager.currentCampaign = pilotSaveManagerControllerCampaign;
+        PilotSaveManager.currentScenario = pilotSaveManagerControllerCampaignScenario;
+
         if (PilotSaveManager.currentScenario == null)
         {
             Debug.LogError("A null scenario was used on flight button!");

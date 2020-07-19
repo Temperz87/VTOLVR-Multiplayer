@@ -47,11 +47,19 @@ public class MissileNetworker_Receiver : MonoBehaviour
             {
                 Debug.Log("Guidance mode radar");
                 RadarLockData lockData = new RadarLockData();
-                lockData.actor = GetActorAtPosition(lastMessage.targetPosition);
-                lockData.locked = true;
-                lockData.lockingRadar = GetComponentInChildren<LockingRadar>();     //Unsure if these are on a child or not
-                lockData.radarSymbol = GetComponentInChildren<Radar>().radarSymbol; //I'm just guessing they are
-                thisMissile.SetRadarLock(lockData);
+                // lockData.locked = true;
+                // lockData.lockingRadar = GetComponentInChildren<LockingRadar>();     //Unsure if these are on a child or not
+                //lockData.radarSymbol = GetComponentInChildren<Radar>().radarSymbol; //I'm just guessing they are*/
+                LockingRadar radar = thisMissile.lockingRadar;
+
+                foreach (Actor actor in TargetManager.instance.allActors)
+                {
+                    if (actor.name == lastMessage.radarLock)
+                    {
+                        Debug.Log("Missile found its lock on actor " + actor.name + " while trying to lock " + lastMessage.radarLock);
+                        radar.ForceLock(actor, out lockData);
+                    }
+                }
             }
             if (lastMessage.guidanceMode == Missile.GuidanceModes.Optical)
             {
@@ -80,27 +88,6 @@ public class MissileNetworker_Receiver : MonoBehaviour
             Debug.LogWarning($"Missile ({gameObject.name}) is outside the threshold. Teleporting to position.");
             gameObject.transform.position = VTMapManager.GlobalToWorldPoint(lastMessage.position);
         }
-    }
-
-    public static Actor GetActorAtPosition(Vector3D globalPos)
-    {
-        Vector3 worldPos = VTMapManager.GlobalToWorldPoint(globalPos);
-        Actor result = null;
-        float num = 250000f;
-        for (int i = 0; i < TargetManager.instance.allActors.Count; i++)
-        {
-            float sqrMagnitude = (TargetManager.instance.allActors[i].position - worldPos).sqrMagnitude;
-            if (sqrMagnitude < num)
-            {
-                num = sqrMagnitude;
-                result = TargetManager.instance.allActors[i];
-            }
-        }
-        if (result == null)
-        {
-            Debug.LogError("Get actor at position returned null, fuck.");
-        }
-        return result;
     }
 
     public void OnDestroy()

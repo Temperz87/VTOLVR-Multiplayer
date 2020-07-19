@@ -11,6 +11,7 @@ public class Message_MissileUpdate : Message
     public Missile.GuidanceModes guidanceMode;
     public ulong MissileLauncher;
     public int idx;
+    public string radarLock;
     public Message_MissileUpdate(ulong uid)
     {
         networkUID = uid;

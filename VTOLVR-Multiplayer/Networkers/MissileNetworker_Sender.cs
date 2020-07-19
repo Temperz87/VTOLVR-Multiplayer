@@ -53,6 +53,7 @@ public class MissileNetworker_Sender : MonoBehaviour
                 {
                     Debug.Log("Missile_sender lock data");
                     lastMessage.targetPosition = VTMapManager.WorldToGlobalPoint(thisMissile.radarLock.actor.transform.position);
+                    lastMessage.radarLock = thisMissile.radarLock.actor.name;
                 }
             }
             else if (thisMissile.guidanceMode == Missile.GuidanceModes.Optical)

@@ -15,7 +15,6 @@ public class PlaneNetworker_Receiver : MonoBehaviour
     //Classes we use to set the information
     private AIPilot aiPilot;
     private AutoPilot autoPilot;
-
     private Health health;
     private WeaponManager weaponManager;
     private CountermeasureManager cmManager;
@@ -28,6 +27,7 @@ public class PlaneNetworker_Receiver : MonoBehaviour
     {
         aiPilot = GetComponent<AIPilot>();
         autoPilot = aiPilot.autoPilot;
+        aiPilot.enabled = false;
         Networker.PlaneUpdate += PlaneUpdate;
         Networker.WeaponSet_Result += WeaponSet_Result;
         Networker.Disconnecting += OnDisconnect;
@@ -35,10 +35,11 @@ public class PlaneNetworker_Receiver : MonoBehaviour
         // Networker.WeaponStoppedFiring += WeaponStoppedFiring;
         Networker.FireCountermeasure += FireCountermeasure;
         Networker.Death += Death;
-
         weaponManager = GetComponent<WeaponManager>();
         if (weaponManager == null)
             Debug.LogError("Weapon Manager was null on " + gameObject.name);
+        else
+            traverse = Traverse.Create(weaponManager);
         cmManager = GetComponentInChildren<CountermeasureManager>();
         if (cmManager == null)
             Debug.LogError("CountermeasureManager was null on " + gameObject.name);
@@ -47,17 +48,13 @@ public class PlaneNetworker_Receiver : MonoBehaviour
             Debug.LogError("FuelTank was null on " + gameObject.name);
         health = GetComponent<Health>();
         if (health == null)
-            Debug.LogError("health was null on our vehicle");
-
-        traverse = Traverse.Create(weaponManager);
+            Debug.LogError("health was null on vehicle " + gameObject.name);
     }
     public void PlaneUpdate(Packet packet)
     {
         lastMessage = (Message_PlaneUpdate)((PacketSingle)packet).message;
         if (lastMessage.networkUID != networkUID)
             return;
-
-
         if (lastMessage.landingGear)
             aiPilot.gearAnimator.Extend();
         else
@@ -86,19 +83,27 @@ public class PlaneNetworker_Receiver : MonoBehaviour
                 aiPilot.refuelPort.Close();
         }
 
-        if (lastMessage.hasRadar)
+        if (lastMessage.hasRadar && weaponManager != null)
         {
             weaponManager.lockingRadar.radar.debugRadar = true;
-            if (weaponManager.lockingRadar.radar.enabled)
+            if (!weaponManager.lockingRadar.radar.enabled)
             {
                 weaponManager.lockingRadar.radar.enabled = true;
             }
-            if (lastMessage.locked)
+            if (lastMessage.locked && weaponManager.lockingRadar.currentLock.actor.name != lastMessage.radarLock && lastMessage.radarLock != "")
             {
-                weaponManager.lockingRadar.ForceLock(MissileNetworker_Receiver.GetActorAtPosition(lastMessage.radarLock), out LockData);
+                foreach (Actor actor in TargetManager.instance.allActors)
+                {
+                    if (actor.name == lastMessage.radarLock)
+                    {
+                        Debug.Log("Forcing lock on actor " + actor.name);
+                        weaponManager.lockingRadar.ForceLock(actor, out LockData);
+                    }
+                }
             }
             else if (!lastMessage.locked && weaponManager.lockingRadar.IsLocked())
             {
+                Debug.Log("Unlocking radar");
                 weaponManager.lockingRadar.Unlock();
             }
         }
@@ -145,6 +150,10 @@ public class PlaneNetworker_Receiver : MonoBehaviour
         loadout.hpLoadout = hpLoadoutNames.ToArray();
         loadout.cmLoadout = message.cmLoadout;
         loadout.normalizedFuel = message.normalizedFuel;
+        if (weaponManager == null)
+        {
+            Debug.LogError("Weapon set was called this vehicle which has a null weapon manager " + gameObject.name);
+        }
         weaponManager.EquipWeapons(loadout);
 
         for (int i = 0; i < cmManager.countermeasures.Count; i++)
@@ -197,22 +206,7 @@ public class PlaneNetworker_Receiver : MonoBehaviour
                     weaponManager.EndFire();
             }
         }
-        /*To switch weapon, we go back one previous one on the index and then toggle it to go forward one.
-        //So that everything gets called which is in the normal game.
-        List<string> uniqueWeapons = traverse.Field("uniqueWeapons").GetValue() as List<string>;
-        traverse.Field("weaponIdx").SetValue((message.weaponIdx - 1) % uniqueWeapons.Count);
-        weaponManager.CycleActiveWeapons(); //Should move it one forward to the same weapon
-        weaponManager.SetMasterArmed(true);
-        weaponManager.StartFire();*/
     }
-    /*public void WeaponStoppedFiring(Packet packet)
-    {
-        Message_WeaponStoppedFiring message = ((PacketSingle)packet).message as Message_WeaponStoppedFiring;
-        if (message.UID != networkUID)
-            return;
-        weaponManager.EndFire();
-    }*/
-
     public void FireCountermeasure(Packet packet) // chez
     {
         Message_FireCountermeasure message = ((PacketSingle)packet).message as Message_FireCountermeasure;

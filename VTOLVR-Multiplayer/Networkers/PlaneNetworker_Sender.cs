@@ -8,8 +8,9 @@ using Harmony;
 public class PlaneNetworker_Sender : MonoBehaviour
 {
     public ulong networkUID;
-
     //Classes we use to find the information out
+    private bool isPlayer;
+    private AIPilot aIPilot;
     private WheelsController wheelsController;
     private AeroController aeroController;
     private VRThrottle vRThrottle;
@@ -22,59 +23,82 @@ public class PlaneNetworker_Sender : MonoBehaviour
     private int lastIdx;
     private Message_PlaneUpdate lastMessage;
     private Message_WeaponFiring lastFiringMessage;
-    // private Message_WeaponStoppedFiring lastStoppedFiringMessage;
     private Message_FireCountermeasure lastCountermeasureMessage;
     private Message_Death lastDeathMessage;
     private Tailhook tailhook;
     private CatapultHook launchBar;
     private RefuelPort refuelPort;
     private bool lastFiring = false;
-    private Vector3D radarLock;
+    private string radarLock;
+    private Traverse traverseThrottle;
+    private Actor actor;
     private void Awake()
     {
-        if (VTOLAPI.GetPlayersVehicleEnum() == VTOLVehicles.AV42C)
-        {
-            lastMessage = new Message_PlaneUpdate(false, 0, 0, 0, 0, 0, 0, false, false, false, networkUID, false, false, radarLock);
-        }
-        else
-        {
-            lastMessage = new Message_PlaneUpdate(false, 0, 0, 0, 0, 0, 0, false, false, false, networkUID, true, false, radarLock);
-        }
+        actor = gameObject.GetComponent<Actor>();
         lastFiringMessage = new Message_WeaponFiring(-1, false, networkUID);
         // lastStoppedFiringMessage = new Message_WeaponStoppedFiring(networkUID);
         lastCountermeasureMessage = new Message_FireCountermeasure(true, true, networkUID);
         lastDeathMessage = new Message_Death(networkUID);
         wheelsController = GetComponent<WheelsController>();
         aeroController = GetComponent<AeroController>();
-        vRThrottle = gameObject.GetComponentInChildren<VRThrottle>();
-        if (vRThrottle == null)
-            Debug.Log("Cound't find throttle");
+        isPlayer = actor.isPlayer;
+        if (isPlayer)
+        {
+            if (VTOLAPI.GetPlayersVehicleEnum() == VTOLVehicles.AV42C)
+            {
+                lastMessage = new Message_PlaneUpdate(false, 0, 0, 0, 0, 0, 0, false, false, false, networkUID, false, false, radarLock);
+            }
+            else
+            {
+                lastMessage = new Message_PlaneUpdate(false, 0, 0, 0, 0, 0, 0, false, false, false, networkUID, true, false, radarLock);
+            }
+            vRThrottle = gameObject.GetComponentInChildren<VRThrottle>();
+            if (vRThrottle == null)
+                Debug.Log("Throttle was null on vehicle " + gameObject.name);
+            else
+                vRThrottle.OnSetThrottle.AddListener(SetThrottle);
+        }
         else
-            vRThrottle.OnSetThrottle.AddListener(SetThrottle);
-
+        {
+            if (actor.hasRadar)
+            {
+                lastMessage = new Message_PlaneUpdate(false, 0, 0, 0, 0, 0, 0, false, false, false, networkUID, true, false, radarLock);
+            }
+            else
+            {
+                lastMessage = new Message_PlaneUpdate(false, 0, 0, 0, 0, 0, 0, false, false, false, networkUID, false, false, radarLock);
+            }
+            aIPilot = gameObject.GetComponent<AIPilot>();
+            if (aIPilot == null)
+            { Debug.Log("Aipilot was null on vehicle " + gameObject.name); }
+            traverseThrottle = Traverse.Create(aIPilot.autoPilot.engines[0]);
+        }
         weaponManager = GetComponent<WeaponManager>();
         if (weaponManager == null)
-            Debug.LogError("Weapon Manager was null on our vehicle");
+            Debug.LogError("Weapon Manager was null on vehicle " + gameObject.name);
+        else
+            traverse = Traverse.Create(weaponManager);
 
         cmManager = GetComponentInChildren<CountermeasureManager>();
         if (cmManager == null)
-            Debug.LogError("CountermeasureManager was null on our vehicle");
+            Debug.LogError("CountermeasureManager was null on vehicle " + gameObject.name);
         else
             cmManager.OnFiredCM += FireCountermeasure;
 
         health = GetComponent<Health>();
         if (health == null)
-            Debug.LogError("health was null on our vehicle");
+            Debug.LogError("health was null on vehicle " + gameObject.name);
         else
             health.OnDeath.AddListener(Death);
 
         fuelTank = GetComponent<FuelTank>();
         if (fuelTank == null)
-            Debug.LogError("FuelTank was null on our vehicle");
+            Debug.LogError("FuelTank was null on vehicle " + gameObject.name);
 
-        Networker.WeaponSet += WeaponSet;
-
-        traverse = Traverse.Create(weaponManager);
+        if (weaponManager)
+        {
+            Networker.WeaponSet += WeaponSet;
+        }
         Debug.Log("Done Plane Sender");
         tailhook = GetComponentInChildren<Tailhook>();
         launchBar = GetComponentInChildren<CatapultHook>();
@@ -83,48 +107,23 @@ public class PlaneNetworker_Sender : MonoBehaviour
 
     private void Update()
     {
-        if (weaponManager.isFiring != previousFiringState | lastIdx != (int)traverse.Field("weaponIdx").GetValue())
+        if (weaponManager != null)
         {
-            previousFiringState = weaponManager.isFiring;
-            lastFiringMessage.weaponIdx = (int)traverse.Field("weaponIdx").GetValue();
-            lastIdx = lastFiringMessage.weaponIdx;
-            Debug.Log("combinedWeaponIdx = " + lastFiringMessage.weaponIdx);
-            lastFiringMessage.UID = networkUID;
-            // lastStoppedFiringMessage.UID = networkUID;
-            lastFiringMessage.isFiring = weaponManager.isFiring;
-            if (Networker.isHost)
-                Networker.SendGlobalP2P(lastFiringMessage, Steamworks.EP2PSend.k_EP2PSendUnreliableNoDelay);
-            else
-                Networker.SendP2P(Networker.hostID, lastFiringMessage, Steamworks.EP2PSend.k_EP2PSendUnreliableNoDelay);
+            if (weaponManager.isFiring != previousFiringState || lastIdx != (int)traverse.Field("weaponIdx").GetValue())
+            {
+                previousFiringState = weaponManager.isFiring;
+                lastFiringMessage.weaponIdx = (int)traverse.Field("weaponIdx").GetValue();
+                lastIdx = lastFiringMessage.weaponIdx;
+                Debug.Log("combinedWeaponIdx = " + lastFiringMessage.weaponIdx);
+                lastFiringMessage.UID = networkUID;
+                // lastStoppedFiringMessage.UID = networkUID;
+                lastFiringMessage.isFiring = weaponManager.isFiring;
+                if (Networker.isHost)
+                    Networker.SendGlobalP2P(lastFiringMessage, Steamworks.EP2PSend.k_EP2PSendUnreliableNoDelay);
+                else
+                    Networker.SendP2P(Networker.hostID, lastFiringMessage, Steamworks.EP2PSend.k_EP2PSendUnreliableNoDelay);
+            }
         }
-        /*if (weaponManager.isFiring != previousFiringState)
-        {
-            previousFiringState = weaponManager.isFiring;
-            lastFiringMessage.weaponIdx = (int)traverse.Field("weaponIdx").GetValue();
-            Debug.Log("combinedWeaponIdx = " + lastFiringMessage.weaponIdx);
-            lastFiringMessage.UID = networkUID;
-            lastStoppedFiringMessage.UID = networkUID;
-            if (weaponManager.isFiring | )
-            {
-                if (Networker.isHost)
-                    Networker.SendGlobalP2P(lastFiringMessage, Steamworks.EP2PSend.k_EP2PSendReliable);
-                else
-                    Networker.SendP2P(Networker.hostID,lastFiringMessage, Steamworks.EP2PSend.k_EP2PSendReliable);
-            }
-            else
-            {
-                if (Networker.isHost)
-                {
-                    Debug.Log("Sending packet as host");
-                    Networker.SendGlobalP2P(lastStoppedFiringMessage, Steamworks.EP2PSend.k_EP2PSendReliable);
-                }
-                else
-                {
-                    Debug.Log("Sending packet as client");
-                    Networker.SendP2P(Networker.hostID, lastStoppedFiringMessage, Steamworks.EP2PSend.k_EP2PSendReliable);
-                }
-            }
-        }*/
     }
 
     private void LateUpdate()
@@ -134,9 +133,12 @@ public class PlaneNetworker_Sender : MonoBehaviour
         lastMessage.yaw = Mathf.Round(aeroController.input.y * 100000f) / 100000f;
         lastMessage.roll = Mathf.Round(aeroController.input.z * 100000f) / 100000f;
         lastMessage.breaks = aeroController.brake;
-
         lastMessage.landingGear = LandingGearState();
         lastMessage.networkUID = networkUID;
+        if (!isPlayer)
+        {
+            SetThrottle((float)traverseThrottle.Field("throttle").GetValue());
+        }
         if (tailhook != null) {
             lastMessage.tailHook = tailhook.isDeployed;
         }
@@ -148,11 +150,13 @@ public class PlaneNetworker_Sender : MonoBehaviour
         {
             lastMessage.fuelPort = refuelPort.open;
         }
-
+        
         if (Networker.isHost)
             Networker.SendGlobalP2P(lastMessage, Steamworks.EP2PSend.k_EP2PSendUnreliable);
         else
+        {
             Networker.SendP2P(Networker.hostID, lastMessage, Steamworks.EP2PSend.k_EP2PSendUnreliable);
+        }
     }
 
     private bool LandingGearState()

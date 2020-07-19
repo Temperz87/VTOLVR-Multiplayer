@@ -17,7 +17,7 @@ public class RigidbodyNetworker_Sender : MonoBehaviour
         lastMessage = new Message_RigidbodyUpdate(new Vector3D(rb.velocity), new Vector3D(rb.angularVelocity), new Vector3D(transform.position), new Vector3D(transform.rotation.eulerAngles), networkUID);
     }
 
-    private void LateUpdate()
+    private void FixedUpdate()
     {
         lastMessage.position = VTMapManager.WorldToGlobalPoint(transform.position);
         lastMessage.rotation = new Vector3D(transform.rotation.eulerAngles);
