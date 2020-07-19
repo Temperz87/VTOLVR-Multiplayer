@@ -30,9 +30,9 @@ class LockingRadarNetworker_Sender : MonoBehaviour
             lastRadarMessage.fov = radar.radar.sweepFov;
 
             if (Networker.isHost)
-                Networker.SendGlobalP2P(lastRadarMessage, Steamworks.EP2PSend.k_EP2PSendReliable);
+                Networker.SendGlobalP2P(lastRadarMessage, Steamworks.EP2PSend.k_EP2PSendUnreliable);
             else
-                Networker.SendP2P(Networker.hostID, lastRadarMessage, Steamworks.EP2PSend.k_EP2PSendReliable);
+                Networker.SendP2P(Networker.hostID, lastRadarMessage, Steamworks.EP2PSend.k_EP2PSendUnreliable);
 
             lastOn = radar.radar.radarEnabled;
             lastFov = radar.radar.sweepFov;
@@ -48,9 +48,14 @@ class LockingRadarNetworker_Sender : MonoBehaviour
                     lastLockingMessage.actorUID = AI.vehicleUID;
                     lastLockingMessage.isLocked = true;
                     lastLockingMessage.senderUID = networkUID;
-                    // Networker.Sen
+                    if (Networker.isHost)
+                        Networker.SendGlobalP2P(lastLockingMessage, EP2PSend.k_EP2PSendUnreliable);
+                    else
+                        Networker.SendP2P(Networker.hostID, lastLockingMessage, EP2PSend.k_EP2PSendUnreliable);
+                    break;
                 }
             }
         }
+
     }
 }
