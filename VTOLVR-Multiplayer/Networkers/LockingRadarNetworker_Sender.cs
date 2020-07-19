@@ -12,15 +12,13 @@ class LockingRadarNetworker_Sender : MonoBehaviour
     private Message_RadarUpdate lastRadarMessage;
     private Message_LockingRadarUpdate lastLockingMessage;
     public LockingRadar radar;
-    private List<Message_LockingRadarUpdate.radarLock> radarLocks;
     bool lastOn;
     float lastFov;
-
+    RadarLockData lastRadarLockData;
     private void Awake()
     {
         lastRadarMessage = new Message_RadarUpdate(true, 0, networkUID);
-        radarLocks = new List<Message_LockingRadarUpdate.radarLock>();
-        lastLockingMessage = new Message_LockingRadarUpdate(radarLocks, networkUID);
+        lastLockingMessage = new Message_LockingRadarUpdate(0, false, networkUID);
     }
 
     void FixedUpdate()
@@ -39,6 +37,20 @@ class LockingRadarNetworker_Sender : MonoBehaviour
             lastOn = radar.radar.radarEnabled;
             lastFov = radar.radar.sweepFov;
         }
-
+        if (radar.IsLocked() != lastLockingMessage.isLocked || radar.currentLock != lastRadarLockData)
+        {
+            lastRadarLockData = radar.currentLock;
+            foreach (var AI in AIManager.AIVehicles)
+            {
+                if (AI.actor == lastRadarLockData.actor)
+                {
+                    Debug.Log(lastRadarLockData.actor.name + " radar data found its lock " + AI.actor.name);
+                    lastLockingMessage.actorUID = AI.vehicleUID;
+                    lastLockingMessage.isLocked = true;
+                    lastLockingMessage.senderUID = networkUID;
+                    // Networker.Sen
+                }
+            }
+        }
     }
 }
