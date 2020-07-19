@@ -15,7 +15,7 @@ public class RigidbodyNetworker_Receiver : MonoBehaviour
 
     private Vector3 targetPosition;
     private Rigidbody rb;
-    private float positionThreshhold = 10;
+    private float positionThreshhold = 5f;
     private void Awake()
     {
         rb = GetComponent<Rigidbody>();
@@ -39,7 +39,7 @@ public class RigidbodyNetworker_Receiver : MonoBehaviour
 
         if (Vector3.Distance(transform.position, targetPosition) > positionThreshhold)
         {
-            Debug.Log("Outside of thresh hold, moving " + gameObject.name);
+            //Debug.Log("Outside of thresh hold, moving " + gameObject.name);
             transform.position = targetPosition;
         }
         else

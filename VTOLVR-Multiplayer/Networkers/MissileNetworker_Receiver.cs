@@ -1,4 +1,5 @@
-﻿using Steamworks;
+﻿using Harmony;
+using Steamworks;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -8,69 +9,85 @@ public class MissileNetworker_Receiver : MonoBehaviour
 {
     public ulong networkUID;
     private Missile thisMissile;
+    public MissileLauncher thisML;
+    public int idx;
     private Message_MissileUpdate lastMessage;
+    private Traverse traverse;
     // private Rigidbody rigidbody; see missileSender for why i not using rigidbody
 
-    private float positionThreshold = 10f;
+    private float positionThreshold = 0.5f;
 
     private void Start()
     {
         thisMissile = GetComponent<Missile>();
         // rigidbody = GetComponent<Rigidbody>();
         Networker.MissileUpdate += MissileUpdate;
+        thisMissile.OnDetonate.AddListener(new UnityEngine.Events.UnityAction(() => { Debug.Log("Missile detonated: " + thisMissile.name); }));
     }
-
     public void MissileUpdate(Packet packet)
     {
+        if (!thisMissile.gameObject.activeSelf)
+        {
+            Debug.LogError(thisMissile.gameObject.name + " isn't active in hiearchy, changing that to active.");
+            thisMissile.gameObject.SetActive(true);
+        }
+        if (traverse == null)
+        {
+            traverse = Traverse.Create(thisML);
+        }
         lastMessage = ((PacketSingle)packet).message as Message_MissileUpdate;
         if (lastMessage.networkUID != networkUID)
-            return;
-
+        {
+            return; 
+        }
         if (!thisMissile.fired)
         {
             Debug.Log("Missile fired on one end but not another, firing here.");
             if (lastMessage.guidanceMode == Missile.GuidanceModes.Radar)
             {
+                Debug.Log("Guidance mode radar");
                 RadarLockData lockData = new RadarLockData();
-                lockData.actor = GetActorAtPosition(lastMessage.targetPosition);
-                lockData.locked = true;
-                lockData.lockingRadar = GetComponentInChildren<LockingRadar>();     //Unsure if these are on a child or not
-                lockData.radarSymbol = GetComponentInChildren<Radar>().radarSymbol; //I'm just guessing they are
-                thisMissile.SetRadarLock(lockData);
+                // lockData.locked = true;
+                // lockData.lockingRadar = GetComponentInChildren<LockingRadar>();     //Unsure if these are on a child or not
+                //lockData.radarSymbol = GetComponentInChildren<Radar>().radarSymbol; //I'm just guessing they are*/
+                LockingRadar radar = thisMissile.lockingRadar;
+
+                foreach (Actor actor in TargetManager.instance.allActors)
+                {
+                    if (actor.name == lastMessage.radarLock)
+                    {
+                        Debug.Log("Missile found its lock on actor " + actor.name + " while trying to lock " + lastMessage.radarLock);
+                        radar.ForceLock(actor, out lockData);
+                    }
+                }
             }
-            thisMissile.Fire();
+            if (lastMessage.guidanceMode == Missile.GuidanceModes.Optical)
+            {
+                foreach (var collider in thisMissile.gameObject.GetComponentsInChildren<Collider>())
+                {
+                    Debug.Log("Guidance mode Optical.");
+                    collider.gameObject.layer = 9;
+                }
+            }
+            Debug.Log("Try fire missile clientside");
+            traverse.Field("missileIdx").SetValue(idx);
+            thisML.FireMissile();
         }
 
-        if (lastMessage.hasMissed)
+        if (lastMessage.hasExploded)
         {
+            Debug.Log("Missile exploded.");
             thisMissile.Detonate();
             return;
         }
 
         // gameObject.transform.velocity = lastMessage.velocity.toVector3;
         gameObject.transform.rotation = Quaternion.Euler(lastMessage.rotation.toVector3);
-        if (Vector3.Distance(gameObject.transform.position, lastMessage.position.toVector3) > positionThreshold)
+        if (Vector3.Distance(gameObject.transform.position, VTMapManager.GlobalToWorldPoint(lastMessage.position)) > positionThreshold)
         {
             Debug.LogWarning($"Missile ({gameObject.name}) is outside the threshold. Teleporting to position.");
-            gameObject.transform.position = lastMessage.position.toVector3;
+            gameObject.transform.position = VTMapManager.GlobalToWorldPoint(lastMessage.position);
         }
-    }
-
-    private Actor GetActorAtPosition(Vector3D globalPos)
-    {
-        Vector3 worldPos = VTMapManager.GlobalToWorldPoint(globalPos);
-        Actor result = null;
-        float num = 250000f;
-        for (int i = 0; i < TargetManager.instance.allActors.Count; i++)
-        {
-            float sqrMagnitude = (TargetManager.instance.allActors[i].position - worldPos).sqrMagnitude;
-            if (sqrMagnitude < num)
-            {
-                num = sqrMagnitude;
-                result = TargetManager.instance.allActors[i];
-            }
-        }
-        return result;
     }
 
     public void OnDestroy()

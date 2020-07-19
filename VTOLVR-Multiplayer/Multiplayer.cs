@@ -70,15 +70,20 @@ public class Multiplayer : VTOLMOD
 
     private void SceneLoaded(VTOLScenes scene)
     {
+        UnityEngine.CrashReportHandler.CrashReportHandler.enableCaptureExceptions = false;
+
         switch (scene)
         {
             case VTOLScenes.ReadyRoom:
                 CreateUI();
                 break;
             case VTOLScenes.Akutan:
+                Log("Map Loaded from vtol scenes akutan");
+                StartCoroutine(PlayerManager.MapLoaded());
+                break;
             case VTOLScenes.CustomMapBase:
-                Log("Map Loaded");
-                PlayerManager.MapLoaded();
+                Log("Map Loaded from vtol scenes custom map base");
+                StartCoroutine(PlayerManager.MapLoaded());
                 break;
             case VTOLScenes.LoadingScene:
                 CreateLoadingSceneObjects();
@@ -165,7 +170,7 @@ public class Multiplayer : VTOLMOD
         joinButtonText = JoinButton.GetComponentInChildren<Text>();
         joinButtonText.text = "Join";
         joinButtonText.resizeTextForBestFit = true;
-        JoinButton.GetComponent<Image>().color = Color.green;
+        JoinButton.GetComponent<Image>().color = Color.blue;
         VRInteractable JoinInteractable = JoinButton.GetComponent<VRInteractable>();
         JoinInteractable.interactableName = "Join Game";
         JoinInteractable.OnInteract = new UnityEngine.Events.UnityEvent();

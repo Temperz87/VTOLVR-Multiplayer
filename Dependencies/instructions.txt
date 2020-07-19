@@ -1,13 +1,14 @@
-Dependencies Needed
-	0Harmony.dll (v1.2)
-	Assembly-CSharp.dll
-	Assembly-CSharp-firstpass.dll
+Dependencies needed:
 	ModLoader.dll
-	Unity.TextMeshPro.dll
+	0Harmony.dll (v1.2)
+	Assembly-CSharp-firstpass.dll
+	Assembly-CSharp.dll
 	netstandard.dll
-	UnityEngine.CoreModule.dll
-	UnityEngine.dll
-	UnityEngine.PhysicsModule.dll
-	UnityEngine.UI.dll
+	Unity.TextMeshPro.dll
 	UnityEngine.AudioModule.dll
+	UnityEngine.CoreModule.dll
+	UnityEngine.PhysicsModule.dll
 	UnityEngine.TextRenderingModule.dll
+	UnityEngine.UI.dll
+	UnityEngine.dll
+	Valve.Newtonsoft.Json.dll
