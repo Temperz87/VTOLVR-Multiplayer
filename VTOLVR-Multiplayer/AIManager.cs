@@ -204,6 +204,27 @@ public static class AIManager
                 fuelTank.SetNormFuel(loadout.normalizedFuel);
             }
         }
+        else if (actor.role == Actor.Roles.Ground)
+        {
+            AIUnitSpawn aIUnitSpawn = newAI.GetComponent<AIUnitSpawn>();
+            if (aIUnitSpawn == null)
+                Debug.LogWarning("AI unit spawn is null on respawned unit " + aIUnitSpawn);
+            else
+                newAI.GetComponent<AIUnitSpawn>().SetEngageEnemies(message.Aggresive);
+            VehicleMover vehicleMover = newAI.GetComponent<VehicleMover>();
+            if (vehicleMover != null)
+            {
+                vehicleMover.enabled = false;
+            }
+            else
+            {
+                GroundUnitMover ground = newAI.GetComponent<GroundUnitMover>();
+                if (ground != null)
+                {
+                    ground.enabled = false;
+                }
+            }
+        }
         AIVehicles.Add(new AI(newAI, message.aiVehicleName, actor, message.networkID));
         Debug.Log("Spawned in AI " + newAI.name);
     }
@@ -227,27 +248,26 @@ public static class AIManager
                 continue;
             if (!actor.isPlayer)
             {
+                bool Aggresion = false;
                 Debug.Log("Try sending ai " + actor.name + " to client.");
                 if (actor.gameObject.GetComponent<UIDNetworker_Sender>() != null)
                 {
                     UIDNetworker_Sender uidSender = actor.gameObject.GetComponent<UIDNetworker_Sender>();
-                    //lastPlaneSender = actor.gameObject.GetComponent<PlaneNetworker_Sender>();
-                    //lastRigidSender = actor.gameObject.GetComponent<RigidbodyNetworker_Sender>();
-                    //if (actor.weaponManager != null)
-                    //{ hPInfos = VTOLVR_Multiplayer.PlaneEquippableManager.generateHpInfoListFromWeaponManager(actor.weaponManager, VTOLVR_Multiplayer.PlaneEquippableManager.HPInfoListGenerateNetworkType.sender); }
-                    //CountermeasureManager cm;
-                    //cm = actor.gameObject.GetComponent<CountermeasureManager>();
-                    //List<int> cmLoadout = new List<int>();
-                    //if (cm)
-                    //{
-                    //    cmLoadout = VTOLVR_Multiplayer.PlaneEquippableManager.generateCounterMeasuresFromCmManager(cm);
-                    //}
 
                     HPInfo[] hPInfos2 = new HPInfo[0];
                     int[] cmLoadout = new int[0];
 
+                    AIUnitSpawn aIUnitSpawn = actor.gameObject.GetComponent<AIUnitSpawn>();
+                    if (aIUnitSpawn == null)
+                    {
+                        Debug.LogWarning("AI unit spawn is null on ai " + actor.name);
+                    }
+                    else
+                    {
+                        Aggresion = aIUnitSpawn.engageEnemies;
+                    }
                     Debug.Log("Finally sending AI " + actor.name + " to client " + steamID);
-                    Networker.SendP2P(steamID, new Message_SpawnAIVehicle(actor.name, GetUnitNameFromCatalog(actor.unitSpawn.unitName), VTMapManager.WorldToGlobalPoint(actor.gameObject.transform.position), new Vector3D(actor.gameObject.transform.rotation.eulerAngles), uidSender.networkUID, hPInfos2, cmLoadout, 0.65f), EP2PSend.k_EP2PSendReliable);
+                    Networker.SendP2P(steamID, new Message_SpawnAIVehicle(actor.name, GetUnitNameFromCatalog(actor.unitSpawn.unitName), VTMapManager.WorldToGlobalPoint(actor.gameObject.transform.position), new Vector3D(actor.gameObject.transform.rotation.eulerAngles), uidSender.networkUID, hPInfos2, cmLoadout, 0.65f, Aggresion), EP2PSend.k_EP2PSendReliable);
 
                 }
                 else

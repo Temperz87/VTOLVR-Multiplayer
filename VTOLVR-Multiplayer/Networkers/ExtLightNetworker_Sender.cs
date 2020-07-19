@@ -28,9 +28,9 @@ class ExtLight_Sender : MonoBehaviour
             lastMessage.nav = strobeLight.onByDefault;//obviously change this at some point, i just think it will make it more obvious while i test
 
             if (Networker.isHost)
-                Networker.SendGlobalP2P(lastMessage, Steamworks.EP2PSend.k_EP2PSendReliable);
+                Networker.SendGlobalP2P(lastMessage, Steamworks.EP2PSend.k_EP2PSendUnreliable);
             else
-                Networker.SendP2P(Networker.hostID, lastMessage, Steamworks.EP2PSend.k_EP2PSendReliable);
+                Networker.SendP2P(Networker.hostID, lastMessage, Steamworks.EP2PSend.k_EP2PSendUnreliable);
 
             lastStrobe = strobeLight.onByDefault;
         }

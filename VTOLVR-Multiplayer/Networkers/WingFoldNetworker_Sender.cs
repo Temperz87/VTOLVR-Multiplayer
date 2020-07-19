@@ -24,9 +24,9 @@ class WingFoldNetworker_Sender : MonoBehaviour
             lastMessage.UID = networkUID;
             lastMessage.folded = foldedState;
             if (Networker.isHost)
-                Networker.SendGlobalP2P(lastMessage, Steamworks.EP2PSend.k_EP2PSendReliable);
+                Networker.SendGlobalP2P(lastMessage, Steamworks.EP2PSend.k_EP2PSendUnreliable);
             else
-                Networker.SendP2P(Networker.hostID, lastMessage, Steamworks.EP2PSend.k_EP2PSendReliable);
+                Networker.SendP2P(Networker.hostID, lastMessage, Steamworks.EP2PSend.k_EP2PSendUnreliable);
             
             lastFoldedState = foldedState;
         }
