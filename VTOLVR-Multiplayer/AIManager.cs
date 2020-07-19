@@ -35,7 +35,7 @@ public static class AIManager
     /// <summary>
     /// This is used by the host and only the host to spawn ai vehicles.
     /// </summary>
-    public static void SpawnAIVehicle(Packet packet) // This should never run on the host
+    public static void SpawnAIVehicle(Packet packet) // This should never run on the client
     {
         if (Networker.isHost)
         {

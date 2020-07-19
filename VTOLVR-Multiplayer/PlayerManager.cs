@@ -91,6 +91,9 @@ public static class PlayerManager
             RigidbodyNetworker_Sender lastRigidSender;
             foreach (var actor in TargetManager.instance.allActors)
             {
+                if (actor.role == Actor.Roles.Missile)
+                    continue;
+                Debug.Log("Adding rigid body senders to " + actor.name); ;
                 lastRigidSender = actor.gameObject.AddComponent<RigidbodyNetworker_Sender>();
                 lastRigidSender.networkUID = Networker.GenerateNetworkUID();
                 if (!actor.isPlayer && actor.role == Actor.Roles.Air)
