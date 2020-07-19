@@ -6,9 +6,6 @@ class TurretNetworker_Sender : MonoBehaviour
     private Message_TurretUpdate lastMessage;
     public ModuleTurret turret;
 
-    bool lastOn;
-    float lastFov;
-
     private void Awake()
     {
         lastMessage = new Message_TurretUpdate(new Vector3D(), networkUID);
