@@ -18,6 +18,8 @@ class NetworkSenderThread
 
         packetSingle = new PacketSingle();
 
+        binaryFormatter = new BinaryFormatter();
+
         newPlayerQueue = new ConcurrentQueue<CSteamID>();
         removePlayerQueue = new ConcurrentQueue<CSteamID>();
         internalPlayerList = new List<CSteamID>();
@@ -70,12 +72,10 @@ class NetworkSenderThread
     private readonly ConcurrentQueue<CSteamID> removePlayerQueue;
     private readonly List<CSteamID> internalPlayerList;
 
-    private readonly Lazy<BinaryFormatter> binaryFormatterLazy = new Lazy<BinaryFormatter>(() => new BinaryFormatter());
-    private BinaryFormatter BinaryFormatter { get { return binaryFormatterLazy.Value; } }
-    private readonly Lazy<MemoryStream> memoryStreamLazy = new Lazy<MemoryStream>(() => new MemoryStream());
-    private MemoryStream MemoryStream { get { return memoryStreamLazy.Value; } }
+    private BinaryFormatter binaryFormatter;
 
     private bool dumpAllExistingPlayers;
+    private readonly object dumpAllExistingPlayersLock = new object();
 
     public void SendPacketAsHostToAllClients(Message message, EP2PSend packetType) {
         OutgoingNetworkPacketContainer packet = new OutgoingNetworkPacketContainer(message, packetType);
@@ -124,12 +124,16 @@ class NetworkSenderThread
     }
 
     public void DumpAllExistingPlayers() {
-        dumpAllExistingPlayers = true;
+        lock (dumpAllExistingPlayersLock) {
+            dumpAllExistingPlayers = true;
+        }
         waitHandle.Set();
     }
 
     private void ThreadMethod() {
         byte[] memoryStreamArray;
+        bool dumpAllExistingPlayersLocal;
+        uint length;
 
         while (true) {
             waitHandle.Reset();
@@ -146,7 +150,13 @@ class NetworkSenderThread
                 }
             }
 
-            if (dumpAllExistingPlayers) {
+            lock (dumpAllExistingPlayersLock) {
+                dumpAllExistingPlayersLocal = dumpAllExistingPlayers;
+            }
+            if (dumpAllExistingPlayersLocal) {
+                lock (dumpAllExistingPlayersLock) {
+                    dumpAllExistingPlayers = false;
+                }
                 internalPlayerList.Clear();
             }
 
@@ -169,10 +179,10 @@ class NetworkSenderThread
 
                     // Now that we're going to try to send the packets, format the outgoing memory ONCE based on packet or message type
                     if (outgoingData.Message is Message message) {
-                        memoryStreamArray = getByteArrayFromMessage(message, outgoingData.PacketType);
+                        memoryStreamArray = getByteArrayFromMessage(message, outgoingData.PacketType, out length);
                     }
                     else if (outgoingData.Message is Packet packet) {
-                        memoryStreamArray = getByteArrayFromPacket(packet);
+                        memoryStreamArray = getByteArrayFromPacket(packet, out length);
                     }
                     else {
                         // Not a recognized type
@@ -181,13 +191,13 @@ class NetworkSenderThread
 
                     if (outgoingData.ToWhichReceivers() == OutgoingNetworkPacketContainer.OutgoingReceivers.HostToAllClients) {
                         foreach (CSteamID player in internalPlayerList) {
-                            SendP2P(player, memoryStreamArray, packetSingle.sendType);
+                            SendP2P(player, memoryStreamArray, packetSingle.sendType, length);
                         }
                     }
                     else {
                         foreach (CSteamID player in internalPlayerList) {
                             if (player != outgoingData.SteamId) {
-                                SendP2P(player, memoryStreamArray, packetSingle.sendType);
+                                SendP2P(player, memoryStreamArray, packetSingle.sendType, length);
                             }
                         }
                     }
@@ -202,17 +212,17 @@ class NetworkSenderThread
 
                     // Now that we're going to try to send the packets, format the outgoing memory ONCE based on packet or message type
                     if (outgoingData.Message is Message message) {
-                        memoryStreamArray = getByteArrayFromMessage(message, outgoingData.PacketType);
+                        memoryStreamArray = getByteArrayFromMessage(message, outgoingData.PacketType, out length);
                     }
                     else if (outgoingData.Message is Packet packet) {
-                        memoryStreamArray = getByteArrayFromPacket(packet);
+                        memoryStreamArray = getByteArrayFromPacket(packet, out length);
                     }
                     else {
                         // Not a recognized type
                         continue;
                     }
 
-                    SendP2P(outgoingData.SteamId, memoryStreamArray, packetSingle.sendType);
+                    SendP2P(outgoingData.SteamId, memoryStreamArray, packetSingle.sendType, length);
                 }
             }
 
@@ -220,19 +230,23 @@ class NetworkSenderThread
         }
     }
 
-    private byte[] getByteArrayFromMessage(Message message, EP2PSend packetType) {
+    private byte[] getByteArrayFromMessage(Message message, EP2PSend packetType, out uint length) {
         packetSingle.message = message;
         packetSingle.sendType = packetType;
-        BinaryFormatter.Serialize(MemoryStream, packetSingle);
-        return MemoryStream.ToArray();
+        MemoryStream memoryStream = new MemoryStream();
+        binaryFormatter.Serialize(memoryStream, packetSingle);
+        length = (uint)memoryStream.Length;
+        return memoryStream.ToArray();
     }
 
-    private byte[] getByteArrayFromPacket(Packet packet) {
-        BinaryFormatter.Serialize(MemoryStream, packet);
-        return MemoryStream.ToArray();
+    private byte[] getByteArrayFromPacket(Packet packet, out uint length) {
+        MemoryStream memoryStream = new MemoryStream();
+        binaryFormatter.Serialize(memoryStream, packet);
+        length = (uint)memoryStream.Length;
+        return memoryStream.ToArray();
     }
 
-    private void SendP2P(CSteamID remoteID, byte[] serializedPacketData, EP2PSend sendType) {
+    private void SendP2P(CSteamID remoteID, byte[] serializedPacketData, EP2PSend sendType, uint length) {
         if (serializedPacketData.Length > 1200 && (sendType == EP2PSend.k_EP2PSendUnreliable || sendType == EP2PSend.k_EP2PSendUnreliableNoDelay)) {
             //Debug.LogError("MORE THAN 1200 Bytes for message");
         }
@@ -241,7 +255,7 @@ class NetworkSenderThread
             //_instance.ReadP2PPacket(memoryStream.ToArray(), 0, 0, new CSteamID(1));
             return;
         }
-        if (!SteamNetworking.SendP2PPacket(remoteID, serializedPacketData, (uint)MemoryStream.Length, sendType)) {
+        if (!SteamNetworking.SendP2PPacket(remoteID, serializedPacketData, length, sendType)) {
             //Debug.Log($"Failed to send P2P to {remoteID.m_SteamID}");
         }
     }

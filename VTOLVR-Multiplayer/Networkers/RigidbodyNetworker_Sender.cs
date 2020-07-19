@@ -53,7 +53,8 @@ public class RigidbodyNetworker_Sender : MonoBehaviour
         }
         else
         {
-            Debug.Log($"{actor.name} is not outside of the threshold {Threshold}, the distance is {Vector3.Distance(lastPos, gameObject.transform.position)} not updating it.");
+            // Temperz STOP KILLING PERFORMANCE AND HARD DRIVES!
+            //Debug.Log($"{actor.name} is not outside of the threshold {Threshold}, the distance is {Vector3.Distance(lastPos, gameObject.transform.position)} not updating it.");
         }
     }
 

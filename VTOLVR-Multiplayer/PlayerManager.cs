@@ -342,7 +342,7 @@ public static class PlayerManager
         Debug.Log("Got a new spawnVehicle uID.");
         if (Networker.isHost)
         {
-            Debug.Log("Generating UIDS for any missiles the new vehicle has");
+            //Debug.Log("Generating UIDS for any missiles the new vehicle has");
             for (int i = 0; i < message.hpLoadout.Length; i++)
             {
                 for (int j = 0; j < message.hpLoadout[i].missileUIDS.Length; j++)
@@ -361,14 +361,14 @@ public static class PlayerManager
                 }
             }
 
-            Debug.Log("Telling other clients about new player and new player about other clients. Player count = " + players.Count);
+            //Debug.Log("Telling other clients about new player and new player about other clients. Player count = " + players.Count);
             for (int i = 0; i < players.Count; i++)
             {
                 if (players[i].cSteamID == SteamUser.GetSteamID())
                 {
                     //Debug.LogWarning("Skiping this one as it's the host");
                     //Send the host player to the new player.
-                    Debug.Log($"Running host code to tell new player about host vehicle.");
+                    //Debug.Log($"Running host code to tell new player about host vehicle.");
 
                     GameObject localVehicle = VTOLAPI.GetPlayersVehicleGameObject();
                     WeaponManager localWeaponManager = localVehicle.GetComponent<WeaponManager>();
@@ -391,8 +391,8 @@ public static class PlayerManager
                             fuel),
                         EP2PSend.k_EP2PSendReliable);
 
-                    Debug.Log($"We have told the new player about the host and NOT the other way around.");
-                    Debug.Log($"We don't need to resync the host weapons, that's guaranteed to already be up to date.");
+                    //Debug.Log($"We have told the new player about the host and NOT the other way around.");
+                    //Debug.Log($"We don't need to resync the host weapons, that's guaranteed to already be up to date.");
                     continue;
                 }
                 PlaneNetworker_Receiver existingPlayersPR = players[i].vehicle.GetComponent<PlaneNetworker_Receiver>();
@@ -410,13 +410,13 @@ public static class PlayerManager
                         existingPlayersPR.GetCMS(),
                         existingPlayersPR.GetFuel()),
                     EP2PSend.k_EP2PSendReliable);
-                Debug.Log($"We have told {players[i].cSteamID.m_SteamID} about the new player ({message.csteamID}) and the other way round.");
+                //Debug.Log($"We have told {players[i].cSteamID.m_SteamID} about the new player ({message.csteamID}) and the other way round.");
 
                 //We ask the existing player what their load out just incase the host's player receiver was out of sync.
                 NetworkSenderThread.Instance.SendPacketToSpecificPlayer(players[i].cSteamID,
                     new Message(MessageType.WeaponsSet),
                     EP2PSend.k_EP2PSendReliable);
-                Debug.Log($"We have asked {players[i].cSteamID.m_SteamID} what their current weapons are, and now waiting for a responce."); // marsh typo response lmaooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo
+                //Debug.Log($"We have asked {players[i].cSteamID.m_SteamID} what their current weapons are, and now waiting for a responce."); // marsh typo response lmaooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo
             }
             AIManager.TellClientAboutAI((CSteamID)message.csteamID);
         }
@@ -437,7 +437,7 @@ public static class PlayerManager
                 newVehicle = GameObject.Instantiate(f45Prefab, message.position.toVector3, Quaternion.Euler(message.rotation.toVector3));
                 break;
         }
-        Debug.Log("Setting vehicle name");
+        //Debug.Log("Setting vehicle name");
         newVehicle.name = $"Client [{message.csteamID}]";
         Debug.Log($"Spawned new vehicle at {newVehicle.transform.position}");
 
@@ -449,7 +449,7 @@ public static class PlayerManager
 
         if (message.vehicle == VTOLVehicles.AV42C || message.vehicle == VTOLVehicles.F45A)
         {
-            Debug.Log("Adding Tilt Controller to this vehicle " + message.networkID);
+            //Debug.Log("Adding Tilt Controller to this vehicle " + message.networkID);
             EngineTiltNetworker_Receiver tiltReceiver = newVehicle.AddComponent<EngineTiltNetworker_Receiver>();
             tiltReceiver.networkUID = message.networkID;
         }
@@ -516,12 +516,12 @@ public static class PlayerManager
         nameTag.AddComponent<Nametag>().SetText(
             SteamFriends.GetFriendPersonaName(new CSteamID(message.csteamID)),
             newVehicle.transform, VRHead.instance.transform);
-        Debug.Log("Doing weapon manager shit on " + newVehicle.name + ".");
+        //Debug.Log("Doing weapon manager shit on " + newVehicle.name + ".");
         WeaponManager weaponManager = newVehicle.GetComponent<WeaponManager>();
         if (weaponManager == null)
             Debug.LogError("Failed to get weapon manager on " + newVehicle.name);
         string[] hpLoadoutNames = new string[30];
-        Debug.Log("foreach var equip in message.hpLoadout");
+        //Debug.Log("foreach var equip in message.hpLoadout");
         int debugInteger = 0;
         foreach (var equip in message.hpLoadout)
         {
@@ -530,19 +530,19 @@ public static class PlayerManager
             debugInteger++;
         }
 
-        Debug.Log("Setting Loadout on this new vehicle spawned");
+        //Debug.Log("Setting Loadout on this new vehicle spawned");
         for (int i = 0; i < hpLoadoutNames.Length; i++)
         {
-            Debug.Log("HP " + i + " Name: " + hpLoadoutNames[i]);
+            //Debug.Log("HP " + i + " Name: " + hpLoadoutNames[i]);
         }
-        Debug.Log("Now doing loadout shit.");
+        //Debug.Log("Now doing loadout shit.");
         Loadout loadout = new Loadout();
         loadout.normalizedFuel = message.normalizedFuel;
         loadout.hpLoadout = hpLoadoutNames;
         loadout.cmLoadout = message.cmLoadout;
         weaponManager.EquipWeapons(loadout);
         weaponManager.RefreshWeapon();
-        Debug.Log("Refreshed this weapon manager's weapons.");
+        //Debug.Log("Refreshed this weapon manager's weapons.");
         MissileNetworker_Receiver lastReciever;
         for (int i = 0; i < 30; i++)
         {
@@ -550,16 +550,16 @@ public static class PlayerManager
             HPEquippable equip = weaponManager.GetEquip(i);
             if (equip is HPEquipMissileLauncher)
             {
-                Debug.Log(equip.name + " is a missile launcher");
+                //Debug.Log(equip.name + " is a missile launcher");
                 HPEquipMissileLauncher hpML = equip as HPEquipMissileLauncher;
-                Debug.Log("This missile launcher has " + hpML.ml.missiles.Length + " missiles.");
+                //Debug.Log("This missile launcher has " + hpML.ml.missiles.Length + " missiles.");
                 for (int j = 0; j < hpML.ml.missiles.Length; j++)
                 {
-                    Debug.Log("Adding missile reciever");
+                    //Debug.Log("Adding missile reciever");
                     lastReciever = hpML.ml.missiles[j].gameObject.AddComponent<MissileNetworker_Receiver>();
                     foreach (var thingy in message.hpLoadout) // it's a loop... because fuck you!
                     {
-                        Debug.Log("Try adding missile reciever uID");
+                        //Debug.Log("Try adding missile reciever uID");
                         if (equip.hardpointIdx == thingy.hpIdx)
                         {
                             if (uIDidx < thingy.missileUIDS.Length)

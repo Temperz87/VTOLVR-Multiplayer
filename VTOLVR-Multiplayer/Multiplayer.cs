@@ -287,7 +287,7 @@ public class Multiplayer : VTOLMOD
         if (Networker.hostID == new Steamworks.CSteamID(0) && waitingForJoin == null)
         {
             Networker.JoinGame(selectedFriend);
-            Debug.Log("Joining friend");
+            Debug.Log($"Joining friend {selectedFriend.m_SteamID}");
             waitingForJoin = StartCoroutine(WaitingForJoiningRequestResult());
         }
         else
