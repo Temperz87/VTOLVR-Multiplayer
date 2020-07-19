@@ -104,12 +104,12 @@ public static class PlayerManager
                         lastRigidSender = actor.gameObject.AddComponent<RigidbodyNetworker_Sender>();
                         lastRigidSender.networkUID = networkUID;
                     }
+                    if (!actor.isPlayer && actor.role == Actor.Roles.Air)
+                    {
+                        lastPlaneSender = actor.gameObject.AddComponent<PlaneNetworker_Sender>();
+                        lastPlaneSender.networkUID = networkUID;
+                    }
                 }
-                //if (!actor.isPlayer && actor.role == Actor.Roles.Air)
-                //{
-                //    lastPlaneSender = actor.gameObject.AddComponent<PlaneNetworker_Sender>();
-                //    lastPlaneSender.networkUID = lastRigidSender.networkUID;
-                //}
             }
             Networker.SendGlobalP2P(new Message_HostLoaded(true), EP2PSend.k_EP2PSendReliable);
             GameObject localVehicle = VTOLAPI.GetPlayersVehicleGameObject();
