@@ -196,7 +196,7 @@ public static class AIManager
             fuelTank.startingFuel = loadout.normalizedFuel * fuelTank.maxFuel;
             fuelTank.SetNormFuel(loadout.normalizedFuel);
         }
-        AIVehicles.Add(new AI(new CSteamID(message.networkID), newAI, message.aiVehicleName, actor, message.networkID));
+        AIVehicles.Add(new AI(newAI, message.aiVehicleName, actor, message.networkID));
         Debug.Log("Spawned in AI " + newAI.name);
     }
     /// <summary>

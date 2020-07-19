@@ -4,22 +4,14 @@ using System.Collections.Generic;
 [Serializable]
 public class Message_LockingRadarUpdate : Message
 {
-    public struct radarLock
-    {
-        public ulong actorUID;
-        public bool isLocked;
-        public radarLock(ulong actorUID, bool isLocked)
-        {
-            this.actorUID = actorUID;
-            this.isLocked = isLocked;
-        }
-    }
-    public List<radarLock> radarLocks;
+    public ulong actorUID;
+    public bool isLocked;
     public ulong senderUID;
 
-    public Message_LockingRadarUpdate(List<radarLock> radarLocks, ulong senderUID)
+    public Message_LockingRadarUpdate(ulong actorUID, bool isLocked, ulong senderUID)
     {
-        this.radarLocks = radarLocks;
+        this.actorUID = actorUID;
+        this.isLocked = isLocked;
         this.senderUID = senderUID;
     }
 }
