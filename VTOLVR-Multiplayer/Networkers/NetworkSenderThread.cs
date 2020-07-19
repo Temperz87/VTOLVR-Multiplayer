@@ -31,24 +31,30 @@ class NetworkSenderThread
 
     private class OutgoingNetworkPacketContainer
     {
-        public OutgoingNetworkPacketContainer(CSteamID receiver, Message message, EP2PSend packetType) {
-            hostToAllClientsPacket = false;
+        public enum OutgoingReceivers {
+            ToSinglePeer,
+            HostToAllClients,
+            HostToAllButOneSpecificClient,
+        }
+
+        public OutgoingNetworkPacketContainer(Message message, EP2PSend packetType) {
+            outgoingReceivers = OutgoingReceivers.HostToAllClients;
+            Message = message;
+            PacketType = packetType;
+        }
+
+        public OutgoingNetworkPacketContainer(CSteamID receiver, Message message, EP2PSend packetType, OutgoingReceivers outgoingReceivers) {
+            this.outgoingReceivers = outgoingReceivers;
             SteamId = receiver;
             Message = message;
             PacketType = packetType;
         }
 
-        public OutgoingNetworkPacketContainer(Message message, EP2PSend packetType) {
-            hostToAllClientsPacket = true;
-            Message = message;
-            PacketType = packetType;
+        public OutgoingReceivers ToWhichReceivers() {
+            return outgoingReceivers;
         }
 
-        public bool IsHostToAllClientsPacket() {
-            return hostToAllClientsPacket;
-        }
-
-        private bool hostToAllClientsPacket;
+        private readonly OutgoingReceivers outgoingReceivers;
         public CSteamID SteamId;
         public Message Message;
         public EP2PSend PacketType;
@@ -76,8 +82,14 @@ class NetworkSenderThread
         waitHandle.Set();
     }
 
+    public void SendPacketAsHostToAllButOneSpecificClient(CSteamID nonReceiver, Message message, EP2PSend packetType) {
+        OutgoingNetworkPacketContainer packet = new OutgoingNetworkPacketContainer(nonReceiver, message, packetType, OutgoingNetworkPacketContainer.OutgoingReceivers.HostToAllButOneSpecificClient);
+        messageQueue.Enqueue(packet);
+        waitHandle.Set();
+    }
+
     public void SendPacketToSpecificPlayer(CSteamID receiver, Message message, EP2PSend packetType) {
-        OutgoingNetworkPacketContainer packet = new OutgoingNetworkPacketContainer(receiver, message, packetType);
+        OutgoingNetworkPacketContainer packet = new OutgoingNetworkPacketContainer(receiver, message, packetType, OutgoingNetworkPacketContainer.OutgoingReceivers.ToSinglePeer);
         messageQueue.Enqueue(packet);
         waitHandle.Set();
     }
@@ -124,7 +136,7 @@ class NetworkSenderThread
                     continue;
                 }
 
-                if (packet.IsHostToAllClientsPacket()) {
+                if (packet.ToWhichReceivers() == OutgoingNetworkPacketContainer.OutgoingReceivers.HostToAllClients || packet.ToWhichReceivers() == OutgoingNetworkPacketContainer.OutgoingReceivers.HostToAllButOneSpecificClient) {
                     if (!Networker.isHost) {
                         //Debug.LogError("Can't send global P2P as user isn't host");
                         continue;
@@ -139,11 +151,21 @@ class NetworkSenderThread
                     BinaryFormatter.Serialize(MemoryStream, packetSingle);
                     byte[] memoryStreamArray = MemoryStream.ToArray();
 
-                    foreach (CSteamID player in internalPlayerList) {
-                        SendP2P(player, memoryStreamArray, packetSingle.sendType);
+                    if (packet.ToWhichReceivers() == OutgoingNetworkPacketContainer.OutgoingReceivers.HostToAllClients) {
+                        foreach (CSteamID player in internalPlayerList) {
+                            SendP2P(player, memoryStreamArray, packetSingle.sendType);
+                        }
+                    }
+                    else {
+                        foreach (CSteamID player in internalPlayerList) {
+                            if (player != packet.SteamId) {
+                                SendP2P(player, memoryStreamArray, packetSingle.sendType);
+                            }
+                        }
                     }
                 }
                 else {
+                    // Send to single client
                     // Check for valid id
                     if (packet.SteamId == null) {
                         // Skip this one

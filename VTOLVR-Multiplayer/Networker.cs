@@ -515,6 +515,7 @@ public class Networker : MonoBehaviour
                         if (Multiplayer.SoloTesting)
                             break;
                         players.Remove(csteamID);
+                        NetworkSenderThread.Instance.RemovePlayer(csteamID);
                         SendGlobalP2P(packet);
                     }
                     else
@@ -848,6 +849,7 @@ public class Networker : MonoBehaviour
         Debug.Log($"Accepting {csteamID.m_SteamID}, adding to players list");
         players.Add(csteamID);
         readyDic.Add(csteamID, false);
+        NetworkSenderThread.Instance.AddPlayer(csteamID);
         UpdateLoadingText();
         SendP2P(csteamID, new Message_JoinRequestAccepted_Result(), EP2PSend.k_EP2PSendReliable);
     }
@@ -879,6 +881,7 @@ public class Networker : MonoBehaviour
         isHost = false;
         gameState = GameState.Menu;
         players = new List<CSteamID>();
+        NetworkSenderThread.Instance.DumpAllExistingPlayers();
         readyDic = new Dictionary<CSteamID, bool>();
         hostReady = false;
         allPlayersReadyHasBeenSentFirstTime = false;
