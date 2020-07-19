@@ -217,8 +217,11 @@ public static class AIManager
         foreach (var actor in TargetManager.instance.allActors)
         {
             List<HPInfo> hPInfos = new List<HPInfo>();
+            if (actor == null)
+                continue;
             if (!actor.isPlayer && actor.role == Actor.Roles.Air)
             {
+                Debug.Log("Try sending ai " + actor.name + " to client.");
                 lastPlaneSender = actor.gameObject.GetComponent<PlaneNetworker_Sender>();
                 lastRigidSender = actor.gameObject.GetComponent<RigidbodyNetworker_Sender>();
                 if (actor.weaponManager != null)
@@ -231,7 +234,7 @@ public static class AIManager
                     cmLoadout = VTOLVR_Multiplayer.PlaneEquippableManager.generateCounterMeasuresFromCmManager(cm);
                 }
 
-                Debug.Log("Finally sending AI's to client " + steamID);
+                Debug.Log("Finally sending AI " + actor.name + " to client " + steamID);
                 Networker.SendP2P(steamID, new Message_SpawnAIVehicle(actor.name, actor.unitSpawn.unitName, VTMapManager.WorldToGlobalPoint(actor.gameObject.transform.position), new Vector3D(actor.gameObject.transform.rotation.eulerAngles), lastPlaneSender.networkUID, hPInfos.ToArray(), cmLoadout.ToArray(), 0.65f), EP2PSend.k_EP2PSendReliable);
             }
         }

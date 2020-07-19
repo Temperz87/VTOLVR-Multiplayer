@@ -90,27 +90,6 @@ public class MissileNetworker_Receiver : MonoBehaviour
         }
     }
 
-    public static Actor GetActorAtPosition(Vector3D globalPos)
-    {
-        Vector3 worldPos = VTMapManager.GlobalToWorldPoint(globalPos);
-        Actor result = null;
-        float num = 250000f;
-        for (int i = 0; i < TargetManager.instance.allActors.Count; i++)
-        {
-            float sqrMagnitude = (TargetManager.instance.allActors[i].position - worldPos).sqrMagnitude;
-            if (sqrMagnitude < num)
-            {
-                num = sqrMagnitude;
-                result = TargetManager.instance.allActors[i];
-            }
-        }
-        if (result == null)
-        {
-            Debug.LogError("Get actor at position returned null, fuck.");
-        }
-        return result;
-    }
-
     public void OnDestroy()
     {
         Networker.MissileUpdate -= MissileUpdate;

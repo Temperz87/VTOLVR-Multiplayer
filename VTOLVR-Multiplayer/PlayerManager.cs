@@ -67,13 +67,18 @@ public static class PlayerManager
         {
             Debug.Log($"Sending spawn request to host, host id: {Networker.hostID}, client id: {SteamUser.GetSteamID().m_SteamID}");
             Debug.Log("Killing all units currently on the map.");
+            List<Actor> allActors = new List<Actor>(); 
             foreach (var actor in TargetManager.instance.allActors)
             {
                 if (!actor.isPlayer)
                 {
-                    TargetManager.instance.UnregisterActor(actor);
-                    actor.gameObject.SetActive(false);
+                    allActors.Add(actor);
                 }
+            }
+            foreach (var actor in allActors)
+            {
+                actor.gameObject.SetActive(false);
+                TargetManager.instance.UnregisterActor(actor);
             }
             Networker.SendP2P(Networker.hostID, new Message(MessageType.RequestSpawn), EP2PSend.k_EP2PSendReliable);
         }
@@ -107,9 +112,6 @@ public static class PlayerManager
             if (spawnRequestQueue.Count != 0)
                 SpawnRequestQueue();
             Networker.alreadyInGame = true;
-
-
-
         }
 
         while (AIManager.AIsToSpawnQueue.Count > 0)
@@ -561,7 +563,7 @@ public static class PlayerManager
             Debug.LogError("Failed to get fuel tank on " + newVehicle.name);
         fuelTank.startingFuel = loadout.normalizedFuel * fuelTank.maxFuel;
         fuelTank.SetNormFuel(loadout.normalizedFuel);
-
+        aIPilot.actor.role = Actor.Roles.None;
         players.Add(new Player(new CSteamID(message.csteamID), newVehicle, message.vehicle, message.networkID));
     }
     /// <summary>
