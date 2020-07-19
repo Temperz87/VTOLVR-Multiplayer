@@ -267,7 +267,7 @@ public static class AIManager
                         Aggresion = aIUnitSpawn.engageEnemies;
                     }
                     Debug.Log("Finally sending AI " + actor.name + " to client " + steamID);
-                    Networker.SendP2P(steamID, new Message_SpawnAIVehicle(actor.name, GetUnitNameFromCatalog(actor.unitSpawn.unitName), VTMapManager.WorldToGlobalPoint(actor.gameObject.transform.position), new Vector3D(actor.gameObject.transform.rotation.eulerAngles), uidSender.networkUID, hPInfos2, cmLoadout, 0.65f, Aggresion), EP2PSend.k_EP2PSendReliable);
+                    NetworkSenderThread.Instance.SendPacketToSpecificPlayer(steamID, new Message_SpawnAIVehicle(actor.name, GetUnitNameFromCatalog(actor.unitSpawn.unitName), VTMapManager.WorldToGlobalPoint(actor.gameObject.transform.position), new Vector3D(actor.gameObject.transform.rotation.eulerAngles), uidSender.networkUID, hPInfos2, cmLoadout, 0.65f, Aggresion), EP2PSend.k_EP2PSendReliable);
 
                 }
                 else

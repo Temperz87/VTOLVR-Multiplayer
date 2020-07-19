@@ -73,7 +73,7 @@ class Patch_LoadingSceneHelmet_Update
                     if (Networker.EveryoneElseReady())
                     {
                         Debug.Log("Everyone is ready, starting game");
-                        Networker.SendGlobalP2P(new Message(MessageType.AllPlayersReady), Steamworks.EP2PSend.k_EP2PSendReliable);
+                        NetworkSenderThread.Instance.SendPacketAsHostToAllClients(new Message(MessageType.AllPlayersReady), Steamworks.EP2PSend.k_EP2PSendReliable);
                         Networker.hostReady = true;
                         LoadingSceneController.instance.PlayerReady();
                     }
@@ -87,7 +87,7 @@ class Patch_LoadingSceneHelmet_Update
                 {
                     if (!Networker.readySent) {
                         Networker.readySent = true;
-                        Networker.SendP2P(Networker.hostID, new Message(MessageType.Ready), Steamworks.EP2PSend.k_EP2PSendReliable);
+                        NetworkSenderThread.Instance.SendPacketToSpecificPlayer(Networker.hostID, new Message(MessageType.Ready), Steamworks.EP2PSend.k_EP2PSendReliable);
                         Debug.Log("Waiting for the host to say everyone is ready");
                     }
                 }

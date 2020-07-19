@@ -30,9 +30,9 @@ class LockingRadarNetworker_Sender : MonoBehaviour
             lastRadarMessage.fov = radar.radar.sweepFov;
 
             if (Networker.isHost)
-                Networker.SendGlobalP2P(lastRadarMessage, Steamworks.EP2PSend.k_EP2PSendReliable);
+                NetworkSenderThread.Instance.SendPacketAsHostToAllClients(lastRadarMessage, Steamworks.EP2PSend.k_EP2PSendReliable);
             else
-                Networker.SendP2P(Networker.hostID, lastRadarMessage, Steamworks.EP2PSend.k_EP2PSendReliable);
+                NetworkSenderThread.Instance.SendPacketToSpecificPlayer(Networker.hostID, lastRadarMessage, Steamworks.EP2PSend.k_EP2PSendReliable);
 
             lastOn = radar.radar.radarEnabled;
             lastFov = radar.radar.sweepFov;

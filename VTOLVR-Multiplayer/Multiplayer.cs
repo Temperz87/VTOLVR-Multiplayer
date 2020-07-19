@@ -261,7 +261,7 @@ public class Multiplayer : VTOLMOD
         joinButtonText.text = $"Join {SteamFriends.GetFriendPersonaName(steamFriends[index].steamID)}";
         selectedFriend = steamFriends[index].steamID;
         Log("User has selected " + SteamFriends.GetFriendPersonaName(steamFriends[index].steamID));
-        Networker.SendP2P(steamFriends[index].steamID, new Message_LobbyInfoRequest(), EP2PSend.k_EP2PSendReliable); //Getting lobby info.
+        NetworkSenderThread.Instance.SendPacketToSpecificPlayer(steamFriends[index].steamID, new Message_LobbyInfoRequest(), EP2PSend.k_EP2PSendReliable); //Getting lobby info.
         selectionTF.position = steamFriends[index].transform.position;
         selectionTF.GetComponent<Image>().color = new Color(0.3529411764705882f, 0.196078431372549f, 0);
     }

@@ -80,7 +80,7 @@ public static class PlayerManager
                 TargetManager.instance.UnregisterActor(actor);
                 GameObject.Destroy(actor.gameObject);
             }
-            Networker.SendP2P(Networker.hostID, new Message(MessageType.RequestSpawn), EP2PSend.k_EP2PSendReliable);
+            NetworkSenderThread.Instance.SendPacketToSpecificPlayer(Networker.hostID, new Message(MessageType.RequestSpawn), EP2PSend.k_EP2PSendReliable);
         }
         else
         {
@@ -115,7 +115,7 @@ public static class PlayerManager
                 else
                     Debug.Log(actor.name + " has a parent, not giving an uID sender.");
             }
-            Networker.SendGlobalP2P(new Message_HostLoaded(true), EP2PSend.k_EP2PSendReliable);
+            NetworkSenderThread.Instance.SendPacketAsHostToAllClients(new Message_HostLoaded(true), EP2PSend.k_EP2PSendReliable);
             GameObject localVehicle = VTOLAPI.GetPlayersVehicleGameObject();
             if (localVehicle != null)
             {
@@ -176,7 +176,7 @@ public static class PlayerManager
         {
             lastSpawn = FindFreeSpawn();
             Debug.Log("The players spawn will be " + lastSpawn);
-            Networker.SendP2P(
+            NetworkSenderThread.Instance.SendPacketToSpecificPlayer(
                 spawnRequestQueue.Dequeue(),
                 new Message_RequestSpawn_Result(new Vector3D(lastSpawn.position), new Vector3D(lastSpawn.rotation.eulerAngles), Networker.GenerateNetworkUID(), players.Count),
                 EP2PSend.k_EP2PSendReliable);
@@ -206,7 +206,7 @@ public static class PlayerManager
         }
         Transform spawn = FindFreeSpawn();
         Debug.Log("The players spawn will be " + spawn);
-        Networker.SendP2P(sender, new Message_RequestSpawn_Result(new Vector3D(spawn.position), new Vector3D(spawn.rotation.eulerAngles), Networker.GenerateNetworkUID(), players.Count), EP2PSend.k_EP2PSendReliable);
+        NetworkSenderThread.Instance.SendPacketToSpecificPlayer(sender, new Message_RequestSpawn_Result(new Vector3D(spawn.position), new Vector3D(spawn.rotation.eulerAngles), Networker.GenerateNetworkUID(), players.Count), EP2PSend.k_EP2PSendReliable);
     }
     /// <summary>
     /// When the client receives a P2P message of their spawn point, 
@@ -294,7 +294,7 @@ public static class PlayerManager
         {
             // Not host, so send host the spawn vehicle message
             Debug.Log($"Sending spawn vehicle message to: {Networker.hostID}");
-            Networker.SendP2P(Networker.hostID,
+            NetworkSenderThread.Instance.SendPacketToSpecificPlayer(Networker.hostID,
                 new Message_SpawnPlayerVehicle(currentVehicle, 
                     new Vector3D(pos), 
                     new Vector3D(rot), 
@@ -354,7 +354,7 @@ public static class PlayerManager
                         //Generating a new global UID for that missile
                         message.hpLoadout[i].missileUIDS[j] = Networker.GenerateNetworkUID();
                         //Sending it back to that client
-                        Networker.SendP2P(new CSteamID(message.csteamID),
+                        NetworkSenderThread.Instance.SendPacketToSpecificPlayer(new CSteamID(message.csteamID),
                             new Message_RequestNetworkUID(clientsUID, message.hpLoadout[i].missileUIDS[j]),
                             EP2PSend.k_EP2PSendReliable);
                     }
@@ -379,7 +379,7 @@ public static class PlayerManager
                     List<int> cm = VTOLVR_Multiplayer.PlaneEquippableManager.generateCounterMeasuresFromCmManager(cmManager);
                     float fuel = VTOLVR_Multiplayer.PlaneEquippableManager.generateLocalFuelValue();
 
-                    Networker.SendP2P(new CSteamID(message.csteamID),
+                    NetworkSenderThread.Instance.SendPacketToSpecificPlayer(new CSteamID(message.csteamID),
                         new Message_SpawnPlayerVehicle(
                             players[i].vehicleName,
                             VTMapManager.WorldToGlobalPoint(players[i].vehicle.transform.position),
@@ -397,9 +397,9 @@ public static class PlayerManager
                 }
                 PlaneNetworker_Receiver existingPlayersPR = players[i].vehicle.GetComponent<PlaneNetworker_Receiver>();
                 //We first send the new player to an existing spawned in player
-                Networker.SendP2P(players[i].cSteamID, message, EP2PSend.k_EP2PSendReliable);
+                NetworkSenderThread.Instance.SendPacketToSpecificPlayer(players[i].cSteamID, message, EP2PSend.k_EP2PSendReliable);
                 //Then we send this current player to the new player.
-                Networker.SendP2P(new CSteamID(message.csteamID),
+                NetworkSenderThread.Instance.SendPacketToSpecificPlayer(new CSteamID(message.csteamID),
                     new Message_SpawnPlayerVehicle(
                         players[i].vehicleName,
                         VTMapManager.WorldToGlobalPoint(players[i].vehicle.transform.position),
@@ -413,7 +413,7 @@ public static class PlayerManager
                 Debug.Log($"We have told {players[i].cSteamID.m_SteamID} about the new player ({message.csteamID}) and the other way round.");
 
                 //We ask the existing player what their load out just incase the host's player receiver was out of sync.
-                Networker.SendP2P(players[i].cSteamID,
+                NetworkSenderThread.Instance.SendPacketToSpecificPlayer(players[i].cSteamID,
                     new Message(MessageType.WeaponsSet),
                     EP2PSend.k_EP2PSendReliable);
                 Debug.Log($"We have asked {players[i].cSteamID.m_SteamID} what their current weapons are, and now waiting for a responce."); // marsh typo response lmaooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo
