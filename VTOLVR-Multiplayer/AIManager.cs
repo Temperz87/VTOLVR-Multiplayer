@@ -67,19 +67,25 @@ public static class AIManager
             return;
         }
         Debug.Log("Trying to spawn AI " + message.aiVehicleName);
-        GameObject newAI = GameObject.Instantiate(UnitCatalogue.GetUnitPrefab(message.unitName));
-        if (newAI == null)
-        {
+
+        GameObject prefab = UnitCatalogue.GetUnitPrefab(message.unitName);
+        if (prefab == null) {
             Debug.LogError(message.unitName + " was not found.");
             return;
         }
+        GameObject newAI = GameObject.Instantiate(prefab);
         Debug.Log("Setting vehicle name");
         newAI.name = message.aiVehicleName;
         Actor actor = newAI.GetComponent<Actor>();
         Debug.Log($"Spawned new vehicle at {newAI.transform.position}");
 
-        RigidbodyNetworker_Receiver rbNetworker = newAI.AddComponent<RigidbodyNetworker_Receiver>();
-        rbNetworker.networkUID = message.networkID;
+        UIDNetworker_Receiver uidReciever = newAI.AddComponent<UIDNetworker_Receiver>();
+        uidReciever.networkUID = message.networkID;
+
+        if (newAI.GetComponent<Rigidbody>() != null) {
+            RigidbodyNetworker_Receiver rbNetworker = newAI.AddComponent<RigidbodyNetworker_Receiver>();
+            rbNetworker.networkUID = message.networkID;
+        }
 
         if (actor.role == Actor.Roles.Air)
         {
@@ -219,23 +225,35 @@ public static class AIManager
             List<HPInfo> hPInfos = new List<HPInfo>();
             if (actor == null)
                 continue;
-            if (!actor.isPlayer && actor.role == Actor.Roles.Air)
+            if (!actor.isPlayer)
             {
                 Debug.Log("Try sending ai " + actor.name + " to client.");
-                lastPlaneSender = actor.gameObject.GetComponent<PlaneNetworker_Sender>();
-                lastRigidSender = actor.gameObject.GetComponent<RigidbodyNetworker_Sender>();
-                if (actor.weaponManager != null)
-                { hPInfos = VTOLVR_Multiplayer.PlaneEquippableManager.generateHpInfoListFromWeaponManager(actor.weaponManager, VTOLVR_Multiplayer.PlaneEquippableManager.HPInfoListGenerateNetworkType.sender); }
-                CountermeasureManager cm;
-                cm = actor.gameObject.GetComponent<CountermeasureManager>();
-                List<int> cmLoadout = new List<int>();
-                if (cm)
+                if (actor.gameObject.GetComponent<UIDNetworker_Sender>() != null)
                 {
-                    cmLoadout = VTOLVR_Multiplayer.PlaneEquippableManager.generateCounterMeasuresFromCmManager(cm);
-                }
+                    UIDNetworker_Sender uidSender = actor.gameObject.GetComponent<UIDNetworker_Sender>();
+                    //lastPlaneSender = actor.gameObject.GetComponent<PlaneNetworker_Sender>();
+                    //lastRigidSender = actor.gameObject.GetComponent<RigidbodyNetworker_Sender>();
+                    //if (actor.weaponManager != null)
+                    //{ hPInfos = VTOLVR_Multiplayer.PlaneEquippableManager.generateHpInfoListFromWeaponManager(actor.weaponManager, VTOLVR_Multiplayer.PlaneEquippableManager.HPInfoListGenerateNetworkType.sender); }
+                    //CountermeasureManager cm;
+                    //cm = actor.gameObject.GetComponent<CountermeasureManager>();
+                    //List<int> cmLoadout = new List<int>();
+                    //if (cm)
+                    //{
+                    //    cmLoadout = VTOLVR_Multiplayer.PlaneEquippableManager.generateCounterMeasuresFromCmManager(cm);
+                    //}
 
-                Debug.Log("Finally sending AI " + actor.name + " to client " + steamID);
-                Networker.SendP2P(steamID, new Message_SpawnAIVehicle(actor.name, actor.unitSpawn.unitName, VTMapManager.WorldToGlobalPoint(actor.gameObject.transform.position), new Vector3D(actor.gameObject.transform.rotation.eulerAngles), lastPlaneSender.networkUID, hPInfos.ToArray(), cmLoadout.ToArray(), 0.65f), EP2PSend.k_EP2PSendReliable);
+                    HPInfo[] hPInfos2 = new HPInfo[0];
+                    int[] cmLoadout = new int[0];
+
+                    Debug.Log("Finally sending AI " + actor.name + " to client " + steamID);
+                    Networker.SendP2P(steamID, new Message_SpawnAIVehicle(actor.name, actor.unitSpawn.unitName, VTMapManager.WorldToGlobalPoint(actor.gameObject.transform.position), new Vector3D(actor.gameObject.transform.rotation.eulerAngles), uidSender.networkUID, hPInfos2, cmLoadout, 0.65f), EP2PSend.k_EP2PSendReliable);
+
+                }
+                else
+                {
+                    Debug.Log("Could not find the UIDNetworker_Sender");
+                }
             }
         }
     }

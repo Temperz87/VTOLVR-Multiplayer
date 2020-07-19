@@ -91,16 +91,25 @@ public static class PlayerManager
             RigidbodyNetworker_Sender lastRigidSender;
             foreach (var actor in TargetManager.instance.allActors)
             {
-                if (actor.role == Actor.Roles.Missile)
+                if (actor.role == Actor.Roles.Missile || actor.isPlayer)
                     continue;
-                Debug.Log("Adding rigid body senders to " + actor.name); ;
-                lastRigidSender = actor.gameObject.AddComponent<RigidbodyNetworker_Sender>();
-                lastRigidSender.networkUID = Networker.GenerateNetworkUID();
-                if (!actor.isPlayer && actor.role == Actor.Roles.Air)
-                {
-                    lastPlaneSender = actor.gameObject.AddComponent<PlaneNetworker_Sender>();
-                    lastPlaneSender.networkUID = lastRigidSender.networkUID;
+                if (actor.transform.parent == null) {
+                    Debug.Log("Adding UID senders to " + actor.name);
+                    ulong networkUID = Networker.GenerateNetworkUID();
+
+                    UIDNetworker_Sender uidSender = actor.gameObject.AddComponent<UIDNetworker_Sender>();
+                    uidSender.networkUID = networkUID;
+
+                    if (actor.gameObject.GetComponent<Rigidbody>() != null) {
+                        lastRigidSender = actor.gameObject.AddComponent<RigidbodyNetworker_Sender>();
+                        lastRigidSender.networkUID = networkUID;
+                    }
                 }
+                //if (!actor.isPlayer && actor.role == Actor.Roles.Air)
+                //{
+                //    lastPlaneSender = actor.gameObject.AddComponent<PlaneNetworker_Sender>();
+                //    lastPlaneSender.networkUID = lastRigidSender.networkUID;
+                //}
             }
             Networker.SendGlobalP2P(new Message_HostLoaded(true), EP2PSend.k_EP2PSendReliable);
             GameObject localVehicle = VTOLAPI.GetPlayersVehicleGameObject();
