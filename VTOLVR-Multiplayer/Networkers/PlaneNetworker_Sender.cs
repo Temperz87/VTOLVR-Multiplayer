@@ -119,9 +119,9 @@ public class PlaneNetworker_Sender : MonoBehaviour
                 // lastStoppedFiringMessage.UID = networkUID;
                 lastFiringMessage.isFiring = weaponManager.isFiring;
                 if (Networker.isHost)
-                    Networker.SendGlobalP2P(lastFiringMessage, Steamworks.EP2PSend.k_EP2PSendUnreliableNoDelay);
+                    NetworkSenderThread.Instance.SendPacketAsHostToAllClients(lastFiringMessage, Steamworks.EP2PSend.k_EP2PSendUnreliableNoDelay);
                 else
-                    Networker.SendP2P(Networker.hostID, lastFiringMessage, Steamworks.EP2PSend.k_EP2PSendUnreliableNoDelay);
+                    NetworkSenderThread.Instance.SendPacketToSpecificPlayer(Networker.hostID, lastFiringMessage, Steamworks.EP2PSend.k_EP2PSendUnreliableNoDelay);
             }
         }
     }
@@ -152,10 +152,10 @@ public class PlaneNetworker_Sender : MonoBehaviour
         }
         
         if (Networker.isHost)
-            Networker.SendGlobalP2P(lastMessage, Steamworks.EP2PSend.k_EP2PSendUnreliable);
+            NetworkSenderThread.Instance.SendPacketAsHostToAllClients(lastMessage, Steamworks.EP2PSend.k_EP2PSendUnreliable);
         else
         {
-            Networker.SendP2P(Networker.hostID, lastMessage, Steamworks.EP2PSend.k_EP2PSendUnreliable);
+            NetworkSenderThread.Instance.SendPacketToSpecificPlayer(Networker.hostID, lastMessage, Steamworks.EP2PSend.k_EP2PSendUnreliable);
         }
     }
 
@@ -179,24 +179,24 @@ public class PlaneNetworker_Sender : MonoBehaviour
 
         float fuel = VTOLVR_Multiplayer.PlaneEquippableManager.generateLocalFuelValue();
 
-        Networker.SendP2P(Networker.hostID,
+        NetworkSenderThread.Instance.SendPacketToSpecificPlayer(Networker.hostID,
             new Message_WeaponSet_Result(hpInfos.ToArray(), cm.ToArray(), fuel, networkUID),
             Steamworks.EP2PSend.k_EP2PSendReliable);
     }
     public void FireCountermeasure() {
         lastCountermeasureMessage.UID = networkUID;
         if (Networker.isHost)
-            Networker.SendGlobalP2P(lastCountermeasureMessage, Steamworks.EP2PSend.k_EP2PSendUnreliableNoDelay);
+            NetworkSenderThread.Instance.SendPacketAsHostToAllClients(lastCountermeasureMessage, Steamworks.EP2PSend.k_EP2PSendUnreliableNoDelay);
         else
-            Networker.SendP2P(Networker.hostID, lastCountermeasureMessage, Steamworks.EP2PSend.k_EP2PSendUnreliableNoDelay);
+            NetworkSenderThread.Instance.SendPacketToSpecificPlayer(Networker.hostID, lastCountermeasureMessage, Steamworks.EP2PSend.k_EP2PSendUnreliableNoDelay);
     }
     public void Death()
     {
         lastDeathMessage.UID = networkUID;
         if (Networker.isHost)
-            Networker.SendGlobalP2P(lastDeathMessage, Steamworks.EP2PSend.k_EP2PSendUnreliable);
+            NetworkSenderThread.Instance.SendPacketAsHostToAllClients(lastDeathMessage, Steamworks.EP2PSend.k_EP2PSendUnreliable);
         else
-            Networker.SendP2P(Networker.hostID, lastDeathMessage, Steamworks.EP2PSend.k_EP2PSendUnreliable);
+            NetworkSenderThread.Instance.SendPacketToSpecificPlayer(Networker.hostID, lastDeathMessage, Steamworks.EP2PSend.k_EP2PSendUnreliable);
     }
     public void OnDestroy()
     {
