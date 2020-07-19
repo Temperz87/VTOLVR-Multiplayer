@@ -27,6 +27,7 @@ public class PlaneNetworker_Receiver : MonoBehaviour
     {
         aiPilot = GetComponent<AIPilot>();
         autoPilot = aiPilot.autoPilot;
+        aiPilot.enabled = false;
         Networker.PlaneUpdate += PlaneUpdate;
         Networker.WeaponSet_Result += WeaponSet_Result;
         Networker.Disconnecting += OnDisconnect;
@@ -51,11 +52,10 @@ public class PlaneNetworker_Receiver : MonoBehaviour
     }
     public void PlaneUpdate(Packet packet)
     {
+        Debug.Log("Doing reciever update function for " + aiPilot.actor.name);
         lastMessage = (Message_PlaneUpdate)((PacketSingle)packet).message;
         if (lastMessage.networkUID != networkUID)
             return;
-
-
         if (lastMessage.landingGear)
             aiPilot.gearAnimator.Extend();
         else

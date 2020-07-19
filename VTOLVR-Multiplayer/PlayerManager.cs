@@ -79,13 +79,16 @@ public static class PlayerManager
             Debug.Log("Starting map loaded host routines");
             Networker.hostLoaded = true;
             Networker.hostReady = true;
-            PlaneNetworker_Sender lastSender;
+            PlaneNetworker_Sender lastPlaneSender;
+            RigidbodyNetworker_Sender lastRigidSender;
             foreach (var actor in TargetManager.instance.allActors)
             {
                 if (!actor.isPlayer && actor.role == Actor.Roles.Air)
                 {
-                    lastSender = actor.gameObject.AddComponent<PlaneNetworker_Sender>();
-                    lastSender.networkUID = Networker.GenerateNetworkUID();
+                    lastPlaneSender = actor.gameObject.AddComponent<PlaneNetworker_Sender>();
+                    lastPlaneSender.networkUID = Networker.GenerateNetworkUID();
+                    lastRigidSender = actor.gameObject.AddComponent<RigidbodyNetworker_Sender>();
+                    lastRigidSender.networkUID = lastPlaneSender.networkUID;
                 }
             }
             Networker.SendGlobalP2P(new Message_HostLoaded(true), EP2PSend.k_EP2PSendReliable);
@@ -550,35 +553,6 @@ public static class PlayerManager
                 }
             }
         }
-        /*foreach (var equip in weaponManager.GetCombinedEquips())
-        {
-            int uIDidx = 0;
-            if (equip is HPEquipMissileLauncher)
-            {
-                Debug.Log(equip.name + " is a missile launcher");
-                HPEquipMissileLauncher hpML = equip as HPEquipMissileLauncher;
-                Debug.Log("This missile launcher has " + hpML.ml.missiles.Length + " missiles.");
-                foreach (var missile in hpML.ml.missiles)
-                {
-                    Debug.Log("Adding missile reciever");
-                    lastReciever = missile.gameObject.AddComponent<MissileNetworker_Receiver>();
-                    foreach (var thingy in message.hpLoadout) // it's a loop... because fuck you!
-                    {
-                        Debug.Log("Try adding missile reciever uID");
-                        if (equip.hardpointIdx == thingy.hpIdx)
-                        {
-                            if (uIDidx < thingy.missileUIDS.Length)
-                            {
-                                lastReciever.networkUID = thingy.missileUIDS[uIDidx];
-                                uIDidx++;
-                            }
-                        }
-                    }
-                }
-            }
-            else
-                Debug.Log(equip.name + " is not a missile launcher.");
-        }*/
             FuelTank fuelTank = newVehicle.GetComponent<FuelTank>();
         if (fuelTank == null)
             Debug.LogError("Failed to get fuel tank on " + newVehicle.name);

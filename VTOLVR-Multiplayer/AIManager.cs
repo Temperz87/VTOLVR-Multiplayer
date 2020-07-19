@@ -125,73 +125,76 @@ public static class AIManager
         Debug.Log("Doing weapon manager shit on " + newAI.name + ".");
         WeaponManager weaponManager = newAI.GetComponent<WeaponManager>();
         if (weaponManager == null)
-            Debug.LogError("Failed to get weapon manager on " + newAI.name);
-        string[] hpLoadoutNames = new string[30];
-        Debug.Log("foreach var equip in message.hpLoadout");
-        int debugInteger = 0;
-        foreach (var equip in message.hpLoadout)
+            Debug.LogError(newAI.name + " does not seem to have a weapon maanger on it.");
+        else
         {
-            Debug.Log(debugInteger);
-            hpLoadoutNames[equip.hpIdx] = equip.hpName;
-            debugInteger++;
-        }
-        Debug.Log("Setting Loadout on this new vehicle spawned");
-        for (int i = 0; i < hpLoadoutNames.Length; i++)
-        {
-            Debug.Log("HP " + i + " Name: " + hpLoadoutNames[i]);
-        }
-        Debug.Log("Now doing loadout shit.");
-        Loadout loadout = new Loadout();
-        loadout.normalizedFuel = message.normalizedFuel;
-        loadout.hpLoadout = hpLoadoutNames;
-        loadout.cmLoadout = message.cmLoadout;
-        weaponManager.EquipWeapons(loadout);
-        weaponManager.RefreshWeapon();
-        Debug.Log("Refreshed this weapon manager's weapons.");
-        MissileNetworker_Receiver lastReciever;
-        for (int i = 0; i < 30; i++)
-        {
-            int uIDidx = 0;
-            HPEquippable equip = weaponManager.GetEquip(i);
-            if (equip is HPEquipMissileLauncher)
+            string[] hpLoadoutNames = new string[30];
+            Debug.Log("foreach var equip in message.hpLoadout");
+            int debugInteger = 0;
+            foreach (var equip in message.hpLoadout)
             {
-                Debug.Log(equip.name + " is a missile launcher");
-                HPEquipMissileLauncher hpML = equip as HPEquipMissileLauncher;
-                Debug.Log("This missile launcher has " + hpML.ml.missiles.Length + " missiles.");
-                for (int j = 0; j < hpML.ml.missiles.Length; j++)
+                Debug.Log(debugInteger);
+                hpLoadoutNames[equip.hpIdx] = equip.hpName;
+                debugInteger++;
+            }
+            Debug.Log("Setting Loadout on this new vehicle spawned");
+            for (int i = 0; i < hpLoadoutNames.Length; i++)
+            {
+                Debug.Log("HP " + i + " Name: " + hpLoadoutNames[i]);
+            }
+            Debug.Log("Now doing loadout shit.");
+            Loadout loadout = new Loadout();
+            loadout.normalizedFuel = message.normalizedFuel;
+            loadout.hpLoadout = hpLoadoutNames;
+            loadout.cmLoadout = message.cmLoadout;
+            weaponManager.EquipWeapons(loadout);
+            weaponManager.RefreshWeapon();
+            Debug.Log("Refreshed this weapon manager's weapons.");
+            MissileNetworker_Receiver lastReciever;
+            for (int i = 0; i < 30; i++)
+            {
+                int uIDidx = 0;
+                HPEquippable equip = weaponManager.GetEquip(i);
+                if (equip is HPEquipMissileLauncher)
                 {
-                    Debug.Log("Adding missile reciever");
-                    lastReciever = hpML.ml.missiles[j].gameObject.AddComponent<MissileNetworker_Receiver>();
-                    foreach (var thingy in message.hpLoadout) // it's a loop... because fuck you!
+                    Debug.Log(equip.name + " is a missile launcher");
+                    HPEquipMissileLauncher hpML = equip as HPEquipMissileLauncher;
+                    Debug.Log("This missile launcher has " + hpML.ml.missiles.Length + " missiles.");
+                    for (int j = 0; j < hpML.ml.missiles.Length; j++)
                     {
-                        Debug.Log("Try adding missile reciever uID");
-                        if (equip.hardpointIdx == thingy.hpIdx)
+                        Debug.Log("Adding missile reciever");
+                        lastReciever = hpML.ml.missiles[j].gameObject.AddComponent<MissileNetworker_Receiver>();
+                        foreach (var thingy in message.hpLoadout) // it's a loop... because fuck you!
                         {
-                            if (uIDidx < thingy.missileUIDS.Length)
+                            Debug.Log("Try adding missile reciever uID");
+                            if (equip.hardpointIdx == thingy.hpIdx)
                             {
-                                lastReciever.networkUID = thingy.missileUIDS[uIDidx];
-                                lastReciever.thisML = hpML.ml;
-                                lastReciever.idx = j;
-                                uIDidx++;
+                                if (uIDidx < thingy.missileUIDS.Length)
+                                {
+                                    lastReciever.networkUID = thingy.missileUIDS[uIDidx];
+                                    lastReciever.thisML = hpML.ml;
+                                    lastReciever.idx = j;
+                                    uIDidx++;
+                                }
                             }
-                        }
 
-                        else if (equip is HPEquipGunTurret)
-                        {//dear god when this gets cleaned up move to PlaneEquippableManager
-                            TurretNetworker_Receiver reciever = equip.gameObject.AddComponent<TurretNetworker_Receiver>();
-                            reciever.networkUID = message.networkID;
-                            reciever.turret = equip.GetComponent<ModuleTurret>();
-                            equip.enabled = false;
+                            else if (equip is HPEquipGunTurret)
+                            {   //dear god when this gets cleaned up move to PlaneEquippableManager - Cheese whenever he wrote that comment
+                                TurretNetworker_Receiver reciever = equip.gameObject.AddComponent<TurretNetworker_Receiver>();
+                                reciever.networkUID = message.networkID;
+                                reciever.turret = equip.GetComponent<ModuleTurret>();
+                                equip.enabled = false;
+                            }
                         }
                     }
                 }
             }
+            FuelTank fuelTank = newAI.GetComponent<FuelTank>();
+            if (fuelTank == null)
+                Debug.LogError("Failed to get fuel tank on " + newAI.name);
+            fuelTank.startingFuel = loadout.normalizedFuel * fuelTank.maxFuel;
+            fuelTank.SetNormFuel(loadout.normalizedFuel);
         }
-        FuelTank fuelTank = newAI.GetComponent<FuelTank>();
-        if (fuelTank == null)
-            Debug.LogError("Failed to get fuel tank on " + newAI.name);
-        fuelTank.startingFuel = loadout.normalizedFuel * fuelTank.maxFuel;
-        fuelTank.SetNormFuel(loadout.normalizedFuel);
         AIVehicles.Add(new AI(new CSteamID(message.networkID), newAI, message.aiVehicleName, newAI.GetComponent<Actor>(), message.networkID));
     }
     /// <summary>
@@ -205,23 +208,27 @@ public static class AIManager
             return;
         }
         Debug.Log("Trying sending AI's to client " + steamID);
-        PlaneNetworker_Sender lastSender;
+        PlaneNetworker_Sender lastPlaneSender;
+        RigidbodyNetworker_Sender lastRigidSender;
         foreach (var actor in TargetManager.instance.allActors)
         {
+            List<HPInfo> hPInfos = new List<HPInfo>();
             if (!actor.isPlayer && actor.role == Actor.Roles.Air)
             {
-                lastSender = actor.gameObject.GetComponent<PlaneNetworker_Sender>();
-                List<HPInfo> hPInfos = VTOLVR_Multiplayer.PlaneEquippableManager.generateHpInfoListFromWeaponManager(actor.weaponManager, VTOLVR_Multiplayer.PlaneEquippableManager.HPInfoListGenerateNetworkType.sender);
+                lastPlaneSender = actor.gameObject.GetComponent<PlaneNetworker_Sender>();
+                lastRigidSender = actor.gameObject.GetComponent<RigidbodyNetworker_Sender>();
+                if (actor.weaponManager != null)
+                { hPInfos = VTOLVR_Multiplayer.PlaneEquippableManager.generateHpInfoListFromWeaponManager(actor.weaponManager, VTOLVR_Multiplayer.PlaneEquippableManager.HPInfoListGenerateNetworkType.sender); }
                 CountermeasureManager cm;
                 cm = actor.gameObject.GetComponent<CountermeasureManager>();
-                List<int> cmLoadout = null;
+                List<int> cmLoadout = new List<int>();
                 if (cm)
                 {
                     cmLoadout = VTOLVR_Multiplayer.PlaneEquippableManager.generateCounterMeasuresFromCmManager(cm);
                 }
 
                 Debug.Log("Finally sending AI's to client " + steamID);
-                Networker.SendP2P(steamID, new Message_SpawnAIVehicle(actor.name, actor.unitSpawn.unitName, VTMapManager.WorldToGlobalPoint(actor.gameObject.transform.position), new Vector3D(actor.gameObject.transform.rotation.eulerAngles), lastSender.networkUID, hPInfos.ToArray(), cmLoadout.ToArray(), 0.65f), EP2PSend.k_EP2PSendReliable);
+                Networker.SendP2P(steamID, new Message_SpawnAIVehicle(actor.name, actor.unitSpawn.unitName, VTMapManager.WorldToGlobalPoint(actor.gameObject.transform.position), new Vector3D(actor.gameObject.transform.rotation.eulerAngles), lastPlaneSender.networkUID, hPInfos.ToArray(), cmLoadout.ToArray(), 0.65f), EP2PSend.k_EP2PSendReliable);
             }
         }
     }
