@@ -47,6 +47,7 @@ public class Multiplayer : VTOLMOD
         HarmonyInstance harmony = HarmonyInstance.Create("marsh.vtolvr.multiplayer.temperzFork");
         harmony.PatchAll(Assembly.GetExecutingAssembly());
     }
+
     public override void ModLoaded()
     {
 #if DEBUG
@@ -72,6 +73,8 @@ public class Multiplayer : VTOLMOD
     {
         UnityEngine.CrashReportHandler.CrashReportHandler.enableCaptureExceptions = false;
 
+        Debug.Log($"Scene Switch! { scene.ToString() }");
+
         switch (scene)
         {
             case VTOLScenes.ReadyRoom:
@@ -93,16 +96,40 @@ public class Multiplayer : VTOLMOD
 
     private void CreateUI()
     {
+
         Log("Creating Multiplayer UI");
-        Transform ScenarioDisplay = GameObject.Find("InteractableCanvas").transform.GetChild(0).GetChild(6).GetChild(0).GetChild(1);
-        if (ScenarioDisplay.name != "ScenarioDisplay")
+        
+        Transform ScenarioDisplay = null;
+
+        Debug.Log("Looping through canvases to find the Scenario Display");
+
+        // Get the interactable canvas
+        for (int i = 0; i < GameObject.Find("InteractableCanvas").transform.GetChild(0).childCount; i++)
         {
-            Log($"ScenarioDisplay was wrong ({ScenarioDisplay.name}), trying other method");
-            ScenarioDisplay = GameObject.Find("InteractableCanvas").transform.GetChild(0).GetChild(7).GetChild(0).GetChild(1);
-            Log($"ScenarioDisplay now == {ScenarioDisplay.name}");
+            // Loop through each child to find the Campaign Select Canavas
+            ScenarioDisplay = GameObject.Find("InteractableCanvas").transform.GetChild(0).GetChild(i);
+            if (ScenarioDisplay.name == "CampaignSelector")
+            {
+
+                // Get the next page in the campaign selector (The scenario display)
+                ScenarioDisplay = ScenarioDisplay.GetChild(0).GetChild(1);
+
+                // If the name is ScenarioDisplay, we found it! Breaking out of the for loop to continue on...
+                if (ScenarioDisplay.name == "ScenarioDisplay")
+                {
+                    break;
+                }
+            }
         }
+
+
         //Creating the MP button
-        Transform mpButton = Instantiate(ScenarioDisplay.GetChild(10).gameObject, ScenarioDisplay).transform;
+        Transform mpButton = null;
+
+
+        mpButton = Instantiate(ScenarioDisplay.GetChild(10).gameObject, ScenarioDisplay).transform;
+
+
         Log("Multiplayer Button" + mpButton.name);
         mpButton.gameObject.SetActive(true);
         mpButton.name = "MPButton";
@@ -131,7 +158,7 @@ public class Multiplayer : VTOLMOD
         }
         content = ScrollView.transform.GetChild(0).GetChild(0).gameObject;
         selectionTF = content.transform.GetChild(0);
-        selectionTF.GetComponent<Image>().color = new Color(0,0,0,0);
+        selectionTF.GetComponent<Image>().color = new Color(0, 0, 0, 0);
         Log("Copying the List from select Campaign for friends");//Copying the List from select Campaign for friends
         friendsTemplate = content.transform.GetChild(1).gameObject;
         buttonHeight = ((RectTransform)friendsTemplate.transform).rect.height;
@@ -183,13 +210,15 @@ public class Multiplayer : VTOLMOD
         lobbyInfoText = lobbyInfoGO.GetComponent<Text>();
         lobbyInfoText.text = "Select a friend or host a lobby.";
         lobbyInfoText.alignment = TextAnchor.UpperLeft;
-        lobbyInfoText.transform.localRotation =  Quaternion.Euler(lobbyInfoText.transform.localRotation.eulerAngles.x + 90,
+        lobbyInfoText.transform.localRotation = Quaternion.Euler(lobbyInfoText.transform.localRotation.eulerAngles.x + 90,
             lobbyInfoText.transform.localRotation.y,
             lobbyInfoText.transform.localRotation.z);
         Log("Last one");
         mpInteractable.OnInteract.AddListener(delegate { Log("Before Opening MP"); RefershFriends(); MPMenu.SetActive(true); ScenarioDisplay.gameObject.SetActive(false); OpenMP(); });
         GameObject.Find("InteractableCanvas").GetComponent<VRPointInteractableCanvas>().RefreshInteractables();
         Log("Finished");
+        
+        
     }
 
     public void RefershFriends()
