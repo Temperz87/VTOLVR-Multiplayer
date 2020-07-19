@@ -644,7 +644,7 @@ public static class PlayerManager
         spawnRequestQueue = new Queue<CSteamID>();
         playersToSpawnQueue = new Queue<Packet>();
         playersToSpawnIdQueue = new Queue<CSteamID>();
-        AIsToSpawnQueue = new Queue<Packet>();
+        AIManager.AIsToSpawnQueue = new Queue<Packet>();
         spawnedVehicles = new List<ulong>();
         Networker.hostLoaded = false;
         gameLoaded = false;
