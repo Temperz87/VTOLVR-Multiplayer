@@ -540,7 +540,7 @@ public static class PlayerManager
                 Debug.Log(equip.name + " is a missile launcher");
                 HPEquipMissileLauncher hpML = equip as HPEquipMissileLauncher;
                 Debug.Log("This missile launcher has " + hpML.ml.missiles.Length + " missiles.");
-                for(int j = 0; j < hpML.ml.missiles.Length; j++)
+                for (int j = 0; j < hpML.ml.missiles.Length; j++)
                 {
                     Debug.Log("Adding missile reciever");
                     lastReciever = hpML.ml.missiles[j].gameObject.AddComponent<MissileNetworker_Receiver>();
@@ -559,6 +559,12 @@ public static class PlayerManager
                         }
                     }
                 }
+            }
+            else if (equip is HPEquipGunTurret) {
+                TurretNetworker_Receiver reciever = equip.gameObject.AddComponent<TurretNetworker_Receiver>();
+                reciever.networkUID = message.networkID;
+                reciever.turret = equip.GetComponent<ModuleTurret>();
+                equip.enabled = false; 
             }
         }
             FuelTank fuelTank = newVehicle.GetComponent<FuelTank>();
