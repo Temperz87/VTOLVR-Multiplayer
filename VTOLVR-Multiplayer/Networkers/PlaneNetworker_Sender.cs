@@ -194,9 +194,9 @@ public class PlaneNetworker_Sender : MonoBehaviour
     {
         lastDeathMessage.UID = networkUID;
         if (Networker.isHost)
-            Networker.SendGlobalP2P(lastDeathMessage, Steamworks.EP2PSend.k_EP2PSendReliable);
+            Networker.SendGlobalP2P(lastDeathMessage, Steamworks.EP2PSend.k_EP2PSendUnreliable);
         else
-            Networker.SendP2P(Networker.hostID, lastDeathMessage, Steamworks.EP2PSend.k_EP2PSendReliable);
+            Networker.SendP2P(Networker.hostID, lastDeathMessage, Steamworks.EP2PSend.k_EP2PSendUnreliable);
     }
     public void OnDestroy()
     {
