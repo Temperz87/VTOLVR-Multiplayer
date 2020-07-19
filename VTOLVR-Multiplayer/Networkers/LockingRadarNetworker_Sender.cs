@@ -44,7 +44,7 @@ class LockingRadarNetworker_Sender : MonoBehaviour
             {
                 if (AI.actor == lastRadarLockData.actor)
                 {
-                    Debug.Log(lastRadarLockData.actor.name + " radar data found its lock " + AI.actor.name);
+                    Debug.Log(lastRadarLockData.actor.name + " radar data found its lock " + AI.actor.name + " at id " + AI.vehicleUID);
                     lastLockingMessage.actorUID = AI.vehicleUID;
                     lastLockingMessage.isLocked = true;
                     lastLockingMessage.senderUID = networkUID;

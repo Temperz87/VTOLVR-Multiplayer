@@ -225,6 +225,12 @@ public static class AIManager
                 }
             }
         }
+
+        if (actor.gameObject.GetComponent<LockingRadar>() != null)
+        {
+            LockingRadarNetworker_Receiver lr = actor.gameObject.AddComponent<LockingRadarNetworker_Receiver>();
+            lr.networkUID = message.networkID;
+        }
         AIVehicles.Add(new AI(newAI, message.aiVehicleName, actor, message.networkID));
         Debug.Log("Spawned in AI " + newAI.name);
     }

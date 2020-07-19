@@ -89,6 +89,7 @@ public static class PlayerManager
             Networker.hostReady = true;
             PlaneNetworker_Sender lastPlaneSender;
             RigidbodyNetworker_Sender lastRigidSender;
+            LockingRadarNetworker_Sender lastLockingSender;
             foreach (var actor in TargetManager.instance.allActors)
             {
                 if (actor.role == Actor.Roles.Missile || actor.isPlayer)
@@ -97,10 +98,16 @@ public static class PlayerManager
                 {
                     Debug.Log("Adding UID senders to " + actor.name);
                     ulong networkUID = Networker.GenerateNetworkUID();
+                    AIManager.AIVehicles.Add(new AIManager.AI(actor.gameObject, actor.unitSpawn.unitName, actor, networkUID));
 
                     UIDNetworker_Sender uidSender = actor.gameObject.AddComponent<UIDNetworker_Sender>();
                     uidSender.networkUID = networkUID;
 
+                    if (actor.gameObject.GetComponent<LockingRadar>() != null)
+                    {
+                        lastLockingSender = actor.gameObject.AddComponent<LockingRadarNetworker_Sender>();
+                        lastLockingSender.networkUID = networkUID;
+                    }
                     if (actor.gameObject.GetComponent<Rigidbody>() != null)
                     {
                         lastRigidSender = actor.gameObject.AddComponent<RigidbodyNetworker_Sender>();

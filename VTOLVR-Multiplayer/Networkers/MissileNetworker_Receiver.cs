@@ -52,12 +52,14 @@ public class MissileNetworker_Receiver : MonoBehaviour
                 //lockData.radarSymbol = GetComponentInChildren<Radar>().radarSymbol; //I'm just guessing they are*/
                 LockingRadar radar = thisMissile.lockingRadar;
 
-                foreach (Actor actor in TargetManager.instance.allActors)
+                RadarMissileLauncher radarML = thisML as RadarMissileLauncher;
+                foreach (var AI in AIManager.AIVehicles)
                 {
-                    if (actor.name == lastMessage.radarLock)
+                    if (AI.vehicleUID == lastMessage.radarLock)
                     {
-                        Debug.Log("Missile found its lock on actor " + actor.name + " while trying to lock " + lastMessage.radarLock);
-                        radar.ForceLock(actor, out lockData);
+                        Debug.Log("Missile found its lock on actor " + AI.actor.name + " while trying to lock " + lastMessage.radarLock);
+                        radarML.lockingRadar.ForceLock(AI.actor, out lockData);
+                        radar.ForceLock(AI.actor, out lockData);
                     }
                 }
             }

@@ -97,7 +97,7 @@ public class Networker : MonoBehaviour
     public static event UnityAction<Packet> MissileUpdate;
     public static event UnityAction<Packet> WorldDataUpdate;
     public static event UnityAction<Packet> RequestNetworkUID;
-    public static event UnityAction<Packet> ActorSync;
+    public static event UnityAction<Packet> LockingRadarUpdate;
     #endregion
     #region Host Forwarding Suppress By Message Type List
     private List<MessageType> hostMessageForwardingSuppressList = new List<MessageType> {
@@ -581,6 +581,11 @@ public class Networker : MonoBehaviour
                     Debug.Log("case radar update");
                     if (RadarUpdate != null)
                         RadarUpdate.Invoke(packet);
+                    break;
+                case MessageType.LockingRadarUpdate:
+                    Debug.Log("case locking radar update");
+                    if (LockingRadarUpdate != null)
+                        LockingRadarUpdate.Invoke(packet);
                     break;
                 case MessageType.TurretUpdate:
                     //Debug.Log("turret update update");
