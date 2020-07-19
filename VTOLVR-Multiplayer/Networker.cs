@@ -481,7 +481,7 @@ public class Networker : MonoBehaviour
                     break;
                 case MessageType.SpawnAiVehicle:
                     Debug.Log("case spawn ai vehicle");
-                    PlayerManager.SpawnAIVehicle(packet);
+                    AIManager.SpawnAIVehicle(packet);
                     break;
                 case MessageType.SpawnPlayerVehicle:
                     Debug.Log("case spawn vehicle");
