@@ -52,7 +52,6 @@ public class PlaneNetworker_Receiver : MonoBehaviour
     }
     public void PlaneUpdate(Packet packet)
     {
-        Debug.Log("Doing reciever update function for " + aiPilot.actor.name);
         lastMessage = (Message_PlaneUpdate)((PacketSingle)packet).message;
         if (lastMessage.networkUID != networkUID)
             return;

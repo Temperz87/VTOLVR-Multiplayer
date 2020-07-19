@@ -67,7 +67,7 @@ public static class AIManager
             return;
         }
         Debug.Log("Trying to spawn AI " + message.aiVehicleName);
-        GameObject newAI = UnitCatalogue.GetUnitPrefab(message.unitName);
+        GameObject newAI = GameObject.Instantiate(UnitCatalogue.GetUnitPrefab(message.unitName));
         if (newAI == null)
         {
             Debug.LogError(message.unitName + " was not found.");
@@ -75,33 +75,42 @@ public static class AIManager
         }
         Debug.Log("Setting vehicle name");
         newAI.name = message.aiVehicleName;
+        Actor actor = newAI.GetComponent<Actor>();
         Debug.Log($"Spawned new vehicle at {newAI.transform.position}");
 
         RigidbodyNetworker_Receiver rbNetworker = newAI.AddComponent<RigidbodyNetworker_Receiver>();
         rbNetworker.networkUID = message.networkID;
 
-        PlaneNetworker_Receiver planeReceiver = newAI.AddComponent<PlaneNetworker_Receiver>();
-        planeReceiver.networkUID = message.networkID;
-
-        if (newAI.GetComponent<AIPilot>().isVtol)
+        if (actor.role == Actor.Roles.Air)
         {
-            Debug.Log("Adding Tilt Controller to this vehicle " + message.networkID);
-            EngineTiltNetworker_Receiver tiltReceiver = newAI.AddComponent<EngineTiltNetworker_Receiver>();
-            tiltReceiver.networkUID = message.networkID;
+            PlaneNetworker_Receiver planeReceiver = newAI.AddComponent<PlaneNetworker_Receiver>();
+            planeReceiver.networkUID = message.networkID;
+            AIPilot aIPilot = newAI.GetComponent<AIPilot>();
+            aIPilot.kPlane.SetToKinematic();
+            aIPilot.kPlane.enabled = false;
+            aIPilot.commandState = AIPilot.CommandStates.Override;
+            aIPilot.kPlane.enabled = true;
+            aIPilot.kPlane.SetVelocity(Vector3.zero);
+            aIPilot.kPlane.SetToDynamic();
+
+            RotationToggle wingRotator = aIPilot.wingRotator;
+            if (wingRotator != null)
+            {
+                WingFoldNetworker_Receiver wingFoldReceiver = newAI.AddComponent<WingFoldNetworker_Receiver>();
+                wingFoldReceiver.networkUID = message.networkID;
+                wingFoldReceiver.wingController = wingRotator;
+            }
+            if (aIPilot.isVtol)
+            {
+                Debug.Log("Adding Tilt Controller to this vehicle " + message.networkID);
+                EngineTiltNetworker_Receiver tiltReceiver = newAI.AddComponent<EngineTiltNetworker_Receiver>();
+                tiltReceiver.networkUID = message.networkID;
+            }
         }
 
         Rigidbody rb = newAI.GetComponent<Rigidbody>();
-        AIPilot aIPilot = newAI.GetComponent<AIPilot>();
         Health health = newAI.GetComponent<Health>();
         health.invincible = false;
-
-        RotationToggle wingRotator = aIPilot.wingRotator;
-        if (wingRotator != null)
-        {
-            WingFoldNetworker_Receiver wingFoldReceiver = newAI.AddComponent<WingFoldNetworker_Receiver>();
-            wingFoldReceiver.networkUID = message.networkID;
-            wingFoldReceiver.wingController = wingRotator;
-        }
 
         foreach (Collider collider in newAI.GetComponentsInChildren<Collider>())
         {
@@ -111,15 +120,9 @@ public static class AIManager
             }
         }
         Debug.Log($"Changing {newAI.name}'s position and rotation\nPos:{rb.position} Rotation:{rb.rotation.eulerAngles}");
-        aIPilot.kPlane.SetToKinematic();
-        aIPilot.kPlane.enabled = false;
         rb.interpolation = RigidbodyInterpolation.None;
-        aIPilot.commandState = AIPilot.CommandStates.Override;
         rb.position = message.position.toVector3;
         rb.rotation = Quaternion.Euler(message.rotation.toVector3);
-        aIPilot.kPlane.enabled = true;
-        aIPilot.kPlane.SetVelocity(Vector3.zero);
-        aIPilot.kPlane.SetToDynamic();
         rb.interpolation = RigidbodyInterpolation.Interpolate;
         Debug.Log($"Finished changing {newAI.name}\n Pos:{rb.position} Rotation:{rb.rotation.eulerAngles}");
         Debug.Log("Doing weapon manager shit on " + newAI.name + ".");
@@ -195,7 +198,8 @@ public static class AIManager
             fuelTank.startingFuel = loadout.normalizedFuel * fuelTank.maxFuel;
             fuelTank.SetNormFuel(loadout.normalizedFuel);
         }
-        AIVehicles.Add(new AI(new CSteamID(message.networkID), newAI, message.aiVehicleName, newAI.GetComponent<Actor>(), message.networkID));
+        AIVehicles.Add(new AI(new CSteamID(message.networkID), newAI, message.aiVehicleName, actor, message.networkID));
+        Debug.Log("Spawned in AI " + newAI.name);
     }
     /// <summary>
     /// Tell the connected clients about all the vehicles the host has. This code should never be run on a client.

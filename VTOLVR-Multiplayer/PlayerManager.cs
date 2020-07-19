@@ -70,7 +70,10 @@ public static class PlayerManager
             foreach (var actor in TargetManager.instance.allActors)
             {
                 if (!actor.isPlayer)
-                { actor.gameObject.SetActive(false); }
+                {
+                    TargetManager.instance.UnregisterActor(actor);
+                    actor.gameObject.SetActive(false);
+                }
             }
             Networker.SendP2P(Networker.hostID, new Message(MessageType.RequestSpawn), EP2PSend.k_EP2PSendReliable);
         }
@@ -83,12 +86,12 @@ public static class PlayerManager
             RigidbodyNetworker_Sender lastRigidSender;
             foreach (var actor in TargetManager.instance.allActors)
             {
+                lastRigidSender = actor.gameObject.AddComponent<RigidbodyNetworker_Sender>();
+                lastRigidSender.networkUID = Networker.GenerateNetworkUID();
                 if (!actor.isPlayer && actor.role == Actor.Roles.Air)
                 {
                     lastPlaneSender = actor.gameObject.AddComponent<PlaneNetworker_Sender>();
-                    lastPlaneSender.networkUID = Networker.GenerateNetworkUID();
-                    lastRigidSender = actor.gameObject.AddComponent<RigidbodyNetworker_Sender>();
-                    lastRigidSender.networkUID = lastPlaneSender.networkUID;
+                    lastPlaneSender.networkUID = lastRigidSender.networkUID;
                 }
             }
             Networker.SendGlobalP2P(new Message_HostLoaded(true), EP2PSend.k_EP2PSendReliable);

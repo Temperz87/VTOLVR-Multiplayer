@@ -107,7 +107,6 @@ public class PlaneNetworker_Sender : MonoBehaviour
 
     private void Update()
     {
-        Debug.Log("Doing update function for vehicle " + gameObject.name);
         if (weaponManager != null)
         {
             if (weaponManager.isFiring != previousFiringState || lastIdx != (int)traverse.Field("weaponIdx").GetValue())
@@ -129,7 +128,6 @@ public class PlaneNetworker_Sender : MonoBehaviour
 
     private void LateUpdate()
     {
-        Debug.Log("Doing update function for vehicle " + gameObject.name);
         lastMessage.flaps = aeroController.flaps;
         lastMessage.pitch = Mathf.Round(aeroController.input.x * 100000f) / 100000f;
         lastMessage.yaw = Mathf.Round(aeroController.input.y * 100000f) / 100000f;
