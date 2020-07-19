@@ -103,11 +103,19 @@ public class Multiplayer : VTOLMOD
     private void CreateUI()
     {
 
+        while (!SceneManager.GetActiveScene().isLoaded){
+            Debug.Log("Waiting for scene to be loaded");
+        }
+
         Log("Creating Multiplayer UI");
         
         Transform ScenarioDisplay = null;
+        bool foundDisplay = false;
+        bool foundCampaginDisplay = false;
+        int? campaignDisplayCount = null;
 
         Debug.Log("Looping through canvases to find the Scenario Display");
+
 
         // Get the interactable canvas
         for (int i = 0; i < GameObject.Find("InteractableCanvas").transform.GetChild(0).childCount; i++)
@@ -116,18 +124,27 @@ public class Multiplayer : VTOLMOD
             ScenarioDisplay = GameObject.Find("InteractableCanvas").transform.GetChild(0).GetChild(i);
             if (ScenarioDisplay.name == "CampaignSelector")
             {
-
+                foundCampaginDisplay = true;
+                campaignDisplayCount = i;
                 // Get the next page in the campaign selector (The scenario display)
                 ScenarioDisplay = ScenarioDisplay.GetChild(0).GetChild(1);
 
                 // If the name is ScenarioDisplay, we found it! Breaking out of the for loop to continue on...
                 if (ScenarioDisplay.name == "ScenarioDisplay")
                 {
+                    foundDisplay = true;
                     break;
                 }
             }
         }
+        Debug.Log($"Found Campaign Display? { foundCampaginDisplay.ToString() }");
 
+        if (campaignDisplayCount != null)
+        {
+            Debug.Log($"Found Campaign Display { campaignDisplayCount.ToString() } canvases down.");
+        }
+
+        Debug.Log($"Found Scenario Display? { foundDisplay.ToString() }");
 
         //Creating the MP button
         Transform mpButton = Instantiate(ScenarioDisplay.GetChild(10).gameObject, ScenarioDisplay).transform;

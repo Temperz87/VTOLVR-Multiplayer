@@ -54,6 +54,18 @@ public static class PlayerManager
     /// </summary>
     public static IEnumerator MapLoaded()
     {
+        // Clearing these out
+        spawnPoints = new List<Transform>();
+        spawnRequestQueue = new Queue<CSteamID>();
+        playersToSpawnQueue = new Queue<Packet>();
+        playersToSpawnIdQueue = new Queue<CSteamID>();
+        AIManager.AIsToSpawnQueue = new Queue<Packet>();
+        players = new List<Player>();
+        spawnedVehicles = new List<ulong>();
+        Networker.hostLoaded = false;
+        gameLoaded = false;
+        localUID = 0;
+
         Debug.Log("map loading started");
         while (VTMapManager.fetch == null || !VTMapManager.fetch.scenarioReady || FlightSceneManager.instance.switchingScene)
         {
@@ -646,6 +658,7 @@ public static class PlayerManager
         playersToSpawnQueue = new Queue<Packet>();
         playersToSpawnIdQueue = new Queue<CSteamID>();
         AIManager.AIsToSpawnQueue = new Queue<Packet>();
+        players = new List<Player>();
         spawnedVehicles = new List<ulong>();
         Networker.hostLoaded = false;
         gameLoaded = false;
