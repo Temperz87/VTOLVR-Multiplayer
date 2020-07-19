@@ -135,6 +135,8 @@
     <Compile Include="Networkers\NetworkSenderThread.cs" />
     <Compile Include="Networkers\TurretNetworker_Reciever.cs" />
     <Compile Include="Networkers\TurretNetworker_Sender.cs" />
+    <Compile Include="Networkers\UIDNetworker_Reciever.cs" />
+    <Compile Include="Networkers\UIDNetworker_Sender.cs" />
     <Compile Include="Networkers\WingFoldNetworker_Sender.cs" />
     <Compile Include="Multiplayer.cs" />
     <Compile Include="Nametag.cs" />
