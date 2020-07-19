@@ -204,6 +204,22 @@ public static class AIManager
                 fuelTank.SetNormFuel(loadout.normalizedFuel);
             }
         }
+        else if (actor.role == Actor.Roles.Ground)
+        {
+            VehicleMover vehicleMover = newAI.GetComponent<VehicleMover>();
+            if (vehicleMover != null)
+            {
+                vehicleMover.enabled = false;
+            }
+            else
+            {
+                GroundUnitMover ground = newAI.GetComponent<GroundUnitMover>();
+                if (ground != null)
+                {
+                    ground.enabled = false;
+                }
+            }
+        }
         AIVehicles.Add(new AI(newAI, message.aiVehicleName, actor, message.networkID));
         Debug.Log("Spawned in AI " + newAI.name);
     }
