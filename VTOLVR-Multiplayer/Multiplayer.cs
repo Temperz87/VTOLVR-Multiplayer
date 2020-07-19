@@ -82,10 +82,16 @@ public class Multiplayer : VTOLMOD
                 break;
             case VTOLScenes.Akutan:
                 Log("Map Loaded from vtol scenes akutan");
+
+                // Reseting join status when we switch scenes
+                waitingForJoin = null;
                 StartCoroutine(PlayerManager.MapLoaded());
                 break;
             case VTOLScenes.CustomMapBase:
                 Log("Map Loaded from vtol scenes custom map base");
+
+                // Reseting join status when we switch scenes
+                waitingForJoin = null;
                 StartCoroutine(PlayerManager.MapLoaded());
                 break;
             case VTOLScenes.LoadingScene:
@@ -124,10 +130,7 @@ public class Multiplayer : VTOLMOD
 
 
         //Creating the MP button
-        Transform mpButton = null;
-
-
-        mpButton = Instantiate(ScenarioDisplay.GetChild(10).gameObject, ScenarioDisplay).transform;
+        Transform mpButton = Instantiate(ScenarioDisplay.GetChild(10).gameObject, ScenarioDisplay).transform;
 
 
         Log("Multiplayer Button" + mpButton.name);
@@ -224,6 +227,7 @@ public class Multiplayer : VTOLMOD
     public void RefershFriends()
     {
         Log("Refreshing Friends");
+        steamFriends = new List<FriendItem>();
         int friendsCount = SteamFriends.GetFriendCount(EFriendFlags.k_EFriendFlagImmediate);
         if (friendsCount == -1)
         {
