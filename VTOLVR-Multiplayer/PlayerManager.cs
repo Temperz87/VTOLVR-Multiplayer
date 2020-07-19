@@ -91,6 +91,7 @@ public static class PlayerManager
             RigidbodyNetworker_Sender lastRigidSender;
             foreach (var actor in TargetManager.instance.allActors)
             {
+                AIManager.AIVehicles.Add(new AIManager.AI());
                 if (actor.role == Actor.Roles.Missile)
                     continue;
                 Debug.Log("Adding rigid body senders to " + actor.name); ;
