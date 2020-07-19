@@ -170,10 +170,12 @@ public class PlaneNetworker_Receiver : MonoBehaviour
     public void WeaponFiring(Packet packet)
     {
         Message_WeaponFiring message = ((PacketSingle)packet).message as Message_WeaponFiring;
-        idx = (int)traverse.Field("weaponIdx").GetValue();
         if (message.UID != networkUID)
             return;
-        while (message.weaponIdx != idx)
+        idx = (int)traverse.Field("weaponIdx").GetValue();
+        int i = 0;
+        Debug.Log("Entering for loop");
+        while (message.weaponIdx != idx && i < 60)
         {
             if (weaponManager.isMasterArmed == false)
             {
@@ -181,7 +183,12 @@ public class PlaneNetworker_Receiver : MonoBehaviour
             }
             weaponManager.CycleActiveWeapons(false);
             idx = (int)traverse.Field("weaponIdx").GetValue();
-            Debug.Log(idx + " " + message.weaponIdx);
+            // Debug.Log(idx + " " + message.weaponIdx);
+            i++;
+        }
+        if (i > 59)
+        {
+            Debug.Log("couldn't change weapon idx to right weapon for aircraft " + gameObject.name) ;
         }
         if (message.isFiring != weaponManager.isFiring)
         {
@@ -191,18 +198,19 @@ public class PlaneNetworker_Receiver : MonoBehaviour
                 {
                     weaponManager.ToggleMasterArmed();
                 }
-                if (weaponManager.currentEquip is HPEquipIRML || weaponManager.currentEquip is HPEquipRadarML)
+                if (weaponManager.currentEquip is HPEquipIRML || weaponManager.currentEquip is HPEquipRadarML || weaponManager.currentEquip is RocketLauncher)
                 {
                     weaponManager.SingleFire();
                 }
                 else
                 {
+                    Debug.Log("try start fire for vehicle" + gameObject.name +" on current equip " + weaponManager.currentEquip);
                     weaponManager.StartFire();
                 }
             }
             else
             {
-                if (!(weaponManager.currentEquip is HPEquipIRML || weaponManager.currentEquip is HPEquipRadarML) || weaponManager.currentEquip is RocketLauncher)
+                if (!(weaponManager.currentEquip is HPEquipIRML || weaponManager.currentEquip is HPEquipRadarML || weaponManager.currentEquip is RocketLauncher))
                     weaponManager.EndFire();
             }
         }

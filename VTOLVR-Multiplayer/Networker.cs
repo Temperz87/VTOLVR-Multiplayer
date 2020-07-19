@@ -594,7 +594,7 @@ public class Networker : MonoBehaviour
                         TurretUpdate.Invoke(packet);
                     break;
                 case MessageType.MissileUpdate:
-                    Debug.Log("case missile update");
+                    // Debug.Log("case missile update");
                     if (MissileUpdate != null)
                         MissileUpdate.Invoke(packet);
                     break;
