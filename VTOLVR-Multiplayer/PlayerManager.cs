@@ -92,25 +92,17 @@ public static class PlayerManager
             foreach (var actor in TargetManager.instance.allActors)
             {
 
-                AIManager.AIVehicles.Add(new AIManager.AI());
+                ulong uID = Networker.GenerateNetworkUID();
+                AIManager.AIVehicles.Add(new AIManager.AI(actor.gameObject, actor.unitSpawn.unitName, actor, uID));
                 if (actor.role == Actor.Roles.Missile)
                     continue;
-                if (actor.transform.parent == null) {
-                    Debug.Log("Adding UID senders to " + actor.name);
-                    ulong networkUID = Networker.GenerateNetworkUID();
-
-                    UIDNetworker_Sender uidSender = actor.gameObject.AddComponent<UIDNetworker_Sender>();
-                    uidSender.networkUID = networkUID;
-
-                    if (actor.gameObject.GetComponent<Rigidbody>() != null) {
-                        lastRigidSender = actor.gameObject.AddComponent<RigidbodyNetworker_Sender>();
-                        lastRigidSender.networkUID = networkUID;
-                    }
-                    if (!actor.isPlayer && actor.role == Actor.Roles.Air)
-                    {
-                        lastPlaneSender = actor.gameObject.AddComponent<PlaneNetworker_Sender>();
-                        lastPlaneSender.networkUID = networkUID;
-                    }
+                Debug.Log("Adding rigid body senders to " + actor.name); ;
+                lastRigidSender = actor.gameObject.AddComponent<RigidbodyNetworker_Sender>();
+                lastRigidSender.networkUID = uID;
+                if (!actor.isPlayer && actor.role == Actor.Roles.Air)
+                {
+                    lastPlaneSender = actor.gameObject.AddComponent<PlaneNetworker_Sender>();
+                    lastPlaneSender.networkUID = uID;
                 }
             }
             Networker.SendGlobalP2P(new Message_HostLoaded(true), EP2PSend.k_EP2PSendReliable);
@@ -142,14 +134,14 @@ public static class PlayerManager
             // If the player is not the host, they only need a receiver?
             Debug.Log($"Player not the host, adding world data receiver");
             worldData = new GameObject();
-            WorldDataNetworker_Receiver WorldDataNetworker = worldData.AddComponent<WorldDataNetworker_Receiver>();
+            worldData.AddComponent<WorldDataNetworker_Receiver>();
         }
         else
         {
             // If the player is the host, setup the sender so they can send world data
             Debug.Log($"Player is the host, setting up the world data sender");
             worldData = new GameObject();
-            WorldDataNetworker_Sender WorldDataNetworker = worldData.AddComponent<WorldDataNetworker_Sender>();
+            worldData.AddComponent<WorldDataNetworker_Sender>();
         }
     }
 
