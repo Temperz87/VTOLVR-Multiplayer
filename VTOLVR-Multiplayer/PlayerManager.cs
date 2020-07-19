@@ -91,7 +91,9 @@ public static class PlayerManager
             RigidbodyNetworker_Sender lastRigidSender;
             foreach (var actor in TargetManager.instance.allActors)
             {
-                if (actor.role == Actor.Roles.Missile || actor.isPlayer)
+
+                AIManager.AIVehicles.Add(new AIManager.AI());
+                if (actor.role == Actor.Roles.Missile)
                     continue;
                 if (actor.transform.parent == null) {
                     Debug.Log("Adding UID senders to " + actor.name);

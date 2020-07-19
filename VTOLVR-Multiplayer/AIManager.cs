@@ -17,15 +17,13 @@ public static class AIManager
     public static List<AI> AIVehicles = new List<AI>(); //This is the list of all AI, and an easy way to access AI variables
     public struct AI
     {
-        public CSteamID cSteamID;
         public GameObject vehicle;
         public string vehicleName;
         public Actor actor;
         public ulong vehicleUID;
 
-        public AI(CSteamID cSteamID, GameObject vehicle, string vehicleName, Actor actor, ulong vehicleUID)
+        public AI(GameObject vehicle, string vehicleName, Actor actor, ulong vehicleUID)
         {
-            this.cSteamID = cSteamID;
             this.vehicle = vehicle;
             this.vehicleName = vehicleName;
             this.actor = actor;

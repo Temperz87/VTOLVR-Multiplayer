@@ -110,6 +110,7 @@
     <Compile Include="Messages\Message_LobbyInfoRequest.cs" />
     <Compile Include="Messages\Message_MissileUpdate.cs" />
     <Compile Include="Messages\Message_PlaneUpdate.cs" />
+    <Compile Include="Messages\Message_LockingRadarLock.cs" />
     <Compile Include="Messages\Message_RadarUpdate.cs" />
     <Compile Include="Messages\Message_Ready.cs" />
     <Compile Include="Messages\Message_RequestNetworkUID.cs" />
