@@ -19,6 +19,10 @@ using System;
             this.sendType = sendType;
             packetType = PacketType.Single;
         }
+        public PacketSingle()
+        {
+            packetType = PacketType.Single;
+        }
     }
     [Serializable]
     public class PacketMultiple : Packet
