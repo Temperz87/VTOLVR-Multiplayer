@@ -95,7 +95,10 @@ public class PlaneNetworker_Sender : MonoBehaviour
         if (fuelTank == null)
             Debug.LogError("FuelTank was null on vehicle " + gameObject.name);
 
-        Networker.WeaponSet += WeaponSet;
+        if (weaponManager)
+        {
+            Networker.WeaponSet += WeaponSet;
+        }
         Debug.Log("Done Plane Sender");
         tailhook = GetComponentInChildren<Tailhook>();
         launchBar = GetComponentInChildren<CatapultHook>();
@@ -105,24 +108,28 @@ public class PlaneNetworker_Sender : MonoBehaviour
     private void Update()
     {
         Debug.Log("Doing update function for vehicle " + gameObject.name);
-        if (weaponManager != null && weaponManager.isFiring != previousFiringState || lastIdx != (int)traverse.Field("weaponIdx").GetValue())
+        if (weaponManager != null)
         {
-            previousFiringState = weaponManager.isFiring;
-            lastFiringMessage.weaponIdx = (int)traverse.Field("weaponIdx").GetValue();
-            lastIdx = lastFiringMessage.weaponIdx;
-            Debug.Log("combinedWeaponIdx = " + lastFiringMessage.weaponIdx);
-            lastFiringMessage.UID = networkUID;
-            // lastStoppedFiringMessage.UID = networkUID;
-            lastFiringMessage.isFiring = weaponManager.isFiring;
-            if (Networker.isHost)
-                Networker.SendGlobalP2P(lastFiringMessage, Steamworks.EP2PSend.k_EP2PSendUnreliableNoDelay);
-            else
-                Networker.SendP2P(Networker.hostID, lastFiringMessage, Steamworks.EP2PSend.k_EP2PSendUnreliableNoDelay);
+            if (weaponManager.isFiring != previousFiringState || lastIdx != (int)traverse.Field("weaponIdx").GetValue())
+            {
+                previousFiringState = weaponManager.isFiring;
+                lastFiringMessage.weaponIdx = (int)traverse.Field("weaponIdx").GetValue();
+                lastIdx = lastFiringMessage.weaponIdx;
+                Debug.Log("combinedWeaponIdx = " + lastFiringMessage.weaponIdx);
+                lastFiringMessage.UID = networkUID;
+                // lastStoppedFiringMessage.UID = networkUID;
+                lastFiringMessage.isFiring = weaponManager.isFiring;
+                if (Networker.isHost)
+                    Networker.SendGlobalP2P(lastFiringMessage, Steamworks.EP2PSend.k_EP2PSendUnreliableNoDelay);
+                else
+                    Networker.SendP2P(Networker.hostID, lastFiringMessage, Steamworks.EP2PSend.k_EP2PSendUnreliableNoDelay);
+            }
         }
     }
 
     private void LateUpdate()
     {
+        Debug.Log("Doing update function for vehicle " + gameObject.name);
         lastMessage.flaps = aeroController.flaps;
         lastMessage.pitch = Mathf.Round(aeroController.input.x * 100000f) / 100000f;
         lastMessage.yaw = Mathf.Round(aeroController.input.y * 100000f) / 100000f;
