@@ -19,6 +19,7 @@ class NetworkSenderThread
         packetSingle = new PacketSingle();
 
         newPlayerQueue = new ConcurrentQueue<CSteamID>();
+        removePlayerQueue = new ConcurrentQueue<CSteamID>();
         internalPlayerList = new List<CSteamID>();
 
         networkThread = new Thread(ThreadMethod);
@@ -59,6 +60,7 @@ class NetworkSenderThread
     private readonly PacketSingle packetSingle;
 
     private readonly ConcurrentQueue<CSteamID> newPlayerQueue;
+    private readonly ConcurrentQueue<CSteamID> removePlayerQueue;
     private readonly List<CSteamID> internalPlayerList;
 
     private readonly Lazy<BinaryFormatter> binaryFormatterLazy = new Lazy<BinaryFormatter>(() => new BinaryFormatter());
@@ -80,8 +82,19 @@ class NetworkSenderThread
         waitHandle.Set();
     }
 
+    public void AddPlayer(CSteamID player) {
+        newPlayerQueue.Enqueue(player);
+        waitHandle.Set();
+    }
+
+    public void RemovePlayer(CSteamID player) {
+        removePlayerQueue.Enqueue(player);
+        waitHandle.Set();
+    }
+
     public void DumpAllExistingPlayers() {
         dumpAllExistingPlayers = true;
+        waitHandle.Set();
     }
 
     private void ThreadMethod() {
@@ -91,6 +104,12 @@ class NetworkSenderThread
             while (newPlayerQueue.TryDequeue(out CSteamID newPlayer)) {
                 if (!internalPlayerList.Contains(newPlayer)) {
                     internalPlayerList.Add(newPlayer);
+                }
+            }
+
+            while (removePlayerQueue.TryDequeue(out CSteamID removePlayer)) {
+                if (internalPlayerList.Contains(removePlayer)) {
+                    internalPlayerList.Remove(removePlayer);
                 }
             }
 
