@@ -23,14 +23,14 @@ namespace VTOLVR_Multiplayer
             HPEquippable lastEquippable;
 
             for (int i = 0; i < weaponManager.equipCount; i++) {
-                Debug.Log("Weapon Manager, Equip " + i);
+                //Debug.Log("Weapon Manager, Equip " + i);
                 lastEquippable = weaponManager.GetEquip(i);
                 if (lastEquippable == null) //If this is null, it means there isn't any weapon in that slot.
                     continue;
-                Debug.Log("Last Equippable = " + lastEquippable.fullName);
+                //Debug.Log("Last Equippable = " + lastEquippable.fullName);
                 List<ulong> missileUIDS = new List<ulong>();
                 if (lastEquippable is HPEquipMissileLauncher HPml) {
-                    Debug.Log("This last equip is a missile launcher");
+                    //Debug.Log("This last equip is a missile launcher");
                     if (HPml.ml == null) {
                         Debug.LogError("The Missile Launcher was null on this Missile Launcher");
                         Debug.LogError("Type was = " + lastEquippable.weaponType);
@@ -40,15 +40,15 @@ namespace VTOLVR_Multiplayer
                         Debug.LogError("The missile list is null");
                         continue;
                     }
-                    Debug.Log($"This has {HPml.ml.missiles.Length} missiles");
+                    //Debug.Log($"This has {HPml.ml.missiles.Length} missiles");
                     for (int j = 0; j < HPml.ml.missiles.Length; j++) {
                         //There shouldn't be any shot missiles, but if so this skips them as they are null.
                         if (HPml.ml.missiles[j] == null) {
                             missileUIDS.Add(0);
-                            Debug.LogError("It seems there was a missile shot as it was null");
+                            //Debug.LogError("It seems there was a missile shot as it was null");
                             continue;
                         }
-                        Debug.Log("Adding Missle Networker to missile");
+                        //Debug.Log("Adding Missle Networker to missile");
                         switch (networkType) {
                             case HPInfoListGenerateNetworkType.generate:
                                 MissileNetworker_Sender mnSender = HPml.ml.missiles[j].gameObject.AddComponent<MissileNetworker_Sender>();

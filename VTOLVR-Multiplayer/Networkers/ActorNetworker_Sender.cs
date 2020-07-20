@@ -29,7 +29,7 @@ class ActorNetworker_Sender : MonoBehaviour
             return;
         }
         string serializedDic = JsonConvert.SerializeObject(allActors, Formatting.Indented);
-        Networker.SendP2P(uID, new Message_ActorSync(serializedDic), EP2PSend.k_EP2PSendReliable);
+        NetworkSenderThread.Instance.SendPacketToSpecificPlayer(uID, new Message_ActorSync(serializedDic), EP2PSend.k_EP2PSendReliable);
     }
 }
 
