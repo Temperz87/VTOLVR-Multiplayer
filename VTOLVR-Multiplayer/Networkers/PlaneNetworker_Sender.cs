@@ -32,6 +32,7 @@ public class PlaneNetworker_Sender : MonoBehaviour
     private string radarLock;
     private Traverse traverseThrottle;
     private Actor actor;
+    private ulong sequenceNumber;
     private void Awake()
     {
         actor = gameObject.GetComponent<Actor>();
@@ -42,15 +43,16 @@ public class PlaneNetworker_Sender : MonoBehaviour
         wheelsController = GetComponent<WheelsController>();
         aeroController = GetComponent<AeroController>();
         isPlayer = actor.isPlayer;
+        sequenceNumber = 0;
         if (isPlayer)
         {
             if (VTOLAPI.GetPlayersVehicleEnum() == VTOLVehicles.AV42C)
             {
-                lastMessage = new Message_PlaneUpdate(false, 0, 0, 0, 0, 0, 0, false, false, false, networkUID, false, false, radarLock);
+                lastMessage = new Message_PlaneUpdate(false, 0, 0, 0, 0, 0, 0, false, false, false, networkUID, false, false, radarLock, sequenceNumber);
             }
             else
             {
-                lastMessage = new Message_PlaneUpdate(false, 0, 0, 0, 0, 0, 0, false, false, false, networkUID, true, false, radarLock);
+                lastMessage = new Message_PlaneUpdate(false, 0, 0, 0, 0, 0, 0, false, false, false, networkUID, true, false, radarLock, sequenceNumber);
             }
             vRThrottle = gameObject.GetComponentInChildren<VRThrottle>();
             if (vRThrottle == null)
@@ -62,11 +64,11 @@ public class PlaneNetworker_Sender : MonoBehaviour
         {
             if (actor.hasRadar)
             {
-                lastMessage = new Message_PlaneUpdate(false, 0, 0, 0, 0, 0, 0, false, false, false, networkUID, true, false, radarLock);
+                lastMessage = new Message_PlaneUpdate(false, 0, 0, 0, 0, 0, 0, false, false, false, networkUID, true, false, radarLock, sequenceNumber);
             }
             else
             {
-                lastMessage = new Message_PlaneUpdate(false, 0, 0, 0, 0, 0, 0, false, false, false, networkUID, false, false, radarLock);
+                lastMessage = new Message_PlaneUpdate(false, 0, 0, 0, 0, 0, 0, false, false, false, networkUID, false, false, radarLock, sequenceNumber);
             }
             aIPilot = gameObject.GetComponent<AIPilot>();
             if (aIPilot == null)
@@ -132,9 +134,10 @@ public class PlaneNetworker_Sender : MonoBehaviour
         lastMessage.pitch = Mathf.Round(aeroController.input.x * 100000f) / 100000f;
         lastMessage.yaw = Mathf.Round(aeroController.input.y * 100000f) / 100000f;
         lastMessage.roll = Mathf.Round(aeroController.input.z * 100000f) / 100000f;
-        lastMessage.breaks = aeroController.brake;
+        lastMessage.brakes = aeroController.brake;
         lastMessage.landingGear = LandingGearState();
         lastMessage.networkUID = networkUID;
+        lastMessage.sequenceNumber = ++sequenceNumber;
         if (!isPlayer)
         {
             SetThrottle((float)traverseThrottle.Field("throttle").GetValue());
