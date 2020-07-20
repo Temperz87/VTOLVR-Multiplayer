@@ -17,6 +17,7 @@ public class WorldDataNetworker_Receiver : MonoBehaviour
     {
 
         Networker.WorldDataUpdate += WorldDataUpdate;
+        Networker.Disconnecting += OnDisconnect;
 
     }
 
@@ -44,7 +45,14 @@ public class WorldDataNetworker_Receiver : MonoBehaviour
 
     public void OnDisconnect(Packet packet)
     {
+        
+        // TODO: This really should check if the disconnect packet is coming from the host, but idk how to do that.
         Message_Disconnecting message = ((PacketSingle)packet).message as Message_Disconnecting;
+        if (message.isHost)
+        {
+            Debug.Log("Received disconnect packet from host - setting timescale to 1.");
+            Time.timeScale = 1f;
+        }
         Destroy(gameObject);
     }
 
