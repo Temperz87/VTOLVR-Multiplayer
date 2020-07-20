@@ -74,6 +74,8 @@ public class Networker : MonoBehaviour
     //networkUID is used as an identifer for all network object, we are just adding onto this to get a new one
     private static ulong networkUID = 0;
     public static TextMeshPro loadingText;
+
+    public static Multiplayer multiplayerInstance = null;
     #region Message Type Callbacks
     //These callbacks are use for other scripts to know when a network message has been
     //received for them. They should match the name of the message class they relate to.
@@ -761,6 +763,14 @@ public class Networker : MonoBehaviour
         NetworkSenderThread.Instance.SendPacketToSpecificPlayer(csteamID, new Message_JoinRequestAccepted_Result(), EP2PSend.k_EP2PSendReliable);
     }
 
+    public static void SetMultiplayerInstance(Multiplayer instance) {
+        multiplayerInstance = instance;
+    }
+
+    public static void OnMultiplayerDestroy() {
+        multiplayerInstance = null;
+    }
+
     public void OnApplicationQuit()
     {
         if (PlayerManager.gameLoaded)
@@ -785,17 +795,29 @@ public class Networker : MonoBehaviour
 
         if (applicationClosing)
             return;
+
+        PlayerManager.CleanUpPlayerManagerStaticVariables();
+        DisconnectionTasks();
+    }
+
+    public void PlayerManagerReportsDisconnect() {
+        DisconnectionTasks();
+    }
+
+    private void DisconnectionTasks() {
         isHost = false;
         gameState = GameState.Menu;
-        players = new List<CSteamID>();
+        players.Clear();
         NetworkSenderThread.Instance.DumpAllExistingPlayers();
-        readyDic = new Dictionary<CSteamID, bool>();
+        readyDic.Clear();
         hostReady = false;
         allPlayersReadyHasBeenSentFirstTime = false;
         readySent = false;
         alreadyInGame = false;
         hostID = new CSteamID(0);
 
-        PlayerManager.OnDisconnect();
+        AIManager.CleanUpOnDisconnect();
+        multiplayerInstance?.CleanUpOnDisconnect();
+        hostLoaded = false;
     }
 }

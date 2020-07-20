@@ -28,8 +28,9 @@ public static class PlayerManager
     private static List<ulong> spawnedVehicles = new List<ulong>();
     public static ulong localUID;
 
-    public static VTScenario currentScenario;
     public static GameObject worldData;
+
+    public static Multiplayer multiplayerInstance = null;
 
     public struct Player
     {
@@ -54,17 +55,10 @@ public static class PlayerManager
     /// </summary>
     public static IEnumerator MapLoaded()
     {
-        // Clearing these out
-        spawnPoints = new List<Transform>();
-        spawnRequestQueue = new Queue<CSteamID>();
-        playersToSpawnQueue = new Queue<Packet>();
-        playersToSpawnIdQueue = new Queue<CSteamID>();
-        AIManager.AIsToSpawnQueue = new Queue<Packet>();
-        players = new List<Player>();
-        spawnedVehicles = new List<ulong>();
+        // Make sure memory is ready to start dealing with the map
+        CleanUpPlayerManagerStaticVariables();
+        AIManager.CleanUpOnDisconnect();
         Networker.hostLoaded = false;
-        gameLoaded = false;
-        localUID = 0;
 
         Debug.Log("map loading started");
         while (VTMapManager.fetch == null || !VTMapManager.fetch.scenarioReady || FlightSceneManager.instance.switchingScene)
@@ -651,17 +645,21 @@ public static class PlayerManager
         return spawnPoints[UnityEngine.Random.Range(0, spawnsCount - 1)];
     }
 
+    public static void CleanUpPlayerManagerStaticVariables() {
+        spawnPoints.Clear();
+        spawnRequestQueue.Clear();
+        playersToSpawnQueue.Clear();
+        playersToSpawnIdQueue.Clear();
+        gameLoaded = false;
+        spawnedVehicles.Clear();
+        localUID = 0;
+        worldData = null;
+        players.Clear();
+    }
+
     public static void OnDisconnect()
     {
-        spawnPoints = new List<Transform>();
-        spawnRequestQueue = new Queue<CSteamID>();
-        playersToSpawnQueue = new Queue<Packet>();
-        playersToSpawnIdQueue = new Queue<CSteamID>();
-        AIManager.AIsToSpawnQueue = new Queue<Packet>();
-        players = new List<Player>();
-        spawnedVehicles = new List<ulong>();
-        Networker.hostLoaded = false;
-        gameLoaded = false;
-        localUID = 0;
+        CleanUpPlayerManagerStaticVariables();
+        Networker._instance?.PlayerManagerReportsDisconnect();
     }
 }

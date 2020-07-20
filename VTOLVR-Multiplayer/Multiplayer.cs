@@ -46,6 +46,7 @@ public class Multiplayer : VTOLMOD
         _instance = this;
         HarmonyInstance harmony = HarmonyInstance.Create("marsh.vtolvr.multiplayer.temperzFork");
         harmony.PatchAll(Assembly.GetExecutingAssembly());
+        Networker.SetMultiplayerInstance(this);
     }
 
     public override void ModLoaded()
@@ -248,7 +249,7 @@ public class Multiplayer : VTOLMOD
     public void RefershFriends()
     {
         Log("Refreshing Friends");
-        steamFriends = new List<FriendItem>();
+        steamFriends.Clear();
         int friendsCount = SteamFriends.GetFriendCount(EFriendFlags.k_EFriendFlagImmediate);
         if (friendsCount == -1)
         {
@@ -378,8 +379,14 @@ public class Multiplayer : VTOLMOD
         Networker.UpdateLoadingText();
     }
 
+    public void CleanUpOnDisconnect() {
+        selectedFriend = new CSteamID(0);
+        steamFriends.Clear();
+    }
+
     public void OnDestory()
     {
         VTOLAPI.SceneLoaded -= SceneLoaded;
+        Networker.OnMultiplayerDestroy();
     }
 }
