@@ -61,6 +61,7 @@ public class PlaneNetworker_Receiver : MonoBehaviour
         }
 
         lastMessage = newMessage;
+        mostCurrentUpdateNumber = lastMessage.sequenceNumber;
         if (lastMessage.networkUID != networkUID)
             return;
         if (lastMessage.landingGear)
