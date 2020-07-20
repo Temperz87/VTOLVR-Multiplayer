@@ -132,6 +132,7 @@
     <Compile Include="ModVersionString.cs" />
     <Compile Include="Networkers\LockingRadarNetworker_Reciever.cs" />
     <Compile Include="Networkers\LockingRadarNetworker_Sender.cs" />
+    <Compile Include="Networkers\NetworkSenderThread.cs" />
     <Compile Include="Networkers\TurretNetworker_Reciever.cs" />
     <Compile Include="Networkers\TurretNetworker_Sender.cs" />
     <Compile Include="Networkers\UIDNetworker_Reciever.cs" />

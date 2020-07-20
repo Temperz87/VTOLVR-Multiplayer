@@ -50,6 +50,9 @@ public class Multiplayer : VTOLMOD
 
     public override void ModLoaded()
     {
+        Log($"VTOL VR Multiplayer v{ ModVersionString.ModVersionNumber } - branch: { ModVersionString.ReleaseBranch }");
+
+
 #if DEBUG
         Log("Running in Debug Mode");
 #else
@@ -62,6 +65,7 @@ public class Multiplayer : VTOLMOD
 #endif
         SoloTesting = false;
         Log("Valid User " + SteamUser.GetSteamID().m_SteamID);
+
 
         VTOLAPI.SceneLoaded += SceneLoaded;
         base.ModLoaded();
@@ -311,7 +315,7 @@ public class Multiplayer : VTOLMOD
         joinButtonText.text = $"Join {SteamFriends.GetFriendPersonaName(steamFriends[index].steamID)}";
         selectedFriend = steamFriends[index].steamID;
         Log("User has selected " + SteamFriends.GetFriendPersonaName(steamFriends[index].steamID));
-        Networker.SendP2P(steamFriends[index].steamID, new Message_LobbyInfoRequest(), EP2PSend.k_EP2PSendReliable); //Getting lobby info.
+        NetworkSenderThread.Instance.SendPacketToSpecificPlayer(steamFriends[index].steamID, new Message_LobbyInfoRequest(), EP2PSend.k_EP2PSendReliable); //Getting lobby info.
         selectionTF.position = steamFriends[index].transform.position;
         selectionTF.GetComponent<Image>().color = new Color(0.3529411764705882f, 0.196078431372549f, 0);
     }
@@ -337,7 +341,7 @@ public class Multiplayer : VTOLMOD
         if (Networker.hostID == new Steamworks.CSteamID(0) && waitingForJoin == null)
         {
             Networker.JoinGame(selectedFriend);
-            Debug.Log("Joining friend");
+            Debug.Log($"Joining friend {selectedFriend.m_SteamID}");
             waitingForJoin = StartCoroutine(WaitingForJoiningRequestResult());
         }
         else
