@@ -28,7 +28,7 @@ public class MissileNetworker_Receiver : MonoBehaviour
     {
         if (!thisMissile.gameObject.activeSelf)
         {
-            Debug.LogError(thisMissile.gameObject.name + " isn't active in hiearchy, changing that to active.");
+            Debug.LogError(thisMissile.gameObject.name + " isn't active in hiearchy, changing it to active.");
             thisMissile.gameObject.SetActive(true);
         }
         if (traverse == null)
@@ -45,6 +45,7 @@ public class MissileNetworker_Receiver : MonoBehaviour
             Debug.Log("Missile fired on one end but not another, firing here.");
             if (lastMessage.guidanceMode == Missile.GuidanceModes.Radar)
             {
+                thisMissile.debugMissile = true;
                 Debug.Log("Guidance mode radar");
                 RadarLockData lockData = new RadarLockData();
                 // lockData.locked = true;
@@ -57,11 +58,13 @@ public class MissileNetworker_Receiver : MonoBehaviour
                 {
                     if (AI.vehicleUID == lastMessage.radarLock)
                     {
-                        Debug.Log("Missile found its lock on actor " + AI.actor.name + " while trying to lock " + lastMessage.radarLock);
+                        Debug.Log("Missile found its lock on actor " + AI.actor.name + " with an uid of " + AI.vehicleUID + " while trying to lock " + lastMessage);
                         radarML.lockingRadar.ForceLock(AI.actor, out lockData);
                         radar.ForceLock(AI.actor, out lockData);
+                        break;
                     }
                 }
+                Debug.Log($"Lock data for missile {thisMissile.name}, Locked: {lockData.locked}, Actor: {lockData.actor}.");
             }
             if (lastMessage.guidanceMode == Missile.GuidanceModes.Optical)
             {

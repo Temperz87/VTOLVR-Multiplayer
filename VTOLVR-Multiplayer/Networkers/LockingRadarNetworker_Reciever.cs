@@ -11,10 +11,16 @@ class LockingRadarNetworker_Receiver : MonoBehaviour
     public ulong networkUID;
     private Message_RadarUpdate lastRadarMessage;
     private Message_LockingRadarUpdate lastLockingMessage;
-    public LockingRadar lockingRadar;
+    private LockingRadar lockingRadar;
     private RadarLockData radarLockData;
     private void Awake()
     {
+        lockingRadar = gameObject.GetComponentInChildren<LockingRadar>();
+        if (lockingRadar == null)
+        {
+            Debug.Log($"Locking radar on networkUID {networkUID} is null.");
+            return;
+        }
         lastRadarMessage = new Message_RadarUpdate(false, 0, networkUID);
         Networker.RadarUpdate += RadarUpdate;
         Networker.LockingRadarUpdate += LockingRadarUpdate;

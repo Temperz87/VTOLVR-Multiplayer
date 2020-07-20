@@ -12,7 +12,6 @@ public class MissileNetworker_Sender : MonoBehaviour
     private bool receivedGlobalUID = false;
     private void Awake()
     {
-        Debug.Log("Missile networker awake");
         Networker.RequestNetworkUID += RequestUID;
         lastMessage = new Message_MissileUpdate(networkUID);
         thisMissile = GetComponent<Missile>();
@@ -32,14 +31,6 @@ public class MissileNetworker_Sender : MonoBehaviour
                 Debug.LogError("lastMessage null");
             }
             lastMessage.networkUID = networkUID;
-            /*if (rigidbody == null)
-            {
-                Debug.LogError("Rigidbody null");
-            }
-            if (rigidbody.position == null)
-            {
-                Debug.LogError("Rigidbody position null");
-            }*/
             if (gameObject == null)
             {
                 Debug.LogError("gameObject null in MissileNetworker_Sender");
@@ -51,13 +42,13 @@ public class MissileNetworker_Sender : MonoBehaviour
             {
                 if (thisMissile.radarLock != null && thisMissile.radarLock.actor != null)
                 {
-                    Debug.Log("Missile_sender lock data");
                     lastMessage.targetPosition = VTMapManager.WorldToGlobalPoint(thisMissile.radarLock.actor.transform.position);
                     foreach (var AI in AIManager.AIVehicles)
                     {
                         if (AI.actor == thisMissile.radarLock.actor)
                         {
                             lastMessage.radarLock = AI.vehicleUID;
+                            Debug.Log($"Missile {gameObject.name} has found its lock {AI.actor.name} while trying to lock {thisMissile.radarLock.actor}");
                         }
                     }
                 }
@@ -67,7 +58,6 @@ public class MissileNetworker_Sender : MonoBehaviour
                 lastMessage.targetPosition = VTMapManager.WorldToGlobalPoint(thisMissile.opticalTargetActor.transform.position);
             }
             SendMessage(false);
-            Debug.Log("Missile_sender Send message");
         }
     }
     public void RequestUID(Packet packet)
@@ -79,7 +69,6 @@ public class MissileNetworker_Sender : MonoBehaviour
         Debug.Log($"Missile ({gameObject.name}) has received their UID from the host. \n Missiles UID = {networkUID}");
         Networker.RequestNetworkUID -= RequestUID;
         receivedGlobalUID = true;
-        Debug.Log("Recieved global UID");
     }
     /// <summary>
     /// OnDestory will most likley be called when the missile blows up.
