@@ -62,6 +62,8 @@ public class Multiplayer : VTOLMOD
         SoloTesting = false;
         Log("Valid User " + SteamUser.GetSteamID().m_SteamID);
 
+        Log($"VTOL VR Multiplayer { ModVersionString.ModVersionNumber } - { ModVersionString.ReleaseBranch }");
+
         VTOLAPI.SceneLoaded += SceneLoaded;
         base.ModLoaded();
         CreateUI();
