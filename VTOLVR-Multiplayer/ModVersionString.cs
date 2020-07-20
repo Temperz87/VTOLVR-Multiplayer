@@ -7,5 +7,5 @@ using System.Threading.Tasks;
 static class ModVersionString
 {
     public static string ReleaseBranch = "fix-tailhook-lag";
-    public static string ModVersionNumber = "0.0.2";
+    public static string ModVersionNumber = "0.0.3";
 }

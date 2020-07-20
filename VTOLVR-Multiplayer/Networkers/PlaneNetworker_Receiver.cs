@@ -73,20 +73,20 @@ public class PlaneNetworker_Receiver : MonoBehaviour
             SetLaunchBar(newMessage.launchBar);
             SetFuelPort(newMessage.fuelPort);
 
-            if (lastMessage.hasRadar && weaponManager != null) {
+            if (newMessage.hasRadar && weaponManager != null) {
                 weaponManager.lockingRadar.radar.debugRadar = true;
                 if (!weaponManager.lockingRadar.radar.enabled) {
                     weaponManager.lockingRadar.radar.enabled = true;
                 }
-                if (lastMessage.locked && weaponManager.lockingRadar.currentLock.actor.name != lastMessage.radarLock && lastMessage.radarLock != "") {
+                if (newMessage.locked && weaponManager.lockingRadar.currentLock.actor.name != newMessage.radarLock && newMessage.radarLock != "") {
                     foreach (Actor actor in TargetManager.instance.allActors) {
-                        if (actor.name == lastMessage.radarLock) {
+                        if (actor.name == newMessage.radarLock) {
                             Debug.Log("Forcing lock on actor " + actor.name);
                             weaponManager.lockingRadar.ForceLock(actor, out LockData);
                         }
                     }
                 }
-                else if (!lastMessage.locked && weaponManager.lockingRadar.IsLocked()) {
+                else if (!newMessage.locked && weaponManager.lockingRadar.IsLocked()) {
                     Debug.Log("Unlocking radar");
                     weaponManager.lockingRadar.Unlock();
                 }
