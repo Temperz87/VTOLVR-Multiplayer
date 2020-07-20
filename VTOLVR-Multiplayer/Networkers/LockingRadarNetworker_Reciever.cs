@@ -43,6 +43,7 @@ class LockingRadarNetworker_Receiver : MonoBehaviour
 
         if (!lastLockingMessage.isLocked && lockingRadar.IsLocked())
         {
+            Debug.Log($"Unlocking radar {gameObject.name}");
             lockingRadar.Unlock();
             return;
         }
@@ -62,7 +63,7 @@ class LockingRadarNetworker_Receiver : MonoBehaviour
     public void OnDestroy()
     {
         Networker.RadarUpdate -= RadarUpdate;
-        Debug.Log("Destroyed ExtLight");
+        Debug.Log("Radar update");
         Debug.Log(gameObject.name);
     }
 }

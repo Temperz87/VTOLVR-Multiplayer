@@ -11,15 +11,16 @@ class LockingRadarNetworker_Sender : MonoBehaviour
     public ulong networkUID;
     private Message_RadarUpdate lastRadarMessage;
     private Message_LockingRadarUpdate lastLockingMessage;
-    private LockingRadar radar;
+    private Radar radar;
+    private LockingRadar lr;
     bool lastOn;
     float lastFov;
     RadarLockData lastRadarLockData = null;
     private void Awake()
     {
         Debug.Log("Radar sender awoken for object " + gameObject.name);
-        radar = gameObject.GetComponentInChildren<LockingRadar>();
-        if (radar == null)
+        lr = gameObject.GetComponentInChildren<LockingRadar>();
+        if (lr == null)
         {
             Debug.LogError($"Radar on networkUID {networkUID} is null");
             return;
@@ -34,67 +35,73 @@ class LockingRadarNetworker_Sender : MonoBehaviour
 
     private void FixedUpdate()
     {
-        Debug.Log($"Doing fixed update for vehicle containing radar known as {gameObject.name} with a networkUID of {networkUID}.");
-        if (radar == null)
+        if (lr == null)
         {
             Debug.LogError($"Radar is null for object {gameObject.name} with an uid of {networkUID}.");
-            radar = gameObject.GetComponentInChildren<LockingRadar>();
+            lr = gameObject.GetComponentInChildren<LockingRadar>();
         }
-        if (radar.radar.radarEnabled != lastOn || radar.radar.sweepFov != lastFov)
+        if (lr.radar == null)
         {
-            Debug.Log("radar.radar is not equal to last on");
-            lastRadarMessage.UID = networkUID;
-            Debug.Log("last uid");
-            lastRadarMessage.on = radar.radar.radarEnabled;
-            Debug.Log("on enabled");
-            lastRadarMessage.fov = radar.radar.sweepFov;
-            Debug.Log("sweep fov and SENDING!");
+            Debug.LogError("This radar.radar shouldn't be null");
+            lr.radar = gameObject.GetComponentInChildren<Radar>();
+        }
+        else
+        {
+            if (lr.radar.radarEnabled != lastOn || lr.radar.sweepFov != lastFov)
+            {
+                Debug.Log("radar.radar is not equal to last on");
+                lastRadarMessage.UID = networkUID;
+                Debug.Log("last uid");
+                lastRadarMessage.on = lr.radar.radarEnabled;
+                Debug.Log("on enabled");
+                lastRadarMessage.fov = lr.radar.sweepFov;
+                Debug.Log("sweep fov and SENDING!");
 
-            if (Networker.isHost)
-                NetworkSenderThread.Instance.SendPacketAsHostToAllClients(lastRadarMessage, Steamworks.EP2PSend.k_EP2PSendReliable);
-            else
-                NetworkSenderThread.Instance.SendPacketToSpecificPlayer(Networker.hostID, lastRadarMessage, Steamworks.EP2PSend.k_EP2PSendReliable);
-            Debug.Log("last 2");
-            lastOn = radar.radar.radarEnabled;
-            Debug.Log("last one");
-            lastFov = radar.radar.sweepFov;
-        }
-        if (radar.IsLocked() != lastLockingMessage.isLocked || radar.currentLock != lastRadarLockData)
-        {
-            Debug.Log("is lock not equal to last message is locked");
-            lastRadarLockData = radar.currentLock;
-            Debug.Log("lockdata set");
-            if (lastRadarLockData == null)
-            {
-                Debug.Log("lock data nulll");
-                lastLockingMessage.actorUID = 0;
-                lastLockingMessage.isLocked = false;
-                lastLockingMessage.senderUID = networkUID;
                 if (Networker.isHost)
-                    NetworkSenderThread.Instance.SendPacketAsHostToAllClients(lastLockingMessage, EP2PSend.k_EP2PSendUnreliable);
+                    NetworkSenderThread.Instance.SendPacketAsHostToAllClients(lastRadarMessage, Steamworks.EP2PSend.k_EP2PSendReliable);
                 else
-                    NetworkSenderThread.Instance.SendPacketToSpecificPlayer(Networker.hostID, lastLockingMessage, EP2PSend.k_EP2PSendUnreliable);
+                    NetworkSenderThread.Instance.SendPacketToSpecificPlayer(Networker.hostID, lastRadarMessage, Steamworks.EP2PSend.k_EP2PSendReliable);
+                Debug.Log("last 2");
+                lastOn = lr.radar.radarEnabled;
+                Debug.Log("last one");
+                lastFov = lr.radar.sweepFov;
             }
-            else
+            if (lr.IsLocked() != lastLockingMessage.isLocked || lr.currentLock != lastRadarLockData)
             {
-                Debug.Log("else going into foreach");
-                foreach (var AI in AIManager.AIVehicles)
+                Debug.Log("is lock not equal to last message is locked");
+                lastRadarLockData = lr.currentLock;
+                Debug.Log("lockdata set");
+                if (lastRadarLockData == null)
                 {
-                    if (AI.actor == lastRadarLockData.actor)
+                    Debug.Log("lock data nulll");
+                    lastLockingMessage.actorUID = 0;
+                    lastLockingMessage.isLocked = false;
+                    lastLockingMessage.senderUID = networkUID;
+                    if (Networker.isHost)
+                        NetworkSenderThread.Instance.SendPacketAsHostToAllClients(lastLockingMessage, EP2PSend.k_EP2PSendUnreliable);
+                    else
+                        NetworkSenderThread.Instance.SendPacketToSpecificPlayer(Networker.hostID, lastLockingMessage, EP2PSend.k_EP2PSendUnreliable);
+                }
+                else
+                {
+                    Debug.Log("else going into foreach");
+                    foreach (var AI in AIManager.AIVehicles)
                     {
-                        Debug.Log(lastRadarLockData.actor.name + " radar data found its lock " + AI.actor.name + " at id " + AI.vehicleUID);
-                        lastLockingMessage.actorUID = AI.vehicleUID;
-                        lastLockingMessage.isLocked = true;
-                        lastLockingMessage.senderUID = networkUID;
-                        if (Networker.isHost)
-                            NetworkSenderThread.Instance.SendPacketAsHostToAllClients(lastLockingMessage, EP2PSend.k_EP2PSendUnreliable);
-                        else
-                            NetworkSenderThread.Instance.SendPacketToSpecificPlayer(Networker.hostID, lastLockingMessage, EP2PSend.k_EP2PSendUnreliable);
-                        break;
+                        if (AI.actor == lastRadarLockData.actor)
+                        {
+                            Debug.Log(lastRadarLockData.actor.name + " radar data found its lock " + AI.actor.name + " at id " + AI.vehicleUID);
+                            lastLockingMessage.actorUID = AI.vehicleUID;
+                            lastLockingMessage.isLocked = true;
+                            lastLockingMessage.senderUID = networkUID;
+                            if (Networker.isHost)
+                                NetworkSenderThread.Instance.SendPacketAsHostToAllClients(lastLockingMessage, EP2PSend.k_EP2PSendUnreliable);
+                            else
+                                NetworkSenderThread.Instance.SendPacketToSpecificPlayer(Networker.hostID, lastLockingMessage, EP2PSend.k_EP2PSendUnreliable);
+                            break;
+                        }
                     }
                 }
             }
         }
-
     }
 }
