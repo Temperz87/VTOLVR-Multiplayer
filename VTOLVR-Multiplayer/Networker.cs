@@ -174,7 +174,7 @@ public class Networker : MonoBehaviour
 
         MapAndScenarioVersionChecker.CreateHashes();
 
-        SendP2P(steamID,
+        NetworkSenderThread.Instance.SendPacketToSpecificPlayer(steamID,
             new Message_JoinRequest(PilotSaveManager.currentVehicle.name,
                                     MapAndScenarioVersionChecker.builtInCampaign,
                                     MapAndScenarioVersionChecker.scenarioId,
@@ -183,100 +183,7 @@ public class Networker : MonoBehaviour
                                     MapAndScenarioVersionChecker.campaignHash),
             EP2PSend.k_EP2PSendReliable);
     }
-    public static void SendExcludeP2P(CSteamID excludeID, Message message, EP2PSend sendType)
-    {
-        for (int i = 0; i < players.Count; i++)
-        {
-            if (players[i] != excludeID)
-                SendP2P(players[i], message, sendType);
-        }
-    }
-    /// <summary>
-    /// Sends a P2P message to all the other players, only works if host.
-    /// </summary>
-    /// <param name="message">The Message which is being set</param>
-    /// <param name="sendType">Specifies how you want the data to be transmitted, such as reliably, unreliable, buffered, etc.</param>
-    public static void SendGlobalP2P(Message message, EP2PSend sendType)
-    {
-        if (!isHost)
-        {
-            Debug.LogError("Can't send global P2P as user isn't host");
-            return;
-        }
-        if (Multiplayer.SoloTesting)
-        {
-            SendP2P(new CSteamID(), message, sendType);
-            return;
-        }
-        for (int i = 0; i < players.Count; i++)
-        {
-            SendP2P(players[i], message, sendType);
-        }
-    }
-    public static void SendGlobalP2P(Packet packet)
-    {
-        if (!isHost)
-        {
-            Debug.LogError("Can't send global P2P as user isn't host");
-            return;
-        }
-        if (Multiplayer.SoloTesting)
-        {
-            SendP2P(new CSteamID(), packet);
-            return;
-        }
-        for (int i = 0; i < players.Count; i++)
-        {
-            SendP2P(players[i], packet);
-        }
-    }
-    /// <summary>
-    /// Sends a P2P Message to another user.
-    /// </summary>
-    /// <param name="remoteID">The target user to send the packet to.</param>
-    /// <param name="message">The message to be send to that user.</param>
-    /// <param name="sendType">Specifies how you want the data to be transmitted, such as reliably, unreliable, buffered, etc.</param>
-    public static void SendP2P(CSteamID remoteID, Message message, EP2PSend sendType)
-    {
-        PacketSingle packet = new PacketSingle(message, sendType);
-        SendP2P(remoteID, packet);
-    }
-    /// <summary>
-    /// Sends multiple messages to another user. [Currently Doesn't work]
-    /// </summary>
-    /// <param name="remoteID">The target user to send the packet to.</param>
-    /// <param name="messages">The messages to be send to that user.</param>
-    /// <param name="sendType">Specifies how you want the data to be transmitted, such as reliably, unreliable, buffered, etc.</param>
-    [Obsolete]
-    public static void SendP2P(CSteamID remoteID, Message[] messages, EP2PSend sendType)
-    {
-        PacketMultiple packet = new PacketMultiple(messages, sendType);
-        SendP2P(remoteID, packet);
-    }
-    private static void SendP2P(CSteamID remoteID, Packet packet)
-    {
-        BinaryFormatter binaryFormatter = new BinaryFormatter();
-        MemoryStream memoryStream = new MemoryStream();
-        binaryFormatter.Serialize(memoryStream, packet);
-        if (memoryStream.ToArray().Length > 1200 && (packet.sendType == EP2PSend.k_EP2PSendUnreliable || packet.sendType == EP2PSend.k_EP2PSendUnreliableNoDelay))
-        {
-            Debug.LogError("MORE THAN 1200 Bytes for message");
-        }
-        if (Multiplayer.SoloTesting)
-        {
-            //This skips sending the network message and gets sent right to ReadP2PPacket so that we can test solo with a fake player.
-            _instance.ReadP2PPacket(memoryStream.ToArray(), 0, 0, new CSteamID(1));
-            return;
-        }
-        if (SteamNetworking.SendP2PPacket(remoteID, memoryStream.ToArray(), (uint)memoryStream.Length, packet.sendType))
-        {
-            
-        }
-        else
-        {
-            Debug.Log($"Failed to send P2P to {remoteID.m_SteamID}");
-        }
-    }
+
     private void ReadP2P()
     {
         uint num;
@@ -346,7 +253,7 @@ public class Networker : MonoBehaviour
                     {
                         Debug.LogError("players count to string somehow null");
                     } // Fuck you again unity
-                    SendP2P(csteamID,
+                    NetworkSenderThread.Instance.SendPacketToSpecificPlayer(csteamID,
                         new Message_LobbyInfoRequest_Result(SteamFriends.GetPersonaName(),
                                                                 PilotSaveManager.currentVehicle.vehicleName,
                                                                 PilotSaveManager.currentScenario.scenarioName,
@@ -442,10 +349,10 @@ public class Networker : MonoBehaviour
                         {
                             //Someone is trying to join when we are already in game.
                             Debug.Log($"We are already in session, {csteamID} is joining in!");
-                            SendP2P(csteamID, new Message(MessageType.AllPlayersReady), EP2PSend.k_EP2PSendReliable);
+                            NetworkSenderThread.Instance.SendPacketToSpecificPlayer(csteamID, new Message(MessageType.AllPlayersReady), EP2PSend.k_EP2PSendReliable);
 
                             // Send host loaded message right away
-                            SendP2P(csteamID, new Message_HostLoaded(true), EP2PSend.k_EP2PSendReliable);
+                            NetworkSenderThread.Instance.SendPacketToSpecificPlayer(csteamID, new Message_HostLoaded(true), EP2PSend.k_EP2PSendReliable);
                             break;
                         }
                         else if (hostReady && EveryoneElseReady())
@@ -453,11 +360,11 @@ public class Networker : MonoBehaviour
                             Debug.Log("The last client has said they are ready, starting");
                             if (!allPlayersReadyHasBeenSentFirstTime) {
                                 allPlayersReadyHasBeenSentFirstTime = true;
-                                SendGlobalP2P(new Message(MessageType.AllPlayersReady), EP2PSend.k_EP2PSendReliable);
+                                NetworkSenderThread.Instance.SendPacketAsHostToAllClients(new Message(MessageType.AllPlayersReady), EP2PSend.k_EP2PSendReliable);
                             }
                             else {
                                 // Send only to this player
-                                SendP2P(csteamID, new Message(MessageType.AllPlayersReady), EP2PSend.k_EP2PSendReliable);
+                                NetworkSenderThread.Instance.SendPacketToSpecificPlayer(csteamID, new Message(MessageType.AllPlayersReady), EP2PSend.k_EP2PSendReliable);
                             }
                             LoadingSceneController.instance.PlayerReady();
                         }
@@ -515,7 +422,8 @@ public class Networker : MonoBehaviour
                         if (Multiplayer.SoloTesting)
                             break;
                         players.Remove(csteamID);
-                        SendGlobalP2P(packet);
+                        NetworkSenderThread.Instance.RemovePlayer(csteamID);
+                        NetworkSenderThread.Instance.SendPacketAsHostToAllClients(packet, packet.sendType);
                     }
                     else
                     {
@@ -544,7 +452,7 @@ public class Networker : MonoBehaviour
                         WeaponSet_Result.Invoke(packet);
                     if (isHost)
                     {
-                        SendGlobalP2P(packet);
+                        NetworkSenderThread.Instance.SendPacketAsHostToAllClients(packet, packet.sendType);
                     }
                     break;
                 case MessageType.WeaponFiring:
@@ -642,7 +550,7 @@ public class Networker : MonoBehaviour
             if (isHost)
             {
                 if (MessageTypeShouldBeForwarded(packetS.message.type)) {
-                    SendExcludeP2P((CSteamID)packetS.networkUID, packetS.message, EP2PSend.k_EP2PSendUnreliableNoDelay);
+                    NetworkSenderThread.Instance.SendPacketAsHostToAllButOneSpecificClient((CSteamID)packetS.networkUID, packetS.message, EP2PSend.k_EP2PSendUnreliableNoDelay);
                 }
             }
         }
@@ -724,7 +632,7 @@ public class Networker : MonoBehaviour
     {
         if (!isHost)
         {
-            SendP2P(hostID, new Message_RequestNetworkUID(clientsID), EP2PSend.k_EP2PSendUnreliableNoDelay);
+            NetworkSenderThread.Instance.SendPacketToSpecificPlayer(hostID, new Message_RequestNetworkUID(clientsID), EP2PSend.k_EP2PSendUnreliableNoDelay);
             Debug.Log("Requetsed UID from host");
         }
         else
@@ -752,7 +660,7 @@ public class Networker : MonoBehaviour
         if (loadingText != null)
             loadingText.text = content.ToString();
 
-        SendGlobalP2P(new Message_LoadingTextUpdate(content.ToString()), EP2PSend.k_EP2PSendReliable);
+        NetworkSenderThread.Instance.SendPacketAsHostToAllClients(new Message_LoadingTextUpdate(content.ToString()), EP2PSend.k_EP2PSendReliable);
     }
     public static void UpdateLoadingText(Packet packet) //Clients Only
     {
@@ -769,7 +677,7 @@ public class Networker : MonoBehaviour
         if (!isHost) {
             Debug.LogError($"Recived Join Request when we are not the host");
             string notHostStr = "Failed to Join Player, they are not hosting a lobby";
-            SendP2P(csteamID, new Message_JoinRequestRejected_Result(notHostStr), EP2PSend.k_EP2PSendReliable);
+            NetworkSenderThread.Instance.SendPacketToSpecificPlayer(csteamID, new Message_JoinRequestRejected_Result(notHostStr), EP2PSend.k_EP2PSendReliable);
             return;
         }
 
@@ -783,19 +691,19 @@ public class Networker : MonoBehaviour
         if (joinRequest.vtolVrVersion != GameStartup.versionString) {
             string vtolMismatchVersion = "Failed to Join Player, mismatched vtol vr versions (please both update to latest version)";
             Debug.Log($"Player {csteamID} had the wrong VTOL VR version");
-            SendP2P(csteamID, new Message_JoinRequestRejected_Result(vtolMismatchVersion), EP2PSend.k_EP2PSendReliable);
+            NetworkSenderThread.Instance.SendPacketToSpecificPlayer(csteamID, new Message_JoinRequestRejected_Result(vtolMismatchVersion), EP2PSend.k_EP2PSendReliable);
             return;
         }
         if (joinRequest.multiplayerBranch != ModVersionString.ReleaseBranch) {
             string branchMismatch = "Failed to Join Player, host branch is )" + ModVersionString.ReleaseBranch + ", client is " + joinRequest.multiplayerBranch;
             Debug.Log($"Player {csteamID} had the wrong Multiplayer.dll version");
-            SendP2P(csteamID, new Message_JoinRequestRejected_Result(branchMismatch), EP2PSend.k_EP2PSendReliable);
+            NetworkSenderThread.Instance.SendPacketToSpecificPlayer(csteamID, new Message_JoinRequestRejected_Result(branchMismatch), EP2PSend.k_EP2PSendReliable);
             return;
         }
         if (joinRequest.multiplayerModVersion != ModVersionString.ModVersionNumber) {
             string multiplayerVersionMismatch = "Failed to Join Player, host version is )" + ModVersionString.ModVersionNumber + ", client is " + joinRequest.multiplayerModVersion;
             Debug.Log($"Player {csteamID} had the wrong Multiplayer.dll version");
-            SendP2P(csteamID, new Message_JoinRequestRejected_Result(multiplayerVersionMismatch), EP2PSend.k_EP2PSendReliable);
+            NetworkSenderThread.Instance.SendPacketToSpecificPlayer(csteamID, new Message_JoinRequestRejected_Result(multiplayerVersionMismatch), EP2PSend.k_EP2PSendReliable);
             return;
         }
 
@@ -806,7 +714,7 @@ public class Networker : MonoBehaviour
         if (joinRequest.currentVehicle != PilotSaveManager.currentVehicle.vehicleName) {
             string wrongVehicle = "Failed to Join Player, host vehicle is )" + PilotSaveManager.currentVehicle.vehicleName + ", client is " + joinRequest.currentVehicle;
             Debug.Log($"Player {csteamID} attempted to join with {joinRequest.currentVehicle}, server is {PilotSaveManager.currentVehicle.vehicleName}");
-            SendP2P(csteamID, new Message_JoinRequestRejected_Result(wrongVehicle), EP2PSend.k_EP2PSendReliable);
+            NetworkSenderThread.Instance.SendPacketToSpecificPlayer(csteamID, new Message_JoinRequestRejected_Result(wrongVehicle), EP2PSend.k_EP2PSendReliable);
             return;
         }
 
@@ -815,7 +723,7 @@ public class Networker : MonoBehaviour
         if (joinRequest.builtInCampaign != MapAndScenarioVersionChecker.builtInCampaign) {
             string wrongCampaignType = "Failed to Join Player, host campaign type is )" + MapAndScenarioVersionChecker.builtInCampaign.ToString();
             Debug.Log($"Player {csteamID} had the wrong campaign type");
-            SendP2P(csteamID, new Message_JoinRequestRejected_Result(wrongCampaignType), EP2PSend.k_EP2PSendReliable);
+            NetworkSenderThread.Instance.SendPacketToSpecificPlayer(csteamID, new Message_JoinRequestRejected_Result(wrongCampaignType), EP2PSend.k_EP2PSendReliable);
             return;
         }
 
@@ -823,7 +731,7 @@ public class Networker : MonoBehaviour
             if (joinRequest.scenarioId != MapAndScenarioVersionChecker.scenarioId) {
                 string wrongScenarioId = "Failed to Join Player, host scenario is )" + MapAndScenarioVersionChecker.scenarioId + ", yours is " + joinRequest.scenarioId;
                 Debug.Log($"Player {csteamID} had the wrong scenario");
-                SendP2P(csteamID, new Message_JoinRequestRejected_Result(wrongScenarioId), EP2PSend.k_EP2PSendReliable);
+                NetworkSenderThread.Instance.SendPacketToSpecificPlayer(csteamID, new Message_JoinRequestRejected_Result(wrongScenarioId), EP2PSend.k_EP2PSendReliable);
                 return;
             }
         }
@@ -832,19 +740,19 @@ public class Networker : MonoBehaviour
             if (joinRequest.campaignHash != MapAndScenarioVersionChecker.campaignHash) {
                 string badCampaignHash = "Failed to Join Player, custom campaign mismatch";
                 Debug.Log($"Player {csteamID} had a mismatched campaign (wrong id or version)");
-                SendP2P(csteamID, new Message_JoinRequestRejected_Result(badCampaignHash), EP2PSend.k_EP2PSendReliable);
+                NetworkSenderThread.Instance.SendPacketToSpecificPlayer(csteamID, new Message_JoinRequestRejected_Result(badCampaignHash), EP2PSend.k_EP2PSendReliable);
                 return;
             }
             if (joinRequest.scenarioHash != MapAndScenarioVersionChecker.scenarioHash) {
                 string badScenarioHash = "Failed to Join Player, custom scenario mismatch";
                 Debug.Log($"Player {csteamID} had a mismatched scenario (wrong id or version)");
-                SendP2P(csteamID, new Message_JoinRequestRejected_Result(badScenarioHash), EP2PSend.k_EP2PSendReliable);
+                NetworkSenderThread.Instance.SendPacketToSpecificPlayer(csteamID, new Message_JoinRequestRejected_Result(badScenarioHash), EP2PSend.k_EP2PSendReliable);
                 return;
             }
             if (joinRequest.mapHash != MapAndScenarioVersionChecker.mapHash) {
                 string badMapHash = "Failed to Join Player, custom map mismatch";
                 Debug.Log($"Player {csteamID} had a mismatched map (wrong id or version)");
-                SendP2P(csteamID, new Message_JoinRequestRejected_Result(badMapHash), EP2PSend.k_EP2PSendReliable);
+                NetworkSenderThread.Instance.SendPacketToSpecificPlayer(csteamID, new Message_JoinRequestRejected_Result(badMapHash), EP2PSend.k_EP2PSendReliable);
                 return;
             }
         }
@@ -853,8 +761,9 @@ public class Networker : MonoBehaviour
         Debug.Log($"Accepting {csteamID.m_SteamID}, adding to players list");
         players.Add(csteamID);
         readyDic.Add(csteamID, false);
+        NetworkSenderThread.Instance.AddPlayer(csteamID);
         UpdateLoadingText();
-        SendP2P(csteamID, new Message_JoinRequestAccepted_Result(), EP2PSend.k_EP2PSendReliable);
+        NetworkSenderThread.Instance.SendPacketToSpecificPlayer(csteamID, new Message_JoinRequestAccepted_Result(), EP2PSend.k_EP2PSendReliable);
     }
 
     public void OnApplicationQuit()
@@ -872,11 +781,11 @@ public class Networker : MonoBehaviour
         Debug.Log("Disconnecting from server");
         if (isHost)
         {
-            SendGlobalP2P(new Message_Disconnecting(PlayerManager.localUID, true), EP2PSend.k_EP2PSendReliable);
+            NetworkSenderThread.Instance.SendPacketAsHostToAllClients(new Message_Disconnecting(PlayerManager.localUID, true), EP2PSend.k_EP2PSendReliable);
         }
         else
         {
-            SendP2P(hostID, new Message_Disconnecting(PlayerManager.localUID, false), EP2PSend.k_EP2PSendReliable);
+            NetworkSenderThread.Instance.SendPacketToSpecificPlayer(hostID, new Message_Disconnecting(PlayerManager.localUID, false), EP2PSend.k_EP2PSendReliable);
         }
 
         if (applicationClosing)
@@ -884,6 +793,7 @@ public class Networker : MonoBehaviour
         isHost = false;
         gameState = GameState.Menu;
         players = new List<CSteamID>();
+        NetworkSenderThread.Instance.DumpAllExistingPlayers();
         readyDic = new Dictionary<CSteamID, bool>();
         hostReady = false;
         allPlayersReadyHasBeenSentFirstTime = false;
