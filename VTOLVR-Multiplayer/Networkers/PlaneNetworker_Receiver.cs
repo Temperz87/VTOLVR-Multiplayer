@@ -24,6 +24,7 @@ public class PlaneNetworker_Receiver : MonoBehaviour
     private RadarLockData LockData;
     private int idx;
     // private RadarLockData radarLockData;
+    private ulong mostCurrentUpdateNumber;
     private void Awake()
     {
         firstMessageReceived = false;
@@ -38,6 +39,7 @@ public class PlaneNetworker_Receiver : MonoBehaviour
         Networker.FireCountermeasure += FireCountermeasure;
         Networker.Death += Death;
         weaponManager = GetComponent<WeaponManager>();
+        mostCurrentUpdateNumber = 0;
         if (weaponManager == null)
             Debug.LogError("Weapon Manager was null on " + gameObject.name);
         else
@@ -58,6 +60,11 @@ public class PlaneNetworker_Receiver : MonoBehaviour
 
         if (newMessage.networkUID != networkUID)
             return;
+        // If already received this message or a newer one, don't need to update
+        if (newMessage.sequenceNumber <= mostCurrentUpdateNumber)
+            return;
+
+        mostCurrentUpdateNumber = newMessage.sequenceNumber;
 
         if (!firstMessageReceived) {
             firstMessageReceived = true;
