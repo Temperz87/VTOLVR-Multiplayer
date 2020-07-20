@@ -226,8 +226,9 @@ public static class AIManager
             }
         }
 
-        if (actor.gameObject.GetComponent<LockingRadar>() != null)
+        if (actor.gameObject.GetComponentInChildren<LockingRadar>() != null)
         {
+            Debug.Log($"Adding radar sender to object {actor.name}.");
             LockingRadarNetworker_Receiver lr = actor.gameObject.AddComponent<LockingRadarNetworker_Receiver>();
             lr.networkUID = message.networkID;
         }

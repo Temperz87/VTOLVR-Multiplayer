@@ -103,8 +103,9 @@ public static class PlayerManager
                     UIDNetworker_Sender uidSender = actor.gameObject.AddComponent<UIDNetworker_Sender>();
                     uidSender.networkUID = networkUID;
 
-                    if (actor.gameObject.GetComponent<LockingRadar>() != null)
+                    if (actor.gameObject.GetComponentInChildren<LockingRadar>() != null && actor.role == Actor.Roles.Air)
                     {
+                        Debug.Log($"Adding radar sender to object {actor.name}.");
                         lastLockingSender = actor.gameObject.AddComponent<LockingRadarNetworker_Sender>();
                         lastLockingSender.networkUID = networkUID;
                     }
