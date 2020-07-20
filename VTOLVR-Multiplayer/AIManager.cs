@@ -92,6 +92,7 @@ public static class AIManager
             PlaneNetworker_Receiver planeReceiver = newAI.AddComponent<PlaneNetworker_Receiver>();
             planeReceiver.networkUID = message.networkID;
             AIPilot aIPilot = newAI.GetComponent<AIPilot>();
+            aIPilot.enabled = false;
             aIPilot.kPlane.SetToKinematic();
             aIPilot.kPlane.enabled = false;
             aIPilot.commandState = AIPilot.CommandStates.Override;

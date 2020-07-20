@@ -49,12 +49,14 @@ class LockingRadarNetworker_Receiver : MonoBehaviour
         }
         if (lastLockingMessage.isLocked && !lockingRadar.IsLocked())
         {
+            Debug.Log("Trying to lock radar.");
             foreach (var AI in AIManager.AIVehicles)
             {
                 if (AI.vehicleUID == lastLockingMessage.actorUID)
                 {
                     lockingRadar.ForceLock(AI.actor, out radarLockData);
-                    Debug.Log($"Radar {gameObject.name} found its lock {AI.vehicleName} at id {AI.vehicleUID}.");
+                    Debug.Log($"Radar {gameObject.name} found its lock {AI.vehicleName} with an id of {AI.vehicleUID} while trying to lock id {lastLockingMessage.actorUID}.");
+                    Debug.Log($"The lock data is Locked: {radarLockData.locked}, Locked Actor: {radarLockData.actor.name}.");
                     break;
                 }
             }
