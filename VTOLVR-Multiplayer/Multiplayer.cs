@@ -49,6 +49,9 @@ public class Multiplayer : VTOLMOD
     }
     public override void ModLoaded()
     {
+        Log($"VTOL VR Multiplayer v{ ModVersionString.ModVersionNumber } - branch: { ModVersionString.ReleaseBranch }");
+
+
 #if DEBUG
         Log("Running in Debug Mode");
 #else
@@ -62,7 +65,6 @@ public class Multiplayer : VTOLMOD
         SoloTesting = false;
         Log("Valid User " + SteamUser.GetSteamID().m_SteamID);
 
-        Log($"VTOL VR Multiplayer { ModVersionString.ModVersionNumber } - { ModVersionString.ReleaseBranch }");
 
         VTOLAPI.SceneLoaded += SceneLoaded;
         base.ModLoaded();
