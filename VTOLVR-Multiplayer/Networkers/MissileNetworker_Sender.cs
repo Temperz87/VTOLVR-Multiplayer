@@ -12,7 +12,7 @@ public class MissileNetworker_Sender : MonoBehaviour
     private bool receivedGlobalUID = false;
     private void Awake()
     {
-        Debug.Log("Missile networker awake");
+        //Debug.Log("Missile networker awake");
         Networker.RequestNetworkUID += RequestUID;
         lastMessage = new Message_MissileUpdate(networkUID);
         thisMissile = GetComponent<Missile>();

@@ -55,11 +55,6 @@ public static class PlayerManager
     /// </summary>
     public static IEnumerator MapLoaded()
     {
-        // Make sure memory is ready to start dealing with the map
-        CleanUpPlayerManagerStaticVariables();
-        AIManager.CleanUpOnDisconnect();
-        Networker.hostLoaded = false;
-
         Debug.Log("map loading started");
         while (VTMapManager.fetch == null || !VTMapManager.fetch.scenarioReady || FlightSceneManager.instance.switchingScene)
         {
@@ -328,6 +323,7 @@ public static class PlayerManager
 
         Message_SpawnPlayerVehicle message = (Message_SpawnPlayerVehicle)((PacketSingle)packet).message;
         Debug.Log($"Recived a Spawn Vehicle Message from: {message.csteamID}");
+        CSteamID spawnerSteamId = new CSteamID(message.csteamID);
 
         if (!gameLoaded)
         {
@@ -360,14 +356,14 @@ public static class PlayerManager
                         //Generating a new global UID for that missile
                         message.hpLoadout[i].missileUIDS[j] = Networker.GenerateNetworkUID();
                         //Sending it back to that client
-                        NetworkSenderThread.Instance.SendPacketToSpecificPlayer(new CSteamID(message.csteamID),
+                        NetworkSenderThread.Instance.SendPacketToSpecificPlayer(spawnerSteamId,
                             new Message_RequestNetworkUID(clientsUID, message.hpLoadout[i].missileUIDS[j]),
                             EP2PSend.k_EP2PSendReliable);
                     }
                 }
             }
 
-            //Debug.Log("Telling other clients about new player and new player about other clients. Player count = " + players.Count);
+            Debug.Log("Telling other clients about new player and new player about other clients. Player count = " + players.Count);
             for (int i = 0; i < players.Count; i++)
             {
                 if (players[i].cSteamID == SteamUser.GetSteamID())
@@ -385,7 +381,7 @@ public static class PlayerManager
                     List<int> cm = VTOLVR_Multiplayer.PlaneEquippableManager.generateCounterMeasuresFromCmManager(cmManager);
                     float fuel = VTOLVR_Multiplayer.PlaneEquippableManager.generateLocalFuelValue();
 
-                    NetworkSenderThread.Instance.SendPacketToSpecificPlayer(new CSteamID(message.csteamID),
+                    NetworkSenderThread.Instance.SendPacketToSpecificPlayer(spawnerSteamId,
                         new Message_SpawnPlayerVehicle(
                             players[i].vehicleName,
                             VTMapManager.WorldToGlobalPoint(players[i].vehicle.transform.position),
@@ -405,7 +401,7 @@ public static class PlayerManager
                 //We first send the new player to an existing spawned in player
                 NetworkSenderThread.Instance.SendPacketToSpecificPlayer(players[i].cSteamID, message, EP2PSend.k_EP2PSendReliable);
                 //Then we send this current player to the new player.
-                NetworkSenderThread.Instance.SendPacketToSpecificPlayer(new CSteamID(message.csteamID),
+                NetworkSenderThread.Instance.SendPacketToSpecificPlayer(spawnerSteamId,
                     new Message_SpawnPlayerVehicle(
                         players[i].vehicleName,
                         VTMapManager.WorldToGlobalPoint(players[i].vehicle.transform.position),
@@ -424,7 +420,9 @@ public static class PlayerManager
                     EP2PSend.k_EP2PSendReliable);
                 //Debug.Log($"We have asked {players[i].cSteamID.m_SteamID} what their current weapons are, and now waiting for a responce."); // marsh typo response lmaooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo
             }
-            AIManager.TellClientAboutAI((CSteamID)message.csteamID);
+
+            Debug.Log("Telling connected client about AI units");
+            AIManager.TellClientAboutAI(spawnerSteamId);
         }
 
         GameObject newVehicle = null;
@@ -434,12 +432,21 @@ public static class PlayerManager
                 Debug.LogError("Vehcile Enum seems to be none, couldn't spawn player vehicle");
                 return;
             case VTOLVehicles.AV42C:
+                if (null == av42cPrefab) {
+                    SetPrefabs();
+                }
                 newVehicle = GameObject.Instantiate(av42cPrefab, message.position.toVector3, Quaternion.Euler(message.rotation.toVector3));
                 break;
             case VTOLVehicles.FA26B:
+                if (null == fa26bPrefab) {
+                    SetPrefabs();
+                }
                 newVehicle = GameObject.Instantiate(fa26bPrefab, new Vector3(message.position.toVector3.x, message.position.toVector3.y + 2f, message.position.toVector3.z), Quaternion.Euler(message.rotation.toVector3));
                 break;
             case VTOLVehicles.F45A:
+                if (null == f45Prefab) {
+                    SetPrefabs();
+                }
                 newVehicle = GameObject.Instantiate(f45Prefab, message.position.toVector3, Quaternion.Euler(message.rotation.toVector3));
                 break;
         }
@@ -520,7 +527,7 @@ public static class PlayerManager
         parent.transform.localRotation = Quaternion.Euler(0, 180, 0);
         nameTag.transform.SetParent(parent.transform);
         nameTag.AddComponent<Nametag>().SetText(
-            SteamFriends.GetFriendPersonaName(new CSteamID(message.csteamID)),
+            SteamFriends.GetFriendPersonaName(spawnerSteamId),
             newVehicle.transform, VRHead.instance.transform);
         //Debug.Log("Doing weapon manager shit on " + newVehicle.name + ".");
         WeaponManager weaponManager = newVehicle.GetComponent<WeaponManager>();
@@ -592,7 +599,7 @@ public static class PlayerManager
         fuelTank.startingFuel = loadout.normalizedFuel * fuelTank.maxFuel;
         fuelTank.SetNormFuel(loadout.normalizedFuel);
         aIPilot.actor.role = Actor.Roles.None;
-        players.Add(new Player(new CSteamID(message.csteamID), newVehicle, message.vehicle, message.networkID));
+        players.Add(new Player(spawnerSteamId, newVehicle, message.vehicle, message.networkID));
     }
     /// <summary>
     /// Finds the prefabs which are used for spawning the other players on our client
@@ -646,15 +653,15 @@ public static class PlayerManager
     }
 
     public static void CleanUpPlayerManagerStaticVariables() {
-        spawnPoints.Clear();
-        spawnRequestQueue.Clear();
-        playersToSpawnQueue.Clear();
-        playersToSpawnIdQueue.Clear();
+        spawnPoints?.Clear();
+        spawnRequestQueue?.Clear();
+        playersToSpawnQueue?.Clear();
+        playersToSpawnIdQueue?.Clear();
         gameLoaded = false;
-        spawnedVehicles.Clear();
+        spawnedVehicles?.Clear();
         localUID = 0;
         worldData = null;
-        players.Clear();
+        players?.Clear();
     }
 
     public static void OnDisconnect()

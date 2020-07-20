@@ -381,7 +381,7 @@ public class Multiplayer : VTOLMOD
 
     public void CleanUpOnDisconnect() {
         selectedFriend = new CSteamID(0);
-        steamFriends.Clear();
+        steamFriends?.Clear();
     }
 
     public void OnDestory()

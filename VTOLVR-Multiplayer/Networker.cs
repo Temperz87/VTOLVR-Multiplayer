@@ -162,6 +162,7 @@ public class Networker : MonoBehaviour
             Debug.LogError("Can't host game as already in one");
             return;
         }
+        Debug.Log("Hosting game");
         isHost = true;
         _instance.StartCoroutine(_instance.FlyButton());
     }
@@ -175,6 +176,8 @@ public class Networker : MonoBehaviour
         isHost = false;
 
         MapAndScenarioVersionChecker.CreateHashes();
+
+        Debug.Log("Attempting to join game");
 
         NetworkSenderThread.Instance.SendPacketToSpecificPlayer(steamID,
             new Message_JoinRequest(PilotSaveManager.currentVehicle.name,
@@ -618,7 +621,7 @@ public class Networker : MonoBehaviour
     {
         ulong result = networkUID + 1;
         networkUID = result;
-        Debug.Log($"Generated New UID ({result})");
+        //Debug.Log($"Generated New UID ({result})");
         return result;
     }
     public static void ResetNetworkUID()
@@ -805,11 +808,12 @@ public class Networker : MonoBehaviour
     }
 
     private void DisconnectionTasks() {
+        Debug.Log("Running disconnection tasks");
         isHost = false;
         gameState = GameState.Menu;
-        players.Clear();
+        players?.Clear();
         NetworkSenderThread.Instance.DumpAllExistingPlayers();
-        readyDic.Clear();
+        readyDic?.Clear();
         hostReady = false;
         allPlayersReadyHasBeenSentFirstTime = false;
         readySent = false;

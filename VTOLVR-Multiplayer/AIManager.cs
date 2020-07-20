@@ -293,8 +293,8 @@ public static class AIManager
     }
 
     public static void CleanUpOnDisconnect() {
-        AIsToSpawnQueue.Clear();
-        spawnedAI.Clear();
-        AIVehicles.Clear();
+        AIsToSpawnQueue?.Clear();
+        spawnedAI?.Clear();
+        AIVehicles?.Clear();
     }
 }
