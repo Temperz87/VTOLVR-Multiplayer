@@ -487,7 +487,7 @@ public class Networker : MonoBehaviour
                         ExtLight.Invoke(packet);
                     break;
                 case MessageType.ShipUpdate:
-                    Debug.Log("case ship update");
+                    //Debug.Log("case ship update");
                     if (ShipUpdate != null)
                         ShipUpdate.Invoke(packet);
                     break;

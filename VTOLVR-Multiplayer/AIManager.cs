@@ -82,6 +82,16 @@ public static class AIManager
         UIDNetworker_Receiver uidReciever = newAI.AddComponent<UIDNetworker_Receiver>();
         uidReciever.networkUID = message.networkID;
 
+        if (newAI.GetComponent<Health>() != null)
+        {
+            HealthNetworker_Receiver healthNetworker = newAI.AddComponent<HealthNetworker_Receiver>();
+            healthNetworker.networkUID = message.networkID;
+            Debug.Log("added health reciever to ai");
+        }
+        else
+        {
+            Debug.Log(message.aiVehicleName + " has no health?");
+        }
         if (newAI.GetComponent<ShipMover>() != null) {
             ShipNetworker_Receiver shipNetworker = newAI.AddComponent<ShipNetworker_Receiver>();
             shipNetworker.ship = newAI.GetComponent<ShipMover>();

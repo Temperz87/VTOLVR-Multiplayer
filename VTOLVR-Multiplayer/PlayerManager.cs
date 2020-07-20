@@ -101,6 +101,16 @@ public static class PlayerManager
                     UIDNetworker_Sender uidSender = actor.gameObject.AddComponent<UIDNetworker_Sender>();
                     uidSender.networkUID = networkUID;
 
+                    if (actor.gameObject.GetComponent<Health>() != null)
+                    {
+                        HealthNetworker_Sender healthNetworker = actor.gameObject.AddComponent<HealthNetworker_Sender>();
+                        healthNetworker.networkUID = networkUID;
+                        Debug.Log("added health sender to ai");
+                    }
+                    else
+                    {
+                        Debug.Log(actor.name + " has no health?");
+                    }
                     if (actor.gameObject.GetComponent<ShipMover>() != null)
                     {
                         ShipNetworker_Sender shipNetworker = actor.gameObject.AddComponent<ShipNetworker_Sender>();
@@ -265,6 +275,17 @@ public static class PlayerManager
             Debug.Log("Added Tilt Updater to our vehicle");
             EngineTiltNetworker_Sender tiltSender = localVehicle.AddComponent<EngineTiltNetworker_Sender>();
             tiltSender.networkUID = UID;
+        }
+
+        if (localVehicle.GetComponent<Health>() != null)
+        {
+            HealthNetworker_Sender healthNetworker = localVehicle.AddComponent<HealthNetworker_Sender>();
+            healthNetworker.networkUID = UID;
+            Debug.Log("added health sender to local player");
+        }
+        else
+        {
+            Debug.Log("local player has no health?");
         }
 
         if (localVehicle.GetComponentInChildren<WingFoldController>() != null) {
@@ -446,6 +467,9 @@ public static class PlayerManager
         //Debug.Log("Setting vehicle name");
         newVehicle.name = $"Client [{message.csteamID}]";
         Debug.Log($"Spawned new vehicle at {newVehicle.transform.position}");
+
+        HealthNetworker_Receiver healthNetworker = newVehicle.AddComponent<HealthNetworker_Receiver>();
+        healthNetworker.networkUID = message.networkID;
 
         RigidbodyNetworker_Receiver rbNetworker = newVehicle.AddComponent<RigidbodyNetworker_Receiver>();
         rbNetworker.networkUID = message.networkID;
