@@ -101,7 +101,13 @@ public static class PlayerManager
                     UIDNetworker_Sender uidSender = actor.gameObject.AddComponent<UIDNetworker_Sender>();
                     uidSender.networkUID = networkUID;
 
-                    if (actor.gameObject.GetComponent<Rigidbody>() != null)
+                    if (actor.gameObject.GetComponent<ShipMover>() != null)
+                    {
+                        ShipNetworker_Sender shipNetworker = actor.gameObject.AddComponent<ShipNetworker_Sender>();
+                        shipNetworker.ship = actor.gameObject.GetComponent<ShipMover>();
+                        shipNetworker.networkUID = networkUID;
+                    }
+                    else if (actor.gameObject.GetComponent<Rigidbody>() != null)
                     {
                         lastRigidSender = actor.gameObject.AddComponent<RigidbodyNetworker_Sender>();
                         lastRigidSender.networkUID = networkUID;
