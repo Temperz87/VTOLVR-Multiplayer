@@ -6,6 +6,6 @@ using System.Threading.Tasks;
 
 static class ModVersionString
 {
-    public static string ReleaseBranch = "add-framework-for-background-worker-pool";
-    public static string ModVersionNumber = "0.0.3";
+    public static string ReleaseBranch = "fix-tailhook-lag";
+    public static string ModVersionNumber = "0.0.2";
 }

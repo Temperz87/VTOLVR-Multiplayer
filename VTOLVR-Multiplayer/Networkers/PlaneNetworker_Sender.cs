@@ -132,7 +132,7 @@ public class PlaneNetworker_Sender : MonoBehaviour
         lastMessage.pitch = Mathf.Round(aeroController.input.x * 100000f) / 100000f;
         lastMessage.yaw = Mathf.Round(aeroController.input.y * 100000f) / 100000f;
         lastMessage.roll = Mathf.Round(aeroController.input.z * 100000f) / 100000f;
-        lastMessage.breaks = aeroController.brake;
+        lastMessage.brakes = aeroController.brake;
         lastMessage.landingGear = LandingGearState();
         lastMessage.networkUID = networkUID;
         if (!isPlayer)

@@ -9,7 +9,7 @@ public class Message_PlaneUpdate : Message
     public bool landingGear;
     public float flaps; //0 = 0, 0.5 = 1, 1 = 1
     public float pitch, roll, yaw;
-    public float breaks, throttle;
+    public float brakes, throttle;
     public bool tailHook, fuelPort, launchBar;
     public ulong networkUID;
     public bool hasRadar;
@@ -22,7 +22,7 @@ public class Message_PlaneUpdate : Message
         this.pitch = pitch;
         this.roll = roll;
         this.yaw = yaw;
-        this.breaks = breaks;
+        this.brakes = breaks;
         this.throttle = throttle;
         this.tailHook = tailHook;
         this.fuelPort = fuelPort;
@@ -36,7 +36,7 @@ public class Message_PlaneUpdate : Message
 
     public override string ToString()
     {
-        return $"Landing Gear = {landingGear} Flaps = {flaps} Pitch = {pitch} Roll = {roll} Yaw = {yaw} Breaks = {breaks} " +
+        return $"Landing Gear = {landingGear} Flaps = {flaps} Pitch = {pitch} Roll = {roll} Yaw = {yaw} Breaks = {brakes} " +
             $"Throttle = {throttle} tailHook = {tailHook} Fuel Port = {fuelPort} NetworkID = {networkUID}";
     }
 }
