@@ -41,6 +41,9 @@ public class Multiplayer : VTOLMOD
     private Text joinButtonText;
     public Text lobbyInfoText;
 
+    // Fixing singleplayer functionality with MP mod
+    public bool playingMP;
+
     private void Start()
     {
         _instance = this;
@@ -87,20 +90,23 @@ public class Multiplayer : VTOLMOD
                 break;
             case VTOLScenes.Akutan:
                 Log("Map Loaded from vtol scenes akutan");
-
-                // Reseting join status when we switch scenes
                 waitingForJoin = null;
+                DestroyLoadingSceneObjects();
                 StartCoroutine(PlayerManager.MapLoaded());
                 break;
             case VTOLScenes.CustomMapBase:
                 Log("Map Loaded from vtol scenes custom map base");
-
-                // Reseting join status when we switch scenes
                 waitingForJoin = null;
+                DestroyLoadingSceneObjects();
                 StartCoroutine(PlayerManager.MapLoaded());
                 break;
             case VTOLScenes.LoadingScene:
-                CreateLoadingSceneObjects();
+                if (playingMP)
+                {
+                    Log("Create Loading Scene");
+                    CreateLoadingSceneObjects();
+                    break;
+                }
                 break;
         }
     }
@@ -334,11 +340,13 @@ public class Multiplayer : VTOLMOD
 
     public void Host()
     {
+        playingMP = true;
         Networker.HostGame();
     }
 
     public void Join()
     {
+        playingMP = false;
         if (Networker.hostID == new Steamworks.CSteamID(0) && waitingForJoin == null)
         {
             Networker.JoinGame(selectedFriend);
@@ -382,6 +390,20 @@ public class Multiplayer : VTOLMOD
     public void CleanUpOnDisconnect() {
         selectedFriend = new CSteamID(0);
         steamFriends?.Clear();
+    }
+
+    private void DestroyLoadingSceneObjects()
+    {
+        GameObject cube = GameObject.Find("Multiplayer Player List");
+        if (cube != null)
+        {
+            Debug.Log("Destroying MP list cube");
+            Destroy(cube);
+        }
+        else
+        {
+            Debug.Log("Could not find MP list cube");
+        }
     }
 
     public void OnDestory()

@@ -509,7 +509,6 @@ public static class PlayerManager
         aIPilot.kPlane.SetToKinematic();
         aIPilot.kPlane.enabled = false;
         rb.interpolation = RigidbodyInterpolation.None;
-        aIPilot.commandState = AIPilot.CommandStates.Override;
 
 
         rb.position = message.position.toVector3;
