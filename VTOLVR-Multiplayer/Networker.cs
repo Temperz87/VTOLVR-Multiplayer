@@ -66,6 +66,14 @@ public class Networker : MonoBehaviour
     public static GameState gameState { get; private set; }
     public static List<CSteamID> players { get; private set; } = new List<CSteamID>();
     public static Dictionary<CSteamID, bool> readyDic { get; private set; } = new Dictionary<CSteamID, bool>();
+
+    // Pretty lazy way of doing this, maybe we should use a struct instead? But eh it should work a bit better for now.
+    // playerStatusDic int definitions
+    // 0 = Not Ready
+    // 1 = Ready
+    // 2 = Loading
+    public static Dictionary<CSteamID, int> playerStatusDic { get; private set; } = new Dictionary<CSteamID, int>();
+
     public static bool allPlayersReadyHasBeenSentFirstTime;
     public static bool readySent;
     public static bool hostReady, alreadyInGame, hostLoaded;
@@ -345,6 +353,7 @@ public class Networker : MonoBehaviour
 
                         Debug.Log($"{csteamID.m_SteamID} has said they are ready!\nHost ready state {hostReady}");
                         readyDic[csteamID] = true;
+                        playerStatusDic[csteamID] = 1;
                         if (alreadyInGame)
                         {
                             //Someone is trying to join when we are already in game.
@@ -374,6 +383,8 @@ public class Networker : MonoBehaviour
                 case MessageType.AllPlayersReady:
                     Debug.Log("The host said everyone is ready, waiting for the host to load.");
                     hostReady = true;
+                    playerStatusDic[hostID] = 2;
+                    UpdateLoadingText();
                     // LoadingSceneController.instance.PlayerReady();
                     break;
                 case MessageType.RequestSpawn:
@@ -647,10 +658,30 @@ public class Networker : MonoBehaviour
         if (!isHost)
             return;
         StringBuilder content = new StringBuilder("Players:\n");
-        content.AppendLine("<b>"+SteamFriends.GetPersonaName() + "</b>" + ": " + (hostReady ? "<color=\"green\">Ready</color>" : "<color=\"red\">Not Ready</color>") + "\n");
+
+        if (playerStatusDic[hostID] == 2)
+        {
+            content.AppendLine("<b>" + SteamFriends.GetPersonaName() + "</b>" + ": " + "<color=\"blue\">Loading</color>" + "\n");
+        } else if (playerStatusDic[hostID] == 1)
+        {
+            content.AppendLine("<b>" + SteamFriends.GetPersonaName() + "</b>" + ": " + "<color=\"green\">Ready</color>" + "\n");
+        }
+
+
         for (int i = 0; i < players.Count; i++)
         {
-            content.Append("<b>" + SteamFriends.GetFriendPersonaName(players[i]) + "</b>" + ": " + (readyDic[players[i]]? "<color=\"green\">Ready</color>" : "<color=\"red\">Not Ready</color>") + "\n");
+            //content.Append("<b>" + SteamFriends.GetFriendPersonaName(players[i]) + "</b>" + ": " + (readyDic[players[i]]? "<color=\"green\">Ready</color>" : "<color=\"red\">Not Ready</color>") + "\n");
+            if (playerStatusDic[players[i]] == 2)
+            {
+                content.AppendLine("<b>" + SteamFriends.GetFriendPersonaName(players[i]) + "</b>" + ": " + "<color=\"blue\">Loading</color>" + "\n");
+            }
+            else if (playerStatusDic[players[i]] == 1)
+            {
+                content.AppendLine("<b>" + SteamFriends.GetFriendPersonaName(players[i]) + "</b>" + ": " + "<color=\"green\">Ready</color>" + "\n");
+            } else if (playerStatusDic[players[i]] == 0)
+            {
+                content.AppendLine("<b>" + SteamFriends.GetFriendPersonaName(players[i]) + "</b>" + ": " + "<color=\"red\">Not Ready</color>" + "\n");
+            }
         }
         if (loadingText != null)
             loadingText.text = content.ToString();
@@ -756,6 +787,7 @@ public class Networker : MonoBehaviour
         Debug.Log($"Accepting {csteamID.m_SteamID}, adding to players list");
         players.Add(csteamID);
         readyDic.Add(csteamID, false);
+        playerStatusDic.Add(csteamID, 0);
         NetworkSenderThread.Instance.AddPlayer(csteamID);
         UpdateLoadingText();
         NetworkSenderThread.Instance.SendPacketToSpecificPlayer(csteamID, new Message_JoinRequestAccepted_Result(), EP2PSend.k_EP2PSendReliable);
@@ -790,6 +822,7 @@ public class Networker : MonoBehaviour
         players = new List<CSteamID>();
         NetworkSenderThread.Instance.DumpAllExistingPlayers();
         readyDic = new Dictionary<CSteamID, bool>();
+        playerStatusDic = new Dictionary<CSteamID, int>();
         hostReady = false;
         allPlayersReadyHasBeenSentFirstTime = false;
         readySent = false;
