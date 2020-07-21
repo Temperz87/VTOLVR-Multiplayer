@@ -7,5 +7,5 @@ using System.Threading.Tasks;
 static class ModVersionString
 {
     public static string ReleaseBranch = "syncing-radars";
-    public static string ModVersionNumber = "0.0.5";
+    public static string ModVersionNumber = "0.0.6";
 }
