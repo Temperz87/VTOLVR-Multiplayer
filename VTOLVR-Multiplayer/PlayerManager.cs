@@ -284,6 +284,7 @@ public static class PlayerManager
 
         if (localVehicle.GetComponentInChildren<LockingRadar>() != null)
         {
+            Debug.Log($"Adding LockingRadarSender to player {localVehicle.name}");
             LockingRadarNetworker_Sender radarSender = localVehicle.AddComponent<LockingRadarNetworker_Sender>();
             radarSender.networkUID = UID;
         }
@@ -486,6 +487,7 @@ public static class PlayerManager
         LockingRadar lockingRadar = newVehicle.GetComponentInChildren<LockingRadar>();
         if (lockingRadar != null)
         {
+            Debug.Log($"Adding LockingRadarReciever to vehicle {newVehicle.name}");
             LockingRadarNetworker_Receiver lockingRadarReceiver = newVehicle.AddComponent<LockingRadarNetworker_Receiver>();
             lockingRadarReceiver.networkUID = message.networkID;
         }

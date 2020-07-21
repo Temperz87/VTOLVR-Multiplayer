@@ -48,7 +48,7 @@ public class MissileNetworker_Sender : MonoBehaviour
                         if (AI.actor == thisMissile.radarLock.actor)
                         {
                             lastMessage.radarLock = AI.vehicleUID;
-                            Debug.Log($"Missile {gameObject.name} has found its lock {AI.actor.name} while trying to lock {thisMissile.radarLock.actor}");
+                            Debug.Log($"Missile {gameObject.name} has found its lock {AI.actor.name} with an uID of {AI.vehicleUID} while trying to lock {thisMissile.radarLock.actor.name}");
                         }
                     }
                 }

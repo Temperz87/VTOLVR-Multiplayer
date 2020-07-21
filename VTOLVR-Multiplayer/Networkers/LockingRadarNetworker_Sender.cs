@@ -66,7 +66,7 @@ class LockingRadarNetworker_Sender : MonoBehaviour
                 Debug.Log("last one");
                 lastFov = lr.radar.sweepFov;
             }
-            if (lr.IsLocked() != lastLockingMessage.isLocked || lr.currentLock != lastRadarLockData)
+            if (lr.currentLock != lastRadarLockData)
             {
                 Debug.Log("is lock not equal to last message is locked");
                 lastRadarLockData = lr.currentLock;
@@ -77,6 +77,7 @@ class LockingRadarNetworker_Sender : MonoBehaviour
                     lastLockingMessage.actorUID = 0;
                     lastLockingMessage.isLocked = false;
                     lastLockingMessage.senderUID = networkUID;
+                    Debug.Log($"Sending a locking radar message for uID {networkUID}");
                     if (Networker.isHost)
                         NetworkSenderThread.Instance.SendPacketAsHostToAllClients(lastLockingMessage, EP2PSend.k_EP2PSendUnreliable);
                     else
@@ -89,7 +90,7 @@ class LockingRadarNetworker_Sender : MonoBehaviour
                     {
                         if (AI.actor == lastRadarLockData.actor)
                         {
-                            Debug.Log(lastRadarLockData.actor.name + " radar data found its lock " + AI.actor.name + " at id " + AI.vehicleUID);
+                            Debug.Log(lastRadarLockData.actor.name + " radar data found its lock " + AI.actor.name + " at id " + AI.vehicleUID + " with its own uID being " + networkUID);
                             lastLockingMessage.actorUID = AI.vehicleUID;
                             lastLockingMessage.isLocked = true;
                             lastLockingMessage.senderUID = networkUID;

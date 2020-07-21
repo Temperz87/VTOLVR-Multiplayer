@@ -29,18 +29,22 @@ class LockingRadarNetworker_Receiver : MonoBehaviour
     public void RadarUpdate(Packet packet)
     {
         lastRadarMessage = (Message_RadarUpdate)((PacketSingle)packet).message;
+        Debug.Log("Got a new radar update intended for id " + lastRadarMessage.UID);
         if (lastRadarMessage.UID != networkUID)
             return;
 
+        Debug.Log($"Doing radarupdate for uid {networkUID}");
         lockingRadar.radar.radarEnabled = lastRadarMessage.on;
         lockingRadar.radar.sweepFov = lastRadarMessage.fov;
     }
     public void LockingRadarUpdate(Packet packet)
     {
         lastLockingMessage = (Message_LockingRadarUpdate)((PacketSingle)packet).message;
+        Debug.Log("Got a new locking radar update intended for id " + lastLockingMessage.senderUID);
         if (lastLockingMessage.senderUID != networkUID)
             return;
 
+        Debug.Log($"Doing LockingRadarupdate for uid {networkUID} which is intended for uID {lastLockingMessage.senderUID}");
         if (!lastLockingMessage.isLocked && lockingRadar.IsLocked())
         {
             Debug.Log($"Unlocking radar {gameObject.name}");
