@@ -87,6 +87,13 @@ public static class AIManager
             rbNetworker.networkUID = message.networkID;
         }
 
+        actor.team = message.Team;
+        AIUnitSpawn aIUnitSpawn = newAI.GetComponent<AIUnitSpawn>();
+        if (aIUnitSpawn == null)
+            Debug.LogWarning("AI unit spawn is null on respawned unit " + aIUnitSpawn);
+        else
+            newAI.GetComponent<AIUnitSpawn>().SetEngageEnemies(message.Aggresive);
+
         if (actor.role == Actor.Roles.Air)
         {
             PlaneNetworker_Receiver planeReceiver = newAI.AddComponent<PlaneNetworker_Receiver>();
@@ -206,11 +213,6 @@ public static class AIManager
         }
         else if (actor.role == Actor.Roles.Ground)
         {
-            AIUnitSpawn aIUnitSpawn = newAI.GetComponent<AIUnitSpawn>();
-            if (aIUnitSpawn == null)
-                Debug.LogWarning("AI unit spawn is null on respawned unit " + aIUnitSpawn);
-            else
-                newAI.GetComponent<AIUnitSpawn>().SetEngageEnemies(message.Aggresive);
             VehicleMover vehicleMover = newAI.GetComponent<VehicleMover>();
             if (vehicleMover != null)
             {
@@ -267,7 +269,7 @@ public static class AIManager
                         Aggresion = aIUnitSpawn.engageEnemies;
                     }
                     Debug.Log("Finally sending AI " + actor.name + " to client " + steamID);
-                    NetworkSenderThread.Instance.SendPacketToSpecificPlayer(steamID, new Message_SpawnAIVehicle(actor.name, GetUnitNameFromCatalog(actor.unitSpawn.unitName), VTMapManager.WorldToGlobalPoint(actor.gameObject.transform.position), new Vector3D(actor.gameObject.transform.rotation.eulerAngles), uidSender.networkUID, hPInfos2, cmLoadout, 0.65f, Aggresion), EP2PSend.k_EP2PSendReliable);
+                    NetworkSenderThread.Instance.SendPacketToSpecificPlayer(steamID, new Message_SpawnAIVehicle(actor.name, GetUnitNameFromCatalog(actor.unitSpawn.unitName), VTMapManager.WorldToGlobalPoint(actor.gameObject.transform.position), new Vector3D(actor.gameObject.transform.rotation.eulerAngles), uidSender.networkUID, hPInfos2, cmLoadout, 0.65f, Aggresion, actor.team), EP2PSend.k_EP2PSendReliable);
 
                 }
                 else

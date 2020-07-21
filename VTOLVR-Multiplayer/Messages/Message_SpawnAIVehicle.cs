@@ -17,9 +17,10 @@ public class Message_SpawnAIVehicle : Message
     public int[] cmLoadout;
     public float normalizedFuel;
     public bool Aggresive;
+    public Teams Team;
     // public int playerCount;
 
-    public Message_SpawnAIVehicle(string aiVehicleName, string unitName, Vector3D position, Vector3D rotation, ulong networkID, HPInfo[] hpLoadout, int[] cmLoadout, float normalizedFuel, bool Aggresive)
+    public Message_SpawnAIVehicle(string aiVehicleName, string unitName, Vector3D position, Vector3D rotation, ulong networkID, HPInfo[] hpLoadout, int[] cmLoadout, float normalizedFuel, bool Aggresive, Teams team)
     {
         this.aiVehicleName = aiVehicleName;
         this.unitName = unitName;
@@ -30,6 +31,7 @@ public class Message_SpawnAIVehicle : Message
         this.cmLoadout = cmLoadout;
         this.normalizedFuel = normalizedFuel;
         this.Aggresive = Aggresive;
+        this.Team = team;
         // this.playerCount = playerCount;
         type = MessageType.SpawnAiVehicle;
     }
