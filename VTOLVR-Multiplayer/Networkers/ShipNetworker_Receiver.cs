@@ -10,8 +10,10 @@ class ShipNetworker_Receiver : MonoBehaviour
     public ShipMover ship;
     public Waypoint waypoint;
 
-    public float smoothTime = 5;
+    public float smoothTime = 5f;
+    public Vector3 targetPositionGlobal;
     public Vector3 targetPosition;
+    public Vector3 targetVelocity;
 
     private void Awake()
     {
@@ -24,8 +26,11 @@ class ShipNetworker_Receiver : MonoBehaviour
     }
 
     void FixedUpdate() {
-        targetPosition += lastMessage.velocity.toVector3 * Time.fixedDeltaTime;
-        ship.transform.position += (targetPosition - ship.transform.position) * Time.fixedDeltaTime / smoothTime;
+        targetPositionGlobal += targetVelocity * Time.fixedDeltaTime;
+        targetPosition = VTMapManager.GlobalToWorldPoint(new Vector3D(targetPositionGlobal));
+        ship.transform.position += ((targetPosition - ship.transform.position) * Time.fixedDeltaTime) / smoothTime;
+
+        ship.rb.velocity += (targetPosition - ship.transform.position)/smoothTime;
     }
 
     public void ShipUpdate(Packet packet)
@@ -34,7 +39,9 @@ class ShipNetworker_Receiver : MonoBehaviour
         if (lastMessage.UID != networkUID)
             return;
 
-        targetPosition = VTMapManager.GlobalToWorldPoint(lastMessage.position);
+        targetPositionGlobal = lastMessage.position.toVector3;
+        targetVelocity = lastMessage.velocity.toVector3;
+
         ship.transform.rotation = Quaternion.Euler(lastMessage.rotation.toVector3);
 
         if (lastMessage.destination.toVector3 != Vector3.zero)
@@ -45,6 +52,11 @@ class ShipNetworker_Receiver : MonoBehaviour
         else {
             waypoint.GetTransform().position = ship.transform.position;
             ship.MoveTo(waypoint);
+        }
+
+        if ((VTMapManager.GlobalToWorldPoint(lastMessage.position) - ship.transform.position).magnitude > 100) {
+            Debug.Log("Ship is too far, teleporting. This message should apear once per ship at spawn, if ur seeing more something is probably fucky");
+            ship.transform.position = VTMapManager.GlobalToWorldPoint(lastMessage.position);
         }
     }
 

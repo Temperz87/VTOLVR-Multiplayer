@@ -240,6 +240,12 @@ public static class AIManager
                 }
             }
         }
+
+        if (newAI.GetComponent<AirportManager>() != null) {
+            newAI.GetComponent<AirportManager>().airportName = "USS TEMPERZ " + message.networkID;
+            VTMapManager.fetch.airports.Add(newAI.GetComponent<AirportManager>());
+        }
+
         AIVehicles.Add(new AI(newAI, message.aiVehicleName, actor, message.networkID));
         Debug.Log("Spawned in AI " + newAI.name);
     }

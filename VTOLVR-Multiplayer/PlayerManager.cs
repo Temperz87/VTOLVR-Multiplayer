@@ -127,6 +127,10 @@ public static class PlayerManager
                         lastPlaneSender = actor.gameObject.AddComponent<PlaneNetworker_Sender>();
                         lastPlaneSender.networkUID = networkUID;
                     }
+                    if (actor.gameObject.GetComponent<AirportManager>() != null)
+                    {
+                        actor.gameObject.GetComponent<AirportManager>().airportName = "USS TEMPERZ " + networkUID;
+                    }
                 }
                 else
                     Debug.Log(actor.name + " has a parent, not giving an uID sender.");
