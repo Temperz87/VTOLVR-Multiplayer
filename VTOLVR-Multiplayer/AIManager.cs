@@ -299,4 +299,10 @@ public static class AIManager
         Debug.Log("Could not find " + unitname + " in unit catalog");
         return "";
     }
+
+    public static void CleanUpOnDisconnect() {
+        AIsToSpawnQueue?.Clear();
+        spawnedAI?.Clear();
+        AIVehicles?.Clear();
+    }
 }
