@@ -346,7 +346,7 @@ public class Multiplayer : VTOLMOD
 
     public void Join()
     {
-        playingMP = false;
+        playingMP = true;
         if (Networker.hostID == new Steamworks.CSteamID(0) && waitingForJoin == null)
         {
             Networker.JoinGame(selectedFriend);
@@ -390,6 +390,7 @@ public class Multiplayer : VTOLMOD
     public void CleanUpOnDisconnect() {
         selectedFriend = new CSteamID(0);
         steamFriends?.Clear();
+        playingMP = false;
     }
 
     private void DestroyLoadingSceneObjects()

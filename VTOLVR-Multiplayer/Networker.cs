@@ -176,6 +176,7 @@ public class Networker : MonoBehaviour
         }
         Debug.Log("Hosting game");
         isHost = true;
+        playerStatusDic.Add(hostID, 0);
         _instance.StartCoroutine(_instance.FlyButton());
     }
     public static void JoinGame(CSteamID steamID)
@@ -352,9 +353,12 @@ public class Networker : MonoBehaviour
                     }
                     Debug.Log("case ready");
                     Message_Ready readyMessage = packetS.message as Message_Ready;
-                    
+
+
+
                     //The client has said they are ready to start, so we change it in the dictionary
-                    if (readyDic.ContainsKey(csteamID))
+                    
+                    if (readyDic.ContainsKey(csteamID) && playerStatusDic.ContainsKey(csteamID))
                     {
                         if (readyDic[csteamID]) {
                             Debug.Log("Received ready message from the same user twice");
@@ -797,7 +801,9 @@ public class Networker : MonoBehaviour
         Debug.Log($"Accepting {csteamID.m_SteamID}, adding to players list");
         players.Add(csteamID);
         readyDic.Add(csteamID, false);
+        Debug.Log($"Adding {csteamID} to status dict, with status of 0");
         playerStatusDic.Add(csteamID, 0);
+        Debug.Log("Done adding to status dict");
         NetworkSenderThread.Instance.AddPlayer(csteamID);
         UpdateLoadingText();
         NetworkSenderThread.Instance.SendPacketToSpecificPlayer(csteamID, new Message_JoinRequestAccepted_Result(), EP2PSend.k_EP2PSendReliable);
@@ -852,7 +858,7 @@ public class Networker : MonoBehaviour
         players?.Clear();
         NetworkSenderThread.Instance.DumpAllExistingPlayers();
         readyDic?.Clear();
-        playerStatusDic?.Clear()
+        playerStatusDic?.Clear();
         hostReady = false;
         allPlayersReadyHasBeenSentFirstTime = false;
         readySent = false;
