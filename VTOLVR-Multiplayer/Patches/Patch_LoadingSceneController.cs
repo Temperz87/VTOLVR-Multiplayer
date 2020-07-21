@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Harmony;
+using Oculus.Platform;
 using UnityEngine;
 
 /*
@@ -68,36 +69,47 @@ class Patch_LoadingSceneHelmet_Update
                 __instance.headHelmet.SetActive(true);
                 __instance.gameObject.SetActive(false);
 
-                if (Networker.isHost)
+                if (Networker.isHost || Networker.isClient)
                 {
-                    if (Networker.EveryoneElseReady())
+                    if (Networker.isHost)
                     {
-                        Debug.Log("Everyone is ready, starting game");
-                        NetworkSenderThread.Instance.SendPacketAsHostToAllClients(new Message(MessageType.AllPlayersReady), Steamworks.EP2PSend.k_EP2PSendReliable);
-                        Networker.hostReady = true;
-                        LoadingSceneController.instance.PlayerReady();
+                        if (Networker.EveryoneElseReady())
+                        {
+                            Debug.Log("Everyone is ready, starting game");
+                            NetworkSenderThread.Instance.SendPacketAsHostToAllClients(new Message(MessageType.AllPlayersReady), Steamworks.EP2PSend.k_EP2PSendReliable);
+                            Networker.hostReady = true;
+                            LoadingSceneController.instance.PlayerReady();
+                        }
+                        else
+                        {
+                            Debug.Log("I'm ready but others are not, waiting");
+                            Networker.hostReady = true;
+                        }
                     }
                     else
                     {
-                        Debug.Log("I'm ready but others are not, waiting");
-                        Networker.hostReady = true;
+                        if (!Networker.readySent)
+                        {
+                            Networker.readySent = true;
+                            NetworkSenderThread.Instance.SendPacketToSpecificPlayer(Networker.hostID, new Message(MessageType.Ready), Steamworks.EP2PSend.k_EP2PSendReliable);
+                            Debug.Log("Waiting for the host to say everyone is ready");
+                        }
                     }
+                    if (!Networker.hostLoaded && !Networker.isHost)
+                    {
+                        Debug.Log("Waiting for host to load");
+                    }
+
+                    __instance.equipAudioSource.Play();
+                    return false;
                 }
                 else
                 {
-                    if (!Networker.readySent) {
-                        Networker.readySent = true;
-                        NetworkSenderThread.Instance.SendPacketToSpecificPlayer(Networker.hostID, new Message(MessageType.Ready), Steamworks.EP2PSend.k_EP2PSendReliable);
-                        Debug.Log("Waiting for the host to say everyone is ready");
-                    }
-                }
-                if (!Networker.hostLoaded && !Networker.isHost)
-                {
-                    Debug.Log("Waiting for host to load");
+                    Debug.Log("Player is not a MP host or client.");
+                    LoadingSceneController.instance.PlayerReady();
                 }
 
-                __instance.equipAudioSource.Play();
-                return false;
+
             }
         }
         return true;
