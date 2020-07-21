@@ -62,6 +62,7 @@ public class Networker : MonoBehaviour
     private CampaignScenario pilotSaveManagerControllerCampaignScenario;
     public static Networker _instance { get; private set; }
     public static bool isHost { get; private set; }
+    public static bool isClient { get; private set; }
     public enum GameState { Menu, Config, Game };
     public static GameState gameState { get; private set; }
     public static List<CSteamID> players { get; private set; } = new List<CSteamID>();
@@ -77,6 +78,9 @@ public class Networker : MonoBehaviour
     public static bool allPlayersReadyHasBeenSentFirstTime;
     public static bool readySent;
     public static bool hostReady, alreadyInGame, hostLoaded;
+
+    public bool playingMP { get; private set; }
+
     public static CSteamID hostID { get; private set; }
     private Callback<P2PSessionRequest_t> _p2PSessionRequestCallback;
     //networkUID is used as an identifer for all network object, we are just adding onto this to get a new one
@@ -179,6 +183,7 @@ public class Networker : MonoBehaviour
             return;
         }
         isHost = false;
+        isClient = true;
 
         MapAndScenarioVersionChecker.CreateHashes();
 
@@ -818,6 +823,7 @@ public class Networker : MonoBehaviour
         if (applicationClosing)
             return;
         isHost = false;
+        isClient = false;
         gameState = GameState.Menu;
         players = new List<CSteamID>();
         NetworkSenderThread.Instance.DumpAllExistingPlayers();
