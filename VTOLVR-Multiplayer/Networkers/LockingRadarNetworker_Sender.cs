@@ -23,6 +23,7 @@ class LockingRadarNetworker_Sender : MonoBehaviour
 
     void FixedUpdate()
     {
+#if false
         if (radar.radar.radarEnabled != lastOn || radar.radar.sweepFov != lastFov)
         {
             lastRadarMessage.UID = networkUID;
@@ -52,5 +53,6 @@ class LockingRadarNetworker_Sender : MonoBehaviour
                 }
             }
         }
+#endif
     }
 }
