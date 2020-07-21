@@ -47,7 +47,7 @@ class LockingRadarNetworker_Receiver : MonoBehaviour
             lockingRadar.Unlock();
             return;
         }
-        if (lastLockingMessage.isLocked && !lockingRadar.IsLocked())
+        else if (lastLockingMessage.isLocked && !lockingRadar.IsLocked())
         {
             Debug.Log("Trying to lock radar.");
             foreach (var AI in AIManager.AIVehicles)
