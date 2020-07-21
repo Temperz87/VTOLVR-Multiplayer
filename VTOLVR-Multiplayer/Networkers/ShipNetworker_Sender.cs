@@ -10,6 +10,7 @@ class ShipNetworker_Sender : MonoBehaviour
     private void Awake()
     {
         lastMessage = new Message_ShipUpdate(new Vector3D(), new Vector3D(), new Vector3D(), new Vector3D(), networkUID);
+        ship = GetComponent<ShipMover>();
     }
 
     void FixedUpdate()

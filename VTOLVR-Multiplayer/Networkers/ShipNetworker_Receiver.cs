@@ -23,14 +23,16 @@ class ShipNetworker_Receiver : MonoBehaviour
         waypoint = new Waypoint();
         GameObject wptTransform = new GameObject();
         waypoint.SetTransform(wptTransform.transform);
+
+        ship = GetComponent<ShipMover>();
+        ship.enabled = false;
     }
 
     void FixedUpdate() {
         targetPositionGlobal += targetVelocity * Time.fixedDeltaTime;
         targetPosition = VTMapManager.GlobalToWorldPoint(new Vector3D(targetPositionGlobal));
-        ship.transform.position += ((targetPosition - ship.transform.position) * Time.fixedDeltaTime) / smoothTime;
-
-        ship.rb.velocity += (targetPosition - ship.transform.position)/smoothTime;
+        ship.rb.MovePosition(ship.transform.position + targetVelocity * Time.fixedDeltaTime + ((targetPosition - ship.transform.position) * Time.fixedDeltaTime) / smoothTime);
+        ship.rb.velocity = targetVelocity + (targetPosition - ship.transform.position)/smoothTime;
     }
 
     public void ShipUpdate(Packet packet)
@@ -44,15 +46,15 @@ class ShipNetworker_Receiver : MonoBehaviour
 
         ship.transform.rotation = Quaternion.Euler(lastMessage.rotation.toVector3);
 
-        if (lastMessage.destination.toVector3 != Vector3.zero)
-        {
-            waypoint.GetTransform().position = VTMapManager.GlobalToWorldPoint(lastMessage.destination);
-            ship.MoveTo(waypoint);
-        }
-        else {
-            waypoint.GetTransform().position = ship.transform.position;
-            ship.MoveTo(waypoint);
-        }
+        //if (lastMessage.destination.toVector3 != Vector3.zero)
+        //{
+            //waypoint.GetTransform().position = VTMapManager.GlobalToWorldPoint(lastMessage.destination);
+            //ship.MoveTo(waypoint);
+        //}
+        //else {
+            //waypoint.GetTransform().position = ship.transform.position;
+            //ship.MoveTo(waypoint);
+        //}
 
         if ((VTMapManager.GlobalToWorldPoint(lastMessage.position) - ship.transform.position).magnitude > 100) {
             Debug.Log("Ship is too far, teleporting. This message should apear once per ship at spawn, if ur seeing more something is probably fucky");

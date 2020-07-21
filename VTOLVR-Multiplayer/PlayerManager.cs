@@ -114,7 +114,6 @@ public static class PlayerManager
                     if (actor.gameObject.GetComponent<ShipMover>() != null)
                     {
                         ShipNetworker_Sender shipNetworker = actor.gameObject.AddComponent<ShipNetworker_Sender>();
-                        shipNetworker.ship = actor.gameObject.GetComponent<ShipMover>();
                         shipNetworker.networkUID = networkUID;
                     }
                     else if (actor.gameObject.GetComponent<Rigidbody>() != null)

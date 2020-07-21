@@ -94,7 +94,6 @@ public static class AIManager
         }
         if (newAI.GetComponent<ShipMover>() != null) {
             ShipNetworker_Receiver shipNetworker = newAI.AddComponent<ShipNetworker_Receiver>();
-            shipNetworker.ship = newAI.GetComponent<ShipMover>();
             shipNetworker.networkUID = message.networkID;
         }
         else if (newAI.GetComponent<Rigidbody>() != null) {
