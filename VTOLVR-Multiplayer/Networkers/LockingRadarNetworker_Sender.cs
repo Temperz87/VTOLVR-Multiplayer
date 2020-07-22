@@ -32,7 +32,6 @@ class LockingRadarNetworker_Sender : MonoBehaviour
         lastRadarMessage = new Message_RadarUpdate(true, 0, networkUID);
         lastLockingMessage = new Message_LockingRadarUpdate(0, false, networkUID);
     }
-
     private void FixedUpdate()
     {
         if (lr == null)

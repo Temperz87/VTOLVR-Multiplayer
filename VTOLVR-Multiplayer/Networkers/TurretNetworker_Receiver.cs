@@ -21,13 +21,13 @@ class TurretNetworker_Receiver : MonoBehaviour
         if (lastMessage.UID != networkUID)
             return;
 
-        turret.AimToTarget(turret.pitchTransform.position + lastMessage.direction.toVector3.normalized * 1000);
+        turret.AimToTargetImmediate(turret.pitchTransform.position + lastMessage.direction.toVector3.normalized * 1000);
     }
 
     public void OnDestroy()
     {
         Networker.TurretUpdate -= TurretUpdate;
-        Debug.Log("Destroyed ExtLight");
+        Debug.Log("Destroyed TurretUpdate");
         Debug.Log(gameObject.name);
     }
 }

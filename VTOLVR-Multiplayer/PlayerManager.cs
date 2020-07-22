@@ -103,14 +103,28 @@ public static class PlayerManager
 
                     UIDNetworker_Sender uidSender = actor.gameObject.AddComponent<UIDNetworker_Sender>();
                     uidSender.networkUID = networkUID;
-
                     if (actor.hasRadar)
                     {
                         Debug.Log($"Adding radar sender to object {actor.name}.");
                         lastLockingSender = actor.gameObject.AddComponent<LockingRadarNetworker_Sender>();
                         lastLockingSender.networkUID = networkUID;
                     }
-                    if (actor.gameObject.GetComponent<Rigidbody>() != null)
+                    if (actor.gameObject.GetComponent<Health>() != null)
+                    {
+                        HealthNetworker_Sender healthNetworker = actor.gameObject.AddComponent<HealthNetworker_Sender>();
+                        healthNetworker.networkUID = networkUID;
+                        Debug.Log("added health sender to ai");
+                    }
+                    else
+                    {
+                        Debug.Log(actor.name + " has no health?");
+                    }
+                    if (actor.gameObject.GetComponent<ShipMover>() != null)
+                    {
+                        ShipNetworker_Sender shipNetworker = actor.gameObject.AddComponent<ShipNetworker_Sender>();
+                        shipNetworker.networkUID = networkUID;
+                    }
+                    else if (actor.gameObject.GetComponent<Rigidbody>() != null)
                     {
                         lastRigidSender = actor.gameObject.AddComponent<RigidbodyNetworker_Sender>();
                         lastRigidSender.networkUID = networkUID;
@@ -119,6 +133,10 @@ public static class PlayerManager
                     {
                         lastPlaneSender = actor.gameObject.AddComponent<PlaneNetworker_Sender>();
                         lastPlaneSender.networkUID = networkUID;
+                    }
+                    if (actor.gameObject.GetComponent<AirportManager>() != null)
+                    {
+                        actor.gameObject.GetComponent<AirportManager>().airportName = "USS TEMPERZ " + networkUID;
                     }
                 }
                 else
@@ -268,6 +286,17 @@ public static class PlayerManager
             Debug.Log("Added Tilt Updater to our vehicle");
             EngineTiltNetworker_Sender tiltSender = localVehicle.AddComponent<EngineTiltNetworker_Sender>();
             tiltSender.networkUID = UID;
+        }
+
+        if (localVehicle.GetComponent<Health>() != null)
+        {
+            HealthNetworker_Sender healthNetworker = localVehicle.AddComponent<HealthNetworker_Sender>();
+            healthNetworker.networkUID = UID;
+            Debug.Log("added health sender to local player");
+        }
+        else
+        {
+            Debug.Log("local player has no health?");
         }
 
         if (localVehicle.GetComponentInChildren<WingFoldController>() != null) {
@@ -461,6 +490,9 @@ public static class PlayerManager
         //Debug.Log("Setting vehicle name");
         newVehicle.name = $"Client [{message.csteamID}]";
         Debug.Log($"Spawned new vehicle at {newVehicle.transform.position}");
+
+        HealthNetworker_Receiver healthNetworker = newVehicle.AddComponent<HealthNetworker_Receiver>();
+        healthNetworker.networkUID = message.networkID;
 
         RigidbodyNetworker_Receiver rbNetworker = newVehicle.AddComponent<RigidbodyNetworker_Receiver>();
         rbNetworker.networkUID = message.networkID;
