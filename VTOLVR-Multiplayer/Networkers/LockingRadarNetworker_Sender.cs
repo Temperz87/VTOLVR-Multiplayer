@@ -13,7 +13,7 @@ class LockingRadarNetworker_Sender : MonoBehaviour
     private Message_LockingRadarUpdate lastLockingMessage;
     private Radar radar;
     private LockingRadar lr;
-    bool lastOn;
+    private bool lastOn = false;
     float lastFov;
     RadarLockData lastRadarLockData = null;
     private void Awake()
@@ -37,12 +37,12 @@ class LockingRadarNetworker_Sender : MonoBehaviour
     {
         if (lr == null)
         {
-            Debug.LogError($"Radar is null for object {gameObject.name} with an uid of {networkUID}.");
+            Debug.LogError($"LockingRadar is null for object {gameObject.name} with an uid of {networkUID}.");
             lr = gameObject.GetComponentInChildren<LockingRadar>();
         }
         if (lr.radar == null)
         {
-            Debug.LogError("This radar.radar shouldn't be null");
+            Debug.LogError("This radar.radar shouldn't be null. If this error pops up a second time then be worried.");
             lr.radar = gameObject.GetComponentInChildren<Radar>();
         }
         else
@@ -66,22 +66,23 @@ class LockingRadarNetworker_Sender : MonoBehaviour
                 Debug.Log("last one");
                 lastFov = lr.radar.sweepFov;
             }
-            if (lr.currentLock != lastRadarLockData)
+            if (lr.IsLocked() != lastLockingMessage.isLocked || lr.currentLock != lastRadarLockData)
             {
                 Debug.Log("is lock not equal to last message is locked");
                 lastRadarLockData = lr.currentLock;
                 Debug.Log("lockdata set");
                 if (lastRadarLockData == null)
                 {
-                    Debug.Log("lock data nulll");
+                    Debug.Log("lock data null");
                     lastLockingMessage.actorUID = 0;
                     lastLockingMessage.isLocked = false;
+                    
                     lastLockingMessage.senderUID = networkUID;
-                    Debug.Log($"Sending a locking radar message for uID {networkUID}");
+                    Debug.Log($"Sending a locking radar message to uID {networkUID}");
                     if (Networker.isHost)
-                        NetworkSenderThread.Instance.SendPacketAsHostToAllClients(lastLockingMessage, EP2PSend.k_EP2PSendUnreliable);
+                        NetworkSenderThread.Instance.SendPacketAsHostToAllClients(lastLockingMessage, EP2PSend.k_EP2PSendReliable);
                     else
-                        NetworkSenderThread.Instance.SendPacketToSpecificPlayer(Networker.hostID, lastLockingMessage, EP2PSend.k_EP2PSendUnreliable);
+                        NetworkSenderThread.Instance.SendPacketToSpecificPlayer(Networker.hostID, lastLockingMessage, EP2PSend.k_EP2PSendReliable);
                 }
                 else
                 {

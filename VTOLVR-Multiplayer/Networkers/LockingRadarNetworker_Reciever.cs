@@ -13,6 +13,8 @@ class LockingRadarNetworker_Receiver : MonoBehaviour
     private Message_LockingRadarUpdate lastLockingMessage;
     private LockingRadar lockingRadar;
     private RadarLockData radarLockData;
+    private ulong lastLock;
+    private bool lastLocked;
     private void Awake()
     {
         lockingRadar = gameObject.GetComponentInChildren<LockingRadar>();
@@ -39,6 +41,7 @@ class LockingRadarNetworker_Receiver : MonoBehaviour
     }
     public void LockingRadarUpdate(Packet packet)
     {
+        Debug.Log("Lorem ipsum");
         lastLockingMessage = (Message_LockingRadarUpdate)((PacketSingle)packet).message;
         Debug.Log("Got a new locking radar update intended for id " + lastLockingMessage.senderUID);
         if (lastLockingMessage.senderUID != networkUID)
@@ -49,18 +52,45 @@ class LockingRadarNetworker_Receiver : MonoBehaviour
         {
             Debug.Log($"Unlocking radar {gameObject.name}");
             lockingRadar.Unlock();
+            lastLock = 0;
             return;
         }
-        else if (lastLockingMessage.isLocked && !lockingRadar.IsLocked())
+        else if (lastLockingMessage.actorUID != lastLock || (lastLockingMessage.isLocked && !lockingRadar.IsLocked()))
         {
             Debug.Log("Trying to lock radar.");
             foreach (var AI in AIManager.AIVehicles)
             {
                 if (AI.vehicleUID == lastLockingMessage.actorUID)
                 {
+                    Debug.Log($"Radar {gameObject.name} found its lock {AI.vehicleName} with an id of {AI.vehicleUID} while trying to lock id {lastLockingMessage.actorUID}. Trying to force a lock.");
                     lockingRadar.ForceLock(AI.actor, out radarLockData);
-                    Debug.Log($"Radar {gameObject.name} found its lock {AI.vehicleName} with an id of {AI.vehicleUID} while trying to lock id {lastLockingMessage.actorUID}.");
                     Debug.Log($"The lock data is Locked: {radarLockData.locked}, Locked Actor: {radarLockData.actor.name}.");
+                    if (radarLockData.locked)
+                    {
+                        lastLock = AI.vehicleUID;
+                        lastLocked = true;
+                    }
+                    break;
+                }
+            }
+        }
+    }
+    private void FixedUpdate()
+    {
+        if (lastLocked && !lockingRadar.IsLocked())
+        {
+            foreach (var AI in AIManager.AIVehicles)
+            {
+                if (AI.vehicleUID == lastLock)
+                {
+                    Debug.Log($"Radar {gameObject.name} refound its lock after dropping it at {AI.vehicleName} with an id of {AI.vehicleUID} while trying to relock id {lastLockingMessage.actorUID}. Trying to force a lock.");
+                    lockingRadar.ForceLock(AI.actor, out radarLockData);
+                    Debug.Log($"The lock data is Locked: {radarLockData.locked}, Locked Actor: {radarLockData.actor.name}.");
+                    if (radarLockData.locked)
+                    {
+                        lastLock = AI.vehicleUID;
+                        lastLocked = true;
+                    }
                     break;
                 }
             }

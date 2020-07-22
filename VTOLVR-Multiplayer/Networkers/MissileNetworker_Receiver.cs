@@ -42,12 +42,18 @@ public class MissileNetworker_Receiver : MonoBehaviour
         }
         if (!thisMissile.fired)
         {
-            Debug.Log("Missile fired on one end but not another, firing here.");
+            Debug.Log(thisMissile.gameObject.name + " missile fired on one end but not another, firing here.");
+            if (thisML == null)
+            {
+                Debug.LogError($"Missile launcher is null on missile {thisMissile.actor.name}.");
+            }
             if (lastMessage.guidanceMode == Missile.GuidanceModes.Radar)
             {
-                thisMissile.debugMissile = true;
-                Debug.Log("Guidance mode radar");
-                RadarLockData lockData = new RadarLockData();
+                // thisMissile.debugMissile = true;
+                Debug.Log("Guidance mode radar, firing it as a radar missile.");
+                HPEquipMissileLauncher radarLauncher = thisML.gameObject.GetComponent<HPEquipMissileLauncher>();
+                radarLauncher.OnStartFire();
+                /*RadarLockData lockData = new RadarLockData();
                 // lockData.locked = true;
                 // lockData.lockingRadar = GetComponentInChildren<LockingRadar>();     //Unsure if these are on a child or not
                 //lockData.radarSymbol = GetComponentInChildren<Radar>().radarSymbol; //I'm just guessing they are
@@ -64,19 +70,22 @@ public class MissileNetworker_Receiver : MonoBehaviour
                         break;
                     }
                 }
-                Debug.Log($"Lock data for missileLaucher of missile {thisMissile.name}, Locked: {lockData.locked}, Actor: {lockData.actor}.");
+                Debug.Log($"Lock data for missileLaucher of missile {thisMissile.name}, Locked: {lockData.locked}, Actor: {lockData.actor}.");*/
             }
-            if (lastMessage.guidanceMode == Missile.GuidanceModes.Optical)
+            else
             {
-                foreach (var collider in thisMissile.gameObject.GetComponentsInChildren<Collider>())
+                if (lastMessage.guidanceMode == Missile.GuidanceModes.Optical)
                 {
-                    Debug.Log("Guidance mode Optical.");
-                    collider.gameObject.layer = 9;
+                    foreach (var collider in thisMissile.gameObject.GetComponentsInChildren<Collider>())
+                    {
+                        Debug.Log("Guidance mode Optical.");
+                        // collider.gameObject.layer = 9;
+                    }
                 }
+                Debug.Log("Try fire missile clientside");
+                traverse.Field("missileIdx").SetValue(idx);
+                thisML.FireMissile();
             }
-            Debug.Log("Try fire missile clientside");
-            traverse.Field("missileIdx").SetValue(idx);
-            thisML.FireMissile();
         }
 
         if (lastMessage.hasExploded)
