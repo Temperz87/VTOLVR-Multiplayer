@@ -73,6 +73,8 @@ public class Networker : MonoBehaviour
     // 0 = Not Ready
     // 1 = Ready
     // 2 = Loading
+    // 3 = In Game
+    // 4 = Disconnected
     public static Dictionary<CSteamID, int> playerStatusDic { get; private set; } = new Dictionary<CSteamID, int>();
 
     public static bool allPlayersReadyHasBeenSentFirstTime;
@@ -179,6 +181,14 @@ public class Networker : MonoBehaviour
         playerStatusDic.Add(hostID, 0);
         _instance.StartCoroutine(_instance.FlyButton());
     }
+
+    public static void SetHostReady()
+    {
+        playerStatusDic[hostID] = 1;
+        hostReady = true;
+        UpdateLoadingText();
+    }
+
     public static void JoinGame(CSteamID steamID)
     {
         if (gameState != GameState.Menu)
@@ -396,15 +406,16 @@ public class Networker : MonoBehaviour
                     break;
                 case MessageType.AllPlayersReady:
                     Debug.Log("The host said everyone is ready, waiting for the host to load.");
-                    hostReady = true;
                     playerStatusDic[hostID] = 2;
                     UpdateLoadingText();
+                    hostReady = true;
                     // LoadingSceneController.instance.PlayerReady();
                     break;
                 case MessageType.RequestSpawn:
                     Debug.Log($"case request spawn from: {csteamID.m_SteamID}, we are {SteamUser.GetSteamID().m_SteamID}, host is {hostID}");
                     if (RequestSpawn != null)
                     { RequestSpawn.Invoke(packet, csteamID); }
+
                     break;
                 case MessageType.RequestSpawn_Result:
                     Debug.Log("case request spawn result");
@@ -446,6 +457,8 @@ public class Networker : MonoBehaviour
                     {
                         if (Multiplayer.SoloTesting)
                             break;
+
+                        playerStatusDic[csteamID] = 4;
                         players.Remove(csteamID);
                         NetworkSenderThread.Instance.RemovePlayer(csteamID);
                         NetworkSenderThread.Instance.SendPacketAsHostToAllClients(packet, packet.sendType);
@@ -542,6 +555,7 @@ public class Networker : MonoBehaviour
                         if (isHost)
                         {
                             Debug.Log("we shouldn't have gotten a host loaded....");
+                            playerStatusDic[hostID] = 2;
                         }
                         else
                         {
@@ -679,6 +693,10 @@ public class Networker : MonoBehaviour
         } else if (playerStatusDic[hostID] == 1)
         {
             content.AppendLine("<b>" + SteamFriends.GetPersonaName() + "</b>" + ": " + "<color=\"green\">Ready</color>" + "\n");
+        }
+        else
+        {
+            content.AppendLine("<b>" + SteamFriends.GetPersonaName() + "</b>" + ": " + "<color=\"red\">Not Ready</color>" + "\n");
         }
 
 
