@@ -49,7 +49,9 @@ public class Multiplayer : VTOLMOD
         _instance = this;
         HarmonyInstance harmony = HarmonyInstance.Create("marsh.vtolvr.multiplayer.temperzFork");
         harmony.PatchAll(Assembly.GetExecutingAssembly());
+        Networker.SetMultiplayerInstance(this);
     }
+
     public override void ModLoaded()
     {
         Log($"VTOL VR Multiplayer v{ ModVersionString.ModVersionNumber } - branch: { ModVersionString.ReleaseBranch }");
@@ -79,6 +81,8 @@ public class Multiplayer : VTOLMOD
     {
         UnityEngine.CrashReportHandler.CrashReportHandler.enableCaptureExceptions = false;
 
+        Debug.Log($"Scene Switch! { scene.ToString() }");
+
         switch (scene)
         {
             case VTOLScenes.ReadyRoom:
@@ -86,11 +90,13 @@ public class Multiplayer : VTOLMOD
                 break;
             case VTOLScenes.Akutan:
                 Log("Map Loaded from vtol scenes akutan");
+                waitingForJoin = null;
                 DestroyLoadingSceneObjects();
                 StartCoroutine(PlayerManager.MapLoaded());
                 break;
             case VTOLScenes.CustomMapBase:
                 Log("Map Loaded from vtol scenes custom map base");
+                waitingForJoin = null;
                 DestroyLoadingSceneObjects();
                 StartCoroutine(PlayerManager.MapLoaded());
                 break;
@@ -107,16 +113,54 @@ public class Multiplayer : VTOLMOD
 
     private void CreateUI()
     {
-        Log("Creating Multiplayer UI");
-        Transform ScenarioDisplay = GameObject.Find("InteractableCanvas").transform.GetChild(0).GetChild(6).GetChild(0).GetChild(1);
-        if (ScenarioDisplay.name != "ScenarioDisplay")
-        {
-            Log($"ScenarioDisplay was wrong ({ScenarioDisplay.name}), trying other method");
-            ScenarioDisplay = GameObject.Find("InteractableCanvas").transform.GetChild(0).GetChild(7).GetChild(0).GetChild(1);
-            Log($"ScenarioDisplay now == {ScenarioDisplay.name}");
+
+        while (!SceneManager.GetActiveScene().isLoaded){
+            Debug.Log("Waiting for scene to be loaded");
         }
+
+        Log("Creating Multiplayer UI");
+        
+        Transform ScenarioDisplay = null;
+        bool foundDisplay = false;
+        bool foundCampaginDisplay = false;
+        int? campaignDisplayCount = null;
+
+        Debug.Log("Looping through canvases to find the Scenario Display");
+
+
+        // Get the interactable canvas
+        for (int i = 0; i < GameObject.Find("InteractableCanvas").transform.GetChild(0).childCount; i++)
+        {
+            // Loop through each child to find the Campaign Select Canavas
+            ScenarioDisplay = GameObject.Find("InteractableCanvas").transform.GetChild(0).GetChild(i);
+            if (ScenarioDisplay.name == "CampaignSelector")
+            {
+                foundCampaginDisplay = true;
+                campaignDisplayCount = i;
+                // Get the next page in the campaign selector (The scenario display)
+                ScenarioDisplay = ScenarioDisplay.GetChild(0).GetChild(1);
+
+                // If the name is ScenarioDisplay, we found it! Breaking out of the for loop to continue on...
+                if (ScenarioDisplay.name == "ScenarioDisplay")
+                {
+                    foundDisplay = true;
+                    break;
+                }
+            }
+        }
+        Debug.Log($"Found Campaign Display? { foundCampaginDisplay.ToString() }");
+
+        if (campaignDisplayCount != null)
+        {
+            Debug.Log($"Found Campaign Display { campaignDisplayCount.ToString() } canvases down.");
+        }
+
+        Debug.Log($"Found Scenario Display? { foundDisplay.ToString() }");
+
         //Creating the MP button
         Transform mpButton = Instantiate(ScenarioDisplay.GetChild(10).gameObject, ScenarioDisplay).transform;
+
+
         Log("Multiplayer Button" + mpButton.name);
         mpButton.gameObject.SetActive(true);
         mpButton.name = "MPButton";
@@ -145,7 +189,7 @@ public class Multiplayer : VTOLMOD
         }
         content = ScrollView.transform.GetChild(0).GetChild(0).gameObject;
         selectionTF = content.transform.GetChild(0);
-        selectionTF.GetComponent<Image>().color = new Color(0,0,0,0);
+        selectionTF.GetComponent<Image>().color = new Color(0, 0, 0, 0);
         Log("Copying the List from select Campaign for friends");//Copying the List from select Campaign for friends
         friendsTemplate = content.transform.GetChild(1).gameObject;
         buttonHeight = ((RectTransform)friendsTemplate.transform).rect.height;
@@ -197,18 +241,21 @@ public class Multiplayer : VTOLMOD
         lobbyInfoText = lobbyInfoGO.GetComponent<Text>();
         lobbyInfoText.text = "Select a friend or host a lobby.";
         lobbyInfoText.alignment = TextAnchor.UpperLeft;
-        lobbyInfoText.transform.localRotation =  Quaternion.Euler(lobbyInfoText.transform.localRotation.eulerAngles.x + 90,
+        lobbyInfoText.transform.localRotation = Quaternion.Euler(lobbyInfoText.transform.localRotation.eulerAngles.x + 90,
             lobbyInfoText.transform.localRotation.y,
             lobbyInfoText.transform.localRotation.z);
         Log("Last one");
         mpInteractable.OnInteract.AddListener(delegate { Log("Before Opening MP"); RefershFriends(); MPMenu.SetActive(true); ScenarioDisplay.gameObject.SetActive(false); OpenMP(); });
         GameObject.Find("InteractableCanvas").GetComponent<VRPointInteractableCanvas>().RefreshInteractables();
         Log("Finished");
+        
+        
     }
 
     public void RefershFriends()
     {
         Log("Refreshing Friends");
+        steamFriends.Clear();
         int friendsCount = SteamFriends.GetFriendCount(EFriendFlags.k_EFriendFlagImmediate);
         if (friendsCount == -1)
         {
@@ -340,6 +387,11 @@ public class Multiplayer : VTOLMOD
         Networker.UpdateLoadingText();
     }
 
+    public void CleanUpOnDisconnect() {
+        selectedFriend = new CSteamID(0);
+        steamFriends?.Clear();
+    }
+
     private void DestroyLoadingSceneObjects()
     {
         GameObject cube = GameObject.Find("Multiplayer Player List");
@@ -352,11 +404,11 @@ public class Multiplayer : VTOLMOD
         {
             Debug.Log("Could not find MP list cube");
         }
-        
     }
 
     public void OnDestory()
     {
         VTOLAPI.SceneLoaded -= SceneLoaded;
+        Networker.OnMultiplayerDestroy();
     }
 }

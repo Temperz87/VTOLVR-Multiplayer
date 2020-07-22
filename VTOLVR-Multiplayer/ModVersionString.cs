@@ -6,6 +6,6 @@ using System.Threading.Tasks;
 
 static class ModVersionString
 {
-    public static string ReleaseBranch = "carriersync2";
-    public static string ModVersionNumber = "0.0.3";
+    public static string ReleaseBranch = "dev";
+    public static string ModVersionNumber = "0.0.6";
 }
