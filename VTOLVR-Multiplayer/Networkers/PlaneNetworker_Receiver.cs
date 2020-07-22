@@ -16,7 +16,6 @@ public class PlaneNetworker_Receiver : MonoBehaviour
     //Classes we use to set the information
     private AIPilot aiPilot;
     private AutoPilot autoPilot;
-    private Health health;
     private WeaponManager weaponManager;
     private CountermeasureManager cmManager;
     private FuelTank fuelTank;
@@ -37,7 +36,6 @@ public class PlaneNetworker_Receiver : MonoBehaviour
         Networker.WeaponFiring += WeaponFiring;
         // Networker.WeaponStoppedFiring += WeaponStoppedFiring;
         Networker.FireCountermeasure += FireCountermeasure;
-        Networker.Death += Death;
         weaponManager = GetComponent<WeaponManager>();
         mostCurrentUpdateNumber = 0;
         if (weaponManager == null)
@@ -50,9 +48,6 @@ public class PlaneNetworker_Receiver : MonoBehaviour
         fuelTank = GetComponent<FuelTank>();
         if (fuelTank == null)
             Debug.LogError("FuelTank was null on " + gameObject.name);
-        health = GetComponent<Health>();
-        if (health == null)
-            Debug.LogError("health was null on vehicle " + gameObject.name);
     }
     public void PlaneUpdate(Packet packet)
     {
@@ -304,15 +299,6 @@ public class PlaneNetworker_Receiver : MonoBehaviour
         aiPilot.aiSpawn.CountermeasureProgram(message.flares, message.chaff, 2, 0.1f);
     }
 
-    public void Death(Packet packet)
-    {
-        Message_Death message = ((PacketSingle)packet).message as Message_Death;
-        if (message.UID != networkUID)
-                return;
-        health.invincible = false;
-        health.Kill();
-    }
-
     public HPInfo[] GenerateHPInfo()
     {
         if (!Networker.isHost)
@@ -351,7 +337,6 @@ public class PlaneNetworker_Receiver : MonoBehaviour
         Networker.WeaponFiring -= WeaponFiring;
         // Networker.WeaponStoppedFiring -= WeaponStoppedFiring;
         Networker.FireCountermeasure -= FireCountermeasure;
-        Networker.Death -= Death;
         Debug.Log("Destroyed Plane Update");
         Debug.Log(gameObject.name);
     }
