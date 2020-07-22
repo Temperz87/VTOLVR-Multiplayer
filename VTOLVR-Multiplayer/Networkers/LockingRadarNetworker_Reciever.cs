@@ -23,6 +23,12 @@ class LockingRadarNetworker_Receiver : MonoBehaviour
             Debug.Log($"Locking radar on networkUID {networkUID} is null.");
             return;
         }
+        lockingRadar.radar = gameObject.GetComponentInChildren<Radar>();
+        if (lockingRadar.radar == null)
+        {
+            Debug.Log($"Radar was null on network uID {networkUID}");
+        }
+        lockingRadar.debugRadar = true;
         lastRadarMessage = new Message_RadarUpdate(false, 0, networkUID);
         Networker.RadarUpdate += RadarUpdate;
         Networker.LockingRadarUpdate += LockingRadarUpdate;
@@ -41,7 +47,6 @@ class LockingRadarNetworker_Receiver : MonoBehaviour
     }
     public void LockingRadarUpdate(Packet packet)
     {
-        Debug.Log("Lorem ipsum");
         lastLockingMessage = (Message_LockingRadarUpdate)((PacketSingle)packet).message;
         Debug.Log("Got a new locking radar update intended for id " + lastLockingMessage.senderUID);
         if (lastLockingMessage.senderUID != networkUID)
@@ -78,7 +83,7 @@ class LockingRadarNetworker_Receiver : MonoBehaviour
     }
     private void FixedUpdate()
     {
-        if (lastLocked && !lockingRadar.IsLocked())
+        if (lastLocked && !lockingRadar.IsLocked() && lastLock != 0)
         {
             foreach (var AI in AIManager.AIVehicles)
             {
@@ -86,11 +91,10 @@ class LockingRadarNetworker_Receiver : MonoBehaviour
                 {
                     Debug.Log($"Radar {gameObject.name} refound its lock after dropping it at {AI.vehicleName} with an id of {AI.vehicleUID} while trying to relock id {lastLockingMessage.actorUID}. Trying to force a lock.");
                     lockingRadar.ForceLock(AI.actor, out radarLockData);
-                    Debug.Log($"The lock data is Locked: {radarLockData.locked}, Locked Actor: {radarLockData.actor.name}.");
+                    Debug.Log($"The lock data is Locked: {radarLockData.locked}, reLocked Actor: {radarLockData.actor.name}.");
                     if (radarLockData.locked)
                     {
                         lastLock = AI.vehicleUID;
-                        lastLocked = true;
                     }
                     break;
                 }
