@@ -85,9 +85,8 @@ class LockingRadarNetworker_Receiver : MonoBehaviour
             }
         }
     }
-    private void LateUpdate()
+    private void FixedUpdate()
     {
-        Debug.Log($"Last locked: {lastLocked} lockingradarislocked: {lockingRadar.IsLocked()} lastLock: {lastLock} for gameobject " + gameObject.name);
         if (lastLocked && !lockingRadar.IsLocked() && lastLock != 0)
         {
             foreach (var AI in AIManager.AIVehicles)

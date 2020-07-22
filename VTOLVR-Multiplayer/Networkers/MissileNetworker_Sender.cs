@@ -9,7 +9,6 @@ public class MissileNetworker_Sender : MonoBehaviour
     // private Rigidbody rigidbody; doesn't exist in some missiles so we're not fucking with that shit
     private Message_MissileUpdate lastMessage;
     private Missile thisMissile;
-    private bool receivedGlobalUID = false;
     private void Awake()
     {
         Networker.RequestNetworkUID += RequestUID;
@@ -75,7 +74,6 @@ public class MissileNetworker_Sender : MonoBehaviour
         networkUID = lastMessage.resultUID;
         Debug.Log($"Missile ({gameObject.name}) has received their UID from the host. \n Missiles UID = {networkUID}");
         Networker.RequestNetworkUID -= RequestUID;
-        receivedGlobalUID = true;
     }
     /// <summary>
     /// OnDestory will most likley be called when the missile blows up.

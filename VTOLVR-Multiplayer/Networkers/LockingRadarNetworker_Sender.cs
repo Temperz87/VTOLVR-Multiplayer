@@ -11,7 +11,6 @@ class LockingRadarNetworker_Sender : MonoBehaviour
     public ulong networkUID;
     private Message_RadarUpdate lastRadarMessage;
     private Message_LockingRadarUpdate lastLockingMessage;
-    private Radar radar;
     private LockingRadar lr;
     private bool lastOn = false;
     float lastFov;

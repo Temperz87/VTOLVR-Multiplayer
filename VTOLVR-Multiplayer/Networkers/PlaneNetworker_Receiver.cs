@@ -20,7 +20,6 @@ public class PlaneNetworker_Receiver : MonoBehaviour
     private CountermeasureManager cmManager;
     private FuelTank fuelTank;
     private Traverse traverse;
-    private RadarLockData LockData;
     private int idx;
     // private RadarLockData radarLockData;
     private ulong mostCurrentUpdateNumber;
@@ -67,26 +66,6 @@ public class PlaneNetworker_Receiver : MonoBehaviour
             SetTailHook(newMessage.tailHook);
             SetLaunchBar(newMessage.launchBar);
             SetFuelPort(newMessage.fuelPort);
-
-            if (newMessage.hasRadar && weaponManager != null) {
-                weaponManager.lockingRadar.radar.debugRadar = true;
-                if (!weaponManager.lockingRadar.radar.enabled) {
-                    weaponManager.lockingRadar.radar.enabled = true;
-                }
-                if (newMessage.locked && weaponManager.lockingRadar.currentLock.actor.name != newMessage.radarLock && newMessage.radarLock != "") {
-                    foreach (Actor actor in TargetManager.instance.allActors) {
-                        if (actor.name == newMessage.radarLock) {
-                            Debug.Log("Forcing lock on actor " + actor.name);
-                            weaponManager.lockingRadar.ForceLock(actor, out LockData);
-                        }
-                    }
-                }
-                else if (!newMessage.locked && weaponManager.lockingRadar.IsLocked()) {
-                    Debug.Log("Unlocking radar");
-                    weaponManager.lockingRadar.Unlock();
-                }
-            }
-
             SetOrientation(newMessage.pitch, newMessage.yaw, newMessage.roll);
             SetFlaps(newMessage.flaps);
             SetBrakes(newMessage.brakes);
@@ -96,36 +75,14 @@ public class PlaneNetworker_Receiver : MonoBehaviour
             if (lastMessage.landingGear != newMessage.landingGear) {
                 SetLandingGear(newMessage.landingGear);
             }
-
             if (lastMessage.tailHook != newMessage.tailHook) {
                 SetTailHook(newMessage.tailHook);
             }
-
             if (lastMessage.launchBar != newMessage.launchBar) {
                 SetLaunchBar(newMessage.launchBar);
             }
-
             if (lastMessage.fuelPort != newMessage.fuelPort) {
                 SetFuelPort(newMessage.fuelPort);
-            }
-
-            if (lastMessage.hasRadar && weaponManager != null) {
-                weaponManager.lockingRadar.radar.debugRadar = true;
-                if (!weaponManager.lockingRadar.radar.enabled) {
-                    weaponManager.lockingRadar.radar.enabled = true;
-                }
-                if (lastMessage.locked && weaponManager.lockingRadar.currentLock.actor.name != lastMessage.radarLock && lastMessage.radarLock != "") {
-                    foreach (Actor actor in TargetManager.instance.allActors) {
-                        if (actor.name == lastMessage.radarLock) {
-                            Debug.Log("Forcing lock on actor " + actor.name);
-                            weaponManager.lockingRadar.ForceLock(actor, out LockData);
-                        }
-                    }
-                }
-                else if (!lastMessage.locked && weaponManager.lockingRadar.IsLocked()) {
-                    Debug.Log("Unlocking radar");
-                    weaponManager.lockingRadar.Unlock();
-                }
             }
             if (lastMessage.pitch != newMessage.pitch || lastMessage.yaw != newMessage.yaw || lastMessage.roll != newMessage.roll) {
                 SetOrientation(newMessage.pitch, newMessage.yaw, newMessage.roll);
@@ -139,20 +96,6 @@ public class PlaneNetworker_Receiver : MonoBehaviour
             if (lastMessage.throttle != newMessage.throttle) {
                 SetThrottle(newMessage.throttle);
             }
-            /*if (lastMessage.hasRadar)
-            {
-                if (lastMessage.radarLock != radarLockData.actor.actorID)
-                {
-                    if (!lastMessage.locked)
-                    {
-                        aiPilot.wm.lockingRadar.Unlock();
-                    }
-                    else
-                    {
-                        aiPilot.wm.lockingRadar.ForceLock(lastMessage.radarLock.actor, out radarLockData);
-                    }
-                }
-            }*/
 
         }
         lastMessage = newMessage;

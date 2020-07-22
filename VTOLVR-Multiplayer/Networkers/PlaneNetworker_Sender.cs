@@ -27,8 +27,6 @@ public class PlaneNetworker_Sender : MonoBehaviour
     private Tailhook tailhook;
     private CatapultHook launchBar;
     private RefuelPort refuelPort;
-    private bool lastFiring = false;
-    private string radarLock;
     private Traverse traverseThrottle;
     private Actor actor;
     private ulong sequenceNumber;
@@ -45,14 +43,7 @@ public class PlaneNetworker_Sender : MonoBehaviour
         sequenceNumber = 0;
         if (isPlayer)
         {
-            if (VTOLAPI.GetPlayersVehicleEnum() == VTOLVehicles.AV42C)
-            {
-                lastMessage = new Message_PlaneUpdate(false, 0, 0, 0, 0, 0, 0, false, false, false, networkUID, false, false, radarLock, sequenceNumber);
-            }
-            else
-            {
-                lastMessage = new Message_PlaneUpdate(false, 0, 0, 0, 0, 0, 0, false, false, false, networkUID, true, false, radarLock, sequenceNumber);
-            }
+            lastMessage = new Message_PlaneUpdate(false, 0, 0, 0, 0, 0, 0, false, false, false, networkUID, sequenceNumber);
             vRThrottle = gameObject.GetComponentInChildren<VRThrottle>();
             if (vRThrottle == null)
                 Debug.Log("Throttle was null on vehicle " + gameObject.name);
@@ -61,14 +52,7 @@ public class PlaneNetworker_Sender : MonoBehaviour
         }
         else
         {
-            if (actor.hasRadar)
-            {
-                lastMessage = new Message_PlaneUpdate(false, 0, 0, 0, 0, 0, 0, false, false, false, networkUID, true, false, radarLock, sequenceNumber);
-            }
-            else
-            {
-                lastMessage = new Message_PlaneUpdate(false, 0, 0, 0, 0, 0, 0, false, false, false, networkUID, false, false, radarLock, sequenceNumber);
-            }
+            lastMessage = new Message_PlaneUpdate(false, 0, 0, 0, 0, 0, 0, false, false, false, networkUID, sequenceNumber);
             aIPilot = gameObject.GetComponent<AIPilot>();
             if (aIPilot == null)
             { Debug.Log("Aipilot was null on vehicle " + gameObject.name); }
