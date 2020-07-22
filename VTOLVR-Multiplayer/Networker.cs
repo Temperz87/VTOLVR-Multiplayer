@@ -61,7 +61,35 @@ public class Networker : MonoBehaviour
     private Campaign pilotSaveManagerControllerCampaign;
     private CampaignScenario pilotSaveManagerControllerCampaignScenario;
     public static Networker _instance { get; private set; }
-    public static bool isHost { get; private set; }
+    private static bool isHostInternal = false;
+    public static bool isHost {
+        get { return isHostInternal; }
+        private set {
+            lock (isHostTimerLock) {
+                isHostInternal = value;
+                isHostTimer = value;
+            }
+        }
+    }
+    private static readonly object isHostTimerLock = new object();
+    private static bool isHostTimerInternal = false;
+    private static bool isHostTimer {
+        get { lock (isHostTimerLock) { return isHostTimerInternal; } }
+        set { lock (isHostTimerLock) { isHostTimerInternal = value; } }
+    }
+    private static readonly object timeoutCounterLock = new object();
+    private static int timeoutCounterInternal = 0;
+    private static int timeoutCounter {
+        get { lock (timeoutCounterLock) { return timeoutCounterInternal; } }
+        set { lock (timeoutCounterLock) { timeoutCounterInternal = value; } }
+    }
+    private static readonly int clientTimeoutInSeconds = 5;
+    private static readonly object disconnectForClientTimeoutLock = new object();
+    private static bool disconnectForClientTimeoutInternal = false;
+    private static bool disconnectForClientTimeout {
+        get { lock (disconnectForClientTimeoutLock) { return disconnectForClientTimeoutInternal; } }
+        set { lock (disconnectForClientTimeoutLock) { disconnectForClientTimeoutInternal = value; } }
+    }
     public static bool isClient { get; private set; }
     public enum GameState { Menu, Config, Game };
     public static GameState gameState { get; private set; }
@@ -80,6 +108,9 @@ public class Networker : MonoBehaviour
     public static TextMeshPro loadingText;
 
     public static Multiplayer multiplayerInstance = null;
+
+    public static bool HeartbeatTimerRunning = false;
+    public static readonly System.Timers.Timer HeartbeatTimer = new System.Timers.Timer(1000);
     #region Message Type Callbacks
     //These callbacks are use for other scripts to know when a network message has been
     //received for them. They should match the name of the message class they relate to.
@@ -138,6 +169,8 @@ public class Networker : MonoBehaviour
         //VTCustomMapManager.OnLoadedMap += (customMap) => { StartCoroutine(PlayerManager.MapLoaded(customMap)); };
 
         VTOLAPI.SceneLoaded += SceneChanged;
+        HeartbeatTimer.Elapsed += HeartbeatCallback;
+        HeartbeatTimer.AutoReset = true;
     }
     private void OnP2PSessionRequest(P2PSessionRequest_t request)
     {
@@ -160,6 +193,30 @@ public class Networker : MonoBehaviour
         ReadP2P();
     }
 
+    private void LateUpdate()
+    {
+        if (disconnectForClientTimeout) {
+            disconnectForClientTimeout = false;
+            Disconnect();
+        }
+    }
+
+    public static void HeartbeatCallback(object sender, System.Timers.ElapsedEventArgs e) {
+        if (isHostTimer) {
+            // Host, send heartbeat
+            NetworkSenderThread.Instance.SendPacketAsHostToAllClients(new Message_Heartbeat(), EP2PSend.k_EP2PSendUnreliableNoDelay);
+        }
+        else {
+            // Client, increment timeout counter
+            if (++timeoutCounter > clientTimeoutInSeconds) {
+                // Disconnected from host
+                disconnectForClientTimeout = true;
+                HeartbeatTimerRunning = false;
+                HeartbeatTimer.Stop();
+            }
+        }
+    }
+
     public static void HostGame()
     {
         if (gameState != GameState.Menu)
@@ -169,6 +226,11 @@ public class Networker : MonoBehaviour
         }
         Debug.Log("Hosting game");
         isHost = true;
+
+        timeoutCounter = 0;
+        HeartbeatTimerRunning = true;
+        HeartbeatTimer.Start();
+
         _instance.StartCoroutine(_instance.FlyButton());
     }
     public static void JoinGame(CSteamID steamID)
@@ -331,6 +393,9 @@ public class Networker : MonoBehaviour
                     Debug.Log($"case join request accepted result, joining {csteamID.m_SteamID}");
 
                     hostID = csteamID;
+                    timeoutCounter = 0;
+                    HeartbeatTimerRunning = true;
+                    HeartbeatTimer.Start();
                     StartCoroutine(FlyButton());
                     break;
                 case MessageType.JoinRequestRejected_Result:
@@ -553,6 +618,28 @@ public class Networker : MonoBehaviour
                         break;
                     }
                     ActorNetworker_Reciever.syncActors(packet);
+                    break;
+                case MessageType.ServerHeartbeat:
+                    if (!isHost) {
+                        Message_Heartbeat heartbeatMessage = ((PacketSingle)packet).message as Message_Heartbeat;
+
+                        timeoutCounter = 0;
+                        NetworkSenderThread.Instance.SendPacketToSpecificPlayer(hostID, new Message_Heartbeat_Result(heartbeatMessage.TimeOnServerGame), EP2PSend.k_EP2PSendUnreliableNoDelay);
+                    }
+                    break;
+                case MessageType.ServerHeartbeat_Response:
+                    if (isHost) {
+                        Message_Heartbeat_Result heartbeatResult = ((PacketSingle)packet).message as Message_Heartbeat_Result;
+
+                        float pingTime = Time.fixedTime - heartbeatResult.TimeOnServerGame;
+                        NetworkSenderThread.Instance.SendPacketToSpecificPlayer(csteamID, new Message_ReportPingTime(pingTime), EP2PSend.k_EP2PSendUnreliableNoDelay);
+                    }
+                    break;
+                case MessageType.ServerReportingPingTime:
+                    if (!isHost) {
+                        // You can use ping report however you want
+                    }
+
                     break;
                 default:
                     Debug.Log("default case");
@@ -787,6 +874,11 @@ public class Networker : MonoBehaviour
 
     public void OnApplicationQuit()
     {
+        if (HeartbeatTimerRunning) {
+            HeartbeatTimer.Stop();
+            HeartbeatTimerRunning = false;
+        }
+
         if (PlayerManager.gameLoaded)
         {
             Disconnect(true);
@@ -820,6 +912,11 @@ public class Networker : MonoBehaviour
 
     private void DisconnectionTasks() {
         Debug.Log("Running disconnection tasks");
+        if (HeartbeatTimerRunning) {
+            HeartbeatTimer.Stop();
+            HeartbeatTimerRunning = false;
+        }
+
         isHost = false;
         isClient = false;
         gameState = GameState.Menu;
