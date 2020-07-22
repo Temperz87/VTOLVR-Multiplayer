@@ -59,6 +59,13 @@ public class MissileNetworker_Sender : MonoBehaviour
             }
             SendMessage(false);
         }
+        if (thisMissile.guidanceMode == Missile.GuidanceModes.Radar)
+        {
+            if (thisMissile.isPitbull)
+            {
+                Debug.Log(gameObject.name + " is now pitbull.");
+            }
+        }
     }
     public void RequestUID(Packet packet)
     {
