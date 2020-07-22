@@ -14,7 +14,6 @@ public class PlaneNetworker_Sender : MonoBehaviour
     private WheelsController wheelsController;
     private AeroController aeroController;
     private VRThrottle vRThrottle;
-    private Health health;
     private WeaponManager weaponManager;
     private CountermeasureManager cmManager;
     private FuelTank fuelTank;
@@ -86,12 +85,6 @@ public class PlaneNetworker_Sender : MonoBehaviour
             Debug.LogError("CountermeasureManager was null on vehicle " + gameObject.name);
         else
             cmManager.OnFiredCM += FireCountermeasure;
-
-        health = GetComponent<Health>();
-        if (health == null)
-            Debug.LogError("health was null on vehicle " + gameObject.name);
-        else
-            health.OnDeath.AddListener(Death);
 
         fuelTank = GetComponent<FuelTank>();
         if (fuelTank == null)

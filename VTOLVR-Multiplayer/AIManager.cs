@@ -82,7 +82,21 @@ public static class AIManager
         UIDNetworker_Receiver uidReciever = newAI.AddComponent<UIDNetworker_Receiver>();
         uidReciever.networkUID = message.networkID;
 
-        if (newAI.GetComponent<Rigidbody>() != null) {
+        if (newAI.GetComponent<Health>() != null)
+        {
+            HealthNetworker_Receiver healthNetworker = newAI.AddComponent<HealthNetworker_Receiver>();
+            healthNetworker.networkUID = message.networkID;
+            Debug.Log("added health reciever to ai");
+        }
+        else
+        {
+            Debug.Log(message.aiVehicleName + " has no health?");
+        }
+        if (newAI.GetComponent<ShipMover>() != null) {
+            ShipNetworker_Receiver shipNetworker = newAI.AddComponent<ShipNetworker_Receiver>();
+            shipNetworker.networkUID = message.networkID;
+        }
+        else if (newAI.GetComponent<Rigidbody>() != null) {
             RigidbodyNetworker_Receiver rbNetworker = newAI.AddComponent<RigidbodyNetworker_Receiver>();
             rbNetworker.networkUID = message.networkID;
         }
@@ -225,6 +239,12 @@ public static class AIManager
                 }
             }
         }
+
+        if (newAI.GetComponent<AirportManager>() != null) {
+            newAI.GetComponent<AirportManager>().airportName = "USS TEMPERZ " + message.networkID;
+            VTMapManager.fetch.airports.Add(newAI.GetComponent<AirportManager>());
+        }
+
         AIVehicles.Add(new AI(newAI, message.aiVehicleName, actor, message.networkID));
         Debug.Log("Spawned in AI " + newAI.name);
     }
