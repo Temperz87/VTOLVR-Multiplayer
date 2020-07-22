@@ -182,9 +182,17 @@ public class Networker : MonoBehaviour
         _instance.StartCoroutine(_instance.FlyButton());
     }
 
-    public static void SetHostReady()
+    public static void SetHostReady(bool everyoneReady)
     {
-        playerStatusDic[hostID] = 1;
+        if (everyoneReady)
+        {
+            playerStatusDic[hostID] = 2;
+        }
+        else
+        {
+            playerStatusDic[hostID] = 1;
+        }
+        
         hostReady = true;
         UpdateLoadingText();
     }
@@ -347,9 +355,9 @@ public class Networker : MonoBehaviour
                     break;
                 case MessageType.JoinRequestAccepted_Result:
                     Debug.Log($"case join request accepted result, joining {csteamID.m_SteamID}");
-
                     hostID = csteamID;
                     StartCoroutine(FlyButton());
+                    UpdateLoadingText();
                     break;
                 case MessageType.JoinRequestRejected_Result:
                     Debug.Log("case join request rejected result");

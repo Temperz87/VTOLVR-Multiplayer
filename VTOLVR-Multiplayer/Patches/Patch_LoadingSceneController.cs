@@ -77,13 +77,13 @@ class Patch_LoadingSceneHelmet_Update
                         {
                             Debug.Log("Everyone is ready, starting game");
                             NetworkSenderThread.Instance.SendPacketAsHostToAllClients(new Message(MessageType.AllPlayersReady), Steamworks.EP2PSend.k_EP2PSendReliable);
-                            Networker.SetHostReady();
+                            Networker.SetHostReady(true);
                             LoadingSceneController.instance.PlayerReady();
                         }
                         else
                         {
                             Debug.Log("I'm ready but others are not, waiting");
-                            Networker.SetHostReady();
+                            Networker.SetHostReady(false);
                         }
                     }
                     else
