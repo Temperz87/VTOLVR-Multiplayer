@@ -104,6 +104,7 @@
     <Compile Include="Messages\Message_EngineTiltUpdate.cs" />
     <Compile Include="Messages\Message_ExtLight.cs" />
     <Compile Include="Messages\Message_FireCountermeasure.cs" />
+    <Compile Include="Messages\Message_Heartbeat.cs" />
     <Compile Include="Messages\Message_HostLoaded.cs" />
     <Compile Include="Messages\Message_JoinRequest.cs" />
     <Compile Include="Messages\Message_LoadingTextUpdate.cs" />
