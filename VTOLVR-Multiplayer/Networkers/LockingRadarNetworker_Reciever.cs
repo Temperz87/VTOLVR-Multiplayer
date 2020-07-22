@@ -53,6 +53,7 @@ class LockingRadarNetworker_Receiver : MonoBehaviour
             Debug.Log($"Unlocking radar {gameObject.name}");
             lockingRadar.Unlock();
             lastLock = 0;
+            lastLocked = false;
             return;
         }
         else if (lastLockingMessage.actorUID != lastLock || (lastLockingMessage.isLocked && !lockingRadar.IsLocked()))
