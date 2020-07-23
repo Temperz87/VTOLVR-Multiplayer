@@ -249,10 +249,12 @@ public static class AIManager
             newAI.GetComponent<AirportManager>().airportName = "USS WE SHOULD REALLLY SYNC AIRPORT NAMES " + message.networkID;
             VTMapManager.fetch.airports.Add(newAI.GetComponent<AirportManager>());
         }
-        AIVehicles.Add(new AI(newAI, message.aiVehicleName, actor, message.networkID));
+        AI newVehicleAI = new AI(newAI, message.aiVehicleName, actor, message.networkID);
+        AIVehicles.Add(newVehicleAI);
         Debug.Log("Spawned in AI " + newAI.name);
         VTOLVR_Multiplayer.AIDictionaries.allActors.Add(message.networkID, actor);
         VTOLVR_Multiplayer.AIDictionaries.reverseAllActors.Add(actor, message.networkID);
+        VTOLVR_Multiplayer.AIDictionaries.allAIByNetworkId.Add(message.networkID, newVehicleAI);
     }
     /// <summary>
     /// Tell the connected clients about all the vehicles the host has. This code should never be run on a client.

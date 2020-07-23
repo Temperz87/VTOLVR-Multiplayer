@@ -10,6 +10,7 @@ public class MissileNetworker_Sender : MonoBehaviour
     private Message_MissileUpdate lastMessage;
     private Missile thisMissile;
     private bool hasReportedPitbull = false;
+    private ulong lastID;
     private void Awake()
     {
         Networker.RequestNetworkUID += RequestUID;
@@ -43,13 +44,20 @@ public class MissileNetworker_Sender : MonoBehaviour
                 if (thisMissile.radarLock != null && thisMissile.radarLock.actor != null)
                 {
                     lastMessage.targetPosition = VTMapManager.WorldToGlobalPoint(thisMissile.radarLock.actor.transform.position);
-                    foreach (var AI in AIManager.AIVehicles)
-                    {
-                        if (AI.actor == thisMissile.radarLock.actor)
-                        {
-                            lastMessage.radarLock = AI.vehicleUID;
-                            Debug.Log($"Missile {gameObject.name} has found its lock {AI.actor.name} with an uID of {AI.vehicleUID} while trying to lock {thisMissile.radarLock.actor.name}");
+                    try {
+                        if (VTOLVR_Multiplayer.AIDictionaries.reverseAllActors.TryGetValue(thisMissile.radarLock.actor, out lastID)) {
+                            if (VTOLVR_Multiplayer.AIDictionaries.allAIByNetworkId.TryGetValue(lastID, out AIManager.AI ai)) {
+                                lastMessage.radarLock = ai.vehicleUID;
+                                Debug.Log($"Missile {gameObject.name} has found its lock {ai.actor.name} with an uID of {ai.vehicleUID} while trying to lock {thisMissile.radarLock.actor.name}");
+                            }
+                            else if (VTOLVR_Multiplayer.AIDictionaries.allPlayersByNetworkId.TryGetValue(lastID, out PlayerManager.Player player)) {
+                                lastMessage.radarLock = player.vehicleUID;
+                                Debug.Log($"Missile {gameObject.name} has found its lock {player.actor.name} with an uID of {player.vehicleUID} while trying to lock {thisMissile.radarLock.actor.name}");
+                            }
                         }
+                    }
+                    catch (Exception ex) {
+                        Debug.LogError("Couldn't lock target " + thisMissile.radarLock.actor + $" exception {ex} thrown.");
                     }
                 }
             }
@@ -64,6 +72,7 @@ public class MissileNetworker_Sender : MonoBehaviour
             if (thisMissile.isPitbull)
             {
                 if (!hasReportedPitbull) {
+                    hasReportedPitbull = true;
                     Debug.Log(gameObject.name + " is now pitbull.");
                 }
             }

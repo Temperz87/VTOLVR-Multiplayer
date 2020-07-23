@@ -17,7 +17,7 @@ class LockingRadarNetworker_Sender : MonoBehaviour
     private Actor lastLockedActor = null;
     private bool lastLockedState = false;
     private bool lastWasNull = true;
-    ulong lastID;
+    ulong lastID = 0;
     private void Awake()
     {
         Debug.Log("Radar sender awoken for object " + gameObject.name);
@@ -73,28 +73,61 @@ class LockingRadarNetworker_Sender : MonoBehaviour
 
         // if (lr.currentLock != lastRadarLockData) { stateChanged = true; }
         bool stateChanged = false;
+        ulong currentLockedActorUID = 0;
+        if (lr.currentLock != null) {
+            if (lr.currentLock.actor != null) {
+                try {
+                    if (VTOLVR_Multiplayer.AIDictionaries.reverseAllActors.TryGetValue(lr.currentLock.actor, out ulong currentLockUID)) {
+                        currentLockedActorUID = currentLockUID;
+                    }
+                }
+                catch (Exception) { }
+            }
+        }
+
         if (lr.IsLocked() != lastLockedState) {
+            if (lr.currentLock != null) {
+                lastLockedActor = lr.currentLock.actor;
+            }
+            else {
+                lastLockedActor = null;
+            }
+            lastID = currentLockedActorUID;
             stateChanged = true;
-            lastLockedState = true;
         }
         if (lr.currentLock != null)
         {
-            if (lr.currentLock.actor != lastLockedActor)
-            {
+            if (lr.currentLock.actor != null && lastLockedActor == null) {
                 lastLockedActor = lr.currentLock.actor;
+                lastID = currentLockedActorUID;
                 stateChanged = true;
             }
-            if (lr.currentLock.locked != lastLockedState)
+            else if (lr.currentLock.actor == null && lastLockedActor != null) {
+                lastLockedActor = lr.currentLock.actor;
+                lastID = currentLockedActorUID;
+                stateChanged = true;
+            }
+            else if (lr.currentLock.actor != null && lastLockedActor != null) {
+                if (lr.currentLock.actor != lastLockedActor || currentLockedActorUID != lastID) {
+                    lastLockedActor = lr.currentLock.actor;
+                    lastID = currentLockedActorUID;
+                    stateChanged = true;
+                }
+            }
+            else if (lr.currentLock.locked != lastLockedState)
             {
                 lastLockedState = lr.currentLock.locked;
+                lastID = currentLockedActorUID;
                 stateChanged = true;
             }
         }
         else if (!lastWasNull)
         {
+            lastLockedState = false;
+            lastID = currentLockedActorUID;
             stateChanged = true;
         }
-        // if (lr.IsLocked() != lastLockingMessage.isLocked || lr.currentLock != null && (lr.currentLock != lastRadarLockData || lr.currentLock.actor != lastRadarLockData.actor))
+        
         if (stateChanged)
         {
             Debug.Log("is lock not equal to last message is locked for network uID " + networkUID);
@@ -106,7 +139,9 @@ class LockingRadarNetworker_Sender : MonoBehaviour
                 lastLockingMessage.actorUID = 0;
                 lastLockingMessage.isLocked = false;
                 lastLockingMessage.senderUID = networkUID;
+
                 Debug.Log($"Sending a locking radar message to uID {networkUID}");
+
                 if (Networker.isHost)
                     NetworkSenderThread.Instance.SendPacketAsHostToAllClients(lastLockingMessage, EP2PSend.k_EP2PSendReliable);
                 else
@@ -114,52 +149,24 @@ class LockingRadarNetworker_Sender : MonoBehaviour
             }
             else
             {
-                Debug.Log("Else going into dictionary");
-                try
+                Debug.Log("lock is not null, checking if actor is null");
+                if (lastLockedActor != null)
                 {
-                    // ulong key = (from p in VTOLVR_Multiplayer.AIDictionaries.allActors where p.Value == lr.currentLock.actor select p.Key).FirstOrDefault();
-                    if (VTOLVR_Multiplayer.AIDictionaries.reverseAllActors.TryGetValue(lastRadarLockData.actor, out lastID))
-                    {
-                        lastWasNull = false;
-                        Debug.Log(lastRadarLockData.actor.name + " radar data found its lock " + lr.currentLock.actor.name + " at id " + lastID + " with its own uID being " + networkUID);
-                        lastLockingMessage.actorUID = lastID;
-                        lastLockingMessage.isLocked = true;
-                        lastLockingMessage.senderUID = networkUID;
-                        if (Networker.isHost)
-                            NetworkSenderThread.Instance.SendPacketAsHostToAllClients(lastLockingMessage, EP2PSend.k_EP2PSendReliable);
-                        else
-                            NetworkSenderThread.Instance.SendPacketToSpecificPlayer(Networker.hostID, lastLockingMessage, EP2PSend.k_EP2PSendReliable);
-                    }
-                    else
-                    {
-                        Debug.LogError("Could not resolve lock at actor " + lastRadarLockData.actor.name);
-                    }
-                }
-                catch (Exception ex)
-                {
-                    Debug.LogError("Couldn't lock target " + lr.currentLock.actor + $" exception {ex} thrown.");
-                }
-                
+                    lastWasNull = false;
+                    Debug.Log(lastLockedActor.name + " radar data found its lock " + lr.currentLock.actor.name + " at id " + lastID + " with its own uID being " + networkUID);
+                    
+                    lastLockingMessage.actorUID = lastID;
+                    lastLockingMessage.isLocked = true;
+                    lastLockingMessage.senderUID = networkUID;
 
-                /*Debug.Log("else going into foreach");
-                foreach (var AI in AIManager.AIVehicles)
+                    if (Networker.isHost)
+                        NetworkSenderThread.Instance.SendPacketAsHostToAllClients(lastLockingMessage, EP2PSend.k_EP2PSendReliable);
+                    else
+                        NetworkSenderThread.Instance.SendPacketToSpecificPlayer(Networker.hostID, lastLockingMessage, EP2PSend.k_EP2PSendReliable);
+                }
+                else
                 {
-                    if (AI.actor == lastLockedActor)
-                    {
-                        Debug.Log(lastLockedActor.name + " radar data found its lock " + AI.actor.name + " at id " + AI.vehicleUID + " with its own uID being " + networkUID);
-                        lastLockingMessage.actorUID = AI.vehicleUID;
-                        lastLockingMessage.isLocked = true;
-                        lastLockingMessage.senderUID = networkUID;
-                        foundLock = true;
-                        if (Networker.isHost)
-                            NetworkSenderThread.Instance.SendPacketAsHostToAllClients(lastLockingMessage, EP2PSend.k_EP2PSendReliable);
-                        else
-                            NetworkSenderThread.Instance.SendPacketToSpecificPlayer(Networker.hostID, lastLockingMessage, EP2PSend.k_EP2PSendReliable);
-                        break;
-                    }
-                }*/
-                
-                lastWasNull = false;
+                    Debug.LogError("Could not resolve lock at actor " + lastLockedActor.name);
                 }
             }
         }

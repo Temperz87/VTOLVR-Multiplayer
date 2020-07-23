@@ -101,9 +101,11 @@ public static class PlayerManager
                 {
                     Debug.Log("Adding UID senders to " + actor.name);
                     ulong networkUID = Networker.GenerateNetworkUID();
-                    AIManager.AIVehicles.Add(new AIManager.AI(actor.gameObject, actor.unitSpawn.unitName, actor, networkUID));
+                    AIManager.AI unitAI = new AIManager.AI(actor.gameObject, actor.unitSpawn.unitName, actor, networkUID);
+                    AIManager.AIVehicles.Add(unitAI);
                     VTOLVR_Multiplayer.AIDictionaries.allActors.Add(networkUID, actor);
                     VTOLVR_Multiplayer.AIDictionaries.reverseAllActors.Add(actor, networkUID);
+                    VTOLVR_Multiplayer.AIDictionaries.allAIByNetworkId.Add(networkUID, unitAI);
                     UIDNetworker_Sender uidSender = actor.gameObject.AddComponent<UIDNetworker_Sender>();
                     uidSender.networkUID = networkUID;
                     if (actor.hasRadar)
@@ -641,9 +643,11 @@ public static class PlayerManager
         fuelTank.SetNormFuel(loadout.normalizedFuel);
         //aIPilot.actor.role = Actor.Roles.None; //what did this line even do in the first place
         TargetManager.instance.RegisterActor(aIPilot.actor);
-        players.Add(new Player(spawnerSteamId, newVehicle, message.vehicle, aIPilot.actor, message.networkID));
+        Player unitPlayer = new Player(spawnerSteamId, newVehicle, message.vehicle, aIPilot.actor, message.networkID);
+        players.Add(unitPlayer);
         VTOLVR_Multiplayer.AIDictionaries.allActors.Add(message.networkID, aIPilot.actor);
         VTOLVR_Multiplayer.AIDictionaries.reverseAllActors.Add(aIPilot.actor, message.networkID);
+        VTOLVR_Multiplayer.AIDictionaries.allPlayersByNetworkId.Add(message.networkID, unitPlayer);
     }
     /// <summary>
     /// Finds the prefabs which are used for spawning the other players on our client
