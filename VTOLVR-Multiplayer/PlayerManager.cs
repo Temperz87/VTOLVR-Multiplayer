@@ -36,15 +36,17 @@ public static class PlayerManager
     {
         public CSteamID cSteamID;
         public GameObject vehicle;
-        
+        public Actor actor;
+
         public VTOLVehicles vehicleName;
         public ulong vehicleUID;
 
-        public Player(CSteamID cSteamID, GameObject vehicle, VTOLVehicles vehicleName, ulong vehicleUID)
+        public Player(CSteamID cSteamID, GameObject vehicle, VTOLVehicles vehicleName, Actor actor, ulong vehicleUID)
         {
             this.cSteamID = cSteamID;
             this.vehicle = vehicle;
             this.vehicleName = vehicleName;
+            this.actor = actor;
             this.vehicleUID = vehicleUID;
         }
     }
@@ -100,7 +102,7 @@ public static class PlayerManager
                     Debug.Log("Adding UID senders to " + actor.name);
                     ulong networkUID = Networker.GenerateNetworkUID();
                     AIManager.AIVehicles.Add(new AIManager.AI(actor.gameObject, actor.unitSpawn.unitName, actor, networkUID));
-
+                    VTOLVR_Multiplayer.AIDictionaries.allActors.Add(networkUID, actor);
                     UIDNetworker_Sender uidSender = actor.gameObject.AddComponent<UIDNetworker_Sender>();
                     uidSender.networkUID = networkUID;
                     if (actor.hasRadar)
@@ -268,7 +270,8 @@ public static class PlayerManager
     {
         Debug.Log("Sending our location to spawn our vehicle");
         VTOLVehicles currentVehicle = VTOLAPI.GetPlayersVehicleEnum();
-        Player localPlayer = new Player(SteamUser.GetSteamID(), localVehicle, currentVehicle, UID);
+        Actor actor = localVehicle.GetComponent<Actor>();
+        Player localPlayer = new Player(SteamUser.GetSteamID(), localVehicle, currentVehicle, actor, UID);
         players.Add(localPlayer);
 
         RigidbodyNetworker_Sender rbSender = localVehicle.AddComponent<RigidbodyNetworker_Sender>();
@@ -637,7 +640,8 @@ public static class PlayerManager
         fuelTank.SetNormFuel(loadout.normalizedFuel);
         //aIPilot.actor.role = Actor.Roles.None; //what did this line even do in the first place
         TargetManager.instance.RegisterActor(aIPilot.actor);
-        players.Add(new Player(spawnerSteamId, newVehicle, message.vehicle, message.networkID));
+        players.Add(new Player(spawnerSteamId, newVehicle, message.vehicle, aIPilot.actor, message.networkID));
+        VTOLVR_Multiplayer.AIDictionaries.allActors.Add(message.networkID, aIPilot.actor);
     }
     /// <summary>
     /// Finds the prefabs which are used for spawning the other players on our client

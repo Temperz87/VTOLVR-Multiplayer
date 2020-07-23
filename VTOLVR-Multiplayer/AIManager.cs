@@ -31,9 +31,9 @@ public static class AIManager
         }
     }
     /// <summary>
-    /// This is used by the host and only the host to spawn ai vehicles.
+    /// This is used by the client and only the client to spawn ai vehicles.
     /// </summary>
-    public static void SpawnAIVehicle(Packet packet) // This should never run on the client
+    public static void SpawnAIVehicle(Packet packet) // This should never run on the host
     {
         if (Networker.isHost)
         {
@@ -246,11 +246,12 @@ public static class AIManager
             lr.networkUID = message.networkID;
         }
         if (newAI.GetComponent<AirportManager>() != null) {
-            newAI.GetComponent<AirportManager>().airportName = "USS TEMPERZ " + message.networkID;
+            newAI.GetComponent<AirportManager>().airportName = "USS WE SHOULD REALLLY SYNC AIRPORT NAMES " + message.networkID;
             VTMapManager.fetch.airports.Add(newAI.GetComponent<AirportManager>());
         }
         AIVehicles.Add(new AI(newAI, message.aiVehicleName, actor, message.networkID));
         Debug.Log("Spawned in AI " + newAI.name);
+        AIDictionaries.allActors.Add(message.networkID, actor);
     }
     /// <summary>
     /// Tell the connected clients about all the vehicles the host has. This code should never be run on a client.

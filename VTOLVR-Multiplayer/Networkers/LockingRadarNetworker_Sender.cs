@@ -17,6 +17,7 @@ class LockingRadarNetworker_Sender : MonoBehaviour
     RadarLockData lastRadarLockData = new RadarLockData();
     private bool stateChanged;
     private bool lastWasNull = true;
+    Actor lastActor;
     private void Awake()
     {
         Debug.Log("Radar sender awoken for object " + gameObject.name);
@@ -108,7 +109,26 @@ class LockingRadarNetworker_Sender : MonoBehaviour
             }
             else
             {
-                Debug.Log("else going into foreach");
+                Debug.Log("Else going into dictionary");
+                try
+                {
+                    ulong key = (from p in VTOLVR_Multiplayer.AIDictionaries.allActors where p.Value == lr.currentLock.actor select p.Key).FirstOrDefault();
+                    Debug.Log(lastRadarLockData.actor.name + " radar data found its lock " + lr.currentLock.actor.name + " at id " + key + " with its own uID being " + networkUID);
+                    lastLockingMessage.actorUID = key;
+                    lastLockingMessage.isLocked = true;
+                    lastLockingMessage.senderUID = networkUID;
+                    if (Networker.isHost)
+                        NetworkSenderThread.Instance.SendPacketAsHostToAllClients(lastLockingMessage, EP2PSend.k_EP2PSendReliable);
+                    else
+                        NetworkSenderThread.Instance.SendPacketToSpecificPlayer(Networker.hostID, lastLockingMessage, EP2PSend.k_EP2PSendReliable);
+                }
+                catch (Exception ex)
+                {
+                    Debug.LogError("Couldn't lock target " + lr.currentLock.actor + $" exception {ex} thrown.");
+                }
+                
+
+                /*Debug.Log("else going into foreach");
                 foreach (var AI in AIManager.AIVehicles)
                 {
                     if (AI.actor == lastRadarLockData.actor)
@@ -117,13 +137,14 @@ class LockingRadarNetworker_Sender : MonoBehaviour
                         lastLockingMessage.actorUID = AI.vehicleUID;
                         lastLockingMessage.isLocked = true;
                         lastLockingMessage.senderUID = networkUID;
+                        foundLock = true;
                         if (Networker.isHost)
                             NetworkSenderThread.Instance.SendPacketAsHostToAllClients(lastLockingMessage, EP2PSend.k_EP2PSendReliable);
                         else
                             NetworkSenderThread.Instance.SendPacketToSpecificPlayer(Networker.hostID, lastLockingMessage, EP2PSend.k_EP2PSendReliable);
                         break;
                     }
-                }
+                }*/
                 if (lastWasNull)
                 {
                     lastWasNull = false;
