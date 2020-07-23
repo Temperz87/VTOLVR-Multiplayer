@@ -504,8 +504,6 @@ public static class PlayerManager
 
         Rigidbody rb = newVehicle.GetComponent<Rigidbody>();
         AIPilot aIPilot = newVehicle.GetComponent<AIPilot>();
-        Health health = newVehicle.GetComponent<Health>();
-        health.invincible = true;
 
         RotationToggle wingRotator = aIPilot.wingRotator;
         if (wingRotator != null) {
@@ -630,7 +628,8 @@ public static class PlayerManager
             Debug.LogError("Failed to get fuel tank on " + newVehicle.name);
         fuelTank.startingFuel = loadout.normalizedFuel * fuelTank.maxFuel;
         fuelTank.SetNormFuel(loadout.normalizedFuel);
-        aIPilot.actor.role = Actor.Roles.None;
+        //aIPilot.actor.role = Actor.Roles.None; //what did this line even do in the first place
+        TargetManager.instance.RegisterActor(aIPilot.actor);
         players.Add(new Player(spawnerSteamId, newVehicle, message.vehicle, message.networkID));
     }
     /// <summary>
