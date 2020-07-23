@@ -699,7 +699,7 @@ public class Networker : MonoBehaviour
     {
         if (!isHost)
             return;
-        StringBuilder content = new StringBuilder("Players:\n");
+        StringBuilder content = new StringBuilder("<color=#FCB722><b><align=\"center\"><size=120%>Multiplayer Lobby</size></align></b></color>\n");
 
         if (playerStatusDic[hostID] == 2)
         {
@@ -837,8 +837,8 @@ public class Networker : MonoBehaviour
         playerStatusDic.Add(csteamID, 0);
         Debug.Log("Done adding to status dict");
         NetworkSenderThread.Instance.AddPlayer(csteamID);
-        UpdateLoadingText();
         NetworkSenderThread.Instance.SendPacketToSpecificPlayer(csteamID, new Message_JoinRequestAccepted_Result(), EP2PSend.k_EP2PSendReliable);
+        UpdateLoadingText();
     }
 
     public static void SetMultiplayerInstance(Multiplayer instance) {
