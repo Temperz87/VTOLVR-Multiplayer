@@ -11,9 +11,9 @@ class LockingRadarNetworker_Receiver : MonoBehaviour
     public ulong networkUID;
     private Message_RadarUpdate lastRadarMessage;
     private Message_LockingRadarUpdate lastLockingMessage;
-    private LockingRadar lockingRadar;
-    private RadarLockData radarLockData;
-    private ulong lastLock;
+    public LockingRadar lockingRadar;
+    public RadarLockData radarLockData;
+    public ulong lastLock;
     private bool lastLocked;
     private void Awake()
     {
@@ -28,7 +28,6 @@ class LockingRadarNetworker_Receiver : MonoBehaviour
         {
             Debug.Log($"Radar was null on network uID {networkUID}");
         }
-        lockingRadar.debugRadar = true;
         lastRadarMessage = new Message_RadarUpdate(false, 0, networkUID);
         Networker.RadarUpdate += RadarUpdate;
         Networker.LockingRadarUpdate += LockingRadarUpdate;
@@ -43,6 +42,9 @@ class LockingRadarNetworker_Receiver : MonoBehaviour
 
         Debug.Log($"Doing radarupdate for uid {networkUID}");
         lockingRadar.radar.radarEnabled = lastRadarMessage.on;
+        if (lastRadarMessage.on) {
+            lockingRadar.radar.detectAircraft = true;
+        }
         lockingRadar.radar.sweepFov = lastRadarMessage.fov;
     }
     public void LockingRadarUpdate(Packet packet)

@@ -193,7 +193,6 @@ public class PlaneNetworker_Receiver : MonoBehaviour
             return;
         idx = (int)traverse.Field("weaponIdx").GetValue();
         int i = 0;
-        Debug.Log("Entering for loop");
         while (message.weaponIdx != idx && i < 60)
         {
             if (weaponManager.isMasterArmed == false)
@@ -217,9 +216,71 @@ public class PlaneNetworker_Receiver : MonoBehaviour
                 {
                     weaponManager.ToggleMasterArmed();
                 }
-                if (weaponManager.currentEquip is HPEquipIRML || weaponManager.currentEquip is HPEquipRadarML || weaponManager.currentEquip is RocketLauncher)
+                if (weaponManager.currentEquip is HPEquipIRML || weaponManager.currentEquip is RocketLauncher)
                 {
                     weaponManager.SingleFire();
+                }
+                else if (weaponManager.currentEquip is HPEquipRadarML missileLauncher)
+                {
+                    //weaponManager.SingleFire();
+                    LockingRadarNetworker_Receiver plane_radar = weaponManager.gameObject.GetComponent<LockingRadarNetworker_Receiver>();
+
+                    if (!plane_radar.lockingRadar.IsLocked() && plane_radar.lastLock != 0) {
+                        foreach (var AI in AIManager.AIVehicles) {
+                            if (AI.vehicleUID == plane_radar.lastLock) {
+                                plane_radar.lockingRadar.ForceLock(AI.actor, out plane_radar.radarLockData);
+                                if (plane_radar.lockingRadar.IsLocked()) {
+                                    plane_radar.lastLock = AI.vehicleUID;
+                                }
+                                break;
+                            }
+                        }
+                    }
+
+                    if (weaponManager.currentEquip.armable) {
+                        if (!weaponManager.currentEquip.armed) {
+                            Debug.Log("Radar missile is not armed");
+                        }
+                    }
+                    
+                    if (!weaponManager.currentEquip.itemActivated) {
+                        Debug.Log("Radar missile not activated");
+                    }
+
+                    if (false == missileLauncher.LaunchAuthorized()) {
+                        string notAuthorizedToLaunch = "Radar missile not authorized to launch, reason: ";
+                        bool additionalReason = false;
+                        if (missileLauncher.ml.missileCount == 0) {
+                            notAuthorizedToLaunch += "missileCount is zero";
+                            additionalReason = true;
+                        }
+                        if (weaponManager.lockingRadar == null) {
+                            if (additionalReason) {
+                                notAuthorizedToLaunch += ", ";
+                            }
+                            notAuthorizedToLaunch += "lockingRadar is null";
+                            additionalReason = true;
+                        }
+                        if (weaponManager.lockingRadar != null && !weaponManager.lockingRadar.IsLocked()) {
+                            if (additionalReason) {
+                                notAuthorizedToLaunch += ", ";
+                            }
+                            notAuthorizedToLaunch += "radar is not locked";
+                            additionalReason = true;
+                        }
+                        if (!missileLauncher.dlz.inRangeMax) {
+                            if (additionalReason) {
+                                notAuthorizedToLaunch += ", ";
+                            }
+                            notAuthorizedToLaunch += "target is not in range";
+                        }
+                        Debug.Log(notAuthorizedToLaunch);
+                        weaponManager.SingleFire();
+                    }
+                    else {
+                        Debug.Log("Trying to fire radar missile from weapon firing message");
+                        weaponManager.SingleFire();
+                    }
                 }
                 else
                 {

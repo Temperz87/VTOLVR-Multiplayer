@@ -9,6 +9,7 @@ public class MissileNetworker_Sender : MonoBehaviour
     // private Rigidbody rigidbody; doesn't exist in some missiles so we're not fucking with that shit
     private Message_MissileUpdate lastMessage;
     private Missile thisMissile;
+    private bool hasReportedPitbull = false;
     private void Awake()
     {
         Networker.RequestNetworkUID += RequestUID;
@@ -17,7 +18,7 @@ public class MissileNetworker_Sender : MonoBehaviour
         // rigidbody = GetComponent<Rigidbody>();
     }
 
-    private void Update()
+    private void LateUpdate()
     {
         if (thisMissile == null)
         {
@@ -62,7 +63,9 @@ public class MissileNetworker_Sender : MonoBehaviour
         {
             if (thisMissile.isPitbull)
             {
-                Debug.Log(gameObject.name + " is now pitbull.");
+                if (!hasReportedPitbull) {
+                    Debug.Log(gameObject.name + " is now pitbull.");
+                }
             }
         }
     }

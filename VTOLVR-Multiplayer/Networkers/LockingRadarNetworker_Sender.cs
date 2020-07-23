@@ -14,8 +14,8 @@ class LockingRadarNetworker_Sender : MonoBehaviour
     private LockingRadar lr;
     private bool lastOn = false;
     float lastFov;
-    RadarLockData lastRadarLockData = new RadarLockData();
-    private bool stateChanged;
+    private Actor lastLockedActor = null;
+    private bool lastLockedState = false;
     private bool lastWasNull = true;
     private void Awake()
     {
@@ -69,18 +69,23 @@ class LockingRadarNetworker_Sender : MonoBehaviour
             Debug.Log("last one");
             lastFov = lr.radar.sweepFov;
         }
+
         // if (lr.currentLock != lastRadarLockData) { stateChanged = true; }
+        bool stateChanged = false;
+        if (lr.IsLocked() != lastLockedState) {
+            stateChanged = true;
+            lastLockedState = true;
+        }
         if (lr.currentLock != null)
         {
-            if (lr.IsLocked() != lastLockingMessage.isLocked) { stateChanged = true; }
-            if (lr.currentLock.actor != lastRadarLockData.actor)
+            if (lr.currentLock.actor != lastLockedActor)
             {
-                lastRadarLockData.actor = lr.currentLock.actor;
+                lastLockedActor = lr.currentLock.actor;
                 stateChanged = true;
             }
-            if (lr.currentLock.locked != lastRadarLockData.locked)
+            if (lr.currentLock.locked != lastLockedState)
             {
-                lastRadarLockData.locked = lr.currentLock.locked;
+                lastLockedState = lr.currentLock.locked;
                 stateChanged = true;
             }
         }
@@ -111,9 +116,9 @@ class LockingRadarNetworker_Sender : MonoBehaviour
                 Debug.Log("else going into foreach");
                 foreach (var AI in AIManager.AIVehicles)
                 {
-                    if (AI.actor == lastRadarLockData.actor)
+                    if (AI.actor == lastLockedActor)
                     {
-                        Debug.Log(lastRadarLockData.actor.name + " radar data found its lock " + AI.actor.name + " at id " + AI.vehicleUID + " with its own uID being " + networkUID);
+                        Debug.Log(lastLockedActor.name + " radar data found its lock " + AI.actor.name + " at id " + AI.vehicleUID + " with its own uID being " + networkUID);
                         lastLockingMessage.actorUID = AI.vehicleUID;
                         lastLockingMessage.isLocked = true;
                         lastLockingMessage.senderUID = networkUID;
@@ -124,12 +129,8 @@ class LockingRadarNetworker_Sender : MonoBehaviour
                         break;
                     }
                 }
-                if (lastWasNull)
-                {
-                    lastWasNull = false;
-                }
+                lastWasNull = false;
             }
-            stateChanged = false;
         }
     }
 }

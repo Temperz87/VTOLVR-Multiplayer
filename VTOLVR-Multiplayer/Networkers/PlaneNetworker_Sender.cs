@@ -84,23 +84,40 @@ public class PlaneNetworker_Sender : MonoBehaviour
         refuelPort = GetComponentInChildren<RefuelPort>();
     }
 
-    private void Update()
+    private void FixedUpdate()
     {
         if (weaponManager != null)
         {
             if (weaponManager.isFiring != previousFiringState || lastIdx != (int)traverse.Field("weaponIdx").GetValue())
             {
+                bool runLogic = false;
+
+                if (weaponManager.currentEquip is HPEquipIRML || weaponManager.currentEquip is HPEquipRadarML || weaponManager.currentEquip is RocketLauncher) {
+                    // Only need to send a fire single once when we're firing, do nothing when state switches back to not firing
+                    if (weaponManager.isFiring) {
+                        runLogic = true;
+                    }
+                }
+                else {
+                    // Only need to send a fire message if the firing state actually changed
+                    if (weaponManager.isFiring != previousFiringState) {
+                        runLogic = true;
+                    }
+                }
+
+                if (runLogic) {
+                    lastFiringMessage.weaponIdx = (int)traverse.Field("weaponIdx").GetValue();
+                    Debug.Log("combinedWeaponIdx = " + lastFiringMessage.weaponIdx);
+                    lastFiringMessage.UID = networkUID;
+                    // lastStoppedFiringMessage.UID = networkUID;
+                    lastFiringMessage.isFiring = weaponManager.isFiring;
+                    if (Networker.isHost)
+                        NetworkSenderThread.Instance.SendPacketAsHostToAllClients(lastFiringMessage, Steamworks.EP2PSend.k_EP2PSendUnreliableNoDelay);
+                    else
+                        NetworkSenderThread.Instance.SendPacketToSpecificPlayer(Networker.hostID, lastFiringMessage, Steamworks.EP2PSend.k_EP2PSendUnreliableNoDelay);
+                }
                 previousFiringState = weaponManager.isFiring;
-                lastFiringMessage.weaponIdx = (int)traverse.Field("weaponIdx").GetValue();
-                lastIdx = lastFiringMessage.weaponIdx;
-                Debug.Log("combinedWeaponIdx = " + lastFiringMessage.weaponIdx);
-                lastFiringMessage.UID = networkUID;
-                // lastStoppedFiringMessage.UID = networkUID;
-                lastFiringMessage.isFiring = weaponManager.isFiring;
-                if (Networker.isHost)
-                    NetworkSenderThread.Instance.SendPacketAsHostToAllClients(lastFiringMessage, Steamworks.EP2PSend.k_EP2PSendUnreliableNoDelay);
-                else
-                    NetworkSenderThread.Instance.SendPacketToSpecificPlayer(Networker.hostID, lastFiringMessage, Steamworks.EP2PSend.k_EP2PSendUnreliableNoDelay);
+                lastIdx = (int)traverse.Field("weaponIdx").GetValue();
             }
         }
     }
