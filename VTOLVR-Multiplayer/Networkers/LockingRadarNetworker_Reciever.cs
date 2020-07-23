@@ -29,7 +29,7 @@ class LockingRadarNetworker_Receiver : MonoBehaviour
         {
             Debug.Log($"Radar was null on network uID {networkUID}");
         }
-        lockingRadar.debugRadar = true;
+        // lockingRadar.debugRadar = true;
         lastRadarMessage = new Message_RadarUpdate(false, 0, networkUID);
         Networker.RadarUpdate += RadarUpdate;
         Networker.LockingRadarUpdate += LockingRadarUpdate;

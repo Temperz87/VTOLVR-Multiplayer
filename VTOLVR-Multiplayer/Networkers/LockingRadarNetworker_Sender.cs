@@ -115,6 +115,7 @@ class LockingRadarNetworker_Sender : MonoBehaviour
                     // ulong key = (from p in VTOLVR_Multiplayer.AIDictionaries.allActors where p.Value == lr.currentLock.actor select p.Key).FirstOrDefault();
                     if (VTOLVR_Multiplayer.AIDictionaries.reverseAllActors.TryGetValue(lastRadarLockData.actor, out lastID))
                     {
+                        lastWasNull = false;
                         Debug.Log(lastRadarLockData.actor.name + " radar data found its lock " + lr.currentLock.actor.name + " at id " + lastID + " with its own uID being " + networkUID);
                         lastLockingMessage.actorUID = lastID;
                         lastLockingMessage.isLocked = true;
