@@ -76,6 +76,7 @@ public static class AIManager
         newAI.name = message.aiVehicleName;
         Actor actor = newAI.GetComponent<Actor>();
         Debug.Log($"Spawned new vehicle at {newAI.transform.position}");
+        TargetManager.instance.RegisterActor(actor);
 
         newAI.AddComponent<FloatingOriginTransform>();
 
@@ -109,7 +110,7 @@ public static class AIManager
             aIPilot.enabled = false;
             aIPilot.kPlane.SetToKinematic();
             aIPilot.kPlane.enabled = false;
-            // aIPilot.commandState = AIPilot.CommandStates.Override;
+            aIPilot.commandState = AIPilot.CommandStates.Navigation;
             aIPilot.kPlane.enabled = true;
             aIPilot.kPlane.SetVelocity(Vector3.zero);
             aIPilot.kPlane.SetToDynamic();
@@ -129,8 +130,6 @@ public static class AIManager
             }
 
             Rigidbody rb = newAI.GetComponent<Rigidbody>();
-            Health health = newAI.GetComponent<Health>();
-            health.invincible = false;
 
             foreach (Collider collider in newAI.GetComponentsInChildren<Collider>())
             {
