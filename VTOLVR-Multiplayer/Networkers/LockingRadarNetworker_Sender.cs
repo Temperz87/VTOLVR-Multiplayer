@@ -17,7 +17,7 @@ class LockingRadarNetworker_Sender : MonoBehaviour
     RadarLockData lastRadarLockData = new RadarLockData();
     private bool stateChanged;
     private bool lastWasNull = true;
-    Actor lastActor;
+    ulong lastID;
     private void Awake()
     {
         Debug.Log("Radar sender awoken for object " + gameObject.name);
@@ -112,15 +112,22 @@ class LockingRadarNetworker_Sender : MonoBehaviour
                 Debug.Log("Else going into dictionary");
                 try
                 {
-                    ulong key = (from p in VTOLVR_Multiplayer.AIDictionaries.allActors where p.Value == lr.currentLock.actor select p.Key).FirstOrDefault();
-                    Debug.Log(lastRadarLockData.actor.name + " radar data found its lock " + lr.currentLock.actor.name + " at id " + key + " with its own uID being " + networkUID);
-                    lastLockingMessage.actorUID = key;
-                    lastLockingMessage.isLocked = true;
-                    lastLockingMessage.senderUID = networkUID;
-                    if (Networker.isHost)
-                        NetworkSenderThread.Instance.SendPacketAsHostToAllClients(lastLockingMessage, EP2PSend.k_EP2PSendReliable);
+                    // ulong key = (from p in VTOLVR_Multiplayer.AIDictionaries.allActors where p.Value == lr.currentLock.actor select p.Key).FirstOrDefault();
+                    if (VTOLVR_Multiplayer.AIDictionaries.reverseAllActors.TryGetValue(lastRadarLockData.actor, out lastID))
+                    {
+                        Debug.Log(lastRadarLockData.actor.name + " radar data found its lock " + lr.currentLock.actor.name + " at id " + lastID + " with its own uID being " + networkUID);
+                        lastLockingMessage.actorUID = lastID;
+                        lastLockingMessage.isLocked = true;
+                        lastLockingMessage.senderUID = networkUID;
+                        if (Networker.isHost)
+                            NetworkSenderThread.Instance.SendPacketAsHostToAllClients(lastLockingMessage, EP2PSend.k_EP2PSendReliable);
+                        else
+                            NetworkSenderThread.Instance.SendPacketToSpecificPlayer(Networker.hostID, lastLockingMessage, EP2PSend.k_EP2PSendReliable);
+                    }
                     else
-                        NetworkSenderThread.Instance.SendPacketToSpecificPlayer(Networker.hostID, lastLockingMessage, EP2PSend.k_EP2PSendReliable);
+                    {
+                        Debug.LogError("Could not resolve lock at actor " + lastRadarLockData.actor.name);
+                    }
                 }
                 catch (Exception ex)
                 {

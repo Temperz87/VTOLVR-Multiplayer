@@ -103,6 +103,7 @@ public static class PlayerManager
                     ulong networkUID = Networker.GenerateNetworkUID();
                     AIManager.AIVehicles.Add(new AIManager.AI(actor.gameObject, actor.unitSpawn.unitName, actor, networkUID));
                     VTOLVR_Multiplayer.AIDictionaries.allActors.Add(networkUID, actor);
+                    VTOLVR_Multiplayer.AIDictionaries.reverseAllActors.Add(actor, networkUID);
                     UIDNetworker_Sender uidSender = actor.gameObject.AddComponent<UIDNetworker_Sender>();
                     uidSender.networkUID = networkUID;
                     if (actor.hasRadar)
@@ -642,6 +643,7 @@ public static class PlayerManager
         TargetManager.instance.RegisterActor(aIPilot.actor);
         players.Add(new Player(spawnerSteamId, newVehicle, message.vehicle, aIPilot.actor, message.networkID));
         VTOLVR_Multiplayer.AIDictionaries.allActors.Add(message.networkID, aIPilot.actor);
+        VTOLVR_Multiplayer.AIDictionaries.reverseAllActors.Add(aIPilot.actor, message.networkID);
     }
     /// <summary>
     /// Finds the prefabs which are used for spawning the other players on our client

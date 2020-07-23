@@ -229,7 +229,7 @@ public class PlaneNetworker_Receiver : MonoBehaviour
             }
             else
             {
-                if (!(weaponManager.currentEquip is HPEquipIRML || weaponManager.currentEquip is HPEquipRadarML || weaponManager.currentEquip is RocketLauncher))
+                if (!(weaponManager.currentEquip is HPEquipIRML || weaponManager.currentEquip is RocketLauncher)) // I removed one for radar code because it's shooting missiles twice
                     weaponManager.EndFire();
             }
         }

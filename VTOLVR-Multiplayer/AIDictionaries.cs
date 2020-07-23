@@ -9,5 +9,6 @@ namespace VTOLVR_Multiplayer
     public static class AIDictionaries
     {
         public static Dictionary<ulong, Actor> allActors = new Dictionary<ulong, Actor>();
+        public static Dictionary<Actor, ulong> reverseAllActors = new Dictionary<Actor, ulong>();
     }
 }

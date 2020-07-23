@@ -251,7 +251,8 @@ public static class AIManager
         }
         AIVehicles.Add(new AI(newAI, message.aiVehicleName, actor, message.networkID));
         Debug.Log("Spawned in AI " + newAI.name);
-        AIDictionaries.allActors.Add(message.networkID, actor);
+        VTOLVR_Multiplayer.AIDictionaries.allActors.Add(message.networkID, actor);
+        VTOLVR_Multiplayer.AIDictionaries.reverseAllActors.Add(actor, message.networkID);
     }
     /// <summary>
     /// Tell the connected clients about all the vehicles the host has. This code should never be run on a client.
