@@ -15,6 +15,7 @@ class LockingRadarNetworker_Receiver : MonoBehaviour
     public RadarLockData radarLockData;
     public ulong lastLock;
     private bool lastLocked;
+    private Actor lastActor;
     private void Awake()
     {
         lockingRadar = gameObject.GetComponentInChildren<LockingRadar>();
@@ -66,7 +67,18 @@ class LockingRadarNetworker_Receiver : MonoBehaviour
         else if (lastLockingMessage.actorUID != lastLock || (lastLockingMessage.isLocked && !lockingRadar.IsLocked()))
         {
             Debug.Log("Trying to lock radar.");
-            foreach (var AI in AIManager.AIVehicles)
+
+            if (VTOLVR_Multiplayer.AIDictionaries.allActors.TryGetValue(lastLockingMessage.actorUID, out lastActor))
+            {
+                Debug.Log($"Radar " + gameObject.name + " found its lock " + lastActor.name + $" with an id of {lastLock} while trying to lock id {lastLockingMessage.actorUID}. Trying to force a lock.");
+                lockingRadar.ForceLock(lastActor, out radarLockData);
+                Debug.Log($"The lock data is Locked: {radarLockData.locked}, Locked Actor: " + radarLockData.actor.name);
+            }
+            else
+            {
+                Debug.Log($"Could not resolve a lock on uID {lastLockingMessage.actorUID}.");
+            }
+            /*foreach (var AI in AIManager.AIVehicles)
             {
                 if (AI.vehicleName == null)
                 {
@@ -84,14 +96,20 @@ class LockingRadarNetworker_Receiver : MonoBehaviour
                     }
                     break;
                 }
-            }
+            }*/
         }
     }
     private void FixedUpdate()
     {
         if (lastLocked && !lockingRadar.IsLocked() && lastLock != 0)
         {
-            foreach (var AI in AIManager.AIVehicles)
+            if (VTOLVR_Multiplayer.AIDictionaries.allActors.TryGetValue(lastLock, out lastActor))
+            {
+                Debug.Log("Radar" + gameObject.name + $"refound its lock after dropping it at  {lastLock} while trying to relock id {lastLockingMessage.actorUID}. Trying to force a lock.");
+                lockingRadar.ForceLock(lastActor, out radarLockData);
+                Debug.Log($"The lock data is Locked: {radarLockData.locked}, reLocked Actor: " + radarLockData.actor.name);
+            }
+            /*foreach (var AI in AIManager.AIVehicles)
             {
                 if (AI.vehicleUID == lastLock)
                 {
@@ -104,7 +122,7 @@ class LockingRadarNetworker_Receiver : MonoBehaviour
                     }
                     break;
                 }
-            }
+            }*/
         }
     }
     public void OnDestroy()
