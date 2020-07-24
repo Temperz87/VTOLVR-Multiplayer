@@ -402,11 +402,16 @@ public class Networker : MonoBehaviour
                             Debug.Log("The last client has said they are ready, starting");
                             if (!allPlayersReadyHasBeenSentFirstTime) {
                                 allPlayersReadyHasBeenSentFirstTime = true;
+                                playerStatusDic[hostID] = 2;
+                                UpdateLoadingText();
+
                                 NetworkSenderThread.Instance.SendPacketAsHostToAllClients(new Message(MessageType.AllPlayersReady), EP2PSend.k_EP2PSendReliable);
                             }
                             else {
                                 // Send only to this player
                                 NetworkSenderThread.Instance.SendPacketToSpecificPlayer(csteamID, new Message(MessageType.AllPlayersReady), EP2PSend.k_EP2PSendReliable);
+                                playerStatusDic[hostID] = 2;
+                                UpdateLoadingText();
                             }
                             LoadingSceneController.instance.PlayerReady();
                         }
@@ -475,6 +480,7 @@ public class Networker : MonoBehaviour
                     else
                     {
                         Message_Disconnecting messsage = ((PacketSingle)packet).message as Message_Disconnecting;
+                        playerStatusDic[csteamID] = 4;
                         if (messsage.isHost)
                         {
                             //If it is the host quiting we just need to quit the mission as all networking will be lost.
@@ -569,11 +575,12 @@ public class Networker : MonoBehaviour
                         if (isHost)
                         {
                             Debug.Log("we shouldn't have gotten a host loaded....");
-                            playerStatusDic[hostID] = 2;
+                            playerStatusDic[hostID] = 3;
                         }
                         else
                         {
                             hostLoaded = true;
+                            playerStatusDic[hostID] = 3;
                             LoadingSceneController.instance.PlayerReady();
                         }
                     }
@@ -590,6 +597,17 @@ public class Networker : MonoBehaviour
                         break;
                     }
                     ActorNetworker_Reciever.syncActors(packet);
+                    break;
+                case MessageType.LoadingTextRequest:
+                    Debug.Log("case LoadingTextRequest");
+                    if (isHost)
+                    {
+                        UpdateLoadingText();
+                    }
+                    else
+                    {
+                        Debug.Log("Received loading text request and we're not the host.");
+                    }
                     break;
                 default:
                     Debug.Log("default case");

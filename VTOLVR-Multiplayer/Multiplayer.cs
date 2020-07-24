@@ -34,6 +34,10 @@ public class Multiplayer : VTOLMOD
     private ScrollRect scrollRect;
     private float buttonHeight;
     private List<FriendItem> steamFriends = new List<FriendItem>();
+
+    private List<GameObject> friendListItems = new List<GameObject>();
+
+
     private CSteamID selectedFriend;
     private Transform selectionTF;
 
@@ -267,6 +271,24 @@ public class Multiplayer : VTOLMOD
     {
         Log("Refreshing Friends");
         steamFriends.Clear();
+        int totalFriends = 0;
+        Debug.Log($"UI List Item Count: {friendListItems.Count}");
+
+        foreach(GameObject uiItem in friendListItems)
+        {
+            if (uiItem != null) {
+                Debug.Log($"Destroying {uiItem.name}");
+            }
+            else
+            {
+                Debug.Log("UI Item is null");
+            }
+            
+            Destroy(uiItem);
+        }
+
+        friendListItems.Clear();
+
         int friendsCount = SteamFriends.GetFriendCount(EFriendFlags.k_EFriendFlagImmediate);
         if (friendsCount == -1)
         {
@@ -302,17 +324,19 @@ public class Multiplayer : VTOLMOD
         friendsTemplate.SetActive(true);
         GameObject lastFriendGO;
         VRUIListItemTemplate uiListItem;
-        int totalFriends = 0;
+        totalFriends = 0;
         lableVTOL.transform.localPosition = new Vector3(0, -totalFriends * buttonHeight);
         for (int i = 0; i < vtolvrFriends.Count; i++)
         {
             totalFriends++;
             lastFriendGO = Instantiate(friendsTemplate, content.transform);
+            lastFriendGO.name = SteamFriends.GetFriendPersonaName(vtolvrFriends[i]);
             steamFriends.Add(new FriendItem(vtolvrFriends[i],lastFriendGO.transform));
             lastFriendGO.transform.localPosition = new Vector3(0f, -totalFriends * buttonHeight);
             uiListItem = lastFriendGO.GetComponent<VRUIListItemTemplate>();
             uiListItem.Setup(SteamFriends.GetFriendPersonaName(vtolvrFriends[i]), totalFriends - 1, SelectFriend);
             uiListItem.labelText.color = Color.green;
+            friendListItems.Add(lastFriendGO);
         }
 
         Log("Updating Scroll Rect");
@@ -443,6 +467,11 @@ public class Multiplayer : VTOLMOD
         Networker.loadingText.fontSizeMin = 300;
         Networker.loadingText.fontSizeMax = 450;
         Networker.loadingText.color = Color.white;
+        if (!Networker.isHost)
+        {
+            NetworkSenderThread.Instance.SendPacketToSpecificPlayer(Networker.hostID, new Message_LoadingTextRequest(), EP2PSend.k_EP2PSendReliable); // Getting Loading Text
+
+        }
         Networker.UpdateLoadingText();
     }
 
