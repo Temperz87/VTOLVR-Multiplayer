@@ -21,12 +21,26 @@ class HealthNetworker_Receiver : MonoBehaviour
     public void Death(Packet packet)
     {
         lastMessage = (Message_Death)((PacketSingle)packet).message;
-        Debug.Log("death uid: " + lastMessage.UID);
-        Debug.Log("my uid: " + networkUID);
         if (lastMessage.UID != networkUID)
             return;
 
-        Debug.Log("dying lmao");
+        Actor actor = GetComponent<Actor>();
+        if (actor == null)
+        {
+            Debug.Log("actor was null");
+        }
+        else {
+            if (actor.unitSpawn != null)
+            {
+                if (actor.unitSpawn.unitSpawner == null)
+                {
+                    Debug.Log("unit spawner was null, adding one");
+                    actor.unitSpawn.unitSpawner = actor.gameObject.AddComponent<UnitSpawner>();
+                }
+            }
+        }
+
+
         health.invincible = false;
         health.Kill();
     }
