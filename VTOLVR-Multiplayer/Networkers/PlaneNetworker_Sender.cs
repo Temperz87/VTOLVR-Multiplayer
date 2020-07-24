@@ -24,6 +24,7 @@ public class PlaneNetworker_Sender : MonoBehaviour
     private Message_WeaponFiring lastFiringMessage;
     private Message_FireCountermeasure lastCountermeasureMessage;
     private Message_Death lastDeathMessage;
+    private ModuleEngine engine;
     private Tailhook tailhook;
     private CatapultHook launchBar;
     private RefuelPort refuelPort;
@@ -41,23 +42,14 @@ public class PlaneNetworker_Sender : MonoBehaviour
         aeroController = GetComponent<AeroController>();
         isPlayer = actor.isPlayer;
         sequenceNumber = 0;
-        if (isPlayer)
+        lastMessage = new Message_PlaneUpdate(false, 0, 0, 0, 0, 0, 0, false, false, false, networkUID, sequenceNumber);
+
+        engine = gameObject.GetComponentInChildren<ModuleEngine>();
+        if (engine == null)
         {
-            lastMessage = new Message_PlaneUpdate(false, 0, 0, 0, 0, 0, 0, false, false, false, networkUID, sequenceNumber);
-            vRThrottle = gameObject.GetComponentInChildren<VRThrottle>();
-            if (vRThrottle == null)
-                Debug.Log("Throttle was null on vehicle " + gameObject.name);
-            else
-                vRThrottle.OnSetThrottle.AddListener(SetThrottle);
+            Debug.Log("engine was null on vehicle " + gameObject.name);
         }
-        else
-        {
-            lastMessage = new Message_PlaneUpdate(false, 0, 0, 0, 0, 0, 0, false, false, false, networkUID, sequenceNumber);
-            aIPilot = gameObject.GetComponent<AIPilot>();
-            if (aIPilot == null)
-            { Debug.Log("Aipilot was null on vehicle " + gameObject.name); }
-            traverseThrottle = Traverse.Create(aIPilot.autoPilot.engines[0]);
-        }
+
         weaponManager = GetComponent<WeaponManager>();
         if (weaponManager == null)
             Debug.LogError("Weapon Manager was null on vehicle " + gameObject.name);
@@ -115,9 +107,9 @@ public class PlaneNetworker_Sender : MonoBehaviour
         lastMessage.landingGear = LandingGearState();
         lastMessage.networkUID = networkUID;
         lastMessage.sequenceNumber = ++sequenceNumber;
-        if (!isPlayer)
+        if (engine != null)
         {
-            SetThrottle((float)traverseThrottle.Field("throttle").GetValue());
+            lastMessage.throttle = engine.finalThrottle;
         }
         if (tailhook != null) {
             lastMessage.tailHook = tailhook.isDeployed;

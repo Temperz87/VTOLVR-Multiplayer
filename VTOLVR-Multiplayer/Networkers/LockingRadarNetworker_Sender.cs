@@ -112,7 +112,7 @@ class LockingRadarNetworker_Sender : MonoBehaviour
                     lastLockingMessage.actorUID = 0;
                     lastLockingMessage.isLocked = false;
                     lastLockingMessage.senderUID = networkUID;
-                    Debug.Log($"Sending a locking radar message to uID {networkUID}");
+                    Debug.Log($"Sending a locking radar message from uID {networkUID}");
                     if (Networker.isHost)
                         NetworkSenderThread.Instance.SendPacketAsHostToAllClients(lastLockingMessage, EP2PSend.k_EP2PSendReliable);
                     else
@@ -180,7 +180,7 @@ class LockingRadarNetworker_Sender : MonoBehaviour
             // ulong key = (from p in VTOLVR_Multiplayer.AIDictionaries.allActors where p.Value == lr.currentLock.actor select p.Key).FirstOrDefault();
             if (VTOLVR_Multiplayer.AIDictionaries.reverseAllActors.TryGetValue(radarLockData.actor, out lastID))
             {
-                Debug.Log(gameObject.name + " F45 radar data found its lock " + radarLockData + " at id " + lastID + " with its own uID being " + networkUID);
+                Debug.Log(gameObject.name + " F45 radar data found its lock " + radarLockData.actor.name + " at id " + lastID + " with its own uID being " + networkUID);
                 lastLockingMessage.actorUID = lastID;
                 lastLockingMessage.isLocked = radarLockData.locked;
                 lastLockingMessage.senderUID = networkUID;
