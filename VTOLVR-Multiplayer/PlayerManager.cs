@@ -274,7 +274,8 @@ public static class PlayerManager
         Actor actor = localVehicle.GetComponent<Actor>();
         Player localPlayer = new Player(SteamUser.GetSteamID(), localVehicle, currentVehicle, actor, UID);
         players.Add(localPlayer);
-
+        VTOLVR_Multiplayer.AIDictionaries.allActors.Add(localUID, actor);
+        VTOLVR_Multiplayer.AIDictionaries.reverseAllActors.Add(actor, localUID);
         RigidbodyNetworker_Sender rbSender = localVehicle.AddComponent<RigidbodyNetworker_Sender>();
         rbSender.networkUID = UID;
         rbSender.spawnPos = pos;
