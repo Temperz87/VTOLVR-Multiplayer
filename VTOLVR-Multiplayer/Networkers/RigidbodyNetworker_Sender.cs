@@ -31,7 +31,7 @@ public class RigidbodyNetworker_Sender : MonoBehaviour
         {
             Threshold = 5f;
         }
-        Debug.Log($"Threshold for {actor.name} is now {Threshold}.");
+        // Debug.Log($"Threshold for {actor.name} is now {Threshold}.");
         lastPos = gameObject.transform.position;
         rb = GetComponent<Rigidbody>();
         lastMessage = new Message_RigidbodyUpdate(new Vector3D(rb.velocity), new Vector3D(rb.angularVelocity), new Vector3D(transform.position), new Vector3D(transform.rotation.eulerAngles), networkUID);
@@ -71,11 +71,8 @@ public class RigidbodyNetworker_Sender : MonoBehaviour
             else
                 NetworkSenderThread.Instance.SendPacketToSpecificPlayer(Networker.hostID, lastMessage, Steamworks.EP2PSend.k_EP2PSendUnreliableNoDelay);
         }
-        else
-        {
             // Temperz STOP KILLING PERFORMANCE AND HARD DRIVES!
             //Debug.Log($"{actor.name} is not outside of the threshold {Threshold}, the distance is {Vector3.Distance(lastPos, gameObject.transform.position)} not updating it.");
-        }
     }
 
     public void SetSpawn()

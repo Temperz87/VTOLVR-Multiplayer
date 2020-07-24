@@ -11,9 +11,7 @@ using Valve.Newtonsoft.Json;
 class ActorNetworker_Reciever : MonoBehaviour // Client Only
 {
     public ulong networkUID;
-    public string actorName;
     public Actor actor;
-    private Message_ActorSync lastMessage;
     private void Awake()
     {
         actor = base.GetComponent<Actor>();

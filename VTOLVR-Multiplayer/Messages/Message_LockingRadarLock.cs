@@ -13,5 +13,6 @@ public class Message_LockingRadarUpdate : Message
         this.actorUID = actorUID;
         this.isLocked = isLocked;
         this.senderUID = senderUID;
+        type = MessageType.LockingRadarUpdate;
     }
 }
