@@ -128,7 +128,7 @@ class LockingRadarNetworker_Sender : MonoBehaviour
             stateChanged = true;
         }
         
-        if (true)
+        if (stateChanged)
         {
             Debug.Log("is lock not equal to last message is locked for network uID " + networkUID);
             if (lr.currentLock == null)
