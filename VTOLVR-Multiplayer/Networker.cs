@@ -840,5 +840,9 @@ public class Networker : MonoBehaviour
         AIManager.CleanUpOnDisconnect();
         multiplayerInstance?.CleanUpOnDisconnect();
         hostLoaded = false;
+        VTOLVR_Multiplayer.AIDictionaries.allActors.Clear();
+        VTOLVR_Multiplayer.AIDictionaries.reverseAllActors.Clear();
+        VTOLVR_Multiplayer.AIDictionaries.allAIByNetworkId.Clear();
+        VTOLVR_Multiplayer.AIDictionaries.allPlayersByNetworkId.Clear();
     }
 }
