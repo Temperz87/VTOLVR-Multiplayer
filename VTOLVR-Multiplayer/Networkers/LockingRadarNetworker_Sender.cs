@@ -112,7 +112,7 @@ class LockingRadarNetworker_Sender : MonoBehaviour
                     lastLockingMessage.actorUID = 0;
                     lastLockingMessage.isLocked = false;
                     lastLockingMessage.senderUID = networkUID;
-                    Debug.Log($"Sending a locking radar message to uID {networkUID}");
+                    Debug.Log($"Sending a locking radar message from uID {networkUID}");
                     if (Networker.isHost)
                         NetworkSenderThread.Instance.SendPacketAsHostToAllClients(lastLockingMessage, EP2PSend.k_EP2PSendReliable);
                     else

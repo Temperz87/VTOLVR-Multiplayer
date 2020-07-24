@@ -95,15 +95,21 @@ public static class PlayerManager
             LockingRadarNetworker_Sender lastLockingSender;
             foreach (var actor in TargetManager.instance.allActors)
             {
-                if (actor.role == Actor.Roles.Missile || actor.isPlayer)
+                if (actor.role == Actor.Roles.Missile)
                     continue;
                 if (actor.parentActor == null)
                 {
                     Debug.Log("Adding UID senders to " + actor.name);
                     ulong networkUID = Networker.GenerateNetworkUID();
                     AIManager.AIVehicles.Add(new AIManager.AI(actor.gameObject, actor.unitSpawn.unitName, actor, networkUID));
-                    VTOLVR_Multiplayer.AIDictionaries.allActors.Add(networkUID, actor);
-                    VTOLVR_Multiplayer.AIDictionaries.reverseAllActors.Add(actor, networkUID);
+                    if (!VTOLVR_Multiplayer.AIDictionaries.allActors.ContainsKey(networkUID))
+                    {
+                        VTOLVR_Multiplayer.AIDictionaries.allActors.Add(networkUID, actor);
+                    }
+                    if (!VTOLVR_Multiplayer.AIDictionaries.reverseAllActors.ContainsKey(actor))
+                    {
+                        VTOLVR_Multiplayer.AIDictionaries.reverseAllActors.Add(actor, networkUID);
+                    }
                     UIDNetworker_Sender uidSender = actor.gameObject.AddComponent<UIDNetworker_Sender>();
                     uidSender.networkUID = networkUID;
                     if (actor.hasRadar)
@@ -151,6 +157,7 @@ public static class PlayerManager
             {
                 GenerateSpawns(localVehicle.transform);
                 localUID = Networker.GenerateNetworkUID();
+                Debug.Log($"The host's uID is {localUID}");
                 SpawnLocalVehicleAndInformOtherClients(localVehicle, localVehicle.transform.position, localVehicle.transform.rotation.eulerAngles, localUID);
             }
             else
@@ -274,16 +281,19 @@ public static class PlayerManager
         Actor actor = localVehicle.GetComponent<Actor>();
         Player localPlayer = new Player(SteamUser.GetSteamID(), localVehicle, currentVehicle, actor, UID);
         players.Add(localPlayer);
-        // VTOLVR_Multiplayer.AIDictionaries.allActors.Add(localUID, actor);
-        // VTOLVR_Multiplayer.AIDictionaries.reverseAllActors.Add(actor, localUID);
+        if (!VTOLVR_Multiplayer.AIDictionaries.allActors.ContainsKey(UID))
+        {
+            VTOLVR_Multiplayer.AIDictionaries.allActors.Add(UID, actor);
+        }
+        if (!VTOLVR_Multiplayer.AIDictionaries.reverseAllActors.ContainsKey(actor))
+        {
+            VTOLVR_Multiplayer.AIDictionaries.reverseAllActors.Add(actor, UID);
+        }
         RigidbodyNetworker_Sender rbSender = localVehicle.AddComponent<RigidbodyNetworker_Sender>();
         rbSender.networkUID = UID;
         rbSender.spawnPos = pos;
         rbSender.spawnRot = rot;
         rbSender.SetSpawn();
-
-        VTOLVR_Multiplayer.AIDictionaries.allActors.Add(UID, actor);
-        VTOLVR_Multiplayer.AIDictionaries.reverseAllActors.Add(actor, UID);
 
         Debug.Log("Adding Plane Sender");
         PlaneNetworker_Sender planeSender = localVehicle.AddComponent<PlaneNetworker_Sender>();
@@ -646,8 +656,14 @@ public static class PlayerManager
         //aIPilot.actor.role = Actor.Roles.None; //what did this line even do in the first place
         TargetManager.instance.RegisterActor(aIPilot.actor);
         players.Add(new Player(spawnerSteamId, newVehicle, message.vehicle, aIPilot.actor, message.networkID));
-        VTOLVR_Multiplayer.AIDictionaries.allActors.Add(message.networkID, aIPilot.actor);
-        VTOLVR_Multiplayer.AIDictionaries.reverseAllActors.Add(aIPilot.actor, message.networkID);
+        if (!VTOLVR_Multiplayer.AIDictionaries.allActors.ContainsKey(message.networkID))
+        {
+            VTOLVR_Multiplayer.AIDictionaries.allActors.Add(message.networkID, aIPilot.actor);
+        }
+        if (!VTOLVR_Multiplayer.AIDictionaries.reverseAllActors.ContainsKey(aIPilot.actor))
+        {
+            VTOLVR_Multiplayer.AIDictionaries.reverseAllActors.Add(aIPilot.actor, message.networkID);
+        }
     }
     /// <summary>
     /// Finds the prefabs which are used for spawning the other players on our client
