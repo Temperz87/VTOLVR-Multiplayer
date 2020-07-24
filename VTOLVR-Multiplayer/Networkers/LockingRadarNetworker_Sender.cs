@@ -128,7 +128,7 @@ class LockingRadarNetworker_Sender : MonoBehaviour
             stateChanged = true;
         }
         
-        if (stateChanged)
+        if (true)
         {
             Debug.Log("is lock not equal to last message is locked for network uID " + networkUID);
             if (lr.currentLock == null)
@@ -143,9 +143,9 @@ class LockingRadarNetworker_Sender : MonoBehaviour
                 Debug.Log($"Sending a locking radar message to uID {networkUID}");
 
                 if (Networker.isHost)
-                    NetworkSenderThread.Instance.SendPacketAsHostToAllClients(lastLockingMessage, EP2PSend.k_EP2PSendReliable);
+                    NetworkSenderThread.Instance.SendPacketAsHostToAllClients(lastLockingMessage, EP2PSend.k_EP2PSendUnreliableNoDelay);
                 else
-                    NetworkSenderThread.Instance.SendPacketToSpecificPlayer(Networker.hostID, lastLockingMessage, EP2PSend.k_EP2PSendReliable);
+                    NetworkSenderThread.Instance.SendPacketToSpecificPlayer(Networker.hostID, lastLockingMessage, EP2PSend.k_EP2PSendUnreliableNoDelay);
             }
             else
             {
@@ -153,16 +153,17 @@ class LockingRadarNetworker_Sender : MonoBehaviour
                 if (lastLockedActor != null)
                 {
                     lastWasNull = false;
-                    Debug.Log(lastLockedActor.name + " radar data found its lock " + lr.currentLock.actor.name + " at id " + lastID + " with its own uID being " + networkUID);
+                    bool isLocked = lr.IsLocked();
+                    Debug.Log(lastLockedActor.name + " radar data found its lock " + lr.currentLock.actor.name + " at id " + lastID + " with its own uID being " + networkUID + " and IsLocked is " + $"{isLocked}");
                     
                     lastLockingMessage.actorUID = lastID;
                     lastLockingMessage.isLocked = true;
                     lastLockingMessage.senderUID = networkUID;
 
                     if (Networker.isHost)
-                        NetworkSenderThread.Instance.SendPacketAsHostToAllClients(lastLockingMessage, EP2PSend.k_EP2PSendReliable);
+                        NetworkSenderThread.Instance.SendPacketAsHostToAllClients(lastLockingMessage, EP2PSend.k_EP2PSendUnreliableNoDelay);
                     else
-                        NetworkSenderThread.Instance.SendPacketToSpecificPlayer(Networker.hostID, lastLockingMessage, EP2PSend.k_EP2PSendReliable);
+                        NetworkSenderThread.Instance.SendPacketToSpecificPlayer(Networker.hostID, lastLockingMessage, EP2PSend.k_EP2PSendUnreliableNoDelay);
                 }
                 else
                 {
