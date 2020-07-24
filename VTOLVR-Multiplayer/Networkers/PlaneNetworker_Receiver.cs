@@ -61,7 +61,8 @@ public class PlaneNetworker_Receiver : MonoBehaviour
 
         mostCurrentUpdateNumber = newMessage.sequenceNumber;
 
-        if (!firstMessageReceived) {
+        if (!firstMessageReceived)
+        {
             firstMessageReceived = true;
             SetLandingGear(newMessage.landingGear);
             SetTailHook(newMessage.tailHook);
@@ -72,83 +73,107 @@ public class PlaneNetworker_Receiver : MonoBehaviour
             SetBrakes(newMessage.brakes);
             SetThrottle(newMessage.throttle);
         }
-        else {
-            if (lastMessage.landingGear != newMessage.landingGear) {
+        else
+        {
+            if (lastMessage.landingGear != newMessage.landingGear)
+            {
                 SetLandingGear(newMessage.landingGear);
             }
-            if (lastMessage.tailHook != newMessage.tailHook) {
+            if (lastMessage.tailHook != newMessage.tailHook)
+            {
                 SetTailHook(newMessage.tailHook);
             }
-            if (lastMessage.launchBar != newMessage.launchBar) {
+            if (lastMessage.launchBar != newMessage.launchBar)
+            {
                 SetLaunchBar(newMessage.launchBar);
             }
-            if (lastMessage.fuelPort != newMessage.fuelPort) {
+            if (lastMessage.fuelPort != newMessage.fuelPort)
+            {
                 SetFuelPort(newMessage.fuelPort);
             }
-            if (lastMessage.pitch != newMessage.pitch || lastMessage.yaw != newMessage.yaw || lastMessage.roll != newMessage.roll) {
+            if (lastMessage.pitch != newMessage.pitch || lastMessage.yaw != newMessage.yaw || lastMessage.roll != newMessage.roll)
+            {
                 SetOrientation(newMessage.pitch, newMessage.yaw, newMessage.roll);
             }
-            if (lastMessage.flaps != newMessage.flaps) {
+            if (lastMessage.flaps != newMessage.flaps)
+            {
                 SetFlaps(newMessage.flaps);
             }
-            if (lastMessage.brakes != newMessage.brakes) {
+            if (lastMessage.brakes != newMessage.brakes)
+            {
                 SetBrakes(newMessage.brakes);
             }
-            if (lastMessage.throttle != newMessage.throttle) {
+            if (lastMessage.throttle != newMessage.throttle)
+            {
                 SetThrottle(newMessage.throttle);
             }
 
         }
         lastMessage = newMessage;
     }
-    private void SetLandingGear(bool state) {
+    private void SetLandingGear(bool state)
+    {
         if (state)
             aiPilot.gearAnimator.Extend();
         else
             aiPilot.gearAnimator.Retract();
     }
-    private void SetTailHook(bool state) {
-        if (aiPilot.tailHook != null) {
+    private void SetTailHook(bool state)
+    {
+        if (aiPilot.tailHook != null)
+        {
             if (state)
                 aiPilot.tailHook.ExtendHook();
             else
                 aiPilot.tailHook.RetractHook();
         }
     }
-    private void SetLaunchBar(bool state) {
-        if (aiPilot.catHook != null) {
+    private void SetLaunchBar(bool state)
+    {
+        if (aiPilot.catHook != null)
+        {
             if (state)
                 aiPilot.catHook.SetState(1);
             else
                 aiPilot.catHook.SetState(0);
         }
     }
-    private void SetFuelPort(bool state) {
-        if (aiPilot.refuelPort != null) {
+    private void SetFuelPort(bool state)
+    {
+        if (aiPilot.refuelPort != null)
+        {
             if (state)
                 aiPilot.refuelPort.Open();
             else
                 aiPilot.refuelPort.Close();
         }
     }
-    private void SetOrientation(float pitch, float yaw, float roll) {
-        for (int i = 0; i < autoPilot.outputs.Length; i++) {
+    private void SetOrientation(float pitch, float yaw, float roll)
+    {
+        for (int i = 0; i < autoPilot.outputs.Length; i++)
+        {
             autoPilot.outputs[i].SetPitchYawRoll(new Vector3(pitch, yaw, roll));
             autoPilot.outputs[i].SetWheelSteer(yaw);
         }
     }
-    private void SetFlaps(float flaps) {
-        for (int i = 0; i < autoPilot.outputs.Length; i++) {
+    private void SetFlaps(float flaps)
+    {
+        for (int i = 0; i < autoPilot.outputs.Length; i++)
+        {
             autoPilot.outputs[i].SetFlaps(flaps);
         }
     }
-    private void SetBrakes(float brakes) {
-        for (int i = 0; i < autoPilot.outputs.Length; i++) {
+    private void SetBrakes(float brakes)
+    {
+        for (int i = 0; i < autoPilot.outputs.Length; i++)
+        {
             autoPilot.outputs[i].SetBrakes(brakes);
         }
     }
-    private void SetThrottle(float throttle) {
-        for (int i = 0; i < autoPilot.engines.Count; i++) {
+    private void SetThrottle(float throttle)
+    {
+        for (int i = 0; i < autoPilot.engines.Count; i++)
+        {
             autoPilot.engines[i].SetThrottle(throttle);
         }
     }
@@ -200,7 +225,8 @@ public class PlaneNetworker_Receiver : MonoBehaviour
         foreach (var idx in message.toJettison)
         {
             HPEquippable equip = weaponManager.GetEquip(idx);
-            equip.markedForJettison = true;
+            if (equip != null)
+                equip.markedForJettison = true;
         }
         weaponManager.JettisonMarkedItems();
     }
@@ -225,7 +251,7 @@ public class PlaneNetworker_Receiver : MonoBehaviour
         }
         if (i > 59)
         {
-            Debug.Log("couldn't change weapon idx to right weapon for aircraft " + gameObject.name) ;
+            Debug.Log("couldn't change weapon idx to right weapon for aircraft " + gameObject.name);
         }
         if (message.isFiring != weaponManager.isFiring)
         {
@@ -241,7 +267,7 @@ public class PlaneNetworker_Receiver : MonoBehaviour
                 }
                 else
                 {
-                    Debug.Log("try start fire for vehicle" + gameObject.name +" on current equip " + weaponManager.currentEquip);
+                    Debug.Log("try start fire for vehicle" + gameObject.name + " on current equip " + weaponManager.currentEquip);
                     weaponManager.StartFire();
                 }
             }
@@ -268,7 +294,7 @@ public class PlaneNetworker_Receiver : MonoBehaviour
             return null;
         }
 
-        return VTOLVR_Multiplayer.PlaneEquippableManager.generateHpInfoListFromWeaponManager(weaponManager, 
+        return VTOLVR_Multiplayer.PlaneEquippableManager.generateHpInfoListFromWeaponManager(weaponManager,
             VTOLVR_Multiplayer.PlaneEquippableManager.HPInfoListGenerateNetworkType.receiver).ToArray();
     }
     public int[] GetCMS()
