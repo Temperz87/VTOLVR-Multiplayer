@@ -715,6 +715,8 @@ public static class PlayerManager
                         Debug.Log("Parking space is occupied.");
                     }
                 }
+
+                Debug.Log($"Generated {spawnCounter} spawn points");
             }
             else
             {
@@ -756,8 +758,6 @@ public static class PlayerManager
 
                 }
             }
-
-
             // Get other air groups of same type
         }
 
