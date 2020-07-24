@@ -204,7 +204,6 @@ public static class Patch1
             {
                 if (equip != null)
                 {
-                    Debug.Log(equip.name + $"'s jettison state is {equip.markedForJettison}");
                     if (equip.markedForJettison)
                     {
                         toJettison.Add(equip.hardpointIdx);
