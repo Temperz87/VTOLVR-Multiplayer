@@ -53,6 +53,10 @@ class LockingRadarNetworker_Receiver : MonoBehaviour
         if (lastLockingMessage.senderUID != networkUID)
             return;
 
+        if (!lockingRadar.radar.radarEnabled)
+        {
+            lockingRadar.radar.radarEnabled = true;
+        }
         Debug.Log($"Doing LockingRadarupdate for uid {networkUID} which is intended for uID {lastLockingMessage.senderUID}");
         if (!lastLockingMessage.isLocked && lockingRadar.IsLocked())
         {
