@@ -41,5 +41,6 @@ public enum MessageType
     TurretUpdate, //This is turret aiming data
     ServerHeartbeat,
     ServerHeartbeat_Response,
-    ServerReportingPingTime
+    ServerReportingPingTime,
+    LoadingTextRequest //Clients request for loading text
 }

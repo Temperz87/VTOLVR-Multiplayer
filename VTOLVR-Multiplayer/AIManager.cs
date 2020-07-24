@@ -31,9 +31,9 @@ public static class AIManager
         }
     }
     /// <summary>
-    /// This is used by the host and only the host to spawn ai vehicles.
+    /// This is used by the client and only the client to spawn ai vehicles.
     /// </summary>
-    public static void SpawnAIVehicle(Packet packet) // This should never run on the client
+    public static void SpawnAIVehicle(Packet packet) // This should never run on the host
     {
         if (Networker.isHost)
         {
@@ -76,6 +76,7 @@ public static class AIManager
         newAI.name = message.aiVehicleName;
         Actor actor = newAI.GetComponent<Actor>();
         Debug.Log($"Spawned new vehicle at {newAI.transform.position}");
+        TargetManager.instance.RegisterActor(actor);
 
         newAI.AddComponent<FloatingOriginTransform>();
 
@@ -106,9 +107,10 @@ public static class AIManager
             PlaneNetworker_Receiver planeReceiver = newAI.AddComponent<PlaneNetworker_Receiver>();
             planeReceiver.networkUID = message.networkID;
             AIPilot aIPilot = newAI.GetComponent<AIPilot>();
+            aIPilot.enabled = false;
             aIPilot.kPlane.SetToKinematic();
             aIPilot.kPlane.enabled = false;
-            aIPilot.commandState = AIPilot.CommandStates.Override;
+            aIPilot.commandState = AIPilot.CommandStates.Navigation;
             aIPilot.kPlane.enabled = true;
             aIPilot.kPlane.SetVelocity(Vector3.zero);
             aIPilot.kPlane.SetToDynamic();
@@ -128,8 +130,6 @@ public static class AIManager
             }
 
             Rigidbody rb = newAI.GetComponent<Rigidbody>();
-            Health health = newAI.GetComponent<Health>();
-            health.invincible = false;
 
             foreach (Collider collider in newAI.GetComponentsInChildren<Collider>())
             {
@@ -239,14 +239,26 @@ public static class AIManager
                 }
             }
         }
-
+        if (actor.gameObject.GetComponentInChildren<LockingRadar>() != null)
+        {
+            Debug.Log($"Adding radar sender to object {actor.name}.");
+            LockingRadarNetworker_Receiver lr = actor.gameObject.AddComponent<LockingRadarNetworker_Receiver>();
+            lr.networkUID = message.networkID;
+        }
         if (newAI.GetComponent<AirportManager>() != null) {
-            newAI.GetComponent<AirportManager>().airportName = "USS TEMPERZ " + message.networkID;
+            newAI.GetComponent<AirportManager>().airportName = "USS WE SHOULD REALLLY SYNC AIRPORT NAMES " + message.networkID;
             VTMapManager.fetch.airports.Add(newAI.GetComponent<AirportManager>());
         }
-
         AIVehicles.Add(new AI(newAI, message.aiVehicleName, actor, message.networkID));
         Debug.Log("Spawned in AI " + newAI.name);
+        if (!VTOLVR_Multiplayer.AIDictionaries.allActors.ContainsKey(message.networkID))
+        {
+            VTOLVR_Multiplayer.AIDictionaries.allActors.Add(message.networkID, actor);
+        }
+        if (!VTOLVR_Multiplayer.AIDictionaries.reverseAllActors.ContainsKey(actor))
+        {
+            VTOLVR_Multiplayer.AIDictionaries.reverseAllActors.Add(actor, message.networkID);
+        }
     }
     /// <summary>
     /// Tell the connected clients about all the vehicles the host has. This code should never be run on a client.
@@ -259,8 +271,6 @@ public static class AIManager
             return;
         }
         Debug.Log("Trying sending AI's to client " + steamID);
-        PlaneNetworker_Sender lastPlaneSender;
-        RigidbodyNetworker_Sender lastRigidSender;
         foreach (var actor in TargetManager.instance.allActors)
         {
             List<HPInfo> hPInfos = new List<HPInfo>();
@@ -287,7 +297,9 @@ public static class AIManager
                         Aggresion = aIUnitSpawn.engageEnemies;
                     }
                     Debug.Log("Finally sending AI " + actor.name + " to client " + steamID);
-                    NetworkSenderThread.Instance.SendPacketToSpecificPlayer(steamID, new Message_SpawnAIVehicle(actor.name, GetUnitNameFromCatalog(actor.unitSpawn.unitName), VTMapManager.WorldToGlobalPoint(actor.gameObject.transform.position), new Vector3D(actor.gameObject.transform.rotation.eulerAngles), uidSender.networkUID, hPInfos2, cmLoadout, 0.65f, Aggresion), EP2PSend.k_EP2PSendReliable);
+                    NetworkSenderThread.Instance.SendPacketToSpecificPlayer(steamID, new Message_SpawnAIVehicle(actor.name, GetUnitNameFromCatalog(actor.unitSpawn.unitName), 
+                        VTMapManager.WorldToGlobalPoint(actor.gameObject.transform.position), 
+                        new Vector3D(actor.gameObject.transform.rotation.eulerAngles), uidSender.networkUID, hPInfos2, cmLoadout, 0.65f, Aggresion), EP2PSend.k_EP2PSendReliable);
 
                 }
                 else

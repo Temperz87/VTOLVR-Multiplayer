@@ -14,9 +14,11 @@ public class RigidbodyNetworker_Sender : MonoBehaviour
     private Vector3 lastPos;
     private Actor actor;
     private float Threshold;
+    private bool sentFirstMessage;
     private void Awake()
     {
         actor = gameObject.GetComponent<Actor>();
+
         if (actor.role == Actor.Roles.Air)
         {
             Threshold = 1f;
@@ -29,7 +31,7 @@ public class RigidbodyNetworker_Sender : MonoBehaviour
         {
             Threshold = 5f;
         }
-        Debug.Log($"Threshold for {actor.name} is now {Threshold}.");
+        // Debug.Log($"Threshold for {actor.name} is now {Threshold}.");
         lastPos = gameObject.transform.position;
         rb = GetComponent<Rigidbody>();
         lastMessage = new Message_RigidbodyUpdate(new Vector3D(rb.velocity), new Vector3D(rb.angularVelocity), new Vector3D(transform.position), new Vector3D(transform.rotation.eulerAngles), networkUID);
@@ -37,7 +39,24 @@ public class RigidbodyNetworker_Sender : MonoBehaviour
 
     private void FixedUpdate()
     {
-        if (Vector3.Distance(lastPos, gameObject.transform.position) > Threshold)
+
+        // If the player is landed change the threshold to be lower
+        if (actor.role == Actor.Roles.Air)
+        {
+            if (actor.flightInfo != null)
+            {
+                if (actor.flightInfo.isLanded)
+                {
+                    Threshold = .2f;
+                }
+                else
+                {
+                    Threshold = 1f;
+                }
+            }
+        }
+        
+        if (Vector3.Distance(lastPos, gameObject.transform.position) > Threshold || sentFirstMessage == false)
         {
             lastMessage.position = VTMapManager.WorldToGlobalPoint(transform.position);
             lastMessage.rotation = new Vector3D(transform.rotation.eulerAngles);
@@ -46,16 +65,14 @@ public class RigidbodyNetworker_Sender : MonoBehaviour
             lastMessage.velocity = new Vector3D(rb.velocity);
             lastMessage.angularVelocity = new Vector3D(rb.angularVelocity);
             lastMessage.networkUID = networkUID;
+            sentFirstMessage = true;
             if (Networker.isHost)
                 NetworkSenderThread.Instance.SendPacketAsHostToAllClients(lastMessage, Steamworks.EP2PSend.k_EP2PSendUnreliableNoDelay);
             else
                 NetworkSenderThread.Instance.SendPacketToSpecificPlayer(Networker.hostID, lastMessage, Steamworks.EP2PSend.k_EP2PSendUnreliableNoDelay);
         }
-        else
-        {
             // Temperz STOP KILLING PERFORMANCE AND HARD DRIVES!
             //Debug.Log($"{actor.name} is not outside of the threshold {Threshold}, the distance is {Vector3.Distance(lastPos, gameObject.transform.position)} not updating it.");
-        }
     }
 
     public void SetSpawn()

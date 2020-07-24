@@ -80,6 +80,10 @@
     <Reference Include="UnityEngine.CrashReportingModule">
       <HintPath>..\Dependencies\UnityEngine.CrashReportingModule.dll</HintPath>
     </Reference>
+    <Reference Include="UnityEngine.IMGUIModule, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\Dependencies\UnityEngine.IMGUIModule.dll</HintPath>
+    </Reference>
     <Reference Include="UnityEngine.PhysicsModule">
       <HintPath>..\Dependencies\UnityEngine.PhysicsModule.dll</HintPath>
     </Reference>
@@ -94,6 +98,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AIDictionaries.cs" />
     <Compile Include="AIManager.cs" />
     <Compile Include="HPInfo.cs" />
     <Compile Include="Messages\Message.cs" />
@@ -107,6 +112,7 @@
     <Compile Include="Messages\Message_Heartbeat.cs" />
     <Compile Include="Messages\Message_HostLoaded.cs" />
     <Compile Include="Messages\Message_JoinRequest.cs" />
+    <Compile Include="Messages\Message_LoadingTextRequest.cs" />
     <Compile Include="Messages\Message_LoadingTextUpdate.cs" />
     <Compile Include="Messages\Message_LobbyInfoRequest.cs" />
     <Compile Include="Messages\Message_MissileUpdate.cs" />

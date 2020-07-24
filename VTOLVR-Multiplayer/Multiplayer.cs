@@ -34,6 +34,10 @@ public class Multiplayer : VTOLMOD
     private ScrollRect scrollRect;
     private float buttonHeight;
     private List<FriendItem> steamFriends = new List<FriendItem>();
+
+    private List<GameObject> friendListItems = new List<GameObject>();
+
+
     private CSteamID selectedFriend;
     private Transform selectionTF;
 
@@ -248,14 +252,43 @@ public class Multiplayer : VTOLMOD
         mpInteractable.OnInteract.AddListener(delegate { Log("Before Opening MP"); RefershFriends(); MPMenu.SetActive(true); ScenarioDisplay.gameObject.SetActive(false); OpenMP(); });
         GameObject.Find("InteractableCanvas").GetComponent<VRPointInteractableCanvas>().RefreshInteractables();
         Log("Finished");
-        
-        
+
+        Log("Refresh");//Host
+        GameObject RefreshButton = Instantiate(mpButton.gameObject, MPMenu.transform);
+        RefreshButton.GetComponent<RectTransform>().localPosition = new Vector3(510, 322);
+        RefreshButton.GetComponent<RectTransform>().sizeDelta = new Vector2(50, 250f);
+        RefreshButton.GetComponentInChildren<Text>().text = "Refresh";
+        RefreshButton.GetComponent<Image>().color = Color.red;
+        VRInteractable RefreshInteractable = RefreshButton.GetComponent<VRInteractable>();
+        RefreshInteractable.interactableName = "Refresh Friends";
+        RefreshInteractable.OnInteract = new UnityEngine.Events.UnityEvent();
+        RefreshInteractable.OnInteract.AddListener(delegate { Log("Before Host"); RefershFriends(); });
+
+
     }
 
     public void RefershFriends()
     {
         Log("Refreshing Friends");
         steamFriends.Clear();
+        int totalFriends = 0;
+        Debug.Log($"UI List Item Count: {friendListItems.Count}");
+
+        foreach(GameObject uiItem in friendListItems)
+        {
+            if (uiItem != null) {
+                Debug.Log($"Destroying {uiItem.name}");
+            }
+            else
+            {
+                Debug.Log("UI Item is null");
+            }
+            
+            Destroy(uiItem);
+        }
+
+        friendListItems.Clear();
+
         int friendsCount = SteamFriends.GetFriendCount(EFriendFlags.k_EFriendFlagImmediate);
         if (friendsCount == -1)
         {
@@ -291,17 +324,19 @@ public class Multiplayer : VTOLMOD
         friendsTemplate.SetActive(true);
         GameObject lastFriendGO;
         VRUIListItemTemplate uiListItem;
-        int totalFriends = 0;
+        totalFriends = 0;
         lableVTOL.transform.localPosition = new Vector3(0, -totalFriends * buttonHeight);
         for (int i = 0; i < vtolvrFriends.Count; i++)
         {
             totalFriends++;
             lastFriendGO = Instantiate(friendsTemplate, content.transform);
+            lastFriendGO.name = SteamFriends.GetFriendPersonaName(vtolvrFriends[i]);
             steamFriends.Add(new FriendItem(vtolvrFriends[i],lastFriendGO.transform));
             lastFriendGO.transform.localPosition = new Vector3(0f, -totalFriends * buttonHeight);
             uiListItem = lastFriendGO.GetComponent<VRUIListItemTemplate>();
             uiListItem.Setup(SteamFriends.GetFriendPersonaName(vtolvrFriends[i]), totalFriends - 1, SelectFriend);
             uiListItem.labelText.color = Color.green;
+            friendListItems.Add(lastFriendGO);
         }
 
         Log("Updating Scroll Rect");
@@ -346,7 +381,7 @@ public class Multiplayer : VTOLMOD
 
     public void Join()
     {
-        playingMP = false;
+        playingMP = true;
         if (Networker.hostID == new Steamworks.CSteamID(0) && waitingForJoin == null)
         {
             Networker.JoinGame(selectedFriend);
@@ -369,27 +404,81 @@ public class Multiplayer : VTOLMOD
 
     private void CreateLoadingSceneObjects()
     {
-        Transform cube = GameObject.CreatePrimitive(PrimitiveType.Cube).transform;
-        cube.position = new Vector3(-0.485f, 1.153f, 0.394f);
-        cube.rotation = Quaternion.Euler(0,-53.038f,0);
-        cube.localScale = new Vector3(0.5f,0.5f,0.01f);
-        cube.name = "Multiplayer Player List";
+        Debug.Log("Creating Loading Screen Object.");
 
-        GameObject Text = new GameObject("Text", typeof(TextMeshPro), typeof(RectTransform));
-        Text.transform.SetParent(cube,false);
-        RectTransform rect = Text.GetComponent<RectTransform>();
-        rect.sizeDelta = new Vector2(1, 1);
-        rect.localPosition = new Vector3(0, 0, -1);
-        Networker.loadingText = Text.GetComponent<TextMeshPro>();
+        //Transform cube = GameObject.CreatePrimitive(PrimitiveType.Cube).transform;
+        //cube.position = new Vector3(-0.485f, 1.153f, 0.394f);
+        //cube.rotation = Quaternion.Euler(0,-53.038f,0);
+        //cube.localScale = new Vector3(0.5f,0.5f,0.01f);
+        //cube.name = "Multiplayer Player List";
+
+        Debug.Log("Looking for Canvas and Info Transforms");
+        GameObject canvas_go = GameObject.Find("Canvas").gameObject;
+
+        Transform infoCanvas = canvas_go.transform.Find("Info").transform;
+
+        //Transform canvas = canvas_go.transform;
+
+        //Text missionText = canvas.Find("MissionText").GetComponent<Text>();
+
+        Debug.Log("Removing old text");
+        infoCanvas.Find("Ready").GetComponent<Text>().text = "";
+        infoCanvas.Find("MissionText").GetComponent<Text>().text = "";
+        infoCanvas.Find("MissionText").gameObject.SetActive(false);
+        infoCanvas.Find("progressGameObject").gameObject.SetActive(false);
+        infoCanvas.Find("progressGameObject").transform.Find("LoadingText").gameObject.SetActive(false);
+        infoCanvas.Find("progressGameObject").transform.Find("LoadingText (1)").gameObject.SetActive(false);
+
+        //Destroy(missionText);
+
+        //missionText.text = "HELLO!";
+
+        //for (int i = 0; i < GameObject.Find("Canvas").transform.GetChild(0).childCount; i++)
+        //{
+        //    // Loop through each child to find the Campaign Select Canavas
+        //    Transform cube = GameObject.Find("InteractableCanvas").transform.GetChild(0).GetChild(i);
+        //    if (cube.name == "CampaignSelector")
+        //    {
+        //        // Get the next page in the campaign selector (The scenario display)
+        //        cube = cube.GetChild(0).GetChild(1);
+
+        //        // If the name is ScenarioDisplay, we found it! Breaking out of the for loop to continue on...
+        //        if (cube.name == "ScenarioDisplay")
+        //        {
+        //            break;
+        //        }
+        //    }
+        //}Adding loading text
+
+        //Can't add component 'RectTransform' to Text because such a component is already added to the game object!
+        //Loaded scene: LoadingScene
+
+        Debug.Log("Adding loading text");
+
+        Networker.loadingText = canvas_go.AddComponent<TextMeshPro>();
+
+        //GameObject Text = new GameObject("Text", typeof(TextMeshPro));
+        //Text.transform.SetParent(canvas, false);
+        RectTransform rect = Networker.loadingText.GetComponent<RectTransform>();
+        rect.sizeDelta = new Vector2(676, 350);
+        //rect.position = new Vector3(0, -99, 0);
+        //Networker.loadingText = Text.GetComponent<TextMeshPro>();
         Networker.loadingText.enableAutoSizing = true;
-        Networker.loadingText.fontSizeMin = 0;
-        Networker.loadingText.color = Color.black;
+        Networker.loadingText.fontSizeMin = 300;
+        Networker.loadingText.fontSizeMax = 450;
+        Networker.loadingText.color = Color.white;
+        if (!Networker.isHost)
+        {
+            NetworkSenderThread.Instance.SendPacketToSpecificPlayer(Networker.hostID, new Message_LoadingTextRequest(), EP2PSend.k_EP2PSendReliable); // Getting Loading Text
+
+        }
         Networker.UpdateLoadingText();
     }
 
     public void CleanUpOnDisconnect() {
         selectedFriend = new CSteamID(0);
         steamFriends?.Clear();
+        playingMP = false;
     }
 
     private void DestroyLoadingSceneObjects()
