@@ -183,3 +183,50 @@ public class PlaneNetworker_Sender : MonoBehaviour
         Networker.WeaponSet -= WeaponSet;
     }
 }
+[HarmonyPatch(typeof(WeaponManager), "JettisonMarkedItems")]
+public static class Patch1
+{
+    public static bool Prefix(WeaponManager __instance)
+    {
+        ulong networkUID;
+        List<int> toJettison = new List<int>();
+        Traverse traverse;
+        Message_JettisonUpdate lastMesage;
+        if (__instance.actor == null)
+        {
+            Debug.LogError("Weapon manager actor null on one airplane, can't give more debug information here.");
+        }
+        else if (VTOLVR_Multiplayer.AIDictionaries.reverseAllActors.TryGetValue(__instance.actor, out networkUID))
+        {
+            traverse = Traverse.Create(__instance);
+            Debug.Log("Doing for each");
+            foreach (var equip in (HPEquippable[])traverse.Field("equips").GetValue())
+            {
+                if (equip != null)
+                {
+                    Debug.Log(equip.name + $"'s jettison state is {equip.markedForJettison}");
+                    if (equip.markedForJettison)
+                    {
+                        toJettison.Add(equip.hardpointIdx);
+                    }
+                }
+            }
+            if (toJettison.Count == 0)
+            {
+                Debug.Log("Tried to jettison nothing, not doing it");
+                return true;
+            }
+            lastMesage = new Message_JettisonUpdate(toJettison.ToArray(), networkUID);
+            Debug.Log("Jettisoning...");
+            if (Networker.isHost)
+                NetworkSenderThread.Instance.SendPacketAsHostToAllClients(lastMesage, Steamworks.EP2PSend.k_EP2PSendUnreliable);
+            else
+                NetworkSenderThread.Instance.SendPacketToSpecificPlayer(Networker.hostID, lastMesage, Steamworks.EP2PSend.k_EP2PSendUnreliable);
+        }
+        else
+        {
+            Debug.LogError($"{networkUID} not found in AIDictionaries.");
+        }
+        return true;
+    }
+}

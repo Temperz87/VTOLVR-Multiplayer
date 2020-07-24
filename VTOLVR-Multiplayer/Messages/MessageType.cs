@@ -39,5 +39,6 @@ public enum MessageType
     RadarUpdate, //this is when the radar is turned on or off, or the fov is changed, make a messsage called LockingRadarUpdate in the future to deal with locks
     LockingRadarUpdate, //See above nerd
     TurretUpdate, //This is turret aiming data
-    LoadingTextRequest //Clients request for loading text
+    LoadingTextRequest, //Clients request for loading text
+    JettisonUpdate // Used when weapons are jettisoned
 }

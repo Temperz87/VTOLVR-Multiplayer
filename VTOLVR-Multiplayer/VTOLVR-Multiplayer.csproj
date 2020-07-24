@@ -110,6 +110,7 @@
     <Compile Include="Messages\Message_ExtLight.cs" />
     <Compile Include="Messages\Message_FireCountermeasure.cs" />
     <Compile Include="Messages\Message_HostLoaded.cs" />
+    <Compile Include="Messages\Message_JettisonUpdate.cs" />
     <Compile Include="Messages\Message_JoinRequest.cs" />
     <Compile Include="Messages\Message_LoadingTextRequest.cs" />
     <Compile Include="Messages\Message_LoadingTextUpdate.cs" />

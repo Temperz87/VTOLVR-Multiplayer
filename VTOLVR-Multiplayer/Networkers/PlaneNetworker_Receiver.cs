@@ -33,6 +33,7 @@ public class PlaneNetworker_Receiver : MonoBehaviour
         Networker.WeaponSet_Result += WeaponSet_Result;
         Networker.Disconnecting += OnDisconnect;
         Networker.WeaponFiring += WeaponFiring;
+        Networker.JettisonUpdate += JettisonUpdate;
         // Networker.WeaponStoppedFiring += WeaponStoppedFiring;
         Networker.FireCountermeasure += FireCountermeasure;
         weaponManager = GetComponent<WeaponManager>();
@@ -151,7 +152,6 @@ public class PlaneNetworker_Receiver : MonoBehaviour
             autoPilot.engines[i].SetThrottle(throttle);
         }
     }
-
     public void WeaponSet_Result(Packet packet)
     {
         Message_WeaponSet_Result message = (Message_WeaponSet_Result)((PacketSingle)packet).message;
@@ -185,6 +185,24 @@ public class PlaneNetworker_Receiver : MonoBehaviour
         fuelTank.startingFuel = loadout.normalizedFuel;
         fuelTank.SetNormFuel(loadout.normalizedFuel);
 
+    }
+
+    private void JettisonUpdate(Packet packet)
+    {
+        Message_JettisonUpdate message = ((PacketSingle)packet).message as Message_JettisonUpdate;
+        if (message.networkUID != networkUID)
+            return;
+        if (message.toJettison == null)
+        {
+            Debug.LogError("Why did we get a jettison message that want's to jettison nothing?");
+            return;
+        }
+        foreach (var idx in message.toJettison)
+        {
+            HPEquippable equip = weaponManager.GetEquip(idx);
+            equip.markedForJettison = true;
+        }
+        weaponManager.JettisonMarkedItems();
     }
     public void WeaponFiring(Packet packet)
     {
