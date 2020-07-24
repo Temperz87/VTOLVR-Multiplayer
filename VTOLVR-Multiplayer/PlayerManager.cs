@@ -64,7 +64,7 @@ public static class PlayerManager
         }
         Debug.Log("The map has loaded");
         gameLoaded = true;
-        //As a client, when the map has loaded we are going to request a spawn point from the host
+        // As a client, when the map has loaded we are going to request a spawn point from the host
         SetPrefabs();
         if (!Networker.isHost)
         {
@@ -274,13 +274,16 @@ public static class PlayerManager
         Actor actor = localVehicle.GetComponent<Actor>();
         Player localPlayer = new Player(SteamUser.GetSteamID(), localVehicle, currentVehicle, actor, UID);
         players.Add(localPlayer);
-        VTOLVR_Multiplayer.AIDictionaries.allActors.Add(localUID, actor);
-        VTOLVR_Multiplayer.AIDictionaries.reverseAllActors.Add(actor, localUID);
+        // VTOLVR_Multiplayer.AIDictionaries.allActors.Add(localUID, actor);
+        // VTOLVR_Multiplayer.AIDictionaries.reverseAllActors.Add(actor, localUID);
         RigidbodyNetworker_Sender rbSender = localVehicle.AddComponent<RigidbodyNetworker_Sender>();
         rbSender.networkUID = UID;
         rbSender.spawnPos = pos;
         rbSender.spawnRot = rot;
         rbSender.SetSpawn();
+
+        VTOLVR_Multiplayer.AIDictionaries.allActors.Add(UID, actor);
+        VTOLVR_Multiplayer.AIDictionaries.reverseAllActors.Add(actor, UID);
 
         Debug.Log("Adding Plane Sender");
         PlaneNetworker_Sender planeSender = localVehicle.AddComponent<PlaneNetworker_Sender>();
