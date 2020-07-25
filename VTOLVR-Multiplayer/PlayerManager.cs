@@ -586,6 +586,13 @@ public static class PlayerManager
         nameTag.AddComponent<Nametag>().SetText(
             SteamFriends.GetFriendPersonaName(spawnerSteamId),
             newVehicle.transform, VRHead.instance.transform);
+
+        if (multiplayerInstance.hidePlayerNameTags)
+        {
+            parent.SetActive(false);
+            nameTag.SetActive(false);
+        }
+
         //Debug.Log("Doing weapon manager shit on " + newVehicle.name + ".");
         WeaponManager weaponManager = newVehicle.GetComponent<WeaponManager>();
         if (weaponManager == null)
