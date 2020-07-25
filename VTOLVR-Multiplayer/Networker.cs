@@ -72,7 +72,7 @@ static class MapAndScenarioVersionChecker
         try
         {
             mods = VTOLAPI.GetUsersMods();
-        } catch (Exception err)
+        } catch (Exception)
         {
             Debug.Log("Exception caught while getting user's mods. Perhaps they aren't on the correct mod loader version?");
         }
@@ -107,7 +107,33 @@ public class Networker : MonoBehaviour
     private Campaign pilotSaveManagerControllerCampaign;
     private CampaignScenario pilotSaveManagerControllerCampaignScenario;
     public static Networker _instance { get; private set; }
-    public static bool isHost { get; private set; }
+    private static readonly object isHostLock = new object();
+    private static bool isHostInternal = false;
+    public static bool isHost {
+        get {
+            lock (isHostLock) {
+                return isHostInternal;
+            }
+        }
+        private set {
+            lock (isHostLock) {
+                isHostInternal = value;
+            }
+        }
+    }
+    private static readonly object timeoutCounterLock = new object();
+    private static int timeoutCounterInternal = 0;
+    private static int TimeoutCounter {
+        get { lock (timeoutCounterLock) { return timeoutCounterInternal; } }
+        set { lock (timeoutCounterLock) { timeoutCounterInternal = value; } }
+    }
+    private static readonly int clientTimeoutInSeconds = 5;
+    private static readonly object disconnectForClientTimeoutLock = new object();
+    private static bool disconnectForClientTimeoutInternal = false;
+    private static bool disconnectForClientTimeout {
+        get { lock (disconnectForClientTimeoutLock) { return disconnectForClientTimeoutInternal; } }
+        set { lock (disconnectForClientTimeoutLock) { disconnectForClientTimeoutInternal = value; } }
+    }
     public static bool isClient { get; private set; }
     public enum GameState { Menu, Config, Game };
     public static GameState gameState { get; private set; }
@@ -137,7 +163,9 @@ public class Networker : MonoBehaviour
 
     public static Multiplayer multiplayerInstance = null;
 
-
+    public static bool HeartbeatTimerRunning = false;
+    public static readonly System.Timers.Timer HeartbeatTimer = new System.Timers.Timer(1000);
+    
     #region Message Type Callbacks
     //These callbacks are use for other scripts to know when a network message has been
     //received for them. They should match the name of the message class they relate to.
@@ -196,6 +224,8 @@ public class Networker : MonoBehaviour
         //VTCustomMapManager.OnLoadedMap += (customMap) => { StartCoroutine(PlayerManager.MapLoaded(customMap)); };
 
         VTOLAPI.SceneLoaded += SceneChanged;
+        HeartbeatTimer.Elapsed += HeartbeatCallback;
+        HeartbeatTimer.AutoReset = true;
     }
     private void OnP2PSessionRequest(P2PSessionRequest_t request)
     {
@@ -218,6 +248,41 @@ public class Networker : MonoBehaviour
         ReadP2P();
     }
 
+    private void LateUpdate()
+    {
+        if (disconnectForClientTimeout) {
+            disconnectForClientTimeout = false;
+
+            Debug.Log("Connection to host timed out");
+
+            // Make sure time is moving normally so exit scene transition will work
+            WorldDataNetworker_Receiver timeController = PlayerManager.worldData.GetComponent<WorldDataNetworker_Receiver>();
+            timeController.ClientNeedsNormalTimeFlowBecauseHostDisconnected();
+            FlightSceneManager flightSceneManager = FindObjectOfType<FlightSceneManager>();
+            if (flightSceneManager == null)
+                Debug.LogError("FlightSceneManager was null when host timed out");
+            flightSceneManager.ExitScene();
+
+            Disconnect(false);
+        }
+    }
+
+    public static void HeartbeatCallback(object sender, System.Timers.ElapsedEventArgs e) {
+        if (isHost) {
+            // Host, send heartbeat
+            NetworkSenderThread.Instance.SendPacketAsHostToAllClients(new Message_Heartbeat(), EP2PSend.k_EP2PSendUnreliableNoDelay);
+        }
+        else {
+            // Client, increment timeout counter
+            if (++TimeoutCounter > clientTimeoutInSeconds) {
+                // Disconnected from host
+                disconnectForClientTimeout = true;
+                HeartbeatTimerRunning = false;
+                HeartbeatTimer.Stop();
+            }
+        }
+    }
+
     public static void HostGame()
     {
         if (gameState != GameState.Menu)
@@ -227,6 +292,11 @@ public class Networker : MonoBehaviour
         }
         Debug.Log("Hosting game");
         isHost = true;
+
+        TimeoutCounter = 0;
+        HeartbeatTimerRunning = true;
+        HeartbeatTimer.Start();
+
         playerStatusDic.Add(hostID, 0);
         _instance.StartCoroutine(_instance.FlyButton());
     }
@@ -407,6 +477,9 @@ public class Networker : MonoBehaviour
                 case MessageType.JoinRequestAccepted_Result:
                     Debug.Log($"case join request accepted result, joining {csteamID.m_SteamID}");
                     hostID = csteamID;
+                    TimeoutCounter = 0;
+                    HeartbeatTimerRunning = true;
+                    HeartbeatTimer.Start();
                     StartCoroutine(FlyButton());
                     UpdateLoadingText();
                     break;
@@ -519,6 +592,7 @@ public class Networker : MonoBehaviour
                     Debug.Log("case disconnecting");
                     if (isHost)
                     {
+                        Debug.Log("Client disconnected");
                         if (Multiplayer.SoloTesting)
                             break;
 
@@ -533,11 +607,18 @@ public class Networker : MonoBehaviour
                         playerStatusDic[csteamID] = 4;
                         if (messsage.isHost)
                         {
+                            Debug.Log("Host disconnected");
                             //If it is the host quiting we just need to quit the mission as all networking will be lost.
+                            // Make sure time is moving normally so exit scene transition will work
+                            WorldDataNetworker_Receiver timeController = PlayerManager.worldData.GetComponent<WorldDataNetworker_Receiver>();
+                            timeController.ClientNeedsNormalTimeFlowBecauseHostDisconnected();
                             FlightSceneManager flightSceneManager = FindObjectOfType<FlightSceneManager>();
                             if (flightSceneManager == null)
                                 Debug.LogError("FlightSceneManager was null when host quit");
                             flightSceneManager.ExitScene();
+                        }
+                        else {
+                            Debug.Log("Other client disconnected");
                         }
                         break;
                     }
@@ -653,6 +734,29 @@ public class Networker : MonoBehaviour
                     }
                     ActorNetworker_Reciever.syncActors(packet);
                     break;
+                case MessageType.ServerHeartbeat:
+                    if (!isHost) {
+                        Message_Heartbeat heartbeatMessage = ((PacketSingle)packet).message as Message_Heartbeat;
+
+                        TimeoutCounter = 0;
+                        NetworkSenderThread.Instance.SendPacketToSpecificPlayer(hostID, new Message_Heartbeat_Result(heartbeatMessage.TimeOnServerGame), EP2PSend.k_EP2PSendUnreliableNoDelay);
+                    }
+                    break;
+                case MessageType.ServerHeartbeat_Response:
+                    if (isHost) {
+                        Message_Heartbeat_Result heartbeatResult = ((PacketSingle)packet).message as Message_Heartbeat_Result;
+
+                        float pingTime = Time.fixedTime - heartbeatResult.TimeOnServerGame;
+                        NetworkSenderThread.Instance.SendPacketToSpecificPlayer(csteamID, new Message_ReportPingTime(pingTime), EP2PSend.k_EP2PSendUnreliableNoDelay);
+                    }
+                    break;
+                case MessageType.ServerReportingPingTime:
+                    if (!isHost) {
+                        // You can use ping report however you want
+                        Message_ReportPingTime pingTimeMessage = packetS.message as Message_ReportPingTime;
+                        Debug.Log($"Current ping is: {pingTimeMessage.PingTime}");
+                    }
+                    break;
                 case MessageType.LoadingTextRequest:
                     Debug.Log("case LoadingTextRequest");
                     if (isHost)
@@ -764,7 +868,7 @@ public class Networker : MonoBehaviour
     {
         if (scene == VTOLScenes.ReadyRoom && PlayerManager.gameLoaded)
         {
-            Disconnect();
+            Disconnect(false);
         }
     }
 
@@ -972,6 +1076,11 @@ public class Networker : MonoBehaviour
 
     public void OnApplicationQuit()
     {
+        if (HeartbeatTimerRunning) {
+            HeartbeatTimer.Stop();
+            HeartbeatTimerRunning = false;
+        }
+
         if (PlayerManager.gameLoaded)
         {
             Disconnect(true);
@@ -980,7 +1089,7 @@ public class Networker : MonoBehaviour
     /// <summary>
     /// This will send any messages needed to the host or other players and reset variables.
     /// </summary>
-    public void Disconnect(bool applicationClosing = false)
+    public void Disconnect(bool applicationClosing)
     {
         Debug.Log("Disconnecting from server");
         if (isHost)
@@ -1005,6 +1114,11 @@ public class Networker : MonoBehaviour
 
     private void DisconnectionTasks() {
         Debug.Log("Running disconnection tasks");
+        if (HeartbeatTimerRunning) {
+            HeartbeatTimer.Stop();
+            HeartbeatTimerRunning = false;
+        }
+
         isHost = false;
         isClient = false;
         gameState = GameState.Menu;
