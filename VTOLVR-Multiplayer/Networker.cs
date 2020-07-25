@@ -256,7 +256,8 @@ public class Networker : MonoBehaviour
             Debug.Log("Connection to host timed out");
 
             // Make sure time is moving normally so exit scene transition will work
-            Time.timeScale = 1f;
+            WorldDataNetworker_Receiver timeController = PlayerManager.worldData.GetComponent<WorldDataNetworker_Receiver>();
+            timeController.ClientNeedsNormalTimeFlowBecauseHostDisconnected();
             FlightSceneManager flightSceneManager = FindObjectOfType<FlightSceneManager>();
             if (flightSceneManager == null)
                 Debug.LogError("FlightSceneManager was null when host timed out");
@@ -609,7 +610,8 @@ public class Networker : MonoBehaviour
                             Debug.Log("Host disconnected");
                             //If it is the host quiting we just need to quit the mission as all networking will be lost.
                             // Make sure time is moving normally so exit scene transition will work
-                            Time.timeScale = 1f;
+                            WorldDataNetworker_Receiver timeController = PlayerManager.worldData.GetComponent<WorldDataNetworker_Receiver>();
+                            timeController.ClientNeedsNormalTimeFlowBecauseHostDisconnected();
                             FlightSceneManager flightSceneManager = FindObjectOfType<FlightSceneManager>();
                             if (flightSceneManager == null)
                                 Debug.LogError("FlightSceneManager was null when host quit");
