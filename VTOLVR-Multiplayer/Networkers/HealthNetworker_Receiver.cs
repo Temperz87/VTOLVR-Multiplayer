@@ -40,7 +40,6 @@ class HealthNetworker_Receiver : MonoBehaviour
             }
         }
 
-
         health.invincible = false;
         health.Kill();
     }
