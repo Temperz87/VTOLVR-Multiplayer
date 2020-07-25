@@ -48,6 +48,10 @@ public class Multiplayer : VTOLMOD
     // Fixing singleplayer functionality with MP mod
     public bool playingMP;
 
+    //MP Settings
+    public bool spawnRemainingPlayersAtAirBase = false;
+    public bool replaceWingmenWithClients = true;
+
     private void Start()
     {
         _instance = this;
