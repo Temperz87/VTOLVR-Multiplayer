@@ -72,7 +72,7 @@ static class MapAndScenarioVersionChecker
         try
         {
             mods = VTOLAPI.GetUsersMods();
-        } catch (Exception err)
+        } catch (Exception)
         {
             Debug.Log("Exception caught while getting user's mods. Perhaps they aren't on the correct mod loader version?");
         }
@@ -751,6 +751,8 @@ public class Networker : MonoBehaviour
                 case MessageType.ServerReportingPingTime:
                     if (!isHost) {
                         // You can use ping report however you want
+                        Message_ReportPingTime pingTimeMessage = packetS.message as Message_ReportPingTime;
+                        Debug.Log($"Current ping is: {pingTimeMessage.PingTime}");
                     }
                     break;
                 case MessageType.LoadingTextRequest:
