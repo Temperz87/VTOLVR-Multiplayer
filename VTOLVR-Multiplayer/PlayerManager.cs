@@ -34,9 +34,6 @@ public static class PlayerManager
     public static Multiplayer multiplayerInstance = null;
 
 
-    public static bool spawnRemainingPlayersAtAirBase = false;
-    public static bool replaceWingmenWithClients = true;
-
     public struct Player
     {
         public CSteamID cSteamID;
@@ -759,7 +756,8 @@ public static class PlayerManager
         }
         else
         {
-            if (replaceWingmenWithClients)
+            
+            if (multiplayerInstance.replaceWingmenWithClients)
             {
                 Debug.Log("Player is in the air, looking for wingmen!");
                 int wingmenCount = 0;
@@ -799,7 +797,7 @@ public static class PlayerManager
         if (spawnPoints.Count < spawnsCount)
         {
             Debug.Log("We still don't have enough spawn points, creating some more!");
-            if (spawnRemainingPlayersAtAirBase)
+            if (multiplayerInstance.spawnRemainingPlayersAtAirBase)
             {
                 Debug.Log("Creating spawn points at the closest airport!");
                 AirportManager result2 = null;

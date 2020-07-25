@@ -11,6 +11,7 @@ using System.Reflection;
 using Steamworks;
 using System.Collections;
 using TMPro;
+using UnityEngine.Events;
 
 public class Multiplayer : VTOLMOD
 {
@@ -49,7 +50,22 @@ public class Multiplayer : VTOLMOD
     public bool playingMP;
 
     //Create a host setting for these instead of a variable!
+    public Settings settings;
+
+    public bool spawnRemainingPlayersAtAirBase = false;
+    public UnityAction<bool> spawnRemainingPlayersAtAirBase_changed;
+
+    public bool replaceWingmenWithClients = true;
+    private UnityAction<bool> replaceWingmenWithClients_changed;
+
     public bool restrictToHostMods = true;
+    private UnityAction<bool> restrictToHostMods_changed; 
+
+    public bool forceWinds = false; // not implemented
+    private UnityAction<bool> forceWinds_changed;
+
+    public bool FreeForAllMode = false; // not implemented
+    private UnityAction<bool> FreeForAllMode_changed;
 
     private void Start()
     {
@@ -79,9 +95,79 @@ public class Multiplayer : VTOLMOD
 
 
         VTOLAPI.SceneLoaded += SceneLoaded;
+        CreateSettingsPage();
         base.ModLoaded();
         CreateUI();
         gameObject.AddComponent<Networker>();
+    }
+
+
+    private void CreateSettingsPage()
+    {
+        settings = new Settings(this);
+
+
+        //public bool spawnRemainingPlayersAtAirBase = false;
+        //private bool spawnRemainingPlayersAtAirBase_changed;
+
+        //public bool replaceWingmenWithClients = true;
+        //private bool replaceWingmenWithClients_changed;
+
+        //public bool restrictToHostMods = true;
+        //private bool restrictToHostMods_changed;
+
+        //public bool forceWinds = false; // not implemented
+        //private bool forceWinds_changed;
+
+        //public bool FreeForAllMode = false; // not implemented
+        //private bool FreeForAllMode_changed;
+        settings.CreateCustomLabel("Host Settings");
+        spawnRemainingPlayersAtAirBase_changed += spawnRemainingPlayersAtAirBase_Setting;
+        settings.CreateCustomLabel("Spawn players at airbase if there are no wingmen available.");
+        settings.CreateBoolSetting("Default = False", spawnRemainingPlayersAtAirBase_changed, spawnRemainingPlayersAtAirBase);
+
+
+        replaceWingmenWithClients_changed += replaceWingmenWithClients_Setting;
+        settings.CreateCustomLabel("Replace AI wingmen (with the same flight designation) with clients.");
+        settings.CreateBoolSetting("Default = True", replaceWingmenWithClients_changed, replaceWingmenWithClients);
+
+        restrictToHostMods_changed += restrictToHostMods_Settings;
+        settings.CreateCustomLabel("Require clients to use the same mods as host.");
+        settings.CreateBoolSetting("Default = True", restrictToHostMods_changed, restrictToHostMods);
+
+        forceWinds_changed += forceWinds_Settings;
+        settings.CreateCustomLabel("Force winds on for clients (Not functional).");
+        settings.CreateBoolSetting("Default = True", forceWinds_changed, forceWinds);
+
+        FreeForAllMode_changed += FreeForAllMode_Settings;
+        settings.CreateCustomLabel("Free For All Mode! Sets all clients to enemies (Not functional).");
+        settings.CreateBoolSetting("Default = True", FreeForAllMode_changed, FreeForAllMode);
+
+        VTOLAPI.CreateSettingsMenu(settings);
+    }
+
+    public void spawnRemainingPlayersAtAirBase_Setting(bool newval)
+    {
+        spawnRemainingPlayersAtAirBase = newval;
+    }
+
+    public void replaceWingmenWithClients_Setting(bool newval)
+    {
+        spawnRemainingPlayersAtAirBase = newval;
+    }
+
+    public void restrictToHostMods_Settings(bool newval)
+    {
+        restrictToHostMods = newval;
+    }
+
+    public void forceWinds_Settings(bool newval)
+    {
+        forceWinds = newval;
+    }
+    public void FreeForAllMode_Settings(bool newval)
+    {
+        FreeForAllMode = newval;
     }
 
     private void SceneLoaded(VTOLScenes scene)
