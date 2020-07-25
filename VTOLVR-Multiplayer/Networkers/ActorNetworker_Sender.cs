@@ -12,7 +12,6 @@ class ActorNetworker_Sender : MonoBehaviour
 {
     public ulong networkUID;
     public Actor actor;
-    private Message_ActorSync lastMessage;
     public static Dictionary<ulong, string> allActors = new Dictionary<ulong, string>();
     private void Awake()
     {
