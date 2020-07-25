@@ -11,8 +11,8 @@ public class PlaneNetworker_Receiver : MonoBehaviour
 {
     public ulong networkUID;
     private Message_PlaneUpdate lastMessage;
-    bool firstMessageReceived;
-
+    private bool firstMessageReceived;
+    public static bool dontPrefixNextJettison = false;
     //Classes we use to set the information
     private AIPilot aiPilot;
     private AutoPilot autoPilot;
@@ -215,6 +215,7 @@ public class PlaneNetworker_Receiver : MonoBehaviour
     private void JettisonUpdate(Packet packet)
     {
         Message_JettisonUpdate message = ((PacketSingle)packet).message as Message_JettisonUpdate;
+        Debug.Log($"Got a jettison update for uID {message.networkUID}. Our uID is {networkUID}");
         if (message.networkUID != networkUID)
             return;
         if (message.toJettison == null)
@@ -222,13 +223,16 @@ public class PlaneNetworker_Receiver : MonoBehaviour
             Debug.LogError("Why did we get a jettison message that want's to jettison nothing?");
             return;
         }
+        Debug.Log($"Doing jettison update for {networkUID}");
         foreach (var idx in message.toJettison)
         {
             HPEquippable equip = weaponManager.GetEquip(idx);
             if (equip != null)
                 equip.markedForJettison = true;
         }
+        dontPrefixNextJettison = true;
         weaponManager.JettisonMarkedItems();
+        Debug.Log("Jettison done.");
     }
     public void WeaponFiring(Packet packet)
     {

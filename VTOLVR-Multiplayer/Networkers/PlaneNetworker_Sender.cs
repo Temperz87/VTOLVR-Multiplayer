@@ -111,7 +111,8 @@ public class PlaneNetworker_Sender : MonoBehaviour
         {
             lastMessage.throttle = engine.finalThrottle;
         }
-        if (tailhook != null) {
+        if (tailhook != null)
+        {
             lastMessage.tailHook = tailhook.isDeployed;
         }
         if (launchBar != null)
@@ -122,7 +123,7 @@ public class PlaneNetworker_Sender : MonoBehaviour
         {
             lastMessage.fuelPort = refuelPort.open;
         }
-        
+
         if (Networker.isHost)
             NetworkSenderThread.Instance.SendPacketAsHostToAllClients(lastMessage, Steamworks.EP2PSend.k_EP2PSendUnreliable);
         else
@@ -155,7 +156,8 @@ public class PlaneNetworker_Sender : MonoBehaviour
             new Message_WeaponSet_Result(hpInfos.ToArray(), cm.ToArray(), fuel, networkUID),
             Steamworks.EP2PSend.k_EP2PSendReliable);
     }
-    public void FireCountermeasure() {
+    public void FireCountermeasure()
+    {
         lastCountermeasureMessage.UID = networkUID;
         if (Networker.isHost)
             NetworkSenderThread.Instance.SendPacketAsHostToAllClients(lastCountermeasureMessage, Steamworks.EP2PSend.k_EP2PSendUnreliableNoDelay);
@@ -180,26 +182,33 @@ public static class Patch1
 {
     public static bool Prefix(WeaponManager __instance)
     {
-        ulong networkUID;
+        if (PlaneNetworker_Receiver.dontPrefixNextJettison)
+        {
+            PlaneNetworker_Receiver.dontPrefixNextJettison = false;
+            Debug.Log("Not prefixing this.");
+            return true;
+        }
+        Debug.Log("Prefixing jettison marked items.");
         List<int> toJettison = new List<int>();
         Traverse traverse;
         Message_JettisonUpdate lastMesage;
         if (__instance.actor == null)
         {
             Debug.LogError("Weapon manager actor null on one airplane, can't give more debug information here.");
+            return false;
         }
-        else if (VTOLVR_Multiplayer.AIDictionaries.reverseAllActors.TryGetValue(__instance.actor, out networkUID))
+        else if (VTOLVR_Multiplayer.AIDictionaries.reverseAllActors.TryGetValue(__instance.actor, out ulong networkUID))
         {
+            Debug.Log($"Our uID for this message is {networkUID}");
             traverse = Traverse.Create(__instance);
-            Debug.Log("Doing for each");
-            foreach (var equip in (HPEquippable[])traverse.Field("equips").GetValue())
+            Debug.Log("Doing for iterator statement");
+            for (int i = 0; i < 30; i++)
             {
+                HPEquippable equip = __instance.GetEquip(i);
                 if (equip != null)
                 {
                     if (equip.markedForJettison)
-                    {
                         toJettison.Add(equip.hardpointIdx);
-                    }
                 }
             }
             if (toJettison.Count == 0)

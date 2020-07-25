@@ -890,6 +890,7 @@ public static class PlayerManager
         localUID = 0;
         worldData = null;
         players?.Clear();
+        PlaneNetworker_Receiver.dontPrefixNextJettison = false;
     }
 
     public static void OnDisconnect()
