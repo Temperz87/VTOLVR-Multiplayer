@@ -317,6 +317,19 @@ public static class PlayerManager
             }
         }
 
+        Actor actor = localVehicle.GetComponent<Actor>();
+        if (actor != null)
+        {
+            if (actor.unitSpawn != null)
+            {
+                if (actor.unitSpawn.unitSpawner == null)
+                {
+                    Debug.Log("unit spawner was null, adding one");
+                    actor.unitSpawn.unitSpawner = actor.gameObject.AddComponent<UnitSpawner>();
+                }
+            }
+        }
+
         if (localVehicle.GetComponent<Health>() != null)
         {
             HealthNetworker_Sender healthNetworker = localVehicle.AddComponent<HealthNetworker_Sender>();
@@ -578,7 +591,7 @@ public static class PlayerManager
                 extLightReceiver.lightsController = extLight;
                 extLightReceiver.networkUID = networkID;
             }
-            
+
             foreach (Collider collider in newVehicle.GetComponentsInChildren<Collider>())
             {
                 if (collider)
