@@ -10,8 +10,10 @@ public class Message_JoinRequest : Message
     public string currentVehicle, vtolVrVersion, multiplayerBranch, multiplayerModVersion, scenarioId;
     public byte[] mapHash, scenarioHash, campaignHash;
     public bool builtInCampaign;
+    public Dictionary<string, string> modsLoadedHashes;
+    public byte[] modloaderHash;
 
-    public Message_JoinRequest(string currentVehicle, bool builtInCampaign, string scenarioId, byte[] mapHash, byte[] scenarioHash, byte[] campaignHash)
+    public Message_JoinRequest(string currentVehicle, bool builtInCampaign, string scenarioId, byte[] mapHash, byte[] scenarioHash, byte[] campaignHash, Dictionary<string, string> mods, byte[] modloaderhash)
     {
         this.currentVehicle = currentVehicle;
         this.builtInCampaign = builtInCampaign;
@@ -20,6 +22,8 @@ public class Message_JoinRequest : Message
         this.scenarioHash = scenarioHash;
         this.campaignHash = campaignHash;
         vtolVrVersion = GameStartup.versionString;
+        modsLoadedHashes = mods;
+        modloaderHash = modloaderhash;
         multiplayerBranch = ModVersionString.ReleaseBranch;
         multiplayerModVersion = ModVersionString.ModVersionNumber;
 
