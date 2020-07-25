@@ -902,7 +902,7 @@ public class Networker : MonoBehaviour
         
         if (multiplayerInstance.restrictToHostMods)
         {
-            if (joinRequest.modloaderHash != MapAndScenarioVersionChecker.modloaderHash)
+            if (BitConverter.ToString(joinRequest.modloaderHash).Replace("-", "").ToLowerInvariant() != BitConverter.ToString(MapAndScenarioVersionChecker.modloaderHash).Replace("-", "").ToLowerInvariant())
             {
                 string badModLoaderHash = "Failed to Join Player, modloader hash mismatch";
                 Debug.Log($"Player {csteamID} had a different modloader hash than host");
