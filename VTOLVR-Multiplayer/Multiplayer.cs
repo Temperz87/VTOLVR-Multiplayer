@@ -48,6 +48,9 @@ public class Multiplayer : VTOLMOD
     // Fixing singleplayer functionality with MP mod
     public bool playingMP;
 
+    //Create a host setting for these instead of a variable!
+    public bool restrictToHostMods = true;
+
     private void Start()
     {
         _instance = this;
@@ -376,6 +379,7 @@ public class Multiplayer : VTOLMOD
     public void Host()
     {
         playingMP = true;
+        MapAndScenarioVersionChecker.CreateHashes();
         Networker.HostGame();
     }
 
