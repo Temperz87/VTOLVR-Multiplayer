@@ -104,7 +104,6 @@
     <Compile Include="LoadoutManager.cs" />
     <Compile Include="Messages\Message.cs" />
     <Compile Include="Messages\MessageType.cs" />
-    <Compile Include="Messages\Message_ActorSync.cs" />
     <Compile Include="Messages\Message_Death.cs" />
     <Compile Include="Messages\Message_Disconnecting.cs" />
     <Compile Include="Messages\Message_EngineTiltUpdate.cs" />
@@ -122,6 +121,7 @@
     <Compile Include="Messages\Message_Ready.cs" />
     <Compile Include="Messages\Message_RequestNetworkUID.cs" />
     <Compile Include="Messages\Message_RequestSpawn.cs" />
+    <Compile Include="Messages\Message_Respawn.cs" />
     <Compile Include="Messages\Message_RigidbodyUpdate.cs" />
     <Compile Include="Messages\Message_ShipUpdate.cs" />
     <Compile Include="Messages\Message_SpawnAIVehicle.cs" />
@@ -133,8 +133,6 @@
     <Compile Include="Messages\Message_WingFold.cs" />
     <Compile Include="Messages\Message_WorldData.cs" />
     <Compile Include="Messages\Packet.cs" />
-    <Compile Include="Networkers\ActorNetworker_Reciever.cs" />
-    <Compile Include="Networkers\ActorNetworker_Sender.cs" />
     <Compile Include="Networkers\ExtLightNetworker_Receiver.cs" />
     <Compile Include="Networkers\ExtLightNetworker_Sender.cs" />
     <Compile Include="ModVersionString.cs" />

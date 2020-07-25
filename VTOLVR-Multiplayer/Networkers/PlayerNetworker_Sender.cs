@@ -4,13 +4,16 @@ using UnityEngine;
 class PlayerNetworker_Sender : MonoBehaviour
 {
     public ulong networkUID;
-    private Message_Death lastMessage;
+    private Message_Respawn lastMessage;
     public Health health;
 
     public TempPilotDetacher detacher;
     public GearAnimator[] gears;
     public FloatingOriginShifter shifter;
     public EjectionSeat ejection;
+
+    Coroutine repspawnTimer;
+
     Transform target;
     Transform ejectorParent;
     Transform canopyParent;
@@ -21,19 +24,24 @@ class PlayerNetworker_Sender : MonoBehaviour
 
     void Awake()
     {
-        lastMessage = new Message_Death(networkUID);
+        lastMessage = new Message_Respawn(networkUID);
 
         health = GetComponent<Health>();
-        detacher = GetComponentInChildren<TempPilotDetacher>();
-        gears = GetComponentsInChildren<GearAnimator>();
-        shifter = GetComponentInChildren<FloatingOriginShifter>();
-        ejection = GetComponentInChildren<EjectionSeat>();
-        ejectorSeatPos = ejection.transform.localPosition;
-        ejectorSeatRot = ejection.transform.localRotation;
+
+
         if (health == null)
             Debug.LogError("health was null on player " + gameObject.name);
         else
             health.OnDeath.AddListener(Death);
+
+        detacher = GetComponentInChildren<TempPilotDetacher>();
+        gears = GetComponentsInChildren<GearAnimator>();
+        shifter = GetComponentInChildren<FloatingOriginShifter>();
+        ejection = GetComponentInChildren<EjectionSeat>();
+        ejection.OnEject.AddListener(Eject);
+
+        ejectorSeatPos = ejection.transform.localPosition;
+        ejectorSeatRot = ejection.transform.localRotation;
         Debug.LogError("found health on " + gameObject.name);
 
         target = detacher.cameraRig.transform.parent;
@@ -135,10 +143,13 @@ class PlayerNetworker_Sender : MonoBehaviour
         shifter.enabled = true;
     }
 
+    void Eject()
+    {
+        health.Kill();
+    }
+
     void Death()
     {
-        lastMessage.UID = networkUID;
-
-        StartCoroutine("RespawnTimer");
+        repspawnTimer = StartCoroutine("RespawnTimer");
     }
 }
