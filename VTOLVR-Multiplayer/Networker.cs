@@ -688,7 +688,7 @@ public class Networker : MonoBehaviour
                     if (!isHost) {
                         // You can use ping report however you want
                     }
-
+                    break;
                 case MessageType.LoadingTextRequest:
                     Debug.Log("case LoadingTextRequest");
                     if (isHost)
