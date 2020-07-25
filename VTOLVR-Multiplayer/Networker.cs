@@ -61,25 +61,23 @@ public class Networker : MonoBehaviour
     private Campaign pilotSaveManagerControllerCampaign;
     private CampaignScenario pilotSaveManagerControllerCampaignScenario;
     public static Networker _instance { get; private set; }
+    private static readonly object isHostLock = new object();
     private static bool isHostInternal = false;
     public static bool isHost {
-        get { return isHostInternal; }
+        get {
+            lock (isHostLock) {
+                return isHostInternal;
+            }
+        }
         private set {
-            lock (isHostTimerLock) {
+            lock (isHostLock) {
                 isHostInternal = value;
-                isHostTimer = value;
             }
         }
     }
-    private static readonly object isHostTimerLock = new object();
-    private static bool isHostTimerInternal = false;
-    private static bool isHostTimer {
-        get { lock (isHostTimerLock) { return isHostTimerInternal; } }
-        set { lock (isHostTimerLock) { isHostTimerInternal = value; } }
-    }
     private static readonly object timeoutCounterLock = new object();
     private static int timeoutCounterInternal = 0;
-    private static int timeoutCounter {
+    private static int TimeoutCounter {
         get { lock (timeoutCounterLock) { return timeoutCounterInternal; } }
         set { lock (timeoutCounterLock) { timeoutCounterInternal = value; } }
     }
@@ -207,18 +205,28 @@ public class Networker : MonoBehaviour
     {
         if (disconnectForClientTimeout) {
             disconnectForClientTimeout = false;
-            Disconnect();
+
+            Debug.Log("Connection to host timed out");
+
+            // Make sure time is moving normally so exit scene transition will work
+            Time.timeScale = 1f;
+            FlightSceneManager flightSceneManager = FindObjectOfType<FlightSceneManager>();
+            if (flightSceneManager == null)
+                Debug.LogError("FlightSceneManager was null when host timed out");
+            flightSceneManager.ExitScene();
+
+            Disconnect(false);
         }
     }
 
     public static void HeartbeatCallback(object sender, System.Timers.ElapsedEventArgs e) {
-        if (isHostTimer) {
+        if (isHost) {
             // Host, send heartbeat
             NetworkSenderThread.Instance.SendPacketAsHostToAllClients(new Message_Heartbeat(), EP2PSend.k_EP2PSendUnreliableNoDelay);
         }
         else {
             // Client, increment timeout counter
-            if (++timeoutCounter > clientTimeoutInSeconds) {
+            if (++TimeoutCounter > clientTimeoutInSeconds) {
                 // Disconnected from host
                 disconnectForClientTimeout = true;
                 HeartbeatTimerRunning = false;
@@ -237,7 +245,7 @@ public class Networker : MonoBehaviour
         Debug.Log("Hosting game");
         isHost = true;
 
-        timeoutCounter = 0;
+        TimeoutCounter = 0;
         HeartbeatTimerRunning = true;
         HeartbeatTimer.Start();
 
@@ -419,7 +427,7 @@ public class Networker : MonoBehaviour
                 case MessageType.JoinRequestAccepted_Result:
                     Debug.Log($"case join request accepted result, joining {csteamID.m_SteamID}");
                     hostID = csteamID;
-                    timeoutCounter = 0;
+                    TimeoutCounter = 0;
                     HeartbeatTimerRunning = true;
                     HeartbeatTimer.Start();
                     StartCoroutine(FlyButton());
@@ -534,6 +542,7 @@ public class Networker : MonoBehaviour
                     Debug.Log("case disconnecting");
                     if (isHost)
                     {
+                        Debug.Log("Client disconnected");
                         if (Multiplayer.SoloTesting)
                             break;
 
@@ -548,11 +557,17 @@ public class Networker : MonoBehaviour
                         playerStatusDic[csteamID] = 4;
                         if (messsage.isHost)
                         {
+                            Debug.Log("Host disconnected");
                             //If it is the host quiting we just need to quit the mission as all networking will be lost.
+                            // Make sure time is moving normally so exit scene transition will work
+                            Time.timeScale = 1f;
                             FlightSceneManager flightSceneManager = FindObjectOfType<FlightSceneManager>();
                             if (flightSceneManager == null)
                                 Debug.LogError("FlightSceneManager was null when host quit");
                             flightSceneManager.ExitScene();
+                        }
+                        else {
+                            Debug.Log("Other client disconnected");
                         }
                         break;
                     }
@@ -672,7 +687,7 @@ public class Networker : MonoBehaviour
                     if (!isHost) {
                         Message_Heartbeat heartbeatMessage = ((PacketSingle)packet).message as Message_Heartbeat;
 
-                        timeoutCounter = 0;
+                        TimeoutCounter = 0;
                         NetworkSenderThread.Instance.SendPacketToSpecificPlayer(hostID, new Message_Heartbeat_Result(heartbeatMessage.TimeOnServerGame), EP2PSend.k_EP2PSendUnreliableNoDelay);
                     }
                     break;
@@ -800,7 +815,7 @@ public class Networker : MonoBehaviour
     {
         if (scene == VTOLScenes.ReadyRoom && PlayerManager.gameLoaded)
         {
-            Disconnect();
+            Disconnect(false);
         }
     }
 
@@ -973,7 +988,7 @@ public class Networker : MonoBehaviour
     /// <summary>
     /// This will send any messages needed to the host or other players and reset variables.
     /// </summary>
-    public void Disconnect(bool applicationClosing = false)
+    public void Disconnect(bool applicationClosing)
     {
         Debug.Log("Disconnecting from server");
         if (isHost)
