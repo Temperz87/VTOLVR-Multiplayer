@@ -28,8 +28,6 @@ public class PlaneNetworker_Sender : MonoBehaviour
     private Tailhook tailhook;
     private CatapultHook launchBar;
     private RefuelPort refuelPort;
-    private bool lastFiring = false;
-    private string radarLock;
     private Traverse traverseThrottle;
     private Actor actor;
     private ulong sequenceNumber;
@@ -44,28 +42,7 @@ public class PlaneNetworker_Sender : MonoBehaviour
         aeroController = GetComponent<AeroController>();
         isPlayer = actor.isPlayer;
         sequenceNumber = 0;
-        if (isPlayer)
-        {
-            if (VTOLAPI.GetPlayersVehicleEnum() == VTOLVehicles.AV42C)
-            {
-                lastMessage = new Message_PlaneUpdate(false, 0, 0, 0, 0, 0, 0, false, false, false, networkUID, false, false, radarLock, sequenceNumber);
-            }
-            else
-            {
-                lastMessage = new Message_PlaneUpdate(false, 0, 0, 0, 0, 0, 0, false, false, false, networkUID, true, false, radarLock, sequenceNumber);
-            }
-        }
-        else
-        {
-            if (actor.hasRadar)
-            {
-                lastMessage = new Message_PlaneUpdate(false, 0, 0, 0, 0, 0, 0, false, false, false, networkUID, true, false, radarLock, sequenceNumber);
-            }
-            else
-            {
-                lastMessage = new Message_PlaneUpdate(false, 0, 0, 0, 0, 0, 0, false, false, false, networkUID, false, false, radarLock, sequenceNumber);
-            }
-        }
+        lastMessage = new Message_PlaneUpdate(false, 0, 0, 0, 0, 0, 0, false, false, false, networkUID, sequenceNumber);
 
         engine = gameObject.GetComponentInChildren<ModuleEngine>();
         if (engine == null)
