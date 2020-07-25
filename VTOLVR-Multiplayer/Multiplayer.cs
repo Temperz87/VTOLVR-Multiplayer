@@ -461,9 +461,11 @@ public class Multiplayer : VTOLMOD
 
     public void Host()
     {
+        Networker._instance.DisconnectionTasks();
+        Debug.Log("Dictionaries cleared just in case.");
         playingMP = true;
         MapAndScenarioVersionChecker.CreateHashes();
-        Networker.HostGame();
+        Networker._instance.HostGame();
     }
 
     public void Join()
