@@ -306,7 +306,7 @@ public class Networker : MonoBehaviour
         }
     }
 
-    public static void HostGame()
+    public void HostGame()
     {
         if (gameState != GameState.Menu)
         {
@@ -319,7 +319,6 @@ public class Networker : MonoBehaviour
         TimeoutCounter = 0;
         HeartbeatTimerRunning = true;
         HeartbeatTimer.Start();
-
         playerStatusDic.Add(hostID, 0);
         _instance.StartCoroutine(_instance.FlyButton());
     }
@@ -1168,7 +1167,7 @@ public class Networker : MonoBehaviour
         DisconnectionTasks();
     }
 
-    private void DisconnectionTasks()
+    public void DisconnectionTasks()
     {
         Debug.Log("Running disconnection tasks");
         if (HeartbeatTimerRunning)
