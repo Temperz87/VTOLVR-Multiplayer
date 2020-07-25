@@ -324,7 +324,10 @@ public static class AIManager
         return "";
     }
 
-    public static void CleanUpOnDisconnect() {
+    public static void CleanUpOnDisconnect()
+    {
+        VTOLVR_Multiplayer.AIDictionaries.allActors?.Clear();
+        VTOLVR_Multiplayer.AIDictionaries.reverseAllActors?.Clear();
         AIsToSpawnQueue?.Clear();
         spawnedAI?.Clear();
         AIVehicles?.Clear();

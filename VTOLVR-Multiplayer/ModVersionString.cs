@@ -6,6 +6,6 @@ using System.Threading.Tasks;
 
 static class ModVersionString
 {
-    public static string ReleaseBranch = "syncing-radars-two";
-    public static string ModVersionNumber = "2.7";
+    public static string ReleaseBranch = "fixing-radar-dictionaries";
+    public static string ModVersionNumber = "1.0";
 }
