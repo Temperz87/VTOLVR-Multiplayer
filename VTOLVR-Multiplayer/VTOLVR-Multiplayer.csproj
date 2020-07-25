@@ -142,6 +142,7 @@
     <Compile Include="Networkers\LockingRadarNetworker_Reciever.cs" />
     <Compile Include="Networkers\LockingRadarNetworker_Sender.cs" />
     <Compile Include="Networkers\NetworkSenderThread.cs" />
+    <Compile Include="Networkers\PlayerNetworker_Sender.cs" />
     <Compile Include="Networkers\ShipNetworker_Receiver.cs" />
     <Compile Include="Networkers\ShipNetworker_Sender.cs" />
     <Compile Include="Networkers\TurretNetworker_Receiver.cs" />
@@ -162,6 +163,7 @@
     <Compile Include="Networkers\WingFoldNetworker_Receiver.cs" />
     <Compile Include="Networkers\WorldDataNetworker_Receiver.cs" />
     <Compile Include="Networkers\WorldDataNetworker_Sender.cs" />
+    <Compile Include="Patches\Patch_ActorExtensions.cs" />
     <Compile Include="Patches\Patch_LoadingSceneController.cs" />
     <Compile Include="Patches\Patch_VTMapManager.cs" />
     <Compile Include="Patches\Patch_VTTMapTrees.cs" />
