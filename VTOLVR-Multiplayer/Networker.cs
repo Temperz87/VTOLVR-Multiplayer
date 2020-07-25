@@ -24,10 +24,15 @@ static class MapAndScenarioVersionChecker
     static public byte[] mapHash;
     static public byte[] scenarioHash;
     static public byte[] campaignHash;
+    static public byte[] modloaderHash;
+    static public byte[] modHash;
+    static public Dictionary<string, string> modsLoadedHashes = new Dictionary<string, string>();
+
 
     // Make hashes of the map, scenario and campaign IDs so the server can check that we're loading the right mission
     public static void CreateHashes()
     {
+        Debug.Log("Creating Hashes");
         if (PilotSaveManager.currentCampaign.isBuiltIn)
         {
             // Only need to get the scenario ID in this case
@@ -57,8 +62,50 @@ static class MapAndScenarioVersionChecker
                 campaignHash = hashCalculator.ComputeHash(campaignFile);
             }
         }
-
+        Debug.Log($"Campaign File Path: {filePath}");
+        Debug.Log($"Campaign Hash: {campaignHash}");
         scenarioId = PilotSaveManager.currentScenario.scenarioID;
+
+        Debug.Log("Getting Modloader hash");
+        filePath = "VTOLVR_ModLoader\\ModLoader.dll";
+        using (FileStream modloaderDLL = File.OpenRead(filePath))
+        {
+            modloaderHash = hashCalculator.ComputeHash(modloaderDLL);
+        }
+        Debug.Log($"Modloader hash is: {modloaderHash}");
+        Debug.Log("Getting loaded mods");
+        List<Mod> mods = new List<Mod>();
+        try
+        {
+            mods = VTOLAPI.GetUsersMods();
+        }
+        catch (Exception err)
+        {
+            Debug.Log("Exception caught while getting user's mods. Perhaps they aren't on the correct mod loader version?");
+        }
+
+        foreach (Mod mod in mods)
+        {
+            if (mod.isLoaded)
+            {
+                Debug.Log($"Mod found: {mod.name}");
+
+                if (File.Exists(mod.dllPath))
+                {
+                    using (FileStream modDLL = File.OpenRead(mod.dllPath))
+                    {
+                        modHash = hashCalculator.ComputeHash(modDLL);
+                    }
+                    modsLoadedHashes.Add(BitConverter.ToString(modHash).Replace("-", "").ToLowerInvariant().Substring(0, 20), Path.GetFileName(mod.dllPath));
+                    Debug.Log($"Added {mod.dllPath} to dictionary with key {BitConverter.ToString(modHash).Replace("-", "").ToLowerInvariant().Substring(0, 20)}");
+                }
+                else
+                {
+                    Debug.LogError($"Mod DLL Path Doesn't Exist: {mod.dllPath}");
+                }
+            }
+        }
+        Debug.Log("Done Creating Hashes");
     }
 }
 
@@ -96,6 +143,8 @@ public class Networker : MonoBehaviour
     public static TextMeshPro loadingText;
 
     public static Multiplayer multiplayerInstance = null;
+
+
     #region Message Type Callbacks
     //These callbacks are use for other scripts to know when a network message has been
     //received for them. They should match the name of the message class they relate to.
@@ -228,7 +277,9 @@ public class Networker : MonoBehaviour
                                     MapAndScenarioVersionChecker.scenarioId,
                                     MapAndScenarioVersionChecker.mapHash,
                                     MapAndScenarioVersionChecker.scenarioHash,
-                                    MapAndScenarioVersionChecker.campaignHash),
+                                    MapAndScenarioVersionChecker.campaignHash,
+                                    MapAndScenarioVersionChecker.modsLoadedHashes,
+                                    MapAndScenarioVersionChecker.modloaderHash),
             EP2PSend.k_EP2PSendReliable);
     }
 
@@ -837,10 +888,7 @@ public class Networker : MonoBehaviour
             return;
         }
 
-        MapAndScenarioVersionChecker.CreateHashes();
-
-        if (joinRequest.builtInCampaign != MapAndScenarioVersionChecker.builtInCampaign)
-        {
+        if (joinRequest.builtInCampaign != MapAndScenarioVersionChecker.builtInCampaign) {
             string wrongCampaignType = "Failed to Join Player, host campaign type is )" + MapAndScenarioVersionChecker.builtInCampaign.ToString();
             Debug.Log($"Player {csteamID} had the wrong campaign type");
             NetworkSenderThread.Instance.SendPacketToSpecificPlayer(csteamID, new Message_JoinRequestRejected_Result(wrongCampaignType), EP2PSend.k_EP2PSendReliable);
@@ -882,6 +930,56 @@ public class Networker : MonoBehaviour
                 return;
             }
         }
+
+        if (multiplayerInstance.restrictToHostMods)
+        {
+            if (BitConverter.ToString(joinRequest.modloaderHash).Replace("-", "").ToLowerInvariant() != BitConverter.ToString(MapAndScenarioVersionChecker.modloaderHash).Replace("-", "").ToLowerInvariant())
+            {
+                string badModLoaderHash = "Failed to Join Player, modloader hash mismatch";
+                Debug.Log($"Player {csteamID} had a different modloader hash than host");
+                Debug.Log($"Player has {BitConverter.ToString(joinRequest.modloaderHash).Replace("-", "").ToLowerInvariant()}. Host Has {BitConverter.ToString(MapAndScenarioVersionChecker.modloaderHash).Replace("-", "").ToLowerInvariant()}.");
+                NetworkSenderThread.Instance.SendPacketToSpecificPlayer(csteamID, new Message_JoinRequestRejected_Result(badModLoaderHash), EP2PSend.k_EP2PSendReliable);
+                return;
+            }
+
+            // Looping through host's mods to see if the client is missing any
+
+            Debug.Log($"Client has {joinRequest.modsLoadedHashes.Count} mods loaded");
+            Debug.Log($"Server has {MapAndScenarioVersionChecker.modsLoadedHashes.Count} mods loaded");
+
+            foreach (KeyValuePair<string, string> mod in MapAndScenarioVersionChecker.modsLoadedHashes)
+            {
+                if (!joinRequest.modsLoadedHashes.ContainsKey(mod.Key))
+                {
+                    string missingHostMod = "Failed to Join Player, host requires forced mods. Missing mod: " + mod.Value;
+                    Debug.Log($"Player {csteamID} is missing mod: " + mod.Value);
+                    NetworkSenderThread.Instance.SendPacketToSpecificPlayer(csteamID, new Message_JoinRequestRejected_Result(missingHostMod), EP2PSend.k_EP2PSendReliable);
+                    return;
+                }
+                else
+                {
+                    Debug.Log($"Both host and client have {mod.Value}");
+                }
+            }
+
+            // Looping through client's mods to see if the host is missing any
+            foreach (KeyValuePair<string, string> mod in joinRequest.modsLoadedHashes)
+            {
+                if (!MapAndScenarioVersionChecker.modsLoadedHashes.ContainsKey(mod.Key))
+                {
+                    string missingClientMod = "Failed to Join Player, host requires forced mods. You have mod: " + mod.Value + " and the host doesn't have that loaded";
+                    Debug.Log($"Player {csteamID} has mod: " + mod.Value + " and you don't");
+                    NetworkSenderThread.Instance.SendPacketToSpecificPlayer(csteamID, new Message_JoinRequestRejected_Result(missingClientMod), EP2PSend.k_EP2PSendReliable);
+                    return;
+                }
+                else
+                {
+                    Debug.Log($"Both host and client have {mod.Value}");
+                }
+            }
+
+        }
+
 
         // Made it past all checks, we can join
         Debug.Log($"Accepting {csteamID.m_SteamID}, adding to players list");
