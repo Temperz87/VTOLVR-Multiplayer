@@ -942,7 +942,7 @@ public static class PlayerManager
             Transform returnValue = new GameObject().transform;
             Debug.LogError("Spawn Points was null, we can't find a spawn point.\nReturning a new transform at " + returnValue.position);
             return returnValue;
-        }
+        }   
         return spawnPoints[UnityEngine.Random.Range(0, spawnsCount - 1)];
     }
 
