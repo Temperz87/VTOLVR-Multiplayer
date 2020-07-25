@@ -12,8 +12,19 @@ using UnityEngine.SceneManagement;
 
 public static class LoadoutManager
 {
-    void SetLoadout(GameObject vehicle, float fuel, string[] hpLoadoutNames, int[] cmLoadout) {
+    public static void SetLoadout(GameObject vehicle, ulong networkID, float fuel, HPInfo[] hpLoadout, int[] cmLoadout) {
         WeaponManager weaponManager = vehicle.GetComponent<WeaponManager>();
+        if (weaponManager == null)
+            Debug.LogError("Failed to get weapon manager on " + vehicle.name);
+        string[] hpLoadoutNames = new string[30];
+        //Debug.Log("foreach var equip in message.hpLoadout");
+        int debugInteger = 0;
+        foreach (var equip in hpLoadout)
+        {
+            Debug.Log(debugInteger);
+            hpLoadoutNames[equip.hpIdx] = equip.hpName;
+            debugInteger++;
+        }
 
         Loadout loadout = new Loadout();
         loadout.normalizedFuel = fuel;
@@ -36,7 +47,7 @@ public static class LoadoutManager
                 {
                     //Debug.Log("Adding missile reciever");
                     lastReciever = hpML.ml.missiles[j].gameObject.AddComponent<MissileNetworker_Receiver>();
-                    foreach (var thingy in message.hpLoadout) // it's a loop... because fuck you!
+                    foreach (var thingy in hpLoadout) // it's a loop... because fuck you!
                     {
                         //Debug.Log("Try adding missile reciever uID");
                         if (equip.hardpointIdx == thingy.hpIdx)
@@ -55,7 +66,7 @@ public static class LoadoutManager
             else if (equip is HPEquipGunTurret)
             {
                 TurretNetworker_Receiver reciever = equip.gameObject.AddComponent<TurretNetworker_Receiver>();
-                reciever.networkUID = message.networkID;
+                reciever.networkUID = networkID;
                 reciever.turret = equip.GetComponent<ModuleTurret>();
                 equip.enabled = false;
             }

@@ -644,15 +644,6 @@ public class Networker : MonoBehaviour
                         Debug.Log("Host is already loaded");
                     }
                     break;
-                case MessageType.ActorSync:
-                    Debug.Log("case actor sync");
-                    if (isHost)
-                    {
-                        Debug.LogWarning("Host shouldn't get an actor sync...");
-                        break;
-                    }
-                    ActorNetworker_Reciever.syncActors(packet);
-                    break;
                 case MessageType.LoadingTextRequest:
                     Debug.Log("case LoadingTextRequest");
                     if (isHost)
@@ -1021,5 +1012,8 @@ public class Networker : MonoBehaviour
         AIManager.CleanUpOnDisconnect();
         multiplayerInstance?.CleanUpOnDisconnect();
         hostLoaded = false;
+
+        VTOLVR_Multiplayer.AIDictionaries.allActors.Clear();
+        VTOLVR_Multiplayer.AIDictionaries.reverseAllActors.Clear();
     }
 }
