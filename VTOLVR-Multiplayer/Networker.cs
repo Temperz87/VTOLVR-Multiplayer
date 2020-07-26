@@ -321,7 +321,7 @@ public class Networker : MonoBehaviour
                 HeartbeatTimerRunning = false;
                 HeartbeatTimer.Stop();
             }
-            else if (reportExcess && (timeout >= (clientTimeoutAfterMapLoad / 2))) {
+            else if (reportExcess && (TimeoutCounter >= (timeout / 2))) {
                 logTimeSinceLastHeartbeatSeen = true;
             }
         }
