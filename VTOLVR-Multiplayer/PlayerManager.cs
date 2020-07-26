@@ -693,106 +693,122 @@ public static class PlayerManager
     /// <param name="startPosition">The location of where the first spawn should be</param>
     public static void GenerateSpawns(Transform startPosition)
     {
+        Debug.Log("Generating Spawns!");
         Actor curPlayer = FlightSceneManager.instance.playerActor;
         GameObject lastSpawn;
         spawnPoints = new List<Transform>(spawnsCount);
         int spawnCounter = 0;
         //If the player starts on the ground
-        Debug.Log(curPlayer.velocity.magnitude);
+        Debug.Log($"The player's velocity is {curPlayer.velocity.magnitude}");
         if (curPlayer.velocity.magnitude < .5f)
         {
-            Debug.Log("Player is landed, finding parking spots at their airport");
-            AirportManager result = null;
-            float num = float.MaxValue;
-            
-            foreach (AirportManager airportManager in VTMapManager.fetch.airports)
-            {
-                Debug.Log($"Checking {airportManager.airportName}");
-                Debug.Log($"The team is: {airportManager.team}");
-                Debug.Log($"Player team is: {curPlayer.team}");
-                Debug.Log($"Carrier: {airportManager.isCarrier}");
-                if (airportManager.team == curPlayer.team)
-                {
-                    float sqrMagnitude = (curPlayer.flightInfo.transform.position - airportManager.transform.position).sqrMagnitude;
-                    if (sqrMagnitude < num)
-                    {
-                        num = sqrMagnitude;
-                        result = airportManager;
-                    }
-                }
-                else
-                {
-                    Debug.Log($"{airportManager.airportName} is not on player's team!");
-                }
-            }
 
-            if (result != null)
+            // Hacky attempt to prevent this code being called twice
+            if (spawnCounter == 0)
             {
-                foreach(AirportManager.ParkingSpace parkingSpace in result.parkingSpaces)
+                Debug.Log("Player is landed, finding parking spots at their airport");
+                AirportManager result = null;
+                float num = float.MaxValue;
+
+                foreach (AirportManager airportManager in VTMapManager.fetch.airports)
                 {
-                    if (!parkingSpace.occupiedBy)
+                    Debug.Log($"Checking {airportManager.airportName}");
+                    Debug.Log($"The team is: {airportManager.team}");
+                    Debug.Log($"Player team is: {curPlayer.team}");
+                    Debug.Log($"Carrier: {airportManager.isCarrier}");
+                    if (airportManager.team == curPlayer.team)
                     {
-                        lastSpawn = new GameObject("MP Spawn " + spawnCounter);
-                        lastSpawn.AddComponent<FloatingOriginTransform>();
-                        lastSpawn.transform.position = parkingSpace.transform.position;
-                        lastSpawn.transform.rotation = parkingSpace.transform.rotation;
-                        spawnPoints.Add(lastSpawn.transform);
-                        Debug.Log($"Created MP Spawn at AIRPORT {result.airportName} {lastSpawn.transform.position}");
-                        spawnCounter += 1;
+                        float sqrMagnitude = (curPlayer.flightInfo.transform.position - airportManager.transform.position).sqrMagnitude;
+                        if (sqrMagnitude < num)
+                        {
+                            num = sqrMagnitude;
+                            result = airportManager;
+                        }
                     }
                     else
                     {
-                        Debug.Log("Parking space is occupied.");
+                        Debug.Log($"{airportManager.airportName} is not on player's team!");
                     }
                 }
 
-                Debug.Log($"Generated {spawnCounter} spawn points");
+                if (result != null)
+                {
+                    foreach (AirportManager.ParkingSpace parkingSpace in result.parkingSpaces)
+                    {
+                        if (!parkingSpace.occupiedBy)
+                        {
+                            lastSpawn = new GameObject("MP Spawn " + spawnCounter);
+                            lastSpawn.AddComponent<FloatingOriginTransform>();
+                            lastSpawn.transform.position = parkingSpace.transform.position;
+                            lastSpawn.transform.rotation = parkingSpace.transform.rotation;
+                            spawnPoints.Add(lastSpawn.transform);
+                            Debug.Log($"Created MP Spawn at AIRPORT {result.airportName} {lastSpawn.transform.position}");
+                            spawnCounter += 1;
+                        }
+                        else
+                        {
+                            Debug.Log("Parking space is occupied.");
+                        }
+                    }
+
+                    Debug.Log($"Generated {spawnCounter} spawn points");
+                }
+                else
+                {
+                    Debug.Log("No nearby airports found!");
+                }
             }
             else
             {
-                Debug.Log("No nearby airports found!");
+                Debug.LogError("We've already generated spawns. Why the eff was this called again??");
             }
+
 
         }
         else
         {
-
-            if (Multiplayer._instance.replaceWingmenWithClients)
+            if (spawnCounter == 0)
             {
-                Debug.Log("Player is in the air, looking for wingmen!");
-                int wingmenCount = 0;
-                foreach (Actor unit in TargetManager.instance.allActors)
+                if (Multiplayer._instance.replaceWingmenWithClients)
                 {
-                    // Need to check unit type against the player.
-
-                    Regex rgx = new Regex("[^a-zA-Z0-9 -]");
-
-                    //Debug.Log($"Unit name is {rgx.Replace(unit.actorName, "").Substring(0, 5)}");
-                    //Debug.Log($"Current player name is: {rgx.Replace(curPlayer.name, "").Substring(0, 5)}");
-
-                    if (!unit.isPlayer && unit.team == curPlayer.team && unit.enabled && unit.designation.letter == curPlayer.designation.letter && rgx.Replace(curPlayer.name, "").Substring(0, 5) == rgx.Replace(unit.actorName, "").Substring(0, 5))
+                    Debug.Log("Player is in the air, looking for wingmen!");
+                    int wingmenCount = 0;
+                    foreach (Actor unit in TargetManager.instance.allActors)
                     {
-                        wingmenCount += 1;
-                        lastSpawn = new GameObject("MP Spawn " + spawnCounter);
-                        lastSpawn.AddComponent<FloatingOriginTransform>();
-                        lastSpawn.transform.position = unit.transform.position;
-                        lastSpawn.transform.rotation = unit.transform.rotation;
-                        spawnPoints.Add(lastSpawn.transform);
-                        Debug.Log($"Created MP Spawn IN AIR REPLACING UNIT {unit.actorName} {lastSpawn.transform.position}");
-                        spawnCounter += 1;
+                        // Need to check unit type against the player.
+
+                        Regex rgx = new Regex("[^a-zA-Z0-9 -]");
+
+                        //Debug.Log($"Unit name is {rgx.Replace(unit.actorName, "").Substring(0, 5)}");
+                        //Debug.Log($"Current player name is: {rgx.Replace(curPlayer.name, "").Substring(0, 5)}");
+
+                        if (!unit.isPlayer && unit.team == curPlayer.team && unit.enabled && unit.designation.letter == curPlayer.designation.letter && rgx.Replace(curPlayer.name, "").Substring(0, 5) == rgx.Replace(unit.actorName, "").Substring(0, 5))
+                        {
+                            wingmenCount += 1;
+                            lastSpawn = new GameObject("MP Spawn " + spawnCounter);
+                            lastSpawn.AddComponent<FloatingOriginTransform>();
+                            lastSpawn.transform.position = unit.transform.position;
+                            lastSpawn.transform.rotation = unit.transform.rotation;
+                            spawnPoints.Add(lastSpawn.transform);
+                            Debug.Log($"Created MP Spawn IN AIR REPLACING UNIT {unit.actorName} {lastSpawn.transform.position}");
+                            spawnCounter += 1;
 
 
-                        // Destroying could cause adverse affects on game objectives, but this is the way.
-                        GameObject.Destroy(unit.gameObject);
-                        //unit.gameObject.SetActive(false);
+                            // Destroying could cause adverse affects on game objectives, but this is the way.
+                            GameObject.Destroy(unit.gameObject);
+                            //unit.gameObject.SetActive(false);
+                        }
+
                     }
-
                 }
+
+                // Get other air groups of same type
+            }
+            else
+            {
+                Debug.LogError("We've already generated spawns. Why the eff was this called again??");
             }
 
-
-
-            // Get other air groups of same type
         }
 
 
