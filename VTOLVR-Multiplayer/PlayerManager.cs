@@ -711,8 +711,8 @@ public static class PlayerManager
         }
         else
         {
-            
-            if (multiplayerInstance.replaceWingmenWithClients)
+
+            if (Multiplayer._instance.replaceWingmenWithClients)
             {
                 Debug.Log("Player is in the air, looking for wingmen!");
                 int wingmenCount = 0;
@@ -744,6 +744,9 @@ public static class PlayerManager
 
                 }
             }
+
+
+
             // Get other air groups of same type
         }
 
@@ -847,7 +850,7 @@ public static class PlayerManager
         if (spawnPoints.Count < spawnsCount)
         {
             Debug.Log("We still don't have enough spawn points, creating some more!");
-            if (multiplayerInstance.spawnRemainingPlayersAtAirBase)
+            if (Multiplayer._instance.spawnRemainingPlayersAtAirBase)
             {
                 Debug.Log("Creating spawn points at the closest airport!");
                 AirportManager result2 = null;

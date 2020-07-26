@@ -1051,7 +1051,7 @@ public class Networker : MonoBehaviour
             }
         }
 
-        if (multiplayerInstance.restrictToHostMods)
+        if (Multiplayer._instance.restrictToHostMods)
         {
             if (BitConverter.ToString(joinRequest.modloaderHash).Replace("-", "").ToLowerInvariant() != BitConverter.ToString(MapAndScenarioVersionChecker.modloaderHash).Replace("-", "").ToLowerInvariant())
             {
