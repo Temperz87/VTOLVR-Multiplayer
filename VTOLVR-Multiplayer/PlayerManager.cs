@@ -280,14 +280,8 @@ public static class PlayerManager
         Actor actor = localVehicle.GetComponent<Actor>();
         Player localPlayer = new Player(SteamUser.GetSteamID(), localVehicle, currentVehicle, UID);
         players.Add(localPlayer);
-        if (!VTOLVR_Multiplayer.AIDictionaries.allActors.ContainsKey(UID))
-        {
-            VTOLVR_Multiplayer.AIDictionaries.allActors.Add(UID, actor);
-        }
-        if (!VTOLVR_Multiplayer.AIDictionaries.reverseAllActors.ContainsKey(actor))
-        {
-            VTOLVR_Multiplayer.AIDictionaries.reverseAllActors.Add(actor, UID);
-        }
+        VTOLVR_Multiplayer.AIDictionaries.allActors[UID] = actor;
+        VTOLVR_Multiplayer.AIDictionaries.reverseAllActors[actor] = UID;
         RigidbodyNetworker_Sender rbSender = localVehicle.AddComponent<RigidbodyNetworker_Sender>();
         rbSender.networkUID = UID;
         rbSender.spawnPos = pos;
@@ -305,19 +299,6 @@ public static class PlayerManager
             tiltSender.networkUID = UID;
         }
         
-        if (actor != null)
-        {
-            if (actor.unitSpawn != null)
-            {
-                if (actor.unitSpawn.unitSpawner == null)
-                {
-                    Debug.Log("unit spawner was null, adding one");
-                    actor.unitSpawn.unitSpawner = actor.gameObject.AddComponent<UnitSpawner>();
-                }
-            }
-        }
-
-        Actor actor = localVehicle.GetComponent<Actor>();
         if (actor != null)
         {
             if (actor.unitSpawn != null)
@@ -510,125 +491,126 @@ public static class PlayerManager
             GameObject puppet = SpawnRepresentation(message.networkID, message.position, message.rotation);
             LoadoutManager.SetLoadout(puppet, message.networkID, message.normalizedFuel, message.hpLoadout, message.cmLoadout);
         }
+    }
 
-        GameObject SpawnRepresentation(ulong networkID, Vector3D position, Vector3D rotation)
+    public static GameObject SpawnRepresentation(ulong networkID, Vector3D position, Vector3D rotation)
+    {
+        Player player = FindPlayerFromNetworkUID(networkID);
+
+        GameObject.Destroy(player.vehicle);
+
+        GameObject newVehicle = null;
+        switch (player.vehicleType)
         {
-            Player player = FindPlayerFromNetworkUID(networkID);
-
-            GameObject.Destroy(player.vehicle);
-
-            GameObject newVehicle = null;
-            switch (player.vehicleType)
-            {
-                case VTOLVehicles.None:
-                    Debug.LogError("Vehcile Enum seems to be none, couldn't spawn player vehicle");
-                    return null;
-                case VTOLVehicles.AV42C:
-                    if (null == av42cPrefab)
-                    {
-                        SetPrefabs();
-                    }
-                    newVehicle = GameObject.Instantiate(av42cPrefab, VTMapManager.GlobalToWorldPoint(position), Quaternion.Euler(rotation.toVector3));
-                    break;
-                case VTOLVehicles.FA26B:
-                    if (null == fa26bPrefab)
-                    {
-                        SetPrefabs();
-                    }
-                    newVehicle = GameObject.Instantiate(fa26bPrefab, VTMapManager.GlobalToWorldPoint(position), Quaternion.Euler(rotation.toVector3));
-                    break;
-                case VTOLVehicles.F45A:
-                    if (null == f45Prefab)
-                    {
-                        SetPrefabs();
-                    }
-                    newVehicle = GameObject.Instantiate(f45Prefab, VTMapManager.GlobalToWorldPoint(position), Quaternion.Euler(rotation.toVector3));
-                    break;
-            }
-            //Debug.Log("Setting vehicle name");
-            newVehicle.name = $"Client [{player.cSteamID}]";
-            Debug.Log($"Spawned new vehicle at {newVehicle.transform.position}");
-
-            HealthNetworker_Receiver healthNetworker = newVehicle.AddComponent<HealthNetworker_Receiver>();
-            healthNetworker.networkUID = networkID;
-
-            RigidbodyNetworker_Receiver rbNetworker = newVehicle.AddComponent<RigidbodyNetworker_Receiver>();
-            rbNetworker.networkUID = networkID;
-
-            PlaneNetworker_Receiver planeReceiver = newVehicle.AddComponent<PlaneNetworker_Receiver>();
-            planeReceiver.networkUID = networkID;
-
-            if (player.vehicleType == VTOLVehicles.AV42C || player.vehicleType == VTOLVehicles.F45A)
-            {
-                //Debug.Log("Adding Tilt Controller to this vehicle " + message.networkID);
-                EngineTiltNetworker_Receiver tiltReceiver = newVehicle.AddComponent<EngineTiltNetworker_Receiver>();
-                tiltReceiver.networkUID = networkID;
-            }
-
-            Rigidbody rb = newVehicle.GetComponent<Rigidbody>();
-            AIPilot aIPilot = newVehicle.GetComponent<AIPilot>();
-
-            RotationToggle wingRotator = aIPilot.wingRotator;
-            if (wingRotator != null)
-            {
-                WingFoldNetworker_Receiver wingFoldReceiver = newVehicle.AddComponent<WingFoldNetworker_Receiver>();
-                wingFoldReceiver.networkUID = networkID;
-                wingFoldReceiver.wingController = wingRotator;
-            }
-
-            LockingRadar lockingRadar = newVehicle.GetComponentInChildren<LockingRadar>();
-            if (lockingRadar != null)
-            {
-                Debug.Log($"Adding LockingRadarReciever to vehicle {newVehicle.name}");
-                LockingRadarNetworker_Receiver lockingRadarReceiver = newVehicle.AddComponent<LockingRadarNetworker_Receiver>();
-                lockingRadarReceiver.networkUID = message.networkID;
-            }
-
-            ExteriorLightsController extLight = newVehicle.GetComponentInChildren<ExteriorLightsController>();
-            if (extLight != null)
-            {
-                ExtLight_Receiver extLightReceiver = newVehicle.AddComponent<ExtLight_Receiver>();
-                extLightReceiver.lightsController = extLight;
-                extLightReceiver.networkUID = networkID;
-            }
-
-            foreach (Collider collider in newVehicle.GetComponentsInChildren<Collider>())
-            {
-                if (collider)
+            case VTOLVehicles.None:
+                Debug.LogError("Vehcile Enum seems to be none, couldn't spawn player vehicle");
+                return null;
+            case VTOLVehicles.AV42C:
+                if (null == av42cPrefab)
                 {
-                    collider.gameObject.layer = 9;
+                    SetPrefabs();
                 }
-            }
-            aIPilot.enabled = false;
-            Debug.Log($"Changing {newVehicle.name}'s position and rotation\nPos:{rb.position} Rotation:{rb.rotation.eulerAngles}");
-            aIPilot.kPlane.SetToKinematic();
-            aIPilot.kPlane.enabled = false;
-            rb.interpolation = RigidbodyInterpolation.None;
-
-            aIPilot.kPlane.enabled = true;
-            aIPilot.kPlane.SetVelocity(Vector3.zero);
-            aIPilot.kPlane.SetToDynamic();
-            rb.interpolation = RigidbodyInterpolation.Interpolate;
-
-            Debug.Log($"Finished changing {newVehicle.name}\n Pos:{rb.position} Rotation:{rb.rotation.eulerAngles}");
-
-            GameObject parent = new GameObject("Name Tag Holder");
-            GameObject nameTag = new GameObject("Name Tag");
-            parent.transform.SetParent(newVehicle.transform);
-            parent.transform.localRotation = Quaternion.Euler(0, 180, 0);
-            nameTag.transform.SetParent(parent.transform);
-            nameTag.AddComponent<Nametag>().SetText(
-                SteamFriends.GetFriendPersonaName(spawnerSteamId),
-                newVehicle.transform, VRHead.instance.transform);
-
-            TargetManager.instance.RegisterActor(aIPilot.actor);
-          
-            players.Add(new Player(spawnerSteamId, newVehicle, message.vehicle, message.networkID));
-            VTOLVR_Multiplayer.AIDictionaries.allActors[message.networkID] = aIPilot.actor;
-            VTOLVR_Multiplayer.AIDictionaries.reverseAllActors[aIPilot.actor] = message.networkID;
-
-            return newVehicle;
+                newVehicle = GameObject.Instantiate(av42cPrefab, VTMapManager.GlobalToWorldPoint(position), Quaternion.Euler(rotation.toVector3));
+                break;
+            case VTOLVehicles.FA26B:
+                if (null == fa26bPrefab)
+                {
+                    SetPrefabs();
+                }
+                newVehicle = GameObject.Instantiate(fa26bPrefab, VTMapManager.GlobalToWorldPoint(position), Quaternion.Euler(rotation.toVector3));
+                break;
+            case VTOLVehicles.F45A:
+                if (null == f45Prefab)
+                {
+                    SetPrefabs();
+                }
+                newVehicle = GameObject.Instantiate(f45Prefab, VTMapManager.GlobalToWorldPoint(position), Quaternion.Euler(rotation.toVector3));
+                break;
         }
+        //Debug.Log("Setting vehicle name");
+        newVehicle.name = $"Client [{player.cSteamID}]";
+        Debug.Log($"Spawned new vehicle at {newVehicle.transform.position}");
+
+        HealthNetworker_Receiver healthNetworker = newVehicle.AddComponent<HealthNetworker_Receiver>();
+        healthNetworker.networkUID = networkID;
+
+        RigidbodyNetworker_Receiver rbNetworker = newVehicle.AddComponent<RigidbodyNetworker_Receiver>();
+        rbNetworker.networkUID = networkID;
+
+        PlaneNetworker_Receiver planeReceiver = newVehicle.AddComponent<PlaneNetworker_Receiver>();
+        planeReceiver.networkUID = networkID;
+
+        if (player.vehicleType == VTOLVehicles.AV42C || player.vehicleType == VTOLVehicles.F45A)
+        {
+            //Debug.Log("Adding Tilt Controller to this vehicle " + message.networkID);
+            EngineTiltNetworker_Receiver tiltReceiver = newVehicle.AddComponent<EngineTiltNetworker_Receiver>();
+            tiltReceiver.networkUID = networkID;
+        }
+
+        Rigidbody rb = newVehicle.GetComponent<Rigidbody>();
+        AIPilot aIPilot = newVehicle.GetComponent<AIPilot>();
+
+        RotationToggle wingRotator = aIPilot.wingRotator;
+        if (wingRotator != null)
+        {
+            WingFoldNetworker_Receiver wingFoldReceiver = newVehicle.AddComponent<WingFoldNetworker_Receiver>();
+            wingFoldReceiver.networkUID = networkID;
+            wingFoldReceiver.wingController = wingRotator;
+        }
+
+        LockingRadar lockingRadar = newVehicle.GetComponentInChildren<LockingRadar>();
+        if (lockingRadar != null)
+        {
+            Debug.Log($"Adding LockingRadarReciever to vehicle {newVehicle.name}");
+            LockingRadarNetworker_Receiver lockingRadarReceiver = newVehicle.AddComponent<LockingRadarNetworker_Receiver>();
+            lockingRadarReceiver.networkUID = networkID;
+        }
+
+        ExteriorLightsController extLight = newVehicle.GetComponentInChildren<ExteriorLightsController>();
+        if (extLight != null)
+        {
+            ExtLight_Receiver extLightReceiver = newVehicle.AddComponent<ExtLight_Receiver>();
+            extLightReceiver.lightsController = extLight;
+            extLightReceiver.networkUID = networkID;
+        }
+
+        foreach (Collider collider in newVehicle.GetComponentsInChildren<Collider>())
+        {
+            if (collider)
+            {
+                collider.gameObject.layer = 9;
+            }
+        }
+        aIPilot.enabled = false;
+        Debug.Log($"Changing {newVehicle.name}'s position and rotation\nPos:{rb.position} Rotation:{rb.rotation.eulerAngles}");
+        aIPilot.kPlane.SetToKinematic();
+        aIPilot.kPlane.enabled = false;
+        rb.interpolation = RigidbodyInterpolation.None;
+
+        aIPilot.kPlane.enabled = true;
+        aIPilot.kPlane.SetVelocity(Vector3.zero);
+        aIPilot.kPlane.SetToDynamic();
+        rb.interpolation = RigidbodyInterpolation.Interpolate;
+
+        Debug.Log($"Finished changing {newVehicle.name}\n Pos:{rb.position} Rotation:{rb.rotation.eulerAngles}");
+
+        GameObject parent = new GameObject("Name Tag Holder");
+        GameObject nameTag = new GameObject("Name Tag");
+        parent.transform.SetParent(newVehicle.transform);
+        parent.transform.localRotation = Quaternion.Euler(0, 180, 0);
+        nameTag.transform.SetParent(parent.transform);
+        nameTag.AddComponent<Nametag>().SetText(
+            SteamFriends.GetFriendPersonaName(player.cSteamID),
+            newVehicle.transform, VRHead.instance.transform);
+
+        TargetManager.instance.RegisterActor(aIPilot.actor);
+            
+        player.vehicle = newVehicle;
+
+        VTOLVR_Multiplayer.AIDictionaries.allActors[networkID] = aIPilot.actor;
+        VTOLVR_Multiplayer.AIDictionaries.reverseAllActors[aIPilot.actor] = networkID;
+
+        return newVehicle;
     }
 
     static Player FindPlayerFromNetworkUID(ulong networkUID) {

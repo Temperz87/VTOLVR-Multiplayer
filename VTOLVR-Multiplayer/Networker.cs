@@ -688,6 +688,11 @@ public class Networker : MonoBehaviour
                     if (Death != null)
                         Death.Invoke(packet);
                     break;
+                case MessageType.Respawn:
+                    Debug.Log("case respawn");
+                    Message_Respawn respawnMessage = ((PacketSingle)packet).message as Message_Respawn;
+                    PlayerManager.SpawnRepresentation(respawnMessage.UID, respawnMessage.position, respawnMessage.rotation);
+                    break;
                 case MessageType.WingFold:
                     Debug.Log("case wingfold");
                     if (WingFold != null)
@@ -1183,8 +1188,5 @@ public class Networker : MonoBehaviour
         AIManager.CleanUpOnDisconnect();
         multiplayerInstance?.CleanUpOnDisconnect();
         hostLoaded = false;
-
-        VTOLVR_Multiplayer.AIDictionaries.allActors.Clear();
-        VTOLVR_Multiplayer.AIDictionaries.reverseAllActors.Clear();
     }
 }

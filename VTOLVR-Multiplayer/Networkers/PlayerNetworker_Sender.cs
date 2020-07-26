@@ -24,7 +24,7 @@ class PlayerNetworker_Sender : MonoBehaviour
 
     void Awake()
     {
-        lastMessage = new Message_Respawn(networkUID);
+        lastMessage = new Message_Respawn(networkUID, new Vector3D(), new Vector3D());
 
         health = GetComponent<Health>();
 
@@ -80,6 +80,13 @@ class PlayerNetworker_Sender : MonoBehaviour
         PilotSaveManager.currentScenario.initialSpending = 0;
         PilotSaveManager.currentScenario.inFlightSpending = 0;
         rearmPoint.BeginReArm();
+
+        lastMessage.UID = networkUID;
+        
+        if (Networker.isHost)
+            NetworkSenderThread.Instance.SendPacketAsHostToAllClients(lastMessage, Steamworks.EP2PSend.k_EP2PSendUnreliableNoDelay);
+        else
+            NetworkSenderThread.Instance.SendPacketToSpecificPlayer(Networker.hostID, lastMessage, Steamworks.EP2PSend.k_EP2PSendUnreliableNoDelay);
     }
 
     void UnEject()
