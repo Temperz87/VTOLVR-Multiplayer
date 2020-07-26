@@ -10,7 +10,7 @@ public class UIDNetworker_Sender : MonoBehaviour //this class is attached to act
     private void Awake()
     {
         actor = base.GetComponent<Actor>();
-        if (actor != null)
+        if (actor != null && !actor.isPlayer)
         {
             if (!VTOLVR_Multiplayer.AIDictionaries.allActors.ContainsKey(networkUID))
             {
@@ -19,6 +19,11 @@ public class UIDNetworker_Sender : MonoBehaviour //this class is attached to act
             if (!VTOLVR_Multiplayer.AIDictionaries.reverseAllActors.ContainsKey(actor))
             {
                 VTOLVR_Multiplayer.AIDictionaries.reverseAllActors.Add(actor, networkUID);
+            }
+            Debug.Log("Added uID sender to actor " + actor.name + $" with an uID of {networkUID}");
+            if (actor.isPlayer)
+            {
+                Debug.Log($"Added uID sender to player actor with an uID of {networkUID}.");
             }
         }
     }

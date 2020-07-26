@@ -111,7 +111,8 @@ public class PlaneNetworker_Sender : MonoBehaviour
         {
             lastMessage.throttle = engine.finalThrottle;
         }
-        if (tailhook != null) {
+        if (tailhook != null)
+        {
             lastMessage.tailHook = tailhook.isDeployed;
         }
         if (launchBar != null)
@@ -122,7 +123,7 @@ public class PlaneNetworker_Sender : MonoBehaviour
         {
             lastMessage.fuelPort = refuelPort.open;
         }
-        
+
         if (Networker.isHost)
             NetworkSenderThread.Instance.SendPacketAsHostToAllClients(lastMessage, Steamworks.EP2PSend.k_EP2PSendUnreliable);
         else
@@ -155,7 +156,8 @@ public class PlaneNetworker_Sender : MonoBehaviour
             new Message_WeaponSet_Result(hpInfos.ToArray(), cm.ToArray(), fuel, networkUID),
             Steamworks.EP2PSend.k_EP2PSendReliable);
     }
-    public void FireCountermeasure() {
+    public void FireCountermeasure()
+    {
         lastCountermeasureMessage.UID = networkUID;
         if (Networker.isHost)
             NetworkSenderThread.Instance.SendPacketAsHostToAllClients(lastCountermeasureMessage, Steamworks.EP2PSend.k_EP2PSendUnreliableNoDelay);
@@ -173,5 +175,52 @@ public class PlaneNetworker_Sender : MonoBehaviour
     public void OnDestroy()
     {
         Networker.WeaponSet -= WeaponSet;
+    }
+}
+[HarmonyPatch(typeof(WeaponManager), "JettisonMarkedItems")]
+public static class Patch1
+{
+    public static bool Prefix(WeaponManager __instance)
+    {
+        if (PlaneNetworker_Receiver.dontPrefixNextJettison)
+        {
+            PlaneNetworker_Receiver.dontPrefixNextJettison = false;
+            return true;
+        }
+        List<int> toJettison = new List<int>();
+        Traverse traverse;
+        Message_JettisonUpdate lastMesage;
+        if (__instance.actor == null)
+        {
+            return false;
+        }
+        else if (VTOLVR_Multiplayer.AIDictionaries.reverseAllActors.TryGetValue(__instance.actor, out ulong networkUID))
+        {
+            traverse = Traverse.Create(__instance);
+            for (int i = 0; i < 30; i++)
+            {
+                HPEquippable equip = __instance.GetEquip(i);
+                if (equip != null)
+                {
+                    if (equip.markedForJettison)
+                        toJettison.Add(equip.hardpointIdx);
+                }
+            }
+            if (toJettison.Count == 0)
+            {
+                Debug.Log("Tried to jettison nothing, not doing it");
+                return true;
+            }
+            lastMesage = new Message_JettisonUpdate(toJettison.ToArray(), networkUID);
+            if (Networker.isHost)
+                NetworkSenderThread.Instance.SendPacketAsHostToAllClients(lastMesage, Steamworks.EP2PSend.k_EP2PSendUnreliable);
+            else
+                NetworkSenderThread.Instance.SendPacketToSpecificPlayer(Networker.hostID, lastMesage, Steamworks.EP2PSend.k_EP2PSendUnreliable);
+        }
+        else
+        {
+            Debug.LogError($"{networkUID} not found in AIDictionaries for jettison messsage to send.");
+        }
+        return true;
     }
 }
