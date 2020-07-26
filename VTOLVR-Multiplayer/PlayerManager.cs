@@ -97,12 +97,12 @@ public static class PlayerManager
             LockingRadarNetworker_Sender lastLockingSender;
             foreach (var actor in TargetManager.instance.allActors)
             {
-                if (actor.role == Actor.Roles.Missile)
+                if (actor.role == Actor.Roles.Missile || actor.isPlayer)
                     continue;
                 if (actor.parentActor == null)
                 {
-                    Debug.Log("Adding UID senders to " + actor.name);
                     ulong networkUID = Networker.GenerateNetworkUID();
+                    Debug.Log("Adding UID senders to " + actor.name + $", their uID will be {networkUID}.");
                     AIManager.AIVehicles.Add(new AIManager.AI(actor.gameObject, actor.unitSpawn.unitName, actor, networkUID));
                     if (!VTOLVR_Multiplayer.AIDictionaries.allActors.ContainsKey(networkUID))
                     {
@@ -159,6 +159,8 @@ public static class PlayerManager
             {
                 GenerateSpawns(localVehicle.transform);
                 localUID = Networker.GenerateNetworkUID();
+                UIDNetworker_Sender hostSender = localVehicle.AddComponent<UIDNetworker_Sender>();
+                hostSender.networkUID = localUID;
                 Debug.Log($"The host's uID is {localUID}");
                 SpawnLocalVehicleAndInformOtherClients(localVehicle, localVehicle.transform.position, localVehicle.transform.rotation.eulerAngles, localUID);
             }
@@ -285,10 +287,12 @@ public static class PlayerManager
         players.Add(localPlayer);
         if (!VTOLVR_Multiplayer.AIDictionaries.allActors.ContainsKey(UID))
         {
+            Debug.Log($"Our uID in maploaded all actors is {UID}");
             VTOLVR_Multiplayer.AIDictionaries.allActors.Add(UID, actor);
         }
         if (!VTOLVR_Multiplayer.AIDictionaries.reverseAllActors.ContainsKey(actor))
         {
+            Debug.Log($"Our uID in maploaded reverse all actors is {UID}");
             VTOLVR_Multiplayer.AIDictionaries.reverseAllActors.Add(actor, UID);
         }
         RigidbodyNetworker_Sender rbSender = localVehicle.AddComponent<RigidbodyNetworker_Sender>();
@@ -891,6 +895,7 @@ public static class PlayerManager
         localUID = 0;
         worldData = null;
         players?.Clear();
+        PlaneNetworker_Receiver.dontPrefixNextJettison = false;
     }
 
     public static void OnDisconnect()
