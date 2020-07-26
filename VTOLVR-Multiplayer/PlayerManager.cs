@@ -482,15 +482,15 @@ public static class PlayerManager
                     EP2PSend.k_EP2PSendReliable);
                 //Debug.Log($"We have asked {players[i].cSteamID.m_SteamID} what their current weapons are, and now waiting for a responce."); // marsh typo response lmaooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo
             }
-
-            Debug.Log("Telling connected client about AI units");
-            AIManager.TellClientAboutAI(spawnerSteamId);
-
-            players.Add(new Player(spawnerSteamId, null, message.vehicle, message.networkID));
-
-            GameObject puppet = SpawnRepresentation(message.networkID, message.position, message.rotation);
-            LoadoutManager.SetLoadout(puppet, message.networkID, message.normalizedFuel, message.hpLoadout, message.cmLoadout);
         }
+
+        Debug.Log("Telling connected client about AI units");
+        AIManager.TellClientAboutAI(spawnerSteamId);
+
+        players.Add(new Player(spawnerSteamId, null, message.vehicle, message.networkID));
+
+        GameObject puppet = SpawnRepresentation(message.networkID, message.position, message.rotation);
+        LoadoutManager.SetLoadout(puppet, message.networkID, message.normalizedFuel, message.hpLoadout, message.cmLoadout);
     }
 
     public static GameObject SpawnRepresentation(ulong networkID, Vector3D position, Vector3D rotation)

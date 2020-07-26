@@ -49,5 +49,8 @@ class HealthNetworker_Receiver : MonoBehaviour
         Networker.Death -= Death;
         Debug.Log("Destroyed DeathUpdate");
         Debug.Log(gameObject.name);
+
+        VTOLVR_Multiplayer.AIDictionaries.reverseAllActors.Remove(GetComponent<Actor>());
+        UnitIconManager.instance.UnregisterIcon(GetComponent<Actor>());
     }
 }

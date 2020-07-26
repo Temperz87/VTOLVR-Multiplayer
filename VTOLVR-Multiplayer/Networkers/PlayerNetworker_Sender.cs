@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using UnityEngine;
+using Harmony;
 
 class PlayerNetworker_Sender : MonoBehaviour
 {
@@ -65,6 +66,7 @@ class PlayerNetworker_Sender : MonoBehaviour
 
         UnEject();
         PutPlayerBackInAircraft();
+        RepairAircraft();
 
         foreach (GearAnimator gear in gears) {
             gear.ExtendImmediate();
@@ -74,19 +76,20 @@ class PlayerNetworker_Sender : MonoBehaviour
         transform.position = rearmPoint.transform.position + Vector3.up * 10;
         transform.rotation = rearmPoint.transform.rotation;
 
-        //rearmPoint.OnEndRearm += GameObject.FindObjectOfType<MFDCommsPage>().CurrentRP_OnEndRearm;
         rearmPoint.voiceProfile.PlayMessage(GroundCrewVoiceProfile.GroundCrewMessages.Success);
         PilotSaveManager.currentScenario.totalBudget = 999999;
         PilotSaveManager.currentScenario.initialSpending = 0;
         PilotSaveManager.currentScenario.inFlightSpending = 0;
+
         rearmPoint.BeginReArm();
 
         lastMessage.UID = networkUID;
         
-        if (Networker.isHost)
-            NetworkSenderThread.Instance.SendPacketAsHostToAllClients(lastMessage, Steamworks.EP2PSend.k_EP2PSendUnreliableNoDelay);
-        else
-            NetworkSenderThread.Instance.SendPacketToSpecificPlayer(Networker.hostID, lastMessage, Steamworks.EP2PSend.k_EP2PSendUnreliableNoDelay);
+        //if (Networker.isHost)
+        //    NetworkSenderThread.Instance.SendPacketAsHostToAllClients(lastMessage, Steamworks.EP2PSend.k_EP2PSendUnreliableNoDelay);
+        //else
+        //    NetworkSenderThread.Instance.SendPacketToSpecificPlayer(Networker.hostID, lastMessage, Steamworks.EP2PSend.k_EP2PSendUnreliableNoDelay);
+        
     }
 
     void UnEject()
@@ -125,8 +128,13 @@ class PlayerNetworker_Sender : MonoBehaviour
         ejection.seatRB.interpolation = RigidbodyInterpolation.None;
         ejection.seatRB.collisionDetectionMode = CollisionDetectionMode.Discrete;
 
+        ModuleParachute parachute = ejection.GetComponentInChildren<ModuleParachute>();
+        parachute.CutParachute();
+        
+        Traverse.Create(ejection).Field("ejected").SetValue(false);
+
         shifter.enabled = true;
-        AudioController.instance.AddExteriorOpening("eject", 0f);
+        //AudioController.instance.AddExteriorOpening("eject", 0f);
     }
 
     void PutPlayerBackInAircraft()
@@ -148,6 +156,25 @@ class PlayerNetworker_Sender : MonoBehaviour
         }
 
         shifter.enabled = true;
+    }
+
+    void RepairAircraft()
+    {
+        FlightAssist flightAssist = GetComponentInChildren<FlightAssist>();
+        flightAssist.assistEnabled = true;
+
+        RCSController rcsController = GetComponentInChildren<RCSController>();
+        Traverse.Create(rcsController).Field("alive").SetValue(true);
+
+        Battery battery = GetComponentInChildren<Battery>();
+        Traverse.Create(battery).Field("isAlive").SetValue(true);
+        battery.Connect();
+
+        CollimatedHUDUI hud = GetComponentInChildren<CollimatedHUDUI>();
+        hud.gameObject.SetActive(true);
+
+        VRJoystick joystick = GetComponentInChildren<VRJoystick>();
+        joystick.sendEvents = true;
     }
 
     void Eject()
