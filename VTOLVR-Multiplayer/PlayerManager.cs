@@ -577,20 +577,20 @@ public static class PlayerManager
         rb.interpolation = RigidbodyInterpolation.Interpolate;
 
         Debug.Log($"Finished changing {newVehicle.name}\n Pos:{rb.position} Rotation:{rb.rotation.eulerAngles}");
-
-        GameObject parent = new GameObject("Name Tag Holder");
-        GameObject nameTag = new GameObject("Name Tag");
-        parent.transform.SetParent(newVehicle.transform);
-        parent.transform.localRotation = Quaternion.Euler(0, 180, 0);
-        nameTag.transform.SetParent(parent.transform);
-        nameTag.AddComponent<Nametag>().SetText(
+        if (!Multiplayer._instance.hidePlayerNameTags)
+        {
+            GameObject parent = new GameObject("Name Tag Holder");
+            GameObject nameTag = new GameObject("Name Tag");
+            parent.transform.SetParent(newVehicle.transform);
+            parent.transform.localRotation = Quaternion.Euler(0, 180, 0);
+            nameTag.transform.SetParent(parent.transform);
+            nameTag.AddComponent<Nametag>().SetText(
             SteamFriends.GetFriendPersonaName(spawnerSteamId),
             newVehicle.transform, VRHead.instance.transform);
-
-        if (multiplayerInstance.hidePlayerNameTags)
+        }
+        else
         {
-            parent.SetActive(false);
-            nameTag.SetActive(false);
+            Debug.Log("Player has disabled name tags.");
         }
 
         //Debug.Log("Doing weapon manager shit on " + newVehicle.name + ".");
