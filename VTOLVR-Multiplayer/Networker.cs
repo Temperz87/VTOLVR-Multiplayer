@@ -206,6 +206,7 @@ public class Networker : MonoBehaviour
     public static event UnityAction<Packet> WorldDataUpdate;
     public static event UnityAction<Packet> RequestNetworkUID;
     public static event UnityAction<Packet> LockingRadarUpdate;
+    public static event UnityAction<Packet> JettisonUpdate;
     #endregion
     #region Host Forwarding Suppress By Message Type List
     private List<MessageType> hostMessageForwardingSuppressList = new List<MessageType> {
@@ -796,6 +797,11 @@ public class Networker : MonoBehaviour
                         Debug.Log("Received loading text request and we're not the host.");
                     }
                     break;
+                case MessageType.JettisonUpdate:
+                    Debug.Log("case jettison update");
+                    if (JettisonUpdate != null)
+                        JettisonUpdate.Invoke(packet);
+                    break;
                 default:
                     Debug.Log("default case");
                     break;
@@ -1050,7 +1056,6 @@ public class Networker : MonoBehaviour
                 return;
             }
         }
-
         if (Multiplayer._instance.restrictToHostMods)
         {
             if (BitConverter.ToString(joinRequest.modloaderHash).Replace("-", "").ToLowerInvariant() != BitConverter.ToString(MapAndScenarioVersionChecker.modloaderHash).Replace("-", "").ToLowerInvariant())
@@ -1162,7 +1167,6 @@ public class Networker : MonoBehaviour
     {
         DisconnectionTasks();
     }
-
     public void DisconnectionTasks()
     {
         Debug.Log("Running disconnection tasks");
