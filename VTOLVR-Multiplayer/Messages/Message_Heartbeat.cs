@@ -6,7 +6,7 @@ public class Message_Heartbeat : Message
     public float TimeOnServerGame;
 
     public Message_Heartbeat() {
-        TimeOnServerGame = UnityEngine.Time.fixedTime;
+        TimeOnServerGame = UnityEngine.Time.realtimeSinceStartup;
         type = MessageType.ServerHeartbeat;
     }
     public Message_Heartbeat(float time) {

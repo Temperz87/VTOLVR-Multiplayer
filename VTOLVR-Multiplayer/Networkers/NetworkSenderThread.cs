@@ -247,7 +247,7 @@ class NetworkSenderThread
     }
 
     private void SendP2P(CSteamID remoteID, byte[] serializedPacketData, EP2PSend sendType, uint length) {
-        if (serializedPacketData.Length > 1200 && (sendType == EP2PSend.k_EP2PSendUnreliable || sendType == EP2PSend.k_EP2PSendUnreliableNoDelay)) {
+        if (serializedPacketData.Length > 1200 && (sendType == EP2PSend.k_EP2PSendUnreliable || sendType == EP2PSend.k_EP2PSendUnreliable)) {
             //Debug.LogError("MORE THAN 1200 Bytes for message");
         }
         if (Multiplayer.SoloTesting) {

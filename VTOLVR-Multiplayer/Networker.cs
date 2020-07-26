@@ -141,13 +141,19 @@ public class Networker : MonoBehaviour
         get { lock (timeoutCounterLock) { return timeoutCounterInternal; } }
         set { lock (timeoutCounterLock) { timeoutCounterInternal = value; } }
     }
-    private static readonly int clientTimeoutInSeconds = 5;
+    private static readonly int clientTimeoutInSeconds = 30;
+    private static readonly int clientTimeoutAfterMapLoad = 10;
     private static readonly object disconnectForClientTimeoutLock = new object();
     private static bool disconnectForClientTimeoutInternal = false;
     private static bool disconnectForClientTimeout
     {
         get { lock (disconnectForClientTimeoutLock) { return disconnectForClientTimeoutInternal; } }
         set { lock (disconnectForClientTimeoutLock) { disconnectForClientTimeoutInternal = value; } }
+    }
+    private static bool logTimeSinceLastHeartbeatSeenInternal = false; 
+    private static bool logTimeSinceLastHeartbeatSeen {
+        get { lock (disconnectForClientTimeoutLock) { return logTimeSinceLastHeartbeatSeenInternal; } }
+        set { lock (disconnectForClientTimeoutLock) { logTimeSinceLastHeartbeatSeenInternal = value; } }
     }
     public static bool isClient { get; private set; }
     public enum GameState { Menu, Config, Game };
@@ -284,6 +290,10 @@ public class Networker : MonoBehaviour
 
             Disconnect(false);
         }
+        if (logTimeSinceLastHeartbeatSeen) {
+            logTimeSinceLastHeartbeatSeen = false;
+            Debug.Log($"We have gone {TimeoutCounter} seconds from last host ping message");
+        }
     }
 
     public static void HeartbeatCallback(object sender, System.Timers.ElapsedEventArgs e)
@@ -291,17 +301,28 @@ public class Networker : MonoBehaviour
         if (isHost)
         {
             // Host, send heartbeat
-            NetworkSenderThread.Instance.SendPacketAsHostToAllClients(new Message_Heartbeat(), EP2PSend.k_EP2PSendUnreliableNoDelay);
+            NetworkSenderThread.Instance.SendPacketAsHostToAllClients(new Message_Heartbeat(), EP2PSend.k_EP2PSendUnreliable);
         }
         else
         {
             // Client, increment timeout counter
-            if (++TimeoutCounter > clientTimeoutInSeconds)
+            ++TimeoutCounter;
+            int timeout = clientTimeoutInSeconds;
+            bool reportExcess = false;
+            if (PlayerManager.gameLoaded) {
+                timeout = clientTimeoutAfterMapLoad;
+                reportExcess = true;
+            }
+
+            if (TimeoutCounter > timeout)
             {
                 // Disconnected from host
                 disconnectForClientTimeout = true;
                 HeartbeatTimerRunning = false;
                 HeartbeatTimer.Stop();
+            }
+            else if (reportExcess && (timeout >= (clientTimeoutAfterMapLoad / 2))) {
+                logTimeSinceLastHeartbeatSeen = true;
             }
         }
     }
@@ -769,7 +790,7 @@ public class Networker : MonoBehaviour
                         Message_Heartbeat heartbeatMessage = ((PacketSingle)packet).message as Message_Heartbeat;
 
                         TimeoutCounter = 0;
-                        NetworkSenderThread.Instance.SendPacketToSpecificPlayer(hostID, new Message_Heartbeat_Result(heartbeatMessage.TimeOnServerGame), EP2PSend.k_EP2PSendUnreliableNoDelay);
+                        NetworkSenderThread.Instance.SendPacketToSpecificPlayer(hostID, new Message_Heartbeat_Result(heartbeatMessage.TimeOnServerGame), EP2PSend.k_EP2PSendUnreliable);
                     }
                     break;
                 case MessageType.ServerHeartbeat_Response:
@@ -778,7 +799,7 @@ public class Networker : MonoBehaviour
                         Message_Heartbeat_Result heartbeatResult = ((PacketSingle)packet).message as Message_Heartbeat_Result;
 
                         float pingTime = Time.fixedTime - heartbeatResult.TimeOnServerGame;
-                        NetworkSenderThread.Instance.SendPacketToSpecificPlayer(csteamID, new Message_ReportPingTime(pingTime), EP2PSend.k_EP2PSendUnreliableNoDelay);
+                        NetworkSenderThread.Instance.SendPacketToSpecificPlayer(csteamID, new Message_ReportPingTime(pingTime), EP2PSend.k_EP2PSendUnreliable);
                     }
                     break;
                 case MessageType.ServerReportingPingTime:
@@ -808,7 +829,7 @@ public class Networker : MonoBehaviour
             {
                 if (MessageTypeShouldBeForwarded(packetS.message.type))
                 {
-                    NetworkSenderThread.Instance.SendPacketAsHostToAllButOneSpecificClient((CSteamID)packetS.networkUID, packetS.message, EP2PSend.k_EP2PSendUnreliableNoDelay);
+                    NetworkSenderThread.Instance.SendPacketAsHostToAllButOneSpecificClient((CSteamID)packetS.networkUID, packetS.message, EP2PSend.k_EP2PSendUnreliable);
                 }
             }
         }
@@ -891,7 +912,7 @@ public class Networker : MonoBehaviour
     {
         if (!isHost)
         {
-            NetworkSenderThread.Instance.SendPacketToSpecificPlayer(hostID, new Message_RequestNetworkUID(clientsID), EP2PSend.k_EP2PSendUnreliableNoDelay);
+            NetworkSenderThread.Instance.SendPacketToSpecificPlayer(hostID, new Message_RequestNetworkUID(clientsID), EP2PSend.k_EP2PSendUnreliable);
             Debug.Log("Requetsed UID from host");
         }
         else
