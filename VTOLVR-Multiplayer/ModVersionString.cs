@@ -6,6 +6,6 @@ using System.Threading.Tasks;
 
 static class ModVersionString
 {
-    public static string ReleaseBranch = "Jettison-sync-newnamebecausebecause";
-    public static string ModVersionNumber = "1.1.95292924219874290059279857648936489328925479852689243";
+    public static string ReleaseBranch = "dev";
+    public static string ModVersionNumber = "0.6.2";
 }

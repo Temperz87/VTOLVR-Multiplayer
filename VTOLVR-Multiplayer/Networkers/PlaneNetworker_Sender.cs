@@ -185,23 +185,18 @@ public static class Patch1
         if (PlaneNetworker_Receiver.dontPrefixNextJettison)
         {
             PlaneNetworker_Receiver.dontPrefixNextJettison = false;
-            Debug.Log("Not prefixing this.");
             return true;
         }
-        Debug.Log("Prefixing jettison marked items.");
         List<int> toJettison = new List<int>();
         Traverse traverse;
         Message_JettisonUpdate lastMesage;
         if (__instance.actor == null)
         {
-            Debug.LogError("Weapon manager actor null on one airplane, can't give more debug information here.");
             return false;
         }
         else if (VTOLVR_Multiplayer.AIDictionaries.reverseAllActors.TryGetValue(__instance.actor, out ulong networkUID))
         {
-            Debug.Log($"Our uID for this message is {networkUID}");
             traverse = Traverse.Create(__instance);
-            Debug.Log("Doing for iterator statement");
             for (int i = 0; i < 30; i++)
             {
                 HPEquippable equip = __instance.GetEquip(i);
@@ -217,7 +212,6 @@ public static class Patch1
                 return true;
             }
             lastMesage = new Message_JettisonUpdate(toJettison.ToArray(), networkUID);
-            Debug.Log("Jettisoning...");
             if (Networker.isHost)
                 NetworkSenderThread.Instance.SendPacketAsHostToAllClients(lastMesage, Steamworks.EP2PSend.k_EP2PSendUnreliable);
             else
@@ -225,7 +219,7 @@ public static class Patch1
         }
         else
         {
-            Debug.LogError($"{networkUID} not found in AIDictionaries.");
+            Debug.LogError($"{networkUID} not found in AIDictionaries for jettison messsage to send.");
         }
         return true;
     }
