@@ -34,9 +34,6 @@ public static class PlayerManager
     public static Multiplayer multiplayerInstance = null;
 
 
-    public static bool spawnRemainingPlayersAtAirBase = false;
-    public static bool replaceWingmenWithClients = true;
-
     public struct Player
     {
         public CSteamID cSteamID;
@@ -759,7 +756,8 @@ public static class PlayerManager
         }
         else
         {
-            if (replaceWingmenWithClients)
+
+            if (Multiplayer._instance.replaceWingmenWithClients)
             {
                 Debug.Log("Player is in the air, looking for wingmen!");
                 int wingmenCount = 0;
@@ -791,6 +789,9 @@ public static class PlayerManager
 
                 }
             }
+
+
+
             // Get other air groups of same type
         }
 
@@ -799,7 +800,7 @@ public static class PlayerManager
         if (spawnPoints.Count < spawnsCount)
         {
             Debug.Log("We still don't have enough spawn points, creating some more!");
-            if (spawnRemainingPlayersAtAirBase)
+            if (Multiplayer._instance.spawnRemainingPlayersAtAirBase)
             {
                 Debug.Log("Creating spawn points at the closest airport!");
                 AirportManager result2 = null;
@@ -876,7 +877,7 @@ public static class PlayerManager
             Transform returnValue = new GameObject().transform;
             Debug.LogError("Spawn Points was null, we can't find a spawn point.\nReturning a new transform at " + returnValue.position);
             return returnValue;
-        }
+        }   
         return spawnPoints[UnityEngine.Random.Range(0, spawnsCount - 1)];
     }
 
