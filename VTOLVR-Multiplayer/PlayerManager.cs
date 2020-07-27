@@ -741,21 +741,27 @@ public static class PlayerManager
                     {
                         if (!parkingSpace.occupiedBy)
                         {
-                            lastSpawn = new GameObject("MP Spawn " + spawnCounter);
-                            lastSpawn.AddComponent<FloatingOriginTransform>();
-                            lastSpawn.transform.position = parkingSpace.transform.position;
-                            lastSpawn.transform.rotation = parkingSpace.transform.rotation;
-                            spawnPoints.Add(lastSpawn.transform);
-                            Debug.Log($"Created MP Spawn at AIRPORT {result.airportName} {lastSpawn.transform.position}");
-                            spawnCounter += 1;
+                            Debug.Log($"Parking space distance from host: {Vector3.Distance(curPlayer.flightInfo.transform.position, parkingSpace.transform.position)}");
+                            if (Vector3.Distance(curPlayer.flightInfo.transform.position, parkingSpace.transform.position) > 2f)
+                            {
+                                lastSpawn = new GameObject("MP Spawn " + spawnCounter);
+                                lastSpawn.AddComponent<FloatingOriginTransform>();
+                                lastSpawn.transform.position = parkingSpace.transform.position;
+                                lastSpawn.transform.rotation = parkingSpace.transform.rotation;
+                                spawnPoints.Add(lastSpawn.transform);
+                                Debug.Log($"Created MP Spawn at AIRPORT {result.airportName} {lastSpawn.transform.position}");
+                                spawnCounter += 1;
+                            }
+                            else
+                            {
+                                Debug.Log("This parking space is too close to the host!");
+                            }
                         }
                         else
                         {
                             Debug.Log("Parking space is occupied.");
                         }
                     }
-
-                    Debug.Log($"Generated {spawnCounter} spawn points");
                 }
                 else
                 {
@@ -815,6 +821,7 @@ public static class PlayerManager
 
         }
 
+        Debug.Log($"Generated {spawnPoints.Count} spawn points");
 
         // Generate the remaining spawn points from the start position.
         if (spawnPoints.Count < spawnsCount)
@@ -846,13 +853,16 @@ public static class PlayerManager
                     {
                         if (!parkingSpace.occupiedBy)
                         {
-                            lastSpawn = new GameObject("MP Spawn " + spawnCounter);
-                            lastSpawn.AddComponent<FloatingOriginTransform>();
-                            lastSpawn.transform.position = parkingSpace.transform.position;
-                            lastSpawn.transform.rotation = parkingSpace.transform.rotation;
-                            spawnPoints.Add(lastSpawn.transform);
-                            Debug.Log($"Created MP Spawn at AIRPORT {result2.airportName} {lastSpawn.transform.position}");
-                            spawnCounter += 1;
+                            Debug.Log($"Parking space distance from host: {Vector3.Distance(curPlayer.flightInfo.transform.position, parkingSpace.transform.position)}");
+                            if (Vector3.Distance(curPlayer.flightInfo.transform.position, parkingSpace.transform.position) > 2f) { 
+                                lastSpawn = new GameObject("MP Spawn " + spawnCounter);
+                                lastSpawn.AddComponent<FloatingOriginTransform>();
+                                lastSpawn.transform.position = parkingSpace.transform.position;
+                                lastSpawn.transform.rotation = parkingSpace.transform.rotation;
+                                spawnPoints.Add(lastSpawn.transform);
+                                Debug.Log($"Created MP Spawn at AIRPORT {result2.airportName} {lastSpawn.transform.position}");
+                                spawnCounter += 1;
+                            }
                         }
                         else
                         {
@@ -868,7 +878,7 @@ public static class PlayerManager
             else
             {
                 Debug.Log("Creating remaining spawn points next to player.");
-                for (int i = 1; i <= spawnsCount; i++)
+                for (int i = 1; i <= spawnsCount - spawnPoints.Count; i++)
                 {
                     lastSpawn = new GameObject("MP Spawn " + i);
                     lastSpawn.AddComponent<FloatingOriginTransform>();
