@@ -150,6 +150,7 @@
     <Compile Include="Networkers\WorldDataNetworker_Receiver.cs" />
     <Compile Include="Networkers\WorldDataNetworker_Sender.cs" />
     <Compile Include="Patches\Patch_LoadingSceneController.cs" />
+    <Compile Include="Patches\Patch_VTEventTarget.cs" />
     <Compile Include="Patches\Patch_VTMapManager.cs" />
     <Compile Include="Patches\Patch_VTTMapTrees.cs" />
     <Compile Include="PlaneEquippableManager.cs" />
