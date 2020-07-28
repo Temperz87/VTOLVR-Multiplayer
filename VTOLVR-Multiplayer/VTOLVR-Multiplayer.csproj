@@ -134,6 +134,7 @@
     <Compile Include="Messages\Message_WingFold.cs" />
     <Compile Include="Messages\Message_WorldData.cs" />
     <Compile Include="Messages\Packet.cs" />
+    <Compile Include="Messages\Message_ScenarioAction.cs" />
     <Compile Include="Networkers\ActorNetworker_Reciever.cs" />
     <Compile Include="Networkers\ActorNetworker_Sender.cs" />
     <Compile Include="Networkers\ExtLightNetworker_Receiver.cs" />
@@ -145,6 +146,7 @@
     <Compile Include="Networkers\LockingRadarNetworker_Reciever.cs" />
     <Compile Include="Networkers\LockingRadarNetworker_Sender.cs" />
     <Compile Include="Networkers\NetworkSenderThread.cs" />
+    <Compile Include="Networkers\ScenarioActionNetworker_Receiver.cs" />
     <Compile Include="Networkers\ShipNetworker_Receiver.cs" />
     <Compile Include="Networkers\ShipNetworker_Sender.cs" />
     <Compile Include="Networkers\TurretNetworker_Receiver.cs" />
