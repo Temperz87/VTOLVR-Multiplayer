@@ -233,7 +233,7 @@ public static class AIManager
                         if (aIUnitSpawn == null)
                             Debug.LogWarning("AI unit spawn is null on respawned unit " + aIUnitSpawn);
                         else
-                            newAI.GetComponent<AIUnitSpawn>().SetEngageEnemies(message.Aggresive);
+                            newAI.GetComponent<AIUnitSpawn>().SetEngageEnemies(false);
                         VehicleMover vehicleMover = newAI.GetComponent<VehicleMover>();
                         if (vehicleMover != null)
                         {
