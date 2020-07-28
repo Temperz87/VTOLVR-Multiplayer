@@ -9,7 +9,7 @@ using UnityEngine;
 
 
 [HarmonyPatch(typeof(VTEventTarget), "Invoke")]
-class Patch1
+class Patch2
 {
     static void Postfix(VTEventTarget __instance)
     {
