@@ -13,9 +13,53 @@ class Patch2
 {
     static void Postfix(VTEventTarget __instance)
     {
+
+
+
+        String actionIdentifier = __instance.eventName + __instance.methodName + __instance.targetID;
+        int hash = actionIdentifier.GetHashCode();
+
+        Message_ScenarioAction ScanarioActionOutMessage  = new Message_ScenarioAction(PlayerManager.localUID,hash);
         if (Networker.isHost)
-            Debug.Log("Host Ran Event" + __instance.eventName + " of type " + __instance.methodName + " for target " + __instance.targetID);
+        {
+            Debug.Log("Host sent  Event action" + __instance.eventName + " of type " + __instance.methodName + " for target " + __instance.targetID);
+       
+            NetworkSenderThread.Instance.SendPacketAsHostToAllClients(ScanarioActionOutMessage, Steamworks.EP2PSend.k_EP2PSendUnreliableNoDelay);
+        }
         else
-            Debug.Log("Client Ran Event" + __instance.eventName + " of type " + __instance.methodName + " for target " + __instance.targetID);
+        {
+
+            Debug.Log("Client sent  Event action" + __instance.eventName + " of type " + __instance.methodName + " for target " + __instance.targetID);
+            NetworkSenderThread.Instance.SendPacketToSpecificPlayer(Networker.hostID, ScanarioActionOutMessage, Steamworks.EP2PSend.k_EP2PSendUnreliableNoDelay);
+        }  
+  
+           
+    }
+
+
+ 
+    
+}
+
+//patch to grab all the events being loaded on creation this replaces original method
+[HarmonyPatch(typeof(VTEventInfo), "LoadFromInfoNode")]
+class Patch3
+{
+    static void Prefix(VTEventInfo __instance, ConfigNode infoNode)
+    {
+        __instance.eventName = infoNode.GetValue("eventName");
+        __instance.actions = new List<VTEventTarget>();
+        foreach (ConfigNode node in infoNode.GetNodes("EventTarget"))
+        {
+            VTEventTarget vTEventTarget = new VTEventTarget();
+            vTEventTarget.LoadFromNode(node);
+            __instance.actions.Add(vTEventTarget);
+
+            String actionIdentifier = vTEventTarget.eventName + vTEventTarget.methodName + vTEventTarget.targetID;
+            int hash = actionIdentifier.GetHashCode();
+            PlayerManager.scenarioActionsList.Add(hash,vTEventTarget);
+        }
+
+        return;//dont run bahas code
     }
 }

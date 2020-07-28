@@ -209,6 +209,7 @@ public class Networker : MonoBehaviour
     public static event UnityAction<Packet> RequestNetworkUID;
     public static event UnityAction<Packet> LockingRadarUpdate;
     public static event UnityAction<Packet> JettisonUpdate;
+    public static event UnityAction<Packet> runScenarioAction;
     #endregion
     #region Host Forwarding Suppress By Message Type List
     private List<MessageType> hostMessageForwardingSuppressList = new List<MessageType> {
@@ -735,6 +736,11 @@ public class Networker : MonoBehaviour
                     Debug.Log("case loading text update");
                     if (!isHost)
                         UpdateLoadingText(packet);
+                    break;
+                case MessageType.ScenarioAction:
+                    Debug.Log("case scenarioaction");
+                    if ( runScenarioAction != null)
+                        runScenarioAction.Invoke(packet);
                     break;
                 case MessageType.HostLoaded:
                     Debug.Log("case host loaded");

@@ -33,6 +33,9 @@ public static class PlayerManager
 
     public static Multiplayer multiplayerInstance = null;
 
+    public static Dictionary<int,VTEventTarget> scenarioActionsList;
+
+    static private ScenarioActionNetworker_Receiver actionReciever;
 
     public struct Player
     {
@@ -42,6 +45,7 @@ public static class PlayerManager
 
         public VTOLVehicles vehicleName;
         public ulong vehicleUID;
+
 
         public Player(CSteamID cSteamID, GameObject vehicle, VTOLVehicles vehicleName, Actor actor, ulong vehicleUID)
         {
@@ -202,6 +206,7 @@ public static class PlayerManager
             worldData = new GameObject();
             worldData.AddComponent<WorldDataNetworker_Sender>();
         }
+
     }
 
     /// <summary>
@@ -903,6 +908,20 @@ public static class PlayerManager
 
 
     }
+
+
+    /// <summary>
+    /// Runs an action fetched from the stored actionlist
+    /// </summary>
+    /// <returns>A free spawn point</returns>
+    public static void runScenarioAction(int hash)
+    {
+        if (scenarioActionsList.ContainsKey(hash))
+            scenarioActionsList[hash].Invoke();
+        else
+            Debug.Log("secanrio error doesnt exsist");
+    }
+
     /// <summary>
     /// Returns a spawn point which isn't blocked by another player
     /// </summary>
@@ -924,6 +943,7 @@ public static class PlayerManager
         spawnRequestQueue?.Clear();
         playersToSpawnQueue?.Clear();
         playersToSpawnIdQueue?.Clear();
+        scenarioActionsList.Clear();
         gameLoaded = false;
         spawnedVehicles?.Clear();
         localUID = 0;

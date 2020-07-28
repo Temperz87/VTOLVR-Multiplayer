@@ -43,5 +43,6 @@ public enum MessageType
     ServerHeartbeat,
     ServerHeartbeat_Response,
     ServerReportingPingTime,
-    LoadingTextRequest //Clients request for loading text
+    LoadingTextRequest,//Clients request for loading text
+    ScenarioAction//sends actions across network
 }
