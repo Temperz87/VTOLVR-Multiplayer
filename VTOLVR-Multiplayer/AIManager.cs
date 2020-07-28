@@ -92,9 +92,13 @@ public static class AIManager
 
                     if (newAI.GetComponent<Health>() != null)
                     {
-                        HealthNetworker_Receiver healthNetworker = newAI.AddComponent<HealthNetworker_Receiver>();
-                        healthNetworker.networkUID = message.networkID;
+                        HealthNetworker_Receiver healthNetworkerR = newAI.AddComponent<HealthNetworker_Receiver>();
+                        healthNetworkerR.networkUID = message.networkID;
                         Debug.Log("added health reciever to ai");
+
+                        HealthNetworker_Sender healthNetworkerS = newAI.AddComponent<HealthNetworker_Sender>();
+                        healthNetworkerS.networkUID = message.networkID;
+                        Debug.Log("added health Sender to ai");
                     }
                     else
                     {

@@ -126,9 +126,13 @@ public static class PlayerManager
                     }
                     if (actor.gameObject.GetComponent<Health>() != null)
                     {
-                        HealthNetworker_Sender healthNetworker = actor.gameObject.AddComponent<HealthNetworker_Sender>();
-                        healthNetworker.networkUID = networkUID;
+                        HealthNetworker_Sender healthNetworkerS = actor.gameObject.AddComponent<HealthNetworker_Sender>();
+                        healthNetworkerS.networkUID = networkUID;
                         Debug.Log("added health sender to ai");
+
+                        HealthNetworker_Receiver healthNetworkerR = actor.gameObject.AddComponent<HealthNetworker_Receiver>();
+                        healthNetworkerR.networkUID = networkUID;
+                        Debug.Log("added health reciever to ai");
                     }
                     else
                     {
