@@ -893,6 +893,8 @@ public static class PlayerManager
             if (Multiplayer._instance.spawnRemainingPlayersAtAirBase)
             {
                 Debug.Log("Creating spawn points at the closest airport!");
+
+                // This is messy - the spawn point at airports should be done in another function really.
                 AirportManager result2 = null;
                 float num2 = float.MaxValue;
 
@@ -940,15 +942,17 @@ public static class PlayerManager
             }
             else
             {
-                Debug.Log("Creating remaining spawn points next to player.");
-                for (int i = 1; i <= spawnsCount - spawnPoints.Count; i++)
+                Debug.Log($"Creating remaining spawn points ({spawnsCount - spawnPoints.Count}) next to player.");
+                int remainingSpawns = spawnsCount - spawnPoints.Count;
+                for (int i = 0; i < remainingSpawns; i++)
                 {
                     lastSpawn = new GameObject("MP Spawn " + i);
                     lastSpawn.AddComponent<FloatingOriginTransform>();
                     lastSpawn.transform.position = startPosition.position + startPosition.TransformVector(new Vector3(spawnSpacing * i, 0, 0));
                     lastSpawn.transform.rotation = startPosition.rotation;
                     spawnPoints.Add(lastSpawn.transform);
-                    Debug.Log("Created MP Spawn at " + lastSpawn.transform.position);
+                    Debug.Log($"Created MP Spawn {i} at {lastSpawn.transform.position}");
+                    Debug.Log($"{remainingSpawns}");
                 }
             }
 
