@@ -21,7 +21,7 @@ public class WorldDataNetworker_Receiver : MonoBehaviour
     }
 
     // If this sucks (it probably does) find a better solution (I.E. Harmony Patch SteamVR Pausing) :sick:
-    public void Update()
+    public void FixedUpdate()
     {
         // If the client's time scale is different than the servers timescale, force the clients to match
         if (Time.timeScale != serverTimescale)
@@ -40,6 +40,11 @@ public class WorldDataNetworker_Receiver : MonoBehaviour
 
         Debug.Log($"Set the timescale {worldDataUpdate.timeScale}");
 
+    }
+
+    public void ClientNeedsNormalTimeFlowBecauseHostDisconnected() {
+        serverTimescale = 1f;
+        Time.timeScale = serverTimescale;
     }
 
     public void OnDisconnect(Packet packet)

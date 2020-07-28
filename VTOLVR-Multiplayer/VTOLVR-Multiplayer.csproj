@@ -80,6 +80,10 @@
     <Reference Include="UnityEngine.CrashReportingModule">
       <HintPath>..\Dependencies\UnityEngine.CrashReportingModule.dll</HintPath>
     </Reference>
+    <Reference Include="UnityEngine.IMGUIModule, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\Dependencies\UnityEngine.IMGUIModule.dll</HintPath>
+    </Reference>
     <Reference Include="UnityEngine.PhysicsModule">
       <HintPath>..\Dependencies\UnityEngine.PhysicsModule.dll</HintPath>
     </Reference>
@@ -94,6 +98,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AIDictionaries.cs" />
     <Compile Include="AIManager.cs" />
     <Compile Include="HPInfo.cs" />
     <Compile Include="Messages\Message.cs" />
@@ -104,17 +109,22 @@
     <Compile Include="Messages\Message_EngineTiltUpdate.cs" />
     <Compile Include="Messages\Message_ExtLight.cs" />
     <Compile Include="Messages\Message_FireCountermeasure.cs" />
+    <Compile Include="Messages\Message_Heartbeat.cs" />
     <Compile Include="Messages\Message_HostLoaded.cs" />
+    <Compile Include="Messages\Message_JettisonUpdate.cs" />
     <Compile Include="Messages\Message_JoinRequest.cs" />
+    <Compile Include="Messages\Message_LoadingTextRequest.cs" />
     <Compile Include="Messages\Message_LoadingTextUpdate.cs" />
     <Compile Include="Messages\Message_LobbyInfoRequest.cs" />
     <Compile Include="Messages\Message_MissileUpdate.cs" />
     <Compile Include="Messages\Message_PlaneUpdate.cs" />
+    <Compile Include="Messages\Message_LockingRadarLock.cs" />
     <Compile Include="Messages\Message_RadarUpdate.cs" />
     <Compile Include="Messages\Message_Ready.cs" />
     <Compile Include="Messages\Message_RequestNetworkUID.cs" />
     <Compile Include="Messages\Message_RequestSpawn.cs" />
     <Compile Include="Messages\Message_RigidbodyUpdate.cs" />
+    <Compile Include="Messages\Message_ShipUpdate.cs" />
     <Compile Include="Messages\Message_SpawnAIVehicle.cs" />
     <Compile Include="Messages\Message_SpawnPlayerVehicle.cs" />
     <Compile Include="Messages\Message_TurretUpdate.cs" />
@@ -129,9 +139,14 @@
     <Compile Include="Networkers\ExtLightNetworker_Receiver.cs" />
     <Compile Include="Networkers\ExtLightNetworker_Sender.cs" />
     <Compile Include="ModVersionString.cs" />
+    <Compile Include="Networkers\HealthNetworker_Receiver.cs" />
+    <Compile Include="Networkers\HealthNetworker_Sender.cs" />
     <Compile Include="Networkers\LockingRadarNetworker_Reciever.cs" />
     <Compile Include="Networkers\LockingRadarNetworker_Sender.cs" />
-    <Compile Include="Networkers\TurretNetworker_Reciever.cs" />
+    <Compile Include="Networkers\NetworkSenderThread.cs" />
+    <Compile Include="Networkers\ShipNetworker_Receiver.cs" />
+    <Compile Include="Networkers\ShipNetworker_Sender.cs" />
+    <Compile Include="Networkers\TurretNetworker_Receiver.cs" />
     <Compile Include="Networkers\TurretNetworker_Sender.cs" />
     <Compile Include="Networkers\UIDNetworker_Reciever.cs" />
     <Compile Include="Networkers\UIDNetworker_Sender.cs" />

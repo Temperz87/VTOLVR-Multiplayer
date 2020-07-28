@@ -12,7 +12,6 @@ class ActorNetworker_Sender : MonoBehaviour
 {
     public ulong networkUID;
     public Actor actor;
-    private Message_ActorSync lastMessage;
     public static Dictionary<ulong, string> allActors = new Dictionary<ulong, string>();
     private void Awake()
     {
@@ -29,7 +28,7 @@ class ActorNetworker_Sender : MonoBehaviour
             return;
         }
         string serializedDic = JsonConvert.SerializeObject(allActors, Formatting.Indented);
-        Networker.SendP2P(uID, new Message_ActorSync(serializedDic), EP2PSend.k_EP2PSendReliable);
+        NetworkSenderThread.Instance.SendPacketToSpecificPlayer(uID, new Message_ActorSync(serializedDic), EP2PSend.k_EP2PSendReliable);
     }
 }
 

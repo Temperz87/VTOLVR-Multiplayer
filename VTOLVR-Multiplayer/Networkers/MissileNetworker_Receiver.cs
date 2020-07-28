@@ -28,7 +28,7 @@ public class MissileNetworker_Receiver : MonoBehaviour
     {
         if (!thisMissile.gameObject.activeSelf)
         {
-            Debug.LogError(thisMissile.gameObject.name + " isn't active in hiearchy, changing that to active.");
+            Debug.LogError(thisMissile.gameObject.name + " isn't active in hiearchy, changing it to active.");
             thisMissile.gameObject.SetActive(true);
         }
         if (traverse == null)
@@ -42,36 +42,50 @@ public class MissileNetworker_Receiver : MonoBehaviour
         }
         if (!thisMissile.fired)
         {
-            Debug.Log("Missile fired on one end but not another, firing here.");
+            Debug.Log(thisMissile.gameObject.name + " missile fired on one end but not another, firing here.");
+            if (thisML == null)
+            {
+                Debug.LogError($"Missile launcher is null on missile {thisMissile.actor.name}.");
+            }
             if (lastMessage.guidanceMode == Missile.GuidanceModes.Radar)
             {
-                Debug.Log("Guidance mode radar");
-                RadarLockData lockData = new RadarLockData();
+                // thisMissile.debugMissile = true;
+                Debug.Log("Guidance mode radar, firing it as a radar missile.");
+                HPEquipMissileLauncher radarLauncher = thisML.gameObject.GetComponent<HPEquipMissileLauncher>();
+                radarLauncher.OnStartFire();
+                /*RadarLockData lockData = new RadarLockData();
                 // lockData.locked = true;
                 // lockData.lockingRadar = GetComponentInChildren<LockingRadar>();     //Unsure if these are on a child or not
-                //lockData.radarSymbol = GetComponentInChildren<Radar>().radarSymbol; //I'm just guessing they are*/
+                //lockData.radarSymbol = GetComponentInChildren<Radar>().radarSymbol; //I'm just guessing they are
                 LockingRadar radar = thisMissile.lockingRadar;
 
-                foreach (Actor actor in TargetManager.instance.allActors)
+                RadarMissileLauncher radarML = thisML as RadarMissileLauncher;
+                foreach (var AI in AIManager.AIVehicles)
                 {
-                    if (actor.name == lastMessage.radarLock)
+                    if (AI.vehicleUID == lastMessage.radarLock)
                     {
-                        Debug.Log("Missile found its lock on actor " + actor.name + " while trying to lock " + lastMessage.radarLock);
-                        radar.ForceLock(actor, out lockData);
+                        Debug.Log("Missile found its lock on actor " + AI.actor.name + " with an uid of " + AI.vehicleUID + " while trying to lock " + lastMessage.networkUID);
+                        radarML.lockingRadar.ForceLock(AI.actor, out lockData);
+                        // radar.ForceLock(AI.actor, out lockData);
+                        break;
                     }
                 }
+                Debug.Log($"Lock data for missileLaucher of missile {thisMissile.name}, Locked: {lockData.locked}, Actor: {lockData.actor}.");*/
             }
-            if (lastMessage.guidanceMode == Missile.GuidanceModes.Optical)
+            else
             {
-                foreach (var collider in thisMissile.gameObject.GetComponentsInChildren<Collider>())
+                if (lastMessage.guidanceMode == Missile.GuidanceModes.Optical)
                 {
-                    Debug.Log("Guidance mode Optical.");
-                    collider.gameObject.layer = 9;
+                    foreach (var collider in thisMissile.gameObject.GetComponentsInChildren<Collider>())
+                    {
+                        Debug.Log("Guidance mode Optical.");
+                        // collider.gameObject.layer = 9;
+                    }
                 }
+                Debug.Log("Try fire missile clientside");
+                traverse.Field("missileIdx").SetValue(idx);
+                thisML.FireMissile();
             }
-            Debug.Log("Try fire missile clientside");
-            traverse.Field("missileIdx").SetValue(idx);
-            thisML.FireMissile();
         }
 
         if (lastMessage.hasExploded)
@@ -85,7 +99,7 @@ public class MissileNetworker_Receiver : MonoBehaviour
         gameObject.transform.rotation = Quaternion.Euler(lastMessage.rotation.toVector3);
         if (Vector3.Distance(gameObject.transform.position, VTMapManager.GlobalToWorldPoint(lastMessage.position)) > positionThreshold)
         {
-            Debug.LogWarning($"Missile ({gameObject.name}) is outside the threshold. Teleporting to position.");
+            // Debug.LogWarning($"Missile ({gameObject.name}) is outside the threshold. Teleporting to position.");
             gameObject.transform.position = VTMapManager.GlobalToWorldPoint(lastMessage.position);
         }
     }

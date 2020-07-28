@@ -35,6 +35,13 @@ public enum MessageType
     ActorSync, // This updates actors
     WorldData, // This is timescale sync data
     ExtLight, //this is when a player changes their external lights
+    ShipUpdate, //this is when a player changes their external lights
     RadarUpdate, //this is when the radar is turned on or off, or the fov is changed, make a messsage called LockingRadarUpdate in the future to deal with locks
-    TurretUpdate //This is turret aiming data
+    LockingRadarUpdate, //See above nerd
+    TurretUpdate, //This is turret aiming data
+    JettisonUpdate, // Used when weapons are jettisoned
+    ServerHeartbeat,
+    ServerHeartbeat_Response,
+    ServerReportingPingTime,
+    LoadingTextRequest //Clients request for loading text
 }

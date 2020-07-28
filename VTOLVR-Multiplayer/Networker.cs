@@ -24,10 +24,17 @@ static class MapAndScenarioVersionChecker
     static public byte[] mapHash;
     static public byte[] scenarioHash;
     static public byte[] campaignHash;
+    static public byte[] modloaderHash;
+    static public byte[] modHash;
+    static public Dictionary<string, string> modsLoadedHashes = new Dictionary<string, string>();
+
 
     // Make hashes of the map, scenario and campaign IDs so the server can check that we're loading the right mission
-    public static void CreateHashes() {
-        if (PilotSaveManager.currentCampaign.isBuiltIn) {
+    public static void CreateHashes()
+    {
+        Debug.Log("Creating Hashes");
+        if (PilotSaveManager.currentCampaign.isBuiltIn)
+        {
             // Only need to get the scenario ID in this case
             builtInCampaign = true;
             // Don't send null arrays over network
@@ -35,24 +42,71 @@ static class MapAndScenarioVersionChecker
             scenarioHash = new byte[0];
             campaignHash = new byte[0];
         }
-        else {
+        else
+        {
             filePath = VTResources.GetMapFilePath(PilotSaveManager.currentScenario.customScenarioInfo.mapID);
-            using (FileStream mapFile = File.OpenRead(filePath)) {
+            using (FileStream mapFile = File.OpenRead(filePath))
+            {
                 mapHash = hashCalculator.ComputeHash(mapFile);
             }
 
             filePath = PilotSaveManager.currentScenario.customScenarioInfo.filePath;
-            using (FileStream scenarioFile = File.OpenRead(filePath)) {
+            using (FileStream scenarioFile = File.OpenRead(filePath))
+            {
                 scenarioHash = hashCalculator.ComputeHash(scenarioFile);
             }
 
             filePath = VTResources.GetCustomCampaigns().Find(id => id.campaignID == PilotSaveManager.currentCampaign.campaignID).filePath;
-            using (FileStream campaignFile = File.OpenRead(filePath)) {
+            using (FileStream campaignFile = File.OpenRead(filePath))
+            {
                 campaignHash = hashCalculator.ComputeHash(campaignFile);
             }
         }
-
+        Debug.Log($"Campaign File Path: {filePath}");
+        Debug.Log($"Campaign Hash: {campaignHash}");
         scenarioId = PilotSaveManager.currentScenario.scenarioID;
+
+        Debug.Log("Getting Modloader hash");
+        filePath = "VTOLVR_ModLoader\\ModLoader.dll";
+        using (FileStream modloaderDLL = File.OpenRead(filePath))
+        {
+            modloaderHash = hashCalculator.ComputeHash(modloaderDLL);
+        }
+        Debug.Log($"Modloader hash is: {modloaderHash}");
+        Debug.Log("Getting loaded mods");
+        List<Mod> mods = new List<Mod>();
+        try
+        {
+            mods = VTOLAPI.GetUsersMods();
+        }
+        catch (Exception)
+        {
+            Debug.Log("Exception caught while getting user's mods. Perhaps they aren't on the correct mod loader version?");
+        }
+
+        foreach (Mod mod in mods)
+        {
+            if (mod.isLoaded)
+            {
+                Debug.Log($"Mod found: {mod.name}");
+
+                if (File.Exists(mod.dllPath))
+                {
+                    using (FileStream modDLL = File.OpenRead(mod.dllPath))
+                    {
+                        modHash = hashCalculator.ComputeHash(modDLL);
+                    }
+                    if (!modsLoadedHashes.ContainsKey(BitConverter.ToString(modHash).Replace("-", "").ToLowerInvariant().Substring(0, 20)))
+                        modsLoadedHashes.Add(BitConverter.ToString(modHash).Replace("-", "").ToLowerInvariant().Substring(0, 20), Path.GetFileName(mod.dllPath));
+                    Debug.Log($"Added {mod.dllPath} to dictionary with key {BitConverter.ToString(modHash).Replace("-", "").ToLowerInvariant().Substring(0, 20)}");
+                }
+                else
+                {
+                    Debug.LogError($"Mod DLL Path Doesn't Exist: {mod.dllPath}");
+                }
+            }
+        }
+        Debug.Log("Done Creating Hashes");
     }
 }
 
@@ -61,19 +115,72 @@ public class Networker : MonoBehaviour
     private Campaign pilotSaveManagerControllerCampaign;
     private CampaignScenario pilotSaveManagerControllerCampaignScenario;
     public static Networker _instance { get; private set; }
-    public static bool isHost { get; private set; }
+    private static readonly object isHostLock = new object();
+    private static bool isHostInternal = false;
+    public static bool isHost
+    {
+        get
+        {
+            lock (isHostLock)
+            {
+                return isHostInternal;
+            }
+        }
+        private set
+        {
+            lock (isHostLock)
+            {
+                isHostInternal = value;
+            }
+        }
+    }
+    private static readonly object timeoutCounterLock = new object();
+    private static int timeoutCounterInternal = 0;
+    private static int TimeoutCounter
+    {
+        get { lock (timeoutCounterLock) { return timeoutCounterInternal; } }
+        set { lock (timeoutCounterLock) { timeoutCounterInternal = value; } }
+    }
+    private static readonly int clientTimeoutInSeconds = 5;
+    private static readonly object disconnectForClientTimeoutLock = new object();
+    private static bool disconnectForClientTimeoutInternal = false;
+    private static bool disconnectForClientTimeout
+    {
+        get { lock (disconnectForClientTimeoutLock) { return disconnectForClientTimeoutInternal; } }
+        set { lock (disconnectForClientTimeoutLock) { disconnectForClientTimeoutInternal = value; } }
+    }
+    public static bool isClient { get; private set; }
     public enum GameState { Menu, Config, Game };
     public static GameState gameState { get; private set; }
     public static List<CSteamID> players { get; private set; } = new List<CSteamID>();
     public static Dictionary<CSteamID, bool> readyDic { get; private set; } = new Dictionary<CSteamID, bool>();
+
+    // Pretty lazy way of doing this, maybe we should use a struct instead? But eh it should work a bit better for now.
+    // playerStatusDic int definitions
+    // 0 = Not Ready
+    // 1 = Ready
+    // 2 = Loading
+    // 3 = In Game
+    // 4 = Disconnected
+    public static Dictionary<CSteamID, int> playerStatusDic { get; private set; } = new Dictionary<CSteamID, int>();
+
     public static bool allPlayersReadyHasBeenSentFirstTime;
     public static bool readySent;
     public static bool hostReady, alreadyInGame, hostLoaded;
+
+    public bool playingMP { get; private set; }
+
     public static CSteamID hostID { get; private set; }
     private Callback<P2PSessionRequest_t> _p2PSessionRequestCallback;
     //networkUID is used as an identifer for all network object, we are just adding onto this to get a new one
     private static ulong networkUID = 0;
     public static TextMeshPro loadingText;
+
+    public static Multiplayer multiplayerInstance = null;
+
+    public static bool HeartbeatTimerRunning = false;
+    public static readonly System.Timers.Timer HeartbeatTimer = new System.Timers.Timer(1000);
+
     #region Message Type Callbacks
     //These callbacks are use for other scripts to know when a network message has been
     //received for them. They should match the name of the message class they relate to.
@@ -92,12 +199,14 @@ public class Networker : MonoBehaviour
     public static event UnityAction<Packet> Death;
     public static event UnityAction<Packet> WingFold;
     public static event UnityAction<Packet> ExtLight;
+    public static event UnityAction<Packet> ShipUpdate;
     public static event UnityAction<Packet> RadarUpdate;
     public static event UnityAction<Packet> TurretUpdate;
     public static event UnityAction<Packet> MissileUpdate;
     public static event UnityAction<Packet> WorldDataUpdate;
     public static event UnityAction<Packet> RequestNetworkUID;
-    public static event UnityAction<Packet> ActorSync;
+    public static event UnityAction<Packet> LockingRadarUpdate;
+    public static event UnityAction<Packet> JettisonUpdate;
     #endregion
     #region Host Forwarding Suppress By Message Type List
     private List<MessageType> hostMessageForwardingSuppressList = new List<MessageType> {
@@ -131,6 +240,8 @@ public class Networker : MonoBehaviour
         //VTCustomMapManager.OnLoadedMap += (customMap) => { StartCoroutine(PlayerManager.MapLoaded(customMap)); };
 
         VTOLAPI.SceneLoaded += SceneChanged;
+        HeartbeatTimer.Elapsed += HeartbeatCallback;
+        HeartbeatTimer.AutoReset = true;
     }
     private void OnP2PSessionRequest(P2PSessionRequest_t request)
     {
@@ -142,27 +253,92 @@ public class Networker : MonoBehaviour
 
     private void Update()
     {
-        if (PilotSaveManager.currentScenario != null) {
-            if (pilotSaveManagerControllerCampaign != PilotSaveManager.currentCampaign) {
+        if (PilotSaveManager.currentScenario != null)
+        {
+            if (pilotSaveManagerControllerCampaign != PilotSaveManager.currentCampaign)
+            {
                 pilotSaveManagerControllerCampaign = PilotSaveManager.currentCampaign;
             }
-            if (pilotSaveManagerControllerCampaignScenario != PilotSaveManager.currentScenario) {
+            if (pilotSaveManagerControllerCampaignScenario != PilotSaveManager.currentScenario)
+            {
                 pilotSaveManagerControllerCampaignScenario = PilotSaveManager.currentScenario;
             }
         }
         ReadP2P();
     }
 
-    public static void HostGame()
+    private void LateUpdate()
+    {
+        if (disconnectForClientTimeout)
+        {
+            disconnectForClientTimeout = false;
+
+            Debug.Log("Connection to host timed out");
+
+            // Make sure time is moving normally so exit scene transition will work
+            WorldDataNetworker_Receiver timeController = PlayerManager.worldData.GetComponent<WorldDataNetworker_Receiver>();
+            timeController.ClientNeedsNormalTimeFlowBecauseHostDisconnected();
+            FlightSceneManager flightSceneManager = FindObjectOfType<FlightSceneManager>();
+            if (flightSceneManager == null)
+                Debug.LogError("FlightSceneManager was null when host timed out");
+            flightSceneManager.ExitScene();
+
+            Disconnect(false);
+        }
+    }
+
+    public static void HeartbeatCallback(object sender, System.Timers.ElapsedEventArgs e)
+    {
+        if (isHost)
+        {
+            // Host, send heartbeat
+            NetworkSenderThread.Instance.SendPacketAsHostToAllClients(new Message_Heartbeat(), EP2PSend.k_EP2PSendUnreliableNoDelay);
+        }
+        else
+        {
+            // Client, increment timeout counter
+            if (++TimeoutCounter > clientTimeoutInSeconds)
+            {
+                // Disconnected from host
+                disconnectForClientTimeout = true;
+                HeartbeatTimerRunning = false;
+                HeartbeatTimer.Stop();
+            }
+        }
+    }
+
+    public void HostGame()
     {
         if (gameState != GameState.Menu)
         {
             Debug.LogError("Can't host game as already in one");
             return;
         }
+        Debug.Log("Hosting game");
         isHost = true;
+
+        TimeoutCounter = 0;
+        HeartbeatTimerRunning = true;
+        HeartbeatTimer.Start();
+        playerStatusDic.Add(hostID, 0);
         _instance.StartCoroutine(_instance.FlyButton());
     }
+
+    public static void SetHostReady(bool everyoneReady)
+    {
+        if (everyoneReady)
+        {
+            playerStatusDic[hostID] = 2;
+        }
+        else
+        {
+            playerStatusDic[hostID] = 1;
+        }
+
+        hostReady = true;
+        UpdateLoadingText();
+    }
+
     public static void JoinGame(CSteamID steamID)
     {
         if (gameState != GameState.Menu)
@@ -171,112 +347,24 @@ public class Networker : MonoBehaviour
             return;
         }
         isHost = false;
+        isClient = true;
 
         MapAndScenarioVersionChecker.CreateHashes();
 
-        SendP2P(steamID,
+        Debug.Log("Attempting to join game");
+
+        NetworkSenderThread.Instance.SendPacketToSpecificPlayer(steamID,
             new Message_JoinRequest(PilotSaveManager.currentVehicle.name,
                                     MapAndScenarioVersionChecker.builtInCampaign,
                                     MapAndScenarioVersionChecker.scenarioId,
                                     MapAndScenarioVersionChecker.mapHash,
                                     MapAndScenarioVersionChecker.scenarioHash,
-                                    MapAndScenarioVersionChecker.campaignHash),
+                                    MapAndScenarioVersionChecker.campaignHash,
+                                    MapAndScenarioVersionChecker.modsLoadedHashes,
+                                    MapAndScenarioVersionChecker.modloaderHash),
             EP2PSend.k_EP2PSendReliable);
     }
-    public static void SendExcludeP2P(CSteamID excludeID, Message message, EP2PSend sendType)
-    {
-        for (int i = 0; i < players.Count; i++)
-        {
-            if (players[i] != excludeID)
-                SendP2P(players[i], message, sendType);
-        }
-    }
-    /// <summary>
-    /// Sends a P2P message to all the other players, only works if host.
-    /// </summary>
-    /// <param name="message">The Message which is being set</param>
-    /// <param name="sendType">Specifies how you want the data to be transmitted, such as reliably, unreliable, buffered, etc.</param>
-    public static void SendGlobalP2P(Message message, EP2PSend sendType)
-    {
-        if (!isHost)
-        {
-            Debug.LogError("Can't send global P2P as user isn't host");
-            return;
-        }
-        if (Multiplayer.SoloTesting)
-        {
-            SendP2P(new CSteamID(), message, sendType);
-            return;
-        }
-        for (int i = 0; i < players.Count; i++)
-        {
-            SendP2P(players[i], message, sendType);
-        }
-    }
-    public static void SendGlobalP2P(Packet packet)
-    {
-        if (!isHost)
-        {
-            Debug.LogError("Can't send global P2P as user isn't host");
-            return;
-        }
-        if (Multiplayer.SoloTesting)
-        {
-            SendP2P(new CSteamID(), packet);
-            return;
-        }
-        for (int i = 0; i < players.Count; i++)
-        {
-            SendP2P(players[i], packet);
-        }
-    }
-    /// <summary>
-    /// Sends a P2P Message to another user.
-    /// </summary>
-    /// <param name="remoteID">The target user to send the packet to.</param>
-    /// <param name="message">The message to be send to that user.</param>
-    /// <param name="sendType">Specifies how you want the data to be transmitted, such as reliably, unreliable, buffered, etc.</param>
-    public static void SendP2P(CSteamID remoteID, Message message, EP2PSend sendType)
-    {
-        PacketSingle packet = new PacketSingle(message, sendType);
-        SendP2P(remoteID, packet);
-    }
-    /// <summary>
-    /// Sends multiple messages to another user. [Currently Doesn't work]
-    /// </summary>
-    /// <param name="remoteID">The target user to send the packet to.</param>
-    /// <param name="messages">The messages to be send to that user.</param>
-    /// <param name="sendType">Specifies how you want the data to be transmitted, such as reliably, unreliable, buffered, etc.</param>
-    [Obsolete]
-    public static void SendP2P(CSteamID remoteID, Message[] messages, EP2PSend sendType)
-    {
-        PacketMultiple packet = new PacketMultiple(messages, sendType);
-        SendP2P(remoteID, packet);
-    }
-    private static void SendP2P(CSteamID remoteID, Packet packet)
-    {
-        BinaryFormatter binaryFormatter = new BinaryFormatter();
-        MemoryStream memoryStream = new MemoryStream();
-        binaryFormatter.Serialize(memoryStream, packet);
-        if (memoryStream.ToArray().Length > 1200 && (packet.sendType == EP2PSend.k_EP2PSendUnreliable || packet.sendType == EP2PSend.k_EP2PSendUnreliableNoDelay))
-        {
-            Debug.LogError("MORE THAN 1200 Bytes for message");
-        }
-        if (Multiplayer.SoloTesting)
-        {
-            //This skips sending the network message and gets sent right to ReadP2PPacket so that we can test solo with a fake player.
-            _instance.ReadP2PPacket(memoryStream.ToArray(), 0, 0, new CSteamID(1));
-            return;
-        }
-        if (SteamNetworking.SendP2PPacket(remoteID, memoryStream.ToArray(), (uint)memoryStream.Length, packet.sendType))
-        {
-            
-        }
-        else
-        {
-            Debug.Log($"Failed to send P2P to {remoteID.m_SteamID}");
-        }
-    }
+
     private void ReadP2P()
     {
         uint num;
@@ -292,8 +380,10 @@ public class Networker : MonoBehaviour
         }
     }
 
-    private bool MessageTypeShouldBeForwarded(MessageType messageType) {
-        if (hostMessageForwardingSuppressList.Contains(messageType)) {
+    private bool MessageTypeShouldBeForwarded(MessageType messageType)
+    {
+        if (hostMessageForwardingSuppressList.Contains(messageType))
+        {
             return (false);
         }
         return (true);
@@ -346,7 +436,7 @@ public class Networker : MonoBehaviour
                     {
                         Debug.LogError("players count to string somehow null");
                     } // Fuck you again unity
-                    SendP2P(csteamID,
+                    NetworkSenderThread.Instance.SendPacketToSpecificPlayer(csteamID,
                         new Message_LobbyInfoRequest_Result(SteamFriends.GetPersonaName(),
                                                                 PilotSaveManager.currentVehicle.vehicleName,
                                                                 PilotSaveManager.currentScenario.scenarioName,
@@ -411,9 +501,12 @@ public class Networker : MonoBehaviour
                     break;
                 case MessageType.JoinRequestAccepted_Result:
                     Debug.Log($"case join request accepted result, joining {csteamID.m_SteamID}");
-
                     hostID = csteamID;
+                    TimeoutCounter = 0;
+                    HeartbeatTimerRunning = true;
+                    HeartbeatTimer.Start();
                     StartCoroutine(FlyButton());
+                    UpdateLoadingText();
                     break;
                 case MessageType.JoinRequestRejected_Result:
                     Debug.Log("case join request rejected result");
@@ -421,43 +514,56 @@ public class Networker : MonoBehaviour
                     Debug.LogWarning($"We can't join {csteamID.m_SteamID} reason = \n{joinResultRejected.reason}");
                     break;
                 case MessageType.Ready:
-                    if (!isHost) {
+                    if (!isHost)
+                    {
                         Debug.Log("We shouldn't have gotten a ready message");
                         break;
                     }
                     Debug.Log("case ready");
                     Message_Ready readyMessage = packetS.message as Message_Ready;
-                    
+
+
+
                     //The client has said they are ready to start, so we change it in the dictionary
-                    if (readyDic.ContainsKey(csteamID))
+
+                    if (readyDic.ContainsKey(csteamID) && playerStatusDic.ContainsKey(csteamID))
                     {
-                        if (readyDic[csteamID]) {
+                        if (readyDic[csteamID])
+                        {
                             Debug.Log("Received ready message from the same user twice");
                             break;
                         }
 
                         Debug.Log($"{csteamID.m_SteamID} has said they are ready!\nHost ready state {hostReady}");
                         readyDic[csteamID] = true;
+                        playerStatusDic[csteamID] = 1;
                         if (alreadyInGame)
                         {
                             //Someone is trying to join when we are already in game.
                             Debug.Log($"We are already in session, {csteamID} is joining in!");
-                            SendP2P(csteamID, new Message(MessageType.AllPlayersReady), EP2PSend.k_EP2PSendReliable);
+                            NetworkSenderThread.Instance.SendPacketToSpecificPlayer(csteamID, new Message(MessageType.AllPlayersReady), EP2PSend.k_EP2PSendReliable);
 
                             // Send host loaded message right away
-                            SendP2P(csteamID, new Message_HostLoaded(true), EP2PSend.k_EP2PSendReliable);
+                            NetworkSenderThread.Instance.SendPacketToSpecificPlayer(csteamID, new Message_HostLoaded(true), EP2PSend.k_EP2PSendReliable);
                             break;
                         }
                         else if (hostReady && EveryoneElseReady())
                         {
                             Debug.Log("The last client has said they are ready, starting");
-                            if (!allPlayersReadyHasBeenSentFirstTime) {
+                            if (!allPlayersReadyHasBeenSentFirstTime)
+                            {
                                 allPlayersReadyHasBeenSentFirstTime = true;
-                                SendGlobalP2P(new Message(MessageType.AllPlayersReady), EP2PSend.k_EP2PSendReliable);
+                                playerStatusDic[hostID] = 2;
+                                UpdateLoadingText();
+
+                                NetworkSenderThread.Instance.SendPacketAsHostToAllClients(new Message(MessageType.AllPlayersReady), EP2PSend.k_EP2PSendReliable);
                             }
-                            else {
+                            else
+                            {
                                 // Send only to this player
-                                SendP2P(csteamID, new Message(MessageType.AllPlayersReady), EP2PSend.k_EP2PSendReliable);
+                                NetworkSenderThread.Instance.SendPacketToSpecificPlayer(csteamID, new Message(MessageType.AllPlayersReady), EP2PSend.k_EP2PSendReliable);
+                                playerStatusDic[hostID] = 2;
+                                UpdateLoadingText();
                             }
                             LoadingSceneController.instance.PlayerReady();
                         }
@@ -466,6 +572,8 @@ public class Networker : MonoBehaviour
                     break;
                 case MessageType.AllPlayersReady:
                     Debug.Log("The host said everyone is ready, waiting for the host to load.");
+                    playerStatusDic[hostID] = 2;
+                    UpdateLoadingText();
                     hostReady = true;
                     // LoadingSceneController.instance.PlayerReady();
                     break;
@@ -473,6 +581,7 @@ public class Networker : MonoBehaviour
                     Debug.Log($"case request spawn from: {csteamID.m_SteamID}, we are {SteamUser.GetSteamID().m_SteamID}, host is {hostID}");
                     if (RequestSpawn != null)
                     { RequestSpawn.Invoke(packet, csteamID); }
+
                     break;
                 case MessageType.RequestSpawn_Result:
                     Debug.Log("case request spawn result");
@@ -512,21 +621,34 @@ public class Networker : MonoBehaviour
                     Debug.Log("case disconnecting");
                     if (isHost)
                     {
+                        Debug.Log("Client disconnected");
                         if (Multiplayer.SoloTesting)
                             break;
+
+                        playerStatusDic[csteamID] = 4;
                         players.Remove(csteamID);
-                        SendGlobalP2P(packet);
+                        NetworkSenderThread.Instance.RemovePlayer(csteamID);
+                        NetworkSenderThread.Instance.SendPacketAsHostToAllClients(packet, packet.sendType);
                     }
                     else
                     {
                         Message_Disconnecting messsage = ((PacketSingle)packet).message as Message_Disconnecting;
+                        playerStatusDic[csteamID] = 4;
                         if (messsage.isHost)
                         {
+                            Debug.Log("Host disconnected");
                             //If it is the host quiting we just need to quit the mission as all networking will be lost.
+                            // Make sure time is moving normally so exit scene transition will work
+                            WorldDataNetworker_Receiver timeController = PlayerManager.worldData.GetComponent<WorldDataNetworker_Receiver>();
+                            timeController.ClientNeedsNormalTimeFlowBecauseHostDisconnected();
                             FlightSceneManager flightSceneManager = FindObjectOfType<FlightSceneManager>();
                             if (flightSceneManager == null)
                                 Debug.LogError("FlightSceneManager was null when host quit");
                             flightSceneManager.ExitScene();
+                        }
+                        else
+                        {
+                            Debug.Log("Other client disconnected");
                         }
                         break;
                     }
@@ -544,7 +666,7 @@ public class Networker : MonoBehaviour
                         WeaponSet_Result.Invoke(packet);
                     if (isHost)
                     {
-                        SendGlobalP2P(packet);
+                        NetworkSenderThread.Instance.SendPacketAsHostToAllClients(packet, packet.sendType);
                     }
                     break;
                 case MessageType.WeaponFiring:
@@ -577,10 +699,20 @@ public class Networker : MonoBehaviour
                     if (ExtLight != null)
                         ExtLight.Invoke(packet);
                     break;
+                case MessageType.ShipUpdate:
+                    //Debug.Log("case ship update");
+                    if (ShipUpdate != null)
+                        ShipUpdate.Invoke(packet);
+                    break;
                 case MessageType.RadarUpdate:
                     Debug.Log("case radar update");
                     if (RadarUpdate != null)
                         RadarUpdate.Invoke(packet);
+                    break;
+                case MessageType.LockingRadarUpdate:
+                    Debug.Log("case locking radar update");
+                    if (LockingRadarUpdate != null)
+                        LockingRadarUpdate.Invoke(packet);
                     break;
                 case MessageType.TurretUpdate:
                     //Debug.Log("turret update update");
@@ -588,7 +720,7 @@ public class Networker : MonoBehaviour
                         TurretUpdate.Invoke(packet);
                     break;
                 case MessageType.MissileUpdate:
-                    Debug.Log("case missile update");
+                    // Debug.Log("case missile update");
                     if (MissileUpdate != null)
                         MissileUpdate.Invoke(packet);
                     break;
@@ -609,10 +741,12 @@ public class Networker : MonoBehaviour
                         if (isHost)
                         {
                             Debug.Log("we shouldn't have gotten a host loaded....");
+                            playerStatusDic[hostID] = 3;
                         }
                         else
                         {
                             hostLoaded = true;
+                            playerStatusDic[hostID] = 3;
                             LoadingSceneController.instance.PlayerReady();
                         }
                     }
@@ -630,19 +764,62 @@ public class Networker : MonoBehaviour
                     }
                     ActorNetworker_Reciever.syncActors(packet);
                     break;
+                case MessageType.ServerHeartbeat:
+                    if (!isHost)
+                    {
+                        Message_Heartbeat heartbeatMessage = ((PacketSingle)packet).message as Message_Heartbeat;
+
+                        TimeoutCounter = 0;
+                        NetworkSenderThread.Instance.SendPacketToSpecificPlayer(hostID, new Message_Heartbeat_Result(heartbeatMessage.TimeOnServerGame), EP2PSend.k_EP2PSendUnreliableNoDelay);
+                    }
+                    break;
+                case MessageType.ServerHeartbeat_Response:
+                    if (isHost)
+                    {
+                        Message_Heartbeat_Result heartbeatResult = ((PacketSingle)packet).message as Message_Heartbeat_Result;
+
+                        float pingTime = Time.fixedTime - heartbeatResult.TimeOnServerGame;
+                        NetworkSenderThread.Instance.SendPacketToSpecificPlayer(csteamID, new Message_ReportPingTime(pingTime), EP2PSend.k_EP2PSendUnreliableNoDelay);
+                    }
+                    break;
+                case MessageType.ServerReportingPingTime:
+                    if (!isHost)
+                    {
+                        // You can use ping report however you want
+                        Message_ReportPingTime pingTimeMessage = packetS.message as Message_ReportPingTime;
+                        Debug.Log($"Current ping is: {pingTimeMessage.PingTime}");
+                    }
+                    break;
+                case MessageType.LoadingTextRequest:
+                    Debug.Log("case LoadingTextRequest");
+                    if (isHost)
+                    {
+                        UpdateLoadingText();
+                    }
+                    else
+                    {
+                        Debug.Log("Received loading text request and we're not the host.");
+                    }
+                    break;
+                case MessageType.JettisonUpdate:
+                    Debug.Log("case jettison update");
+                    if (JettisonUpdate != null)
+                        JettisonUpdate.Invoke(packet);
+                    break;
                 default:
                     Debug.Log("default case");
                     break;
             }
             if (isHost)
             {
-                if (MessageTypeShouldBeForwarded(packetS.message.type)) {
-                    SendExcludeP2P((CSteamID)packetS.networkUID, packetS.message, EP2PSend.k_EP2PSendUnreliableNoDelay);
+                if (MessageTypeShouldBeForwarded(packetS.message.type))
+                {
+                    NetworkSenderThread.Instance.SendPacketAsHostToAllButOneSpecificClient((CSteamID)packetS.networkUID, packetS.message, EP2PSend.k_EP2PSendUnreliableNoDelay);
                 }
             }
         }
     }
-    
+
 
     private IEnumerator FlyButton()
     {
@@ -654,7 +831,7 @@ public class Networker : MonoBehaviour
             Debug.LogError("A null scenario was used on flight button!");
             yield break;
         }
-        
+
         ControllerEventHandler.PauseEvents();
         ScreenFader.FadeOut(Color.black, 0.85f);
         yield return new WaitForSeconds(1f);
@@ -676,7 +853,8 @@ public class Networker : MonoBehaviour
             };
             if (PilotSaveManager.currentScenario.forcedEquips != null)
             {
-                foreach (CampaignScenario.ForcedEquip forcedEquip in PilotSaveManager.currentScenario.forcedEquips) {
+                foreach (CampaignScenario.ForcedEquip forcedEquip in PilotSaveManager.currentScenario.forcedEquips)
+                {
                     loadout.hpLoadout[forcedEquip.hardpointIdx] = forcedEquip.weaponName;
                 }
             }
@@ -708,7 +886,7 @@ public class Networker : MonoBehaviour
     {
         ulong result = networkUID + 1;
         networkUID = result;
-        Debug.Log($"Generated New UID ({result})");
+        //Debug.Log($"Generated New UID ({result})");
         return result;
     }
     public static void ResetNetworkUID()
@@ -719,7 +897,7 @@ public class Networker : MonoBehaviour
     {
         if (!isHost)
         {
-            SendP2P(hostID, new Message_RequestNetworkUID(clientsID), EP2PSend.k_EP2PSendUnreliableNoDelay);
+            NetworkSenderThread.Instance.SendPacketToSpecificPlayer(hostID, new Message_RequestNetworkUID(clientsID), EP2PSend.k_EP2PSendUnreliableNoDelay);
             Debug.Log("Requetsed UID from host");
         }
         else
@@ -730,7 +908,7 @@ public class Networker : MonoBehaviour
     {
         if (scene == VTOLScenes.ReadyRoom && PlayerManager.gameLoaded)
         {
-            Disconnect();
+            Disconnect(false);
         }
     }
 
@@ -738,16 +916,42 @@ public class Networker : MonoBehaviour
     {
         if (!isHost)
             return;
-        StringBuilder content = new StringBuilder("Players:\n");
-        content.AppendLine("<b>"+SteamFriends.GetPersonaName() + "</b>" + ": " + (hostReady ? "<color=\"green\">Ready</color>" : "<color=\"red\">Not Ready</color>") + "\n");
+        StringBuilder content = new StringBuilder("<color=#FCB722><b><align=\"center\"><size=120%>Multiplayer Lobby</size></align></b></color>\n");
+
+        if (playerStatusDic[hostID] == 2)
+        {
+            content.AppendLine("<b>" + SteamFriends.GetPersonaName() + "</b>" + ": " + "<color=\"blue\">Loading</color>" + "\n");
+        }
+        else if (playerStatusDic[hostID] == 1)
+        {
+            content.AppendLine("<b>" + SteamFriends.GetPersonaName() + "</b>" + ": " + "<color=\"green\">Ready</color>" + "\n");
+        }
+        else
+        {
+            content.AppendLine("<b>" + SteamFriends.GetPersonaName() + "</b>" + ": " + "<color=\"red\">Not Ready</color>" + "\n");
+        }
+
+
         for (int i = 0; i < players.Count; i++)
         {
-            content.Append("<b>" + SteamFriends.GetFriendPersonaName(players[i]) + "</b>" + ": " + (readyDic[players[i]]? "<color=\"green\">Ready</color>" : "<color=\"red\">Not Ready</color>") + "\n");
+            //content.Append("<b>" + SteamFriends.GetFriendPersonaName(players[i]) + "</b>" + ": " + (readyDic[players[i]]? "<color=\"green\">Ready</color>" : "<color=\"red\">Not Ready</color>") + "\n");
+            if (playerStatusDic[players[i]] == 2)
+            {
+                content.AppendLine("<b>" + SteamFriends.GetFriendPersonaName(players[i]) + "</b>" + ": " + "<color=\"blue\">Loading</color>" + "\n");
+            }
+            else if (playerStatusDic[players[i]] == 1)
+            {
+                content.AppendLine("<b>" + SteamFriends.GetFriendPersonaName(players[i]) + "</b>" + ": " + "<color=\"green\">Ready</color>" + "\n");
+            }
+            else if (playerStatusDic[players[i]] == 0)
+            {
+                content.AppendLine("<b>" + SteamFriends.GetFriendPersonaName(players[i]) + "</b>" + ": " + "<color=\"red\">Not Ready</color>" + "\n");
+            }
         }
         if (loadingText != null)
             loadingText.text = content.ToString();
 
-        SendGlobalP2P(new Message_LoadingTextUpdate(content.ToString()), EP2PSend.k_EP2PSendReliable);
+        NetworkSenderThread.Instance.SendPacketAsHostToAllClients(new Message_LoadingTextUpdate(content.ToString()), EP2PSend.k_EP2PSendReliable);
     }
     public static void UpdateLoadingText(Packet packet) //Clients Only
     {
@@ -759,101 +963,183 @@ public class Networker : MonoBehaviour
         Debug.Log("Updated loading text to \n" + message.content);
     }
 
-    private static void HandleJoinRequest(CSteamID csteamID, PacketSingle packetS) {
+    private static void HandleJoinRequest(CSteamID csteamID, PacketSingle packetS)
+    {
         // Sanity checks
-        if (!isHost) {
+        if (!isHost)
+        {
             Debug.LogError($"Recived Join Request when we are not the host");
             string notHostStr = "Failed to Join Player, they are not hosting a lobby";
-            SendP2P(csteamID, new Message_JoinRequestRejected_Result(notHostStr), EP2PSend.k_EP2PSendReliable);
+            NetworkSenderThread.Instance.SendPacketToSpecificPlayer(csteamID, new Message_JoinRequestRejected_Result(notHostStr), EP2PSend.k_EP2PSendReliable);
             return;
         }
 
-        if (players.Contains(csteamID)) {
+        if (players.Contains(csteamID))
+        {
             Debug.LogError("The player seemed to send two join requests");
             return;
         }
 
         // Check version match
         Message_JoinRequest joinRequest = packetS.message as Message_JoinRequest;
-        if (joinRequest.vtolVrVersion != GameStartup.versionString) {
+        if (joinRequest.vtolVrVersion != GameStartup.versionString)
+        {
             string vtolMismatchVersion = "Failed to Join Player, mismatched vtol vr versions (please both update to latest version)";
             Debug.Log($"Player {csteamID} had the wrong VTOL VR version");
-            SendP2P(csteamID, new Message_JoinRequestRejected_Result(vtolMismatchVersion), EP2PSend.k_EP2PSendReliable);
+            NetworkSenderThread.Instance.SendPacketToSpecificPlayer(csteamID, new Message_JoinRequestRejected_Result(vtolMismatchVersion), EP2PSend.k_EP2PSendReliable);
             return;
         }
-        if (joinRequest.multiplayerBranch != ModVersionString.ReleaseBranch) {
+        if (joinRequest.multiplayerBranch != ModVersionString.ReleaseBranch)
+        {
             string branchMismatch = "Failed to Join Player, host branch is )" + ModVersionString.ReleaseBranch + ", client is " + joinRequest.multiplayerBranch;
             Debug.Log($"Player {csteamID} had the wrong Multiplayer.dll version");
-            SendP2P(csteamID, new Message_JoinRequestRejected_Result(branchMismatch), EP2PSend.k_EP2PSendReliable);
+            NetworkSenderThread.Instance.SendPacketToSpecificPlayer(csteamID, new Message_JoinRequestRejected_Result(branchMismatch), EP2PSend.k_EP2PSendReliable);
             return;
         }
-        if (joinRequest.multiplayerModVersion != ModVersionString.ModVersionNumber) {
+        if (joinRequest.multiplayerModVersion != ModVersionString.ModVersionNumber)
+        {
             string multiplayerVersionMismatch = "Failed to Join Player, host version is )" + ModVersionString.ModVersionNumber + ", client is " + joinRequest.multiplayerModVersion;
             Debug.Log($"Player {csteamID} had the wrong Multiplayer.dll version");
-            SendP2P(csteamID, new Message_JoinRequestRejected_Result(multiplayerVersionMismatch), EP2PSend.k_EP2PSendReliable);
+            NetworkSenderThread.Instance.SendPacketToSpecificPlayer(csteamID, new Message_JoinRequestRejected_Result(multiplayerVersionMismatch), EP2PSend.k_EP2PSendReliable);
             return;
         }
 
         // Check vehicle, campaign, scenario, map
-        if (joinRequest.currentVehicle == "FA-26B") {
+        if (joinRequest.currentVehicle == "FA-26B")
+        {
             joinRequest.currentVehicle = "F/A-26B";
         }
-        if (joinRequest.currentVehicle != PilotSaveManager.currentVehicle.vehicleName) {
+        if (joinRequest.currentVehicle != PilotSaveManager.currentVehicle.vehicleName)
+        {
             string wrongVehicle = "Failed to Join Player, host vehicle is )" + PilotSaveManager.currentVehicle.vehicleName + ", client is " + joinRequest.currentVehicle;
             Debug.Log($"Player {csteamID} attempted to join with {joinRequest.currentVehicle}, server is {PilotSaveManager.currentVehicle.vehicleName}");
-            SendP2P(csteamID, new Message_JoinRequestRejected_Result(wrongVehicle), EP2PSend.k_EP2PSendReliable);
+            NetworkSenderThread.Instance.SendPacketToSpecificPlayer(csteamID, new Message_JoinRequestRejected_Result(wrongVehicle), EP2PSend.k_EP2PSendReliable);
             return;
         }
 
-        MapAndScenarioVersionChecker.CreateHashes();
-
-        if (joinRequest.builtInCampaign != MapAndScenarioVersionChecker.builtInCampaign) {
+        if (joinRequest.builtInCampaign != MapAndScenarioVersionChecker.builtInCampaign)
+        {
             string wrongCampaignType = "Failed to Join Player, host campaign type is )" + MapAndScenarioVersionChecker.builtInCampaign.ToString();
             Debug.Log($"Player {csteamID} had the wrong campaign type");
-            SendP2P(csteamID, new Message_JoinRequestRejected_Result(wrongCampaignType), EP2PSend.k_EP2PSendReliable);
+            NetworkSenderThread.Instance.SendPacketToSpecificPlayer(csteamID, new Message_JoinRequestRejected_Result(wrongCampaignType), EP2PSend.k_EP2PSendReliable);
             return;
         }
 
-        if (joinRequest.builtInCampaign) {
-            if (joinRequest.scenarioId != MapAndScenarioVersionChecker.scenarioId) {
+        if (joinRequest.builtInCampaign)
+        {
+            if (joinRequest.scenarioId != MapAndScenarioVersionChecker.scenarioId)
+            {
                 string wrongScenarioId = "Failed to Join Player, host scenario is )" + MapAndScenarioVersionChecker.scenarioId + ", yours is " + joinRequest.scenarioId;
                 Debug.Log($"Player {csteamID} had the wrong scenario");
-                SendP2P(csteamID, new Message_JoinRequestRejected_Result(wrongScenarioId), EP2PSend.k_EP2PSendReliable);
+                NetworkSenderThread.Instance.SendPacketToSpecificPlayer(csteamID, new Message_JoinRequestRejected_Result(wrongScenarioId), EP2PSend.k_EP2PSendReliable);
                 return;
             }
         }
-        else {
+        else
+        {
             // Custom campaign
-            if (joinRequest.campaignHash != MapAndScenarioVersionChecker.campaignHash) {
+            if (joinRequest.campaignHash != MapAndScenarioVersionChecker.campaignHash)
+            {
                 string badCampaignHash = "Failed to Join Player, custom campaign mismatch";
                 Debug.Log($"Player {csteamID} had a mismatched campaign (wrong id or version)");
-                SendP2P(csteamID, new Message_JoinRequestRejected_Result(badCampaignHash), EP2PSend.k_EP2PSendReliable);
+                NetworkSenderThread.Instance.SendPacketToSpecificPlayer(csteamID, new Message_JoinRequestRejected_Result(badCampaignHash), EP2PSend.k_EP2PSendReliable);
                 return;
             }
-            if (joinRequest.scenarioHash != MapAndScenarioVersionChecker.scenarioHash) {
+            if (joinRequest.scenarioHash != MapAndScenarioVersionChecker.scenarioHash)
+            {
                 string badScenarioHash = "Failed to Join Player, custom scenario mismatch";
                 Debug.Log($"Player {csteamID} had a mismatched scenario (wrong id or version)");
-                SendP2P(csteamID, new Message_JoinRequestRejected_Result(badScenarioHash), EP2PSend.k_EP2PSendReliable);
+                NetworkSenderThread.Instance.SendPacketToSpecificPlayer(csteamID, new Message_JoinRequestRejected_Result(badScenarioHash), EP2PSend.k_EP2PSendReliable);
                 return;
             }
-            if (joinRequest.mapHash != MapAndScenarioVersionChecker.mapHash) {
+            if (joinRequest.mapHash != MapAndScenarioVersionChecker.mapHash)
+            {
                 string badMapHash = "Failed to Join Player, custom map mismatch";
                 Debug.Log($"Player {csteamID} had a mismatched map (wrong id or version)");
-                SendP2P(csteamID, new Message_JoinRequestRejected_Result(badMapHash), EP2PSend.k_EP2PSendReliable);
+                NetworkSenderThread.Instance.SendPacketToSpecificPlayer(csteamID, new Message_JoinRequestRejected_Result(badMapHash), EP2PSend.k_EP2PSendReliable);
                 return;
             }
         }
+        if (Multiplayer._instance.restrictToHostMods)
+        {
+            if (BitConverter.ToString(joinRequest.modloaderHash).Replace("-", "").ToLowerInvariant() != BitConverter.ToString(MapAndScenarioVersionChecker.modloaderHash).Replace("-", "").ToLowerInvariant())
+            {
+                string badModLoaderHash = "Failed to Join Player, modloader hash mismatch";
+                Debug.Log($"Player {csteamID} had a different modloader hash than host");
+                Debug.Log($"Player has {BitConverter.ToString(joinRequest.modloaderHash).Replace("-", "").ToLowerInvariant()}. Host Has {BitConverter.ToString(MapAndScenarioVersionChecker.modloaderHash).Replace("-", "").ToLowerInvariant()}.");
+                NetworkSenderThread.Instance.SendPacketToSpecificPlayer(csteamID, new Message_JoinRequestRejected_Result(badModLoaderHash), EP2PSend.k_EP2PSendReliable);
+                return;
+            }
+
+            // Looping through host's mods to see if the client is missing any
+
+            Debug.Log($"Client has {joinRequest.modsLoadedHashes.Count} mods loaded");
+            Debug.Log($"Server has {MapAndScenarioVersionChecker.modsLoadedHashes.Count} mods loaded");
+
+            foreach (KeyValuePair<string, string> mod in MapAndScenarioVersionChecker.modsLoadedHashes)
+            {
+                if (!joinRequest.modsLoadedHashes.ContainsKey(mod.Key))
+                {
+                    string missingHostMod = "Failed to Join Player, host requires forced mods. Missing mod: " + mod.Value;
+                    Debug.Log($"Player {csteamID} is missing mod: " + mod.Value);
+                    NetworkSenderThread.Instance.SendPacketToSpecificPlayer(csteamID, new Message_JoinRequestRejected_Result(missingHostMod), EP2PSend.k_EP2PSendReliable);
+                    return;
+                }
+                else
+                {
+                    Debug.Log($"Both host and client have {mod.Value}");
+                }
+            }
+
+            // Looping through client's mods to see if the host is missing any
+            foreach (KeyValuePair<string, string> mod in joinRequest.modsLoadedHashes)
+            {
+                if (!MapAndScenarioVersionChecker.modsLoadedHashes.ContainsKey(mod.Key))
+                {
+                    string missingClientMod = "Failed to Join Player, host requires forced mods. You have mod: " + mod.Value + " and the host doesn't have that loaded";
+                    Debug.Log($"Player {csteamID} has mod: " + mod.Value + " and you don't");
+                    NetworkSenderThread.Instance.SendPacketToSpecificPlayer(csteamID, new Message_JoinRequestRejected_Result(missingClientMod), EP2PSend.k_EP2PSendReliable);
+                    return;
+                }
+                else
+                {
+                    Debug.Log($"Both host and client have {mod.Value}");
+                }
+            }
+
+        }
+
 
         // Made it past all checks, we can join
         Debug.Log($"Accepting {csteamID.m_SteamID}, adding to players list");
         players.Add(csteamID);
         readyDic.Add(csteamID, false);
+        Debug.Log($"Adding {csteamID} to status dict, with status of 0");
+        playerStatusDic.Add(csteamID, 0);
+        Debug.Log("Done adding to status dict");
+        NetworkSenderThread.Instance.AddPlayer(csteamID);
+        NetworkSenderThread.Instance.SendPacketToSpecificPlayer(csteamID, new Message_JoinRequestAccepted_Result(), EP2PSend.k_EP2PSendReliable);
         UpdateLoadingText();
-        SendP2P(csteamID, new Message_JoinRequestAccepted_Result(), EP2PSend.k_EP2PSendReliable);
+    }
+
+    public static void SetMultiplayerInstance(Multiplayer instance)
+    {
+        multiplayerInstance = instance;
+    }
+
+    public static void OnMultiplayerDestroy()
+    {
+        multiplayerInstance = null;
     }
 
     public void OnApplicationQuit()
     {
+        if (HeartbeatTimerRunning)
+        {
+            HeartbeatTimer.Stop();
+            HeartbeatTimerRunning = false;
+        }
+
         if (PlayerManager.gameLoaded)
         {
             Disconnect(true);
@@ -862,30 +1148,53 @@ public class Networker : MonoBehaviour
     /// <summary>
     /// This will send any messages needed to the host or other players and reset variables.
     /// </summary>
-    public void Disconnect(bool applicationClosing = false)
+    public void Disconnect(bool applicationClosing)
     {
         Debug.Log("Disconnecting from server");
         if (isHost)
         {
-            SendGlobalP2P(new Message_Disconnecting(PlayerManager.localUID, true), EP2PSend.k_EP2PSendReliable);
+            NetworkSenderThread.Instance.SendPacketAsHostToAllClients(new Message_Disconnecting(PlayerManager.localUID, true), EP2PSend.k_EP2PSendReliable);
         }
         else
         {
-            SendP2P(hostID, new Message_Disconnecting(PlayerManager.localUID, false), EP2PSend.k_EP2PSendReliable);
+            NetworkSenderThread.Instance.SendPacketToSpecificPlayer(hostID, new Message_Disconnecting(PlayerManager.localUID, false), EP2PSend.k_EP2PSendReliable);
         }
 
         if (applicationClosing)
             return;
+
+        PlayerManager.CleanUpPlayerManagerStaticVariables();
+        DisconnectionTasks();
+    }
+
+    public void PlayerManagerReportsDisconnect()
+    {
+        DisconnectionTasks();
+    }
+    public void DisconnectionTasks()
+    {
+        Debug.Log("Running disconnection tasks");
+        if (HeartbeatTimerRunning)
+        {
+            HeartbeatTimer.Stop();
+            HeartbeatTimerRunning = false;
+        }
+
         isHost = false;
+        isClient = false;
         gameState = GameState.Menu;
-        players = new List<CSteamID>();
-        readyDic = new Dictionary<CSteamID, bool>();
+        players?.Clear();
+        NetworkSenderThread.Instance.DumpAllExistingPlayers();
+        readyDic?.Clear();
+        playerStatusDic?.Clear();
         hostReady = false;
         allPlayersReadyHasBeenSentFirstTime = false;
         readySent = false;
         alreadyInGame = false;
         hostID = new CSteamID(0);
 
-        PlayerManager.OnDisconnect();
+        AIManager.CleanUpOnDisconnect();
+        multiplayerInstance?.CleanUpOnDisconnect();
+        hostLoaded = false;
     }
 }

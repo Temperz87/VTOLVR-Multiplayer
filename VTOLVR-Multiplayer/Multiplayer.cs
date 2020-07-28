@@ -11,6 +11,7 @@ using System.Reflection;
 using Steamworks;
 using System.Collections;
 using TMPro;
+using UnityEngine.Events;
 
 public class Multiplayer : VTOLMOD
 {
@@ -34,6 +35,10 @@ public class Multiplayer : VTOLMOD
     private ScrollRect scrollRect;
     private float buttonHeight;
     private List<FriendItem> steamFriends = new List<FriendItem>();
+
+    private List<GameObject> friendListItems = new List<GameObject>();
+
+
     private CSteamID selectedFriend;
     private Transform selectionTF;
 
@@ -41,14 +46,40 @@ public class Multiplayer : VTOLMOD
     private Text joinButtonText;
     public Text lobbyInfoText;
 
+    // Fixing singleplayer functionality with MP mod
+    public bool playingMP;
+
+    //Create a host setting for these instead of a variable!
+    public Settings settings;
+
+    public bool spawnRemainingPlayersAtAirBase = false;
+    public UnityAction<bool> spawnRemainingPlayersAtAirBase_changed;
+
+    public bool replaceWingmenWithClients = true;
+    private UnityAction<bool> replaceWingmenWithClients_changed;
+
+    public bool restrictToHostMods = true;
+    private UnityAction<bool> restrictToHostMods_changed; 
+
+    public bool forceWinds = false; // not implemented
+    private UnityAction<bool> forceWinds_changed;
+
+    public bool FreeForAllMode = false; // not implemented
+    private UnityAction<bool> FreeForAllMode_changed;
+
     private void Start()
     {
         _instance = this;
         HarmonyInstance harmony = HarmonyInstance.Create("marsh.vtolvr.multiplayer.temperzFork");
         harmony.PatchAll(Assembly.GetExecutingAssembly());
+        Networker.SetMultiplayerInstance(this);
     }
+
     public override void ModLoaded()
     {
+        Log($"VTOL VR Multiplayer v{ ModVersionString.ModVersionNumber } - branch: { ModVersionString.ReleaseBranch }");
+
+
 #if DEBUG
         Log("Running in Debug Mode");
 #else
@@ -62,15 +93,88 @@ public class Multiplayer : VTOLMOD
         SoloTesting = false;
         Log("Valid User " + SteamUser.GetSteamID().m_SteamID);
 
+
         VTOLAPI.SceneLoaded += SceneLoaded;
+        CreateSettingsPage();
         base.ModLoaded();
         CreateUI();
         gameObject.AddComponent<Networker>();
     }
 
+
+    private void CreateSettingsPage()
+    {
+        settings = new Settings(this);
+
+
+        //public bool spawnRemainingPlayersAtAirBase = false;
+        //private bool spawnRemainingPlayersAtAirBase_changed;
+
+        //public bool replaceWingmenWithClients = true;
+        //private bool replaceWingmenWithClients_changed;
+
+        //public bool restrictToHostMods = true;
+        //private bool restrictToHostMods_changed;
+
+        //public bool forceWinds = false; // not implemented
+        //private bool forceWinds_changed;
+
+        //public bool FreeForAllMode = false; // not implemented
+        //private bool FreeForAllMode_changed;
+        settings.CreateCustomLabel("Host Settings");
+        spawnRemainingPlayersAtAirBase_changed += spawnRemainingPlayersAtAirBase_Setting;
+        settings.CreateCustomLabel("Spawn players at airbase if there are no wingmen available.");
+        settings.CreateBoolSetting("Default = False", spawnRemainingPlayersAtAirBase_changed, spawnRemainingPlayersAtAirBase);
+
+
+        replaceWingmenWithClients_changed += replaceWingmenWithClients_Setting;
+        settings.CreateCustomLabel("Replace AI wingmen (with the same flight designation) with clients.");
+        settings.CreateBoolSetting("Default = True", replaceWingmenWithClients_changed, replaceWingmenWithClients);
+
+        restrictToHostMods_changed += restrictToHostMods_Settings;
+        settings.CreateCustomLabel("Require clients to use the same mods as host.");
+        settings.CreateBoolSetting("Default = True", restrictToHostMods_changed, restrictToHostMods);
+
+        forceWinds_changed += forceWinds_Settings;
+        settings.CreateCustomLabel("Force winds on for clients (Not functional).");
+        settings.CreateBoolSetting("Default = True", forceWinds_changed, forceWinds);
+
+        FreeForAllMode_changed += FreeForAllMode_Settings;
+        settings.CreateCustomLabel("Free For All Mode! Sets all clients to enemies (Not functional).");
+        settings.CreateBoolSetting("Default = True", FreeForAllMode_changed, FreeForAllMode);
+
+        VTOLAPI.CreateSettingsMenu(settings);
+    }
+
+    public void spawnRemainingPlayersAtAirBase_Setting(bool newval)
+    {
+        spawnRemainingPlayersAtAirBase = newval;
+    }
+
+    public void replaceWingmenWithClients_Setting(bool newval)
+    {
+        spawnRemainingPlayersAtAirBase = newval;
+    }
+
+    public void restrictToHostMods_Settings(bool newval)
+    {
+        restrictToHostMods = newval;
+    }
+
+    public void forceWinds_Settings(bool newval)
+    {
+        forceWinds = newval;
+    }
+    public void FreeForAllMode_Settings(bool newval)
+    {
+        FreeForAllMode = newval;
+    }
+
     private void SceneLoaded(VTOLScenes scene)
     {
         UnityEngine.CrashReportHandler.CrashReportHandler.enableCaptureExceptions = false;
+
+        Debug.Log($"Scene Switch! { scene.ToString() }");
 
         switch (scene)
         {
@@ -79,30 +183,77 @@ public class Multiplayer : VTOLMOD
                 break;
             case VTOLScenes.Akutan:
                 Log("Map Loaded from vtol scenes akutan");
+                waitingForJoin = null;
+                DestroyLoadingSceneObjects();
                 StartCoroutine(PlayerManager.MapLoaded());
                 break;
             case VTOLScenes.CustomMapBase:
                 Log("Map Loaded from vtol scenes custom map base");
+                waitingForJoin = null;
+                DestroyLoadingSceneObjects();
                 StartCoroutine(PlayerManager.MapLoaded());
                 break;
             case VTOLScenes.LoadingScene:
-                CreateLoadingSceneObjects();
+                if (playingMP)
+                {
+                    Log("Create Loading Scene");
+                    CreateLoadingSceneObjects();
+                    break;
+                }
                 break;
         }
     }
 
     private void CreateUI()
     {
-        Log("Creating Multiplayer UI");
-        Transform ScenarioDisplay = GameObject.Find("InteractableCanvas").transform.GetChild(0).GetChild(6).GetChild(0).GetChild(1);
-        if (ScenarioDisplay.name != "ScenarioDisplay")
-        {
-            Log($"ScenarioDisplay was wrong ({ScenarioDisplay.name}), trying other method");
-            ScenarioDisplay = GameObject.Find("InteractableCanvas").transform.GetChild(0).GetChild(7).GetChild(0).GetChild(1);
-            Log($"ScenarioDisplay now == {ScenarioDisplay.name}");
+
+        while (!SceneManager.GetActiveScene().isLoaded){
+            Debug.Log("Waiting for scene to be loaded");
         }
+
+        Log("Creating Multiplayer UI");
+        
+        Transform ScenarioDisplay = null;
+        bool foundDisplay = false;
+        bool foundCampaginDisplay = false;
+        int? campaignDisplayCount = null;
+
+        Debug.Log("Looping through canvases to find the Scenario Display");
+
+
+        // Get the interactable canvas
+        for (int i = 0; i < GameObject.Find("InteractableCanvas").transform.GetChild(0).childCount; i++)
+        {
+            // Loop through each child to find the Campaign Select Canavas
+            ScenarioDisplay = GameObject.Find("InteractableCanvas").transform.GetChild(0).GetChild(i);
+            if (ScenarioDisplay.name == "CampaignSelector")
+            {
+                foundCampaginDisplay = true;
+                campaignDisplayCount = i;
+                // Get the next page in the campaign selector (The scenario display)
+                ScenarioDisplay = ScenarioDisplay.GetChild(0).GetChild(1);
+
+                // If the name is ScenarioDisplay, we found it! Breaking out of the for loop to continue on...
+                if (ScenarioDisplay.name == "ScenarioDisplay")
+                {
+                    foundDisplay = true;
+                    break;
+                }
+            }
+        }
+        Debug.Log($"Found Campaign Display? { foundCampaginDisplay.ToString() }");
+
+        if (campaignDisplayCount != null)
+        {
+            Debug.Log($"Found Campaign Display { campaignDisplayCount.ToString() } canvases down.");
+        }
+
+        Debug.Log($"Found Scenario Display? { foundDisplay.ToString() }");
+
         //Creating the MP button
         Transform mpButton = Instantiate(ScenarioDisplay.GetChild(10).gameObject, ScenarioDisplay).transform;
+
+
         Log("Multiplayer Button" + mpButton.name);
         mpButton.gameObject.SetActive(true);
         mpButton.name = "MPButton";
@@ -131,7 +282,7 @@ public class Multiplayer : VTOLMOD
         }
         content = ScrollView.transform.GetChild(0).GetChild(0).gameObject;
         selectionTF = content.transform.GetChild(0);
-        selectionTF.GetComponent<Image>().color = new Color(0,0,0,0);
+        selectionTF.GetComponent<Image>().color = new Color(0, 0, 0, 0);
         Log("Copying the List from select Campaign for friends");//Copying the List from select Campaign for friends
         friendsTemplate = content.transform.GetChild(1).gameObject;
         buttonHeight = ((RectTransform)friendsTemplate.transform).rect.height;
@@ -183,18 +334,50 @@ public class Multiplayer : VTOLMOD
         lobbyInfoText = lobbyInfoGO.GetComponent<Text>();
         lobbyInfoText.text = "Select a friend or host a lobby.";
         lobbyInfoText.alignment = TextAnchor.UpperLeft;
-        lobbyInfoText.transform.localRotation =  Quaternion.Euler(lobbyInfoText.transform.localRotation.eulerAngles.x + 90,
+        lobbyInfoText.transform.localRotation = Quaternion.Euler(lobbyInfoText.transform.localRotation.eulerAngles.x + 90,
             lobbyInfoText.transform.localRotation.y,
             lobbyInfoText.transform.localRotation.z);
         Log("Last one");
         mpInteractable.OnInteract.AddListener(delegate { Log("Before Opening MP"); RefershFriends(); MPMenu.SetActive(true); ScenarioDisplay.gameObject.SetActive(false); OpenMP(); });
         GameObject.Find("InteractableCanvas").GetComponent<VRPointInteractableCanvas>().RefreshInteractables();
         Log("Finished");
+
+        Log("Refresh");//Host
+        GameObject RefreshButton = Instantiate(mpButton.gameObject, MPMenu.transform);
+        RefreshButton.GetComponent<RectTransform>().localPosition = new Vector3(510, 322);
+        RefreshButton.GetComponent<RectTransform>().sizeDelta = new Vector2(50, 250f);
+        RefreshButton.GetComponentInChildren<Text>().text = "Refresh";
+        RefreshButton.GetComponent<Image>().color = Color.red;
+        VRInteractable RefreshInteractable = RefreshButton.GetComponent<VRInteractable>();
+        RefreshInteractable.interactableName = "Refresh Friends";
+        RefreshInteractable.OnInteract = new UnityEngine.Events.UnityEvent();
+        RefreshInteractable.OnInteract.AddListener(delegate { Log("Before Host"); RefershFriends(); });
+
+
     }
 
     public void RefershFriends()
     {
         Log("Refreshing Friends");
+        steamFriends.Clear();
+        int totalFriends = 0;
+        Debug.Log($"UI List Item Count: {friendListItems.Count}");
+
+        foreach(GameObject uiItem in friendListItems)
+        {
+            if (uiItem != null) {
+                Debug.Log($"Destroying {uiItem.name}");
+            }
+            else
+            {
+                Debug.Log("UI Item is null");
+            }
+            
+            Destroy(uiItem);
+        }
+
+        friendListItems.Clear();
+
         int friendsCount = SteamFriends.GetFriendCount(EFriendFlags.k_EFriendFlagImmediate);
         if (friendsCount == -1)
         {
@@ -230,17 +413,19 @@ public class Multiplayer : VTOLMOD
         friendsTemplate.SetActive(true);
         GameObject lastFriendGO;
         VRUIListItemTemplate uiListItem;
-        int totalFriends = 0;
+        totalFriends = 0;
         lableVTOL.transform.localPosition = new Vector3(0, -totalFriends * buttonHeight);
         for (int i = 0; i < vtolvrFriends.Count; i++)
         {
             totalFriends++;
             lastFriendGO = Instantiate(friendsTemplate, content.transform);
+            lastFriendGO.name = SteamFriends.GetFriendPersonaName(vtolvrFriends[i]);
             steamFriends.Add(new FriendItem(vtolvrFriends[i],lastFriendGO.transform));
             lastFriendGO.transform.localPosition = new Vector3(0f, -totalFriends * buttonHeight);
             uiListItem = lastFriendGO.GetComponent<VRUIListItemTemplate>();
             uiListItem.Setup(SteamFriends.GetFriendPersonaName(vtolvrFriends[i]), totalFriends - 1, SelectFriend);
             uiListItem.labelText.color = Color.green;
+            friendListItems.Add(lastFriendGO);
         }
 
         Log("Updating Scroll Rect");
@@ -261,7 +446,7 @@ public class Multiplayer : VTOLMOD
         joinButtonText.text = $"Join {SteamFriends.GetFriendPersonaName(steamFriends[index].steamID)}";
         selectedFriend = steamFriends[index].steamID;
         Log("User has selected " + SteamFriends.GetFriendPersonaName(steamFriends[index].steamID));
-        Networker.SendP2P(steamFriends[index].steamID, new Message_LobbyInfoRequest(), EP2PSend.k_EP2PSendReliable); //Getting lobby info.
+        NetworkSenderThread.Instance.SendPacketToSpecificPlayer(steamFriends[index].steamID, new Message_LobbyInfoRequest(), EP2PSend.k_EP2PSendReliable); //Getting lobby info.
         selectionTF.position = steamFriends[index].transform.position;
         selectionTF.GetComponent<Image>().color = new Color(0.3529411764705882f, 0.196078431372549f, 0);
     }
@@ -279,15 +464,20 @@ public class Multiplayer : VTOLMOD
 
     public void Host()
     {
-        Networker.HostGame();
+        Networker._instance.DisconnectionTasks();
+        Debug.Log("Dictionaries cleared just in case.");
+        playingMP = true;
+        MapAndScenarioVersionChecker.CreateHashes();
+        Networker._instance.HostGame();
     }
 
     public void Join()
     {
+        playingMP = true;
         if (Networker.hostID == new Steamworks.CSteamID(0) && waitingForJoin == null)
         {
             Networker.JoinGame(selectedFriend);
-            Debug.Log("Joining friend");
+            Debug.Log($"Joining friend {selectedFriend.m_SteamID}");
             waitingForJoin = StartCoroutine(WaitingForJoiningRequestResult());
         }
         else
@@ -306,26 +496,100 @@ public class Multiplayer : VTOLMOD
 
     private void CreateLoadingSceneObjects()
     {
-        Transform cube = GameObject.CreatePrimitive(PrimitiveType.Cube).transform;
-        cube.position = new Vector3(-0.485f, 1.153f, 0.394f);
-        cube.rotation = Quaternion.Euler(0,-53.038f,0);
-        cube.localScale = new Vector3(0.5f,0.5f,0.01f);
-        cube.name = "Multiplayer Player List";
+        Debug.Log("Creating Loading Screen Object.");
 
-        GameObject Text = new GameObject("Text", typeof(TextMeshPro), typeof(RectTransform));
-        Text.transform.SetParent(cube,false);
-        RectTransform rect = Text.GetComponent<RectTransform>();
-        rect.sizeDelta = new Vector2(1, 1);
-        rect.localPosition = new Vector3(0, 0, -1);
-        Networker.loadingText = Text.GetComponent<TextMeshPro>();
+        //Transform cube = GameObject.CreatePrimitive(PrimitiveType.Cube).transform;
+        //cube.position = new Vector3(-0.485f, 1.153f, 0.394f);
+        //cube.rotation = Quaternion.Euler(0,-53.038f,0);
+        //cube.localScale = new Vector3(0.5f,0.5f,0.01f);
+        //cube.name = "Multiplayer Player List";
+
+        Debug.Log("Looking for Canvas and Info Transforms");
+        GameObject canvas_go = GameObject.Find("Canvas").gameObject;
+
+        Transform infoCanvas = canvas_go.transform.Find("Info").transform;
+
+        //Transform canvas = canvas_go.transform;
+
+        //Text missionText = canvas.Find("MissionText").GetComponent<Text>();
+
+        Debug.Log("Removing old text");
+        infoCanvas.Find("Ready").GetComponent<Text>().text = "";
+        infoCanvas.Find("MissionText").GetComponent<Text>().text = "";
+        infoCanvas.Find("MissionText").gameObject.SetActive(false);
+        infoCanvas.Find("progressGameObject").gameObject.SetActive(false);
+        infoCanvas.Find("progressGameObject").transform.Find("LoadingText").gameObject.SetActive(false);
+        infoCanvas.Find("progressGameObject").transform.Find("LoadingText (1)").gameObject.SetActive(false);
+
+        //Destroy(missionText);
+
+        //missionText.text = "HELLO!";
+
+        //for (int i = 0; i < GameObject.Find("Canvas").transform.GetChild(0).childCount; i++)
+        //{
+        //    // Loop through each child to find the Campaign Select Canavas
+        //    Transform cube = GameObject.Find("InteractableCanvas").transform.GetChild(0).GetChild(i);
+        //    if (cube.name == "CampaignSelector")
+        //    {
+        //        // Get the next page in the campaign selector (The scenario display)
+        //        cube = cube.GetChild(0).GetChild(1);
+
+        //        // If the name is ScenarioDisplay, we found it! Breaking out of the for loop to continue on...
+        //        if (cube.name == "ScenarioDisplay")
+        //        {
+        //            break;
+        //        }
+        //    }
+        //}Adding loading text
+
+        //Can't add component 'RectTransform' to Text because such a component is already added to the game object!
+        //Loaded scene: LoadingScene
+
+        Debug.Log("Adding loading text");
+
+        Networker.loadingText = canvas_go.AddComponent<TextMeshPro>();
+
+        //GameObject Text = new GameObject("Text", typeof(TextMeshPro));
+        //Text.transform.SetParent(canvas, false);
+        RectTransform rect = Networker.loadingText.GetComponent<RectTransform>();
+        rect.sizeDelta = new Vector2(676, 350);
+        //rect.position = new Vector3(0, -99, 0);
+        //Networker.loadingText = Text.GetComponent<TextMeshPro>();
         Networker.loadingText.enableAutoSizing = true;
-        Networker.loadingText.fontSizeMin = 0;
-        Networker.loadingText.color = Color.black;
+        Networker.loadingText.fontSizeMin = 300;
+        Networker.loadingText.fontSizeMax = 450;
+        Networker.loadingText.color = Color.white;
+        if (!Networker.isHost)
+        {
+            NetworkSenderThread.Instance.SendPacketToSpecificPlayer(Networker.hostID, new Message_LoadingTextRequest(), EP2PSend.k_EP2PSendReliable); // Getting Loading Text
+
+        }
         Networker.UpdateLoadingText();
+    }
+
+    public void CleanUpOnDisconnect() {
+        selectedFriend = new CSteamID(0);
+        steamFriends?.Clear();
+        playingMP = false;
+    }
+
+    private void DestroyLoadingSceneObjects()
+    {
+        GameObject cube = GameObject.Find("Multiplayer Player List");
+        if (cube != null)
+        {
+            Debug.Log("Destroying MP list cube");
+            Destroy(cube);
+        }
+        else
+        {
+            Debug.Log("Could not find MP list cube");
+        }
     }
 
     public void OnDestory()
     {
         VTOLAPI.SceneLoaded -= SceneLoaded;
+        Networker.OnMultiplayerDestroy();
     }
 }
