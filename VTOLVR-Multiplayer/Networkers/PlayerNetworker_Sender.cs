@@ -9,9 +9,10 @@ class PlayerNetworker_Sender : MonoBehaviour
     public Health health;
 
     public TempPilotDetacher detacher;
-    public GearAnimator[] gears;
-    public FloatingOriginShifter shifter;
+    //public GearAnimator[] gears;
+    //public FloatingOriginShifter shifter;
     public EjectionSeat ejection;
+    public EngineEffects[] effects;
 
     Coroutine repspawnTimer;
 
@@ -22,6 +23,9 @@ class PlayerNetworker_Sender : MonoBehaviour
     Quaternion ejectorSeatRot;
     Vector3 canopyPos;
     Quaternion canopyRot;
+
+    GameObject hud;
+    GameObject hudWaypoint;
 
     void Awake()
     {
@@ -36,22 +40,23 @@ class PlayerNetworker_Sender : MonoBehaviour
             health.OnDeath.AddListener(Death);
 
         detacher = GetComponentInChildren<TempPilotDetacher>();
-        gears = GetComponentsInChildren<GearAnimator>();
-        shifter = GetComponentInChildren<FloatingOriginShifter>();
+        //gears = GetComponentsInChildren<GearAnimator>();
+        //shifter = GetComponentInChildren<FloatingOriginShifter>();
         ejection = GetComponentInChildren<EjectionSeat>();
         ejection.OnEject.AddListener(Eject);
 
-        ejectorSeatPos = ejection.transform.localPosition;
-        ejectorSeatRot = ejection.transform.localRotation;
-        Debug.LogError("found health on " + gameObject.name);
+        //ejectorSeatPos = ejection.transform.localPosition;
+        //ejectorSeatRot = ejection.transform.localRotation;
 
-        target = detacher.cameraRig.transform.parent;
-        ejectorParent = ejection.gameObject.transform.parent;
-        if (ejection.canopyObject != null) {
-            canopyParent = ejection.canopyObject.transform.parent;
-            canopyPos = ejection.canopyObject.transform.localPosition;
-            canopyRot = ejection.canopyObject.transform.localRotation;
-        }
+        //target = detacher.cameraRig.transform.parent;
+        //ejectorParent = ejection.gameObject.transform.parent;
+        //if (ejection.canopyObject != null) {
+        //    canopyParent = ejection.canopyObject.transform.parent;
+        //    canopyPos = ejection.canopyObject.transform.localPosition;
+        //    canopyRot = ejection.canopyObject.transform.localRotation;
+        //}
+
+        effects = GetComponentsInChildren<EngineEffects>();
     }
 
     IEnumerator RespawnTimer()
@@ -64,17 +69,32 @@ class PlayerNetworker_Sender : MonoBehaviour
 
         ReArmingPoint rearmPoint = GameObject.FindObjectOfType<ReArmingPoint>();
 
-        UnEject();
-        PutPlayerBackInAircraft();
-        RepairAircraft();
+        //UnEject();
+        //PutPlayerBackInAircraft();
+        //RepairAircraft();
 
-        foreach (GearAnimator gear in gears) {
-            gear.ExtendImmediate();
+        //foreach (GearAnimator gear in gears) {
+        //    gear.ExtendImmediate();
+        //}
+
+        //GetComponent<Rigidbody>().velocity = Vector3.zero;
+        //transform.position = rearmPoint.transform.position + Vector3.up * 10;
+        //transform.rotation = rearmPoint.transform.rotation;
+
+        Destroy(VTOLAPI.GetPlayersVehicleGameObject());
+        Destroy(detacher.cameraRig);
+        Destroy(detacher.gameObject);
+        Destroy(ejection.gameObject);
+        Destroy(BlackoutEffect.instance);
+        foreach (EngineEffects effect in effects) {
+            Destroy(effect);
         }
+        //as much stuff as im destroying, some stuff is most likely getting through, future people, look into this
 
-        GetComponent<Rigidbody>().velocity = Vector3.zero;
-        transform.position = rearmPoint.transform.position + Vector3.up * 10;
-        transform.rotation = rearmPoint.transform.rotation;
+        GameObject newPlayer = Instantiate(PilotSaveManager.currentVehicle.vehiclePrefab);
+        FlightSceneManager.instance.playerActor = newPlayer.GetComponent<Actor>();
+        FlightSceneManager.instance.playerActor.flightInfo.PauseGCalculations();
+        FlightSceneManager.instance.playerActor.flightInfo.OverrideRecordedAcceleration(Vector3.zero);
 
         rearmPoint.voiceProfile.PlayMessage(GroundCrewVoiceProfile.GroundCrewMessages.Success);
         PilotSaveManager.currentScenario.totalBudget = 999999;
@@ -83,12 +103,14 @@ class PlayerNetworker_Sender : MonoBehaviour
 
         rearmPoint.BeginReArm();
 
+        PlayerManager.SetupLocalAircraft(newPlayer, newPlayer.transform.position, newPlayer.transform.position, networkUID);
+
         lastMessage.UID = networkUID;
         
-        //if (Networker.isHost)
-        //    NetworkSenderThread.Instance.SendPacketAsHostToAllClients(lastMessage, Steamworks.EP2PSend.k_EP2PSendUnreliableNoDelay);
-        //else
-        //    NetworkSenderThread.Instance.SendPacketToSpecificPlayer(Networker.hostID, lastMessage, Steamworks.EP2PSend.k_EP2PSendUnreliableNoDelay);
+        if (Networker.isHost)
+            NetworkSenderThread.Instance.SendPacketAsHostToAllClients(lastMessage, Steamworks.EP2PSend.k_EP2PSendUnreliableNoDelay);
+        else
+            NetworkSenderThread.Instance.SendPacketToSpecificPlayer(Networker.hostID, lastMessage, Steamworks.EP2PSend.k_EP2PSendUnreliableNoDelay);
         
     }
 
@@ -131,9 +153,10 @@ class PlayerNetworker_Sender : MonoBehaviour
         ModuleParachute parachute = ejection.GetComponentInChildren<ModuleParachute>();
         parachute.CutParachute();
         
-        Traverse.Create(ejection).Field("ejected").SetValue(false);
+        Traverse.Create(ejection).Field("ejected").SetValue(false);//does nothing, cannot eject a seccond time
+        //i dont think ejecting is necessary for now, but someone prob ought look into that
 
-        shifter.enabled = true;
+        //shifter.enabled = true;
         //AudioController.instance.AddExteriorOpening("eject", 0f);
     }
 
@@ -155,26 +178,77 @@ class PlayerNetworker_Sender : MonoBehaviour
             }
         }
 
-        shifter.enabled = true;
+        //shifter.enabled = true;
     }
 
     void RepairAircraft()
     {
         FlightAssist flightAssist = GetComponentInChildren<FlightAssist>();
-        flightAssist.assistEnabled = true;
+        if (flightAssist != null)
+        {
+            flightAssist.assistEnabled = true;
+        }
+        else {
+            Debug.Log("Could not fix flight assists");
+        }
 
         RCSController rcsController = GetComponentInChildren<RCSController>();
-        Traverse.Create(rcsController).Field("alive").SetValue(true);
+        if (rcsController != null)
+        {
+            Traverse.Create(rcsController).Field("alive").SetValue(true);
+        }
+        else
+        {
+            Debug.Log("Could not fix rcs controller");
+        }
 
         Battery battery = GetComponentInChildren<Battery>();
-        Traverse.Create(battery).Field("isAlive").SetValue(true);
-        battery.Connect();
+        if (battery != null)
+        {
+            Traverse.Create(battery).Field("isAlive").SetValue(true);
+            battery.Connect();
+        }
+        else
+        {
+            Debug.Log("Could not fix battery");
+        }
 
-        CollimatedHUDUI hud = GetComponentInChildren<CollimatedHUDUI>();
-        hud.gameObject.SetActive(true);
+        GameObject hud = GameObject.Find("CollimatedHud");
+        if (hud != null)
+        {
+            hud.SetActive(true);
+        }
+        else
+        {
+            Debug.Log("Could not fix hud");
+        }
+
+        GameObject hudWaypoint = GameObject.Find("WaypointLead");
+        if (hudWaypoint != null)
+        {
+            hudWaypoint.SetActive(true);
+        }
+        else
+        {
+            Debug.Log("Could not fix hudWaypoint");
+        }
 
         VRJoystick joystick = GetComponentInChildren<VRJoystick>();
-        joystick.sendEvents = true;
+        if (joystick != null)
+        {
+            joystick.sendEvents = true;
+        }
+        else
+        {
+            Debug.Log("Could not fix joystick");
+        }
+
+        VRInteractable[] levers = GetComponentsInChildren<VRInteractable>();
+        foreach (VRInteractable lever in levers)
+        {
+            lever.enabled = true;
+        }
+        Debug.Log("Fixed " + levers.Length + " levers");
     }
 
     void Eject()
