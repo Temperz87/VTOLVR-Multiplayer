@@ -3,12 +3,11 @@ using System.Text;
 using System.Threading.Tasks;
 using UnityEngine;
 
-class HealthNetworker_Receiver : MonoBehaviour
+class HealthNetworker_ReceiverHostEnforced : MonoBehaviour
 {
     public ulong networkUID;
     private Message_Death lastMessage;
     public Health health;
-   
 
     private void Awake()
     {
@@ -16,6 +15,7 @@ class HealthNetworker_Receiver : MonoBehaviour
         Networker.Death += Death;
 
         health = GetComponent<Health>();
+        health.invincible = true;
     }
 
     public void Death(Packet packet)
