@@ -33,7 +33,7 @@ static class MapAndScenarioVersionChecker
     public static void CreateHashes()
     {
         Debug.Log("Creating Hashes");
-        if (PilotSaveManager.currentCampaign.isBuiltIn)
+        if (true)
         {
             // Only need to get the scenario ID in this case
             builtInCampaign = true;
@@ -45,11 +45,11 @@ static class MapAndScenarioVersionChecker
         else
         {
             filePath = VTResources.GetMapFilePath(PilotSaveManager.currentScenario.customScenarioInfo.mapID);
-            using (FileStream mapFile = File.OpenRead(filePath))
-            {
-                mapHash = hashCalculator.ComputeHash(mapFile);
-            }
-
+            // using (FileStream mapFile = File.OpenRead(filePath))
+            // {
+            //    mapHash = hashCalculator.ComputeHash(mapFile);
+            // }
+            mapHash = new byte[0];
             filePath = PilotSaveManager.currentScenario.customScenarioInfo.filePath;
             using (FileStream scenarioFile = File.OpenRead(filePath))
             {

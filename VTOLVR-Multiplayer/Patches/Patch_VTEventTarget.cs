@@ -47,6 +47,8 @@ class Patch3
 {
     static void Prefix(VTEventInfo __instance, ConfigNode infoNode)
     {
+
+        Debug.Log("bahacode scenario dictionary");
         __instance.eventName = infoNode.GetValue("eventName");
         __instance.actions = new List<VTEventTarget>();
         foreach (ConfigNode node in infoNode.GetNodes("EventTarget"))
@@ -54,9 +56,12 @@ class Patch3
             VTEventTarget vTEventTarget = new VTEventTarget();
             vTEventTarget.LoadFromNode(node);
             __instance.actions.Add(vTEventTarget);
-
+            Debug.Log("Compiling scenario dictonary my codd2");
             String actionIdentifier = vTEventTarget.eventName + vTEventTarget.methodName + vTEventTarget.targetID;
+
+            Debug.Log(actionIdentifier);
             int hash = actionIdentifier.GetHashCode();
+            Debug.Log("Compiling scenario dictonary  adding to my dictionary");
             PlayerManager.scenarioActionsList.Add(hash,vTEventTarget);
         }
 
