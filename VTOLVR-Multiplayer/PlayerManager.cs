@@ -33,9 +33,9 @@ public static class PlayerManager
 
     public static Multiplayer multiplayerInstance = null;
 
-    public static Dictionary<int,VTEventTarget> scenarioActionsList;
+    public static Dictionary<int,VTEventTarget> scenarioActionsList = new Dictionary<int, VTEventTarget>();
 
-    static private ScenarioActionNetworker_Receiver actionReciever;
+    static private ScenarioActionNetworker_Receiver actionReciever =  new ScenarioActionNetworker_Receiver();
 
     public struct Player
     {
