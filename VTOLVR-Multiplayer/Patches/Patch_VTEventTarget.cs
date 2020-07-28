@@ -13,7 +13,9 @@ class Patch2
 {
     static void Postfix(VTEventTarget __instance)
     {
-
-        Debug.Log("Host Ran  " + __instance.eventName + " of type" + __instance.methodName + " for target " + __instance.targetID);
+        if (Networker.isHost)
+            Debug.Log("Host Ran Event" + __instance.eventName + " of type " + __instance.methodName + " for target " + __instance.targetID);
+        else
+            Debug.Log("Client Ran Event" + __instance.eventName + " of type " + __instance.methodName + " for target " + __instance.targetID);
     }
 }

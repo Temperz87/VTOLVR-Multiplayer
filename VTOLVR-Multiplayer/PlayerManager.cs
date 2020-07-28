@@ -70,7 +70,7 @@ public static class PlayerManager
         SetPrefabs();
         if (!Networker.isHost)
         {
-            Debug.Log($"Sending spawn request to host, host id: {Networker.hostID}, client id: {SteamUser.GetSteamID().m_SteamID}");
+            /*Debug.Log($"Sending spawn request to host, host id: {Networker.hostID}, client id: {SteamUser.GetSteamID().m_SteamID}");
             Debug.Log("Killing all units currently on the map.");
             List<Actor> allActors = new List<Actor>(); 
             foreach (var actor in TargetManager.instance.allActors)
@@ -84,7 +84,7 @@ public static class PlayerManager
             {
                 TargetManager.instance.UnregisterActor(actor);
                 GameObject.Destroy(actor.gameObject);
-            }
+            }*/
             NetworkSenderThread.Instance.SendPacketToSpecificPlayer(Networker.hostID, new Message(MessageType.RequestSpawn), EP2PSend.k_EP2PSendReliable);
         }
         else
@@ -99,9 +99,13 @@ public static class PlayerManager
             {
                 if (actor.role == Actor.Roles.Missile || actor.isPlayer)
                     continue;
+
+                ///this runs on spwaned ai objects.... what if they have parents
                 if (actor.parentActor == null)
                 {
-                    ulong networkUID = Networker.GenerateNetworkUID();
+                    //use a description to generate unique ai UID from editor ai 
+                    String actorDescription = actor.role.ToString() + actor.name + actor.actorID;
+                    ulong networkUID = Networker.GenerateAINetworkUID(actorDescription);
                     Debug.Log("Adding UID senders to " + actor.name + $", their uID will be {networkUID}.");
                     AIManager.AIVehicles.Add(new AIManager.AI(actor.gameObject, actor.unitSpawn.unitName, actor, networkUID));
                     if (!VTOLVR_Multiplayer.AIDictionaries.allActors.ContainsKey(networkUID))

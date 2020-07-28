@@ -181,6 +181,8 @@ public class Networker : MonoBehaviour
     public static bool HeartbeatTimerRunning = false;
     public static readonly System.Timers.Timer HeartbeatTimer = new System.Timers.Timer(1000);
 
+    static private SHA256 hashCalculator = SHA256.Create();
+
     #region Message Type Callbacks
     //These callbacks are use for other scripts to know when a network message has been
     //received for them. They should match the name of the message class they relate to.
@@ -889,6 +891,15 @@ public class Networker : MonoBehaviour
         //Debug.Log($"Generated New UID ({result})");
         return result;
     }
+
+    ///Generates a UID for editor created ai units, should produce same results on host and clients
+    public static ulong GenerateAINetworkUID(String aiDescription)
+    {
+        ulong result = (ulong)aiDescription.GetHashCode();
+        //make ai uid's start far from playeruids to prevent overlap
+        return 1000+result;
+    }
+
     public static void ResetNetworkUID()
     {
         networkUID = 0;
