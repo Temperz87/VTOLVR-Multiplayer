@@ -1023,6 +1023,7 @@ public static class PlayerManager
         playersToSpawnQueue?.Clear();
         playersToSpawnIdQueue?.Clear();
         scenarioActionsList.Clear();
+        scenarioActionsListCoolDown.Clear();
         gameLoaded = false;
         spawnedVehicles?.Clear();
         localUID = 0;
