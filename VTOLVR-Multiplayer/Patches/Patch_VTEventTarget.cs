@@ -86,7 +86,7 @@ class Patch4
         Debug.Log("A mission got completed we need to send it");
        
       
-            Debug.Log("sending __instance.objectiveName + __instance.objectiveID");
+           // Debug.Log("sending __instance.objectiveName + __instance.objectiveID");
             String actionIdentifier = __instance.objectiveName + __instance.objectiveID;
 
             Debug.Log(actionIdentifier);
@@ -103,6 +103,116 @@ class Patch4
         {
 
             Debug.Log("Client sent objective complete " + __instance.objectiveID);
+            NetworkSenderThread.Instance.SendPacketToSpecificPlayer(Networker.hostID, objOutMessage, Steamworks.EP2PSend.k_EP2PSendUnreliableNoDelay);
+        }
+
+    }
+}
+
+
+
+
+//patch to grab all the events being loaded on creation this replaces original method
+[HarmonyPatch(typeof(MissionObjective), "FailObjective")]
+class Patch5
+{
+    static void Prefix(MissionObjective __instance)
+    {
+
+        Debug.Log("A mission got failed we need to send it");
+
+
+        //Debug.Log("sending __instance.objectiveName + __instance.objectiveID");
+        String actionIdentifier = __instance.objectiveName + __instance.objectiveID;
+
+        Debug.Log(actionIdentifier);
+
+
+        Message_ObjectiveSync objOutMessage = new Message_ObjectiveSync(PlayerManager.localUID, __instance.objectiveID, ObjSyncType.EMissionFailed);
+        if (Networker.isHost)
+        {
+
+            Debug.Log("Host sent objective fail " + __instance.objectiveID);
+            NetworkSenderThread.Instance.SendPacketAsHostToAllClients(objOutMessage, Steamworks.EP2PSend.k_EP2PSendUnreliableNoDelay);
+        }
+        else
+        {
+
+            Debug.Log("Client sent objective fail " + __instance.objectiveID);
+            NetworkSenderThread.Instance.SendPacketToSpecificPlayer(Networker.hostID, objOutMessage, Steamworks.EP2PSend.k_EP2PSendUnreliableNoDelay);
+        }
+
+    }
+}
+
+
+
+
+
+//patch to grab all the events being loaded on creation this replaces original method
+[HarmonyPatch(typeof(MissionObjective), "BeginMission")]
+class Patch6
+{
+    static void Prefix(MissionObjective __instance)
+    {
+
+        Debug.Log("A mission got BeginMission we need to send it");
+
+
+        //Debug.Log("sending __instance.objectiveName + __instance.objectiveID");
+        String actionIdentifier = __instance.objectiveName + __instance.objectiveID;
+
+        Debug.Log(actionIdentifier);
+
+
+        Message_ObjectiveSync objOutMessage = new Message_ObjectiveSync(PlayerManager.localUID, __instance.objectiveID, ObjSyncType.EMissionBegin);
+        if (Networker.isHost)
+        {
+
+            Debug.Log("Host sent objective BeginMission " + __instance.objectiveID);
+            NetworkSenderThread.Instance.SendPacketAsHostToAllClients(objOutMessage, Steamworks.EP2PSend.k_EP2PSendUnreliableNoDelay);
+        }
+        else
+        {
+
+            Debug.Log("Client sent objective BeginMission " + __instance.objectiveID);
+            NetworkSenderThread.Instance.SendPacketToSpecificPlayer(Networker.hostID, objOutMessage, Steamworks.EP2PSend.k_EP2PSendUnreliableNoDelay);
+        }
+
+    }
+}
+
+
+
+
+
+//patch to grab all the events being loaded on creation this replaces original method
+[HarmonyPatch(typeof(MissionObjective), "CancelObjective")]
+class Patch7
+{
+    static void Prefix(MissionObjective __instance)
+    {
+
+        Debug.Log("A mission got  CancelObjective we need to send it");
+
+
+        ///Debug.Log("sending __instance.objectiveName + __instance.objectiveID");
+        String actionIdentifier = __instance.objectiveName + __instance.objectiveID;
+
+        Debug.Log(actionIdentifier);
+
+
+        Message_ObjectiveSync objOutMessage = new Message_ObjectiveSync(PlayerManager.localUID, __instance.objectiveID, ObjSyncType.EMissionCanceled);
+        if (Networker.isHost)
+        {
+
+            Debug.Log("Host sent objective CancelObjective " + __instance.objectiveID);
+            NetworkSenderThread.Instance.SendPacketAsHostToAllClients(objOutMessage, Steamworks.EP2PSend.k_EP2PSendUnreliableNoDelay);
+        }
+        else
+        {
+
+            Debug.Log("Client sent objective BeginMission " + __instance.objectiveID);
             NetworkSenderThread.Instance.SendPacketToSpecificPlayer(Networker.hostID, objOutMessage, Steamworks.EP2PSend.k_EP2PSendUnreliableNoDelay);
         }
 

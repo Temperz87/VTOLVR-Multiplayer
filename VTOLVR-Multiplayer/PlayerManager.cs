@@ -925,9 +925,30 @@ public static class PlayerManager
 
         if(status == ObjSyncType.EMissionCompleted)
         {
-            Debug.Log("running mission complete locally");
+            Debug.Log("Completeing mission complete locally");
 
             obj.CompleteObjective();
+        }
+
+        if (status == ObjSyncType.EMissionFailed)
+        {
+            Debug.Log("failing mission complete locally");
+
+            obj.FailObjective();
+        }
+
+        if (status == ObjSyncType.EMissionBegin)
+        {
+            Debug.Log("starting mission begin locally");
+
+            obj.BeginMission();
+        }
+
+        if (status == ObjSyncType.EMissionCanceled)
+        {
+            Debug.Log("starting mission cancel locally");
+
+            obj.CancelObjective();
         }
     }
 

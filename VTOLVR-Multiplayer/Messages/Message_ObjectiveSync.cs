@@ -9,7 +9,10 @@ using System.Threading.Tasks;
 
 public enum ObjSyncType
 {
-    EMissionCompleted
+    EMissionCompleted,
+    EMissionFailed,
+    EMissionBegin,
+    EMissionCanceled
 }
     [Serializable]
 public class Message_ObjectiveSync : Message
