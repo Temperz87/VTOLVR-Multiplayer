@@ -20,6 +20,7 @@ class HealthNetworker_Sender : MonoBehaviour
 
     void Death()
     {
+        Debug.LogError("sending kill message propgating kill event");
         lastMessage.UID = networkUID;
         if (Networker.isHost)
             NetworkSenderThread.Instance.SendPacketAsHostToAllClients(lastMessage, Steamworks.EP2PSend.k_EP2PSendUnreliableNoDelay);

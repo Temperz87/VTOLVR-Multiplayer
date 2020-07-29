@@ -40,7 +40,7 @@ class HealthNetworker_Receiver : MonoBehaviour
             }
         }
 
-
+        Debug.Log("Killing AI on clients");
         health.invincible = false;
         health.Kill();
     }

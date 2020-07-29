@@ -117,6 +117,7 @@
     <Compile Include="Messages\Message_LoadingTextUpdate.cs" />
     <Compile Include="Messages\Message_LobbyInfoRequest.cs" />
     <Compile Include="Messages\Message_MissileUpdate.cs" />
+    <Compile Include="Messages\Message_ObjectiveSync.cs" />
     <Compile Include="Messages\Message_PlaneUpdate.cs" />
     <Compile Include="Messages\Message_LockingRadarLock.cs" />
     <Compile Include="Messages\Message_RadarUpdate.cs" />
@@ -146,7 +147,6 @@
     <Compile Include="Networkers\LockingRadarNetworker_Reciever.cs" />
     <Compile Include="Networkers\LockingRadarNetworker_Sender.cs" />
     <Compile Include="Networkers\NetworkSenderThread.cs" />
-    <Compile Include="Networkers\ScenarioActionNetworker_Receiver.cs" />
     <Compile Include="Networkers\ShipNetworker_Receiver.cs" />
     <Compile Include="Networkers\ShipNetworker_Sender.cs" />
     <Compile Include="Networkers\TurretNetworker_Receiver.cs" />

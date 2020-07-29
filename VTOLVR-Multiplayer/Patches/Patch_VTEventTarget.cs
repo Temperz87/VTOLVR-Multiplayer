@@ -62,9 +62,51 @@ class Patch3
             Debug.Log(actionIdentifier);
             int hash = actionIdentifier.GetHashCode();
             Debug.Log("Compiling scenario dictonary  adding to my dictionary");
-            PlayerManager.scenarioActionsList.Add(hash,vTEventTarget);
+
+            if (!PlayerManager.scenarioActionsList.ContainsKey(hash))
+                PlayerManager.scenarioActionsList.Add(hash,vTEventTarget);
         }
 
         return;//dont run bahas code
     }
 }
+
+
+
+
+
+
+//patch to grab all the events being loaded on creation this replaces original method
+[HarmonyPatch(typeof(MissionObjective), "CompleteObjective")]
+class Patch4
+{
+    static void Prefix(MissionObjective __instance)
+    {
+
+        Debug.Log("A mission got completed we need to send it");
+       
+      
+            Debug.Log("sending __instance.objectiveName + __instance.objectiveID");
+            String actionIdentifier = __instance.objectiveName + __instance.objectiveID;
+
+            Debug.Log(actionIdentifier);
+        
+        
+        Message_ObjectiveSync objOutMessage = new Message_ObjectiveSync(PlayerManager.localUID, __instance.objectiveID,ObjSyncType.EMissionCompleted);
+        if (Networker.isHost)
+        {
+
+            Debug.Log("Host sent objective complete " + __instance.objectiveID);
+            NetworkSenderThread.Instance.SendPacketAsHostToAllClients(objOutMessage, Steamworks.EP2PSend.k_EP2PSendUnreliableNoDelay);
+        }
+        else
+        {
+
+            Debug.Log("Client sent objective complete " + __instance.objectiveID);
+            NetworkSenderThread.Instance.SendPacketToSpecificPlayer(Networker.hostID, objOutMessage, Steamworks.EP2PSend.k_EP2PSendUnreliableNoDelay);
+        }
+
+    }
+}
+
+

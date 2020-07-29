@@ -34,9 +34,8 @@ public static class PlayerManager
     public static Multiplayer multiplayerInstance = null;
 
     public static Dictionary<int,VTEventTarget> scenarioActionsList = new Dictionary<int, VTEventTarget>();
-
-    static private ScenarioActionNetworker_Receiver actionReciever =  new ScenarioActionNetworker_Receiver();
-
+    
+   
     public struct Player
     {
         public CSteamID cSteamID;
@@ -908,6 +907,31 @@ public static class PlayerManager
 
 
     }
+
+
+    /// <summary>
+    ///updates objective status locally by running its event function
+    /// </summary>
+    /// <returns>A free spawn point</returns>
+    public static void objectiveUpdate(int id, ObjSyncType status)
+    {
+        MissionManager[] mManager = Resources.FindObjectsOfTypeAll<MissionManager>();
+        if(mManager[0] == null)
+        {
+            Debug.Log("MissionManager manager Null");
+                return;
+        }
+            MissionObjective obj = mManager[0].GetObjective(id);
+
+        if(status == ObjSyncType.EMissionCompleted)
+        {
+            Debug.Log("running mission complete locally");
+
+            obj.CompleteObjective();
+        }
+    }
+
+
 
 
     /// <summary>
