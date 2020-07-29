@@ -749,7 +749,7 @@ public class Networker : MonoBehaviour
                         if (lastMessage.UID == PlayerManager.localUID)
                         {
                             Debug.Log("ignored action as local event");
-                            return;
+                            break;
                         }
                         Debug.Log("running event from another persont");
                         PlayerManager.runScenarioAction(lastMessage.scenarioActionHash);
@@ -770,7 +770,7 @@ public class Networker : MonoBehaviour
                         if (lastMessage.UID == PlayerManager.localUID)
                         {
                             Debug.Log("ignored action as local obj event");
-                            return;
+                            break;
                         }
                         Debug.Log("running obj event from another persont");
                         PlayerManager.objectiveUpdate(lastMessage.objID, lastMessage.status);
