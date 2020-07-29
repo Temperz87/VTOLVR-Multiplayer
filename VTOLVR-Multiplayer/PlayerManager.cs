@@ -34,8 +34,8 @@ public static class PlayerManager
     public static Multiplayer multiplayerInstance = null;
 
     public static Dictionary<int,VTEventTarget> scenarioActionsList = new Dictionary<int, VTEventTarget>();
-    
-   
+    public static Dictionary<int, float> scenarioActionsListCoolDown = new Dictionary<int, float>();
+
     public struct Player
     {
         public CSteamID cSteamID;
@@ -921,30 +921,36 @@ public static class PlayerManager
             Debug.Log("MissionManager manager Null");
                 return;
         }
-            MissionObjective obj = mManager[0].GetObjective(id);
+        MissionObjective obj = mManager[0].GetObjective(id);
+        if (obj == null)
+        {
+            Debug.Log("obj was Null");
+            return;
+        }
+           
 
-        if(status == ObjSyncType.EMissionCompleted)
+        if(status == ObjSyncType.EMissionCompleted && !obj.completed)
         {
             Debug.Log("Completeing mission complete locally");
 
             obj.CompleteObjective();
         }
 
-        if (status == ObjSyncType.EMissionFailed)
+        if (status == ObjSyncType.EMissionFailed && !obj.failed)
         {
             Debug.Log("failing mission complete locally");
 
             obj.FailObjective();
         }
 
-        if (status == ObjSyncType.EMissionBegin)
+        if (status == ObjSyncType.EMissionBegin && !obj.started)
         {
             Debug.Log("starting mission begin locally");
 
             obj.BeginMission();
         }
 
-        if (status == ObjSyncType.EMissionCanceled)
+        if (status == ObjSyncType.EMissionCanceled && !obj.cancelled)
         {
             Debug.Log("starting mission cancel locally");
 
@@ -961,10 +967,38 @@ public static class PlayerManager
     /// <returns>A free spawn point</returns>
     public static void runScenarioAction(int hash)
     {
-        if (scenarioActionsList.ContainsKey(hash))
-            scenarioActionsList[hash].Invoke();
+
+        if(scenarioActionsListCoolDown.ContainsKey(hash))
+        {
+            float currentTime = Time.unscaledTime;
+            if(currentTime - scenarioActionsListCoolDown[hash] > 1.0f)
+            {
+                if (scenarioActionsList.ContainsKey(hash))
+                {
+
+                    scenarioActionsListCoolDown.Remove(hash);
+                    scenarioActionsListCoolDown.Add(hash,currentTime);
+                    scenarioActionsList[hash].Invoke();
+                }
+                else
+                    Debug.Log("secanrio error doesnt exsist");
+            }
+        }
         else
-            Debug.Log("secanrio error doesnt exsist");
+
+        {
+
+            if (scenarioActionsList.ContainsKey(hash))
+            {
+                float currentTime = Time.unscaledTime;
+                scenarioActionsList[hash].Invoke();
+                scenarioActionsListCoolDown.Add(hash, currentTime);
+
+            }
+            else
+                Debug.Log("secanrio error doesnt exsist");
+        }
+       
     }
 
     /// <summary>
