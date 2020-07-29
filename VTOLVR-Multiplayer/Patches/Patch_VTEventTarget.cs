@@ -82,7 +82,9 @@ class Patch4
 {
     static void Prefix(MissionObjective __instance)
     {
-
+        //prevents infinite client host pings
+        if (__instance.completed)
+            return;
         Debug.Log("A mission got completed we need to send it");
        
       
@@ -118,7 +120,9 @@ class Patch5
 {
     static void Prefix(MissionObjective __instance)
     {
-
+        //prevents infinite client host pings
+        if (__instance.failed)
+            return;
         Debug.Log("A mission got failed we need to send it");
 
 
@@ -155,7 +159,9 @@ class Patch6
 {
     static void Prefix(MissionObjective __instance)
     {
-
+        //prevents infinite client host pings
+        if (__instance.started)
+            return;
         Debug.Log("A mission got BeginMission we need to send it");
 
 
@@ -192,7 +198,9 @@ class Patch7
 {
     static void Prefix(MissionObjective __instance)
     {
-
+        //prevents infinite client host pings
+        if (__instance.cancelled)
+            return;
         Debug.Log("A mission got  CancelObjective we need to send it");
 
 
