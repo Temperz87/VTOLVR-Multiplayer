@@ -737,43 +737,40 @@ public class Networker : MonoBehaviour
                         UpdateLoadingText(packet);
                     break;
                 case MessageType.ScenarioAction:
-                    Debug.Log("case scenarioaction");
+                    Debug.Log("case scenario action packet");
+                    Message_ScenarioAction lastMessage = (Message_ScenarioAction)((PacketSingle)packet).message;
 
-                    if (RequestNetworkUID != null)
+                    Debug.Log("recieved action from other");
+                    // do not run scenarios on self
+                    if (lastMessage.UID == PlayerManager.localUID)
                     {
+                        Debug.Log("ignored action as local event");
 
-                        Message_ScenarioAction lastMessage = (Message_ScenarioAction)((PacketSingle)packet).message;
-
-                        Debug.Log("recieved action from other");
-                        // do not run scenarios on self
-                        if (lastMessage.UID == PlayerManager.localUID)
-                        {
-                            Debug.Log("ignored action as local event");
-                            break;
-                        }
-                        Debug.Log("running event from another persont");
+                    }
+                    else
+                    {
+                        Debug.Log("running event from another person");
                         PlayerManager.runScenarioAction(lastMessage.scenarioActionHash);
                     }
-                        
+
                     break;
 
                 case MessageType.ObjectiveSync:
                     Debug.Log("case Objective");
 
-                    if (RequestNetworkUID != null)
+                    Message_ObjectiveSync lastMessageobbj = (Message_ObjectiveSync)((PacketSingle)packet).message;
+
+                    Debug.Log("recieved action from other");
+                    // do not run scenarios on self
+                    if (lastMessageobbj.UID == PlayerManager.localUID)
                     {
+                        Debug.Log("ignored objective as local obj objective");
 
-                        Message_ObjectiveSync lastMessage = (Message_ObjectiveSync)((PacketSingle)packet).message;
-
-                        Debug.Log("recieved action from other");
-                        // do not run scenarios on self
-                        if (lastMessage.UID == PlayerManager.localUID)
-                        {
-                            Debug.Log("ignored action as local obj event");
-                            break;
-                        }
-                        Debug.Log("running obj event from another persont");
-                        PlayerManager.objectiveUpdate(lastMessage.objID, lastMessage.status);
+                    }
+                    else
+                    {
+                        Debug.Log("running obj event from another person");
+                        PlayerManager.objectiveUpdate(lastMessageobbj.objID, lastMessageobbj.status);
                     }
 
                     break;
@@ -938,7 +935,7 @@ public class Networker : MonoBehaviour
     {
         ulong result = (ulong)aiDescription.GetHashCode();
         //make ai uid's start far from playeruids to prevent overlap
-        return 1000+result;
+        return 1000 + result;
     }
 
     public static void ResetNetworkUID()
