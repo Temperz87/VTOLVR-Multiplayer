@@ -81,9 +81,9 @@ public static class AIManager
             {
                 //if client ai matches host ai add recievers to it and make it dumb
                 String actorDescription = actor.role.ToString() + actor.name + actor.actorID;
-                if(message.networkID == Networker.GenerateAINetworkUID(actorDescription))
-                    {
-                   
+                if (message.networkID == Networker.GenerateAINetworkUID(actorDescription))
+                {
+
                     Debug.Log($"started to sync local ai to host {actor.name} , ActorID {actor.actorID}, UID {message.networkID}");
 
                     GameObject newAI = actor.gameObject;
@@ -274,6 +274,10 @@ public static class AIManager
                         VTOLVR_Multiplayer.AIDictionaries.reverseAllActors.Add(actor, message.networkID);
                     }
 
+                }
+                else
+                {
+                    Debug.Log($"{message.networkID} is not equal to {Networker.GenerateAINetworkUID(actorDescription)}.");
                 }
             }
         }

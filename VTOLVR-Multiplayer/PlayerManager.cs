@@ -915,13 +915,13 @@ public static class PlayerManager
     /// <returns>A free spawn point</returns>
     public static void objectiveUpdate(int id, ObjSyncType status)
     {
-        MissionManager[] mManager = Resources.FindObjectsOfTypeAll<MissionManager>();
-        if(mManager[0] == null)
+        MissionManager mManager = MissionManager.instance;
+        if(mManager == null)
         {
             Debug.Log("MissionManager manager Null");
                 return;
         }
-        MissionObjective obj = mManager[0].GetObjective(id);
+        MissionObjective obj = mManager.GetObjective(id);
         if (obj == null)
         {
             Debug.Log("obj was Null");

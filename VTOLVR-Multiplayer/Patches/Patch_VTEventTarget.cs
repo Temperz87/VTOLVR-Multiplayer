@@ -13,9 +13,6 @@ class Patch2
 {
     static void Postfix(VTEventTarget __instance)
     {
-
-
-
         String actionIdentifier = __instance.eventName + __instance.methodName + __instance.targetID;
         int hash = actionIdentifier.GetHashCode();
 
@@ -32,20 +29,14 @@ class Patch2
             Debug.Log("Client sent  Event action" + __instance.eventName + " of type " + __instance.methodName + " for target " + __instance.targetID);
             NetworkSenderThread.Instance.SendPacketToSpecificPlayer(Networker.hostID, ScanarioActionOutMessage, Steamworks.EP2PSend.k_EP2PSendUnreliableNoDelay);
         }  
-  
-           
     }
-
-
- 
-    
 }
 
 //patch to grab all the events being loaded on creation this replaces original method
 [HarmonyPatch(typeof(VTEventInfo), "LoadFromInfoNode")]
 class Patch3
 {
-    static void Prefix(VTEventInfo __instance, ConfigNode infoNode)
+    static bool Prefix(VTEventInfo __instance, ConfigNode infoNode)
     {
 
         Debug.Log("bahacode scenario dictionary");
@@ -58,7 +49,6 @@ class Patch3
             __instance.actions.Add(vTEventTarget);
             Debug.Log("Compiling scenario dictonary my codd2");
             String actionIdentifier = vTEventTarget.eventName + vTEventTarget.methodName + vTEventTarget.targetID;
-
             Debug.Log(actionIdentifier);
             int hash = actionIdentifier.GetHashCode();
             Debug.Log("Compiling scenario dictonary  adding to my dictionary");
@@ -66,8 +56,7 @@ class Patch3
             if (!PlayerManager.scenarioActionsList.ContainsKey(hash))
                 PlayerManager.scenarioActionsList.Add(hash,vTEventTarget);
         }
-
-        return;//dont run bahas code
+        return false;//dont run bahas code
     }
 }
 
@@ -80,11 +69,11 @@ class Patch3
 [HarmonyPatch(typeof(MissionObjective), "CompleteObjective")]
 class Patch4
 {
-    static void Prefix(MissionObjective __instance)
+    static bool Prefix(MissionObjective __instance)
     {
         //prevents infinite client host pings
         if (__instance.completed)
-            return;
+            return false;
         Debug.Log("A mission got completed we need to send it");
        
       
@@ -107,7 +96,7 @@ class Patch4
             Debug.Log("Client sent objective complete " + __instance.objectiveID);
             NetworkSenderThread.Instance.SendPacketToSpecificPlayer(Networker.hostID, objOutMessage, Steamworks.EP2PSend.k_EP2PSendUnreliableNoDelay);
         }
-
+        return true;
     }
 }
 
@@ -118,11 +107,11 @@ class Patch4
 [HarmonyPatch(typeof(MissionObjective), "FailObjective")]
 class Patch5
 {
-    static void Prefix(MissionObjective __instance)
+    static bool Prefix(MissionObjective __instance)
     {
         //prevents infinite client host pings
         if (__instance.failed)
-            return;
+            return false;
         Debug.Log("A mission got failed we need to send it");
 
 
@@ -145,7 +134,7 @@ class Patch5
             Debug.Log("Client sent objective fail " + __instance.objectiveID);
             NetworkSenderThread.Instance.SendPacketToSpecificPlayer(Networker.hostID, objOutMessage, Steamworks.EP2PSend.k_EP2PSendUnreliableNoDelay);
         }
-
+        return true;
     }
 }
 
@@ -157,11 +146,11 @@ class Patch5
 [HarmonyPatch(typeof(MissionObjective), "BeginMission")]
 class Patch6
 {
-    static void Prefix(MissionObjective __instance)
+    static bool Prefix(MissionObjective __instance)
     {
         //prevents infinite client host pings
         if (__instance.started)
-            return;
+            return false;
         Debug.Log("A mission got BeginMission we need to send it");
 
 
@@ -184,7 +173,7 @@ class Patch6
             Debug.Log("Client sent objective BeginMission " + __instance.objectiveID);
             NetworkSenderThread.Instance.SendPacketToSpecificPlayer(Networker.hostID, objOutMessage, Steamworks.EP2PSend.k_EP2PSendUnreliableNoDelay);
         }
-
+        return true;
     }
 }
 
@@ -196,11 +185,11 @@ class Patch6
 [HarmonyPatch(typeof(MissionObjective), "CancelObjective")]
 class Patch7
 {
-    static void Prefix(MissionObjective __instance)
+    static bool Prefix(MissionObjective __instance)
     {
         //prevents infinite client host pings
         if (__instance.cancelled)
-            return;
+            return false;
         Debug.Log("A mission got  CancelObjective we need to send it");
 
 
@@ -223,7 +212,7 @@ class Patch7
             Debug.Log("Client sent objective BeginMission " + __instance.objectiveID);
             NetworkSenderThread.Instance.SendPacketToSpecificPlayer(Networker.hostID, objOutMessage, Steamworks.EP2PSend.k_EP2PSendUnreliableNoDelay);
         }
-
+        return false;
     }
 }
 
