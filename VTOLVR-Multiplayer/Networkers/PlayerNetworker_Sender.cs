@@ -90,6 +90,8 @@ class PlayerNetworker_Sender : MonoBehaviour
             Destroy(effect);
         }
         //as much stuff as im destroying, some stuff is most likely getting through, future people, look into this
+        
+        AudioController.instance.ClearAllOpenings();
 
         GameObject newPlayer = Instantiate(PilotSaveManager.currentVehicle.vehiclePrefab);
         FlightSceneManager.instance.playerActor = newPlayer.GetComponent<Actor>();
