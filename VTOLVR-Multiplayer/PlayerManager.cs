@@ -395,7 +395,17 @@ public static class PlayerManager
         // We don't actually need the "sender" id, unless we're a client and want to check that the packet came from the host
         // which we're not doing right now. 
 
+        if (packet == null) {
+            Debug.Log("Spawn player packet is null, this is bad.");
+        }
+
         Message_SpawnPlayerVehicle message = (Message_SpawnPlayerVehicle)((PacketSingle)packet).message;
+
+        if (message == null)
+        {
+            Debug.Log("Spawn player message is null, this is bad.");
+        }
+
         Debug.Log($"Recived a Spawn Vehicle Message from: {message.csteamID}");
         CSteamID spawnerSteamId = new CSteamID(message.csteamID);
 
