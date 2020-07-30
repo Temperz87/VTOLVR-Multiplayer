@@ -33,6 +33,9 @@ public class Multiplayer : VTOLMOD
     //Friends
     private GameObject friendsTemplate, content, lableVTOL, JoinButton;
     private ScrollRect scrollRect;
+    private ScrollRect scrollRectJoinLog;
+    private GameObject lableVTOLJoinLog, lableVTOLMPHeader, lableVTOLMPIntro;
+    public Text contentJoinLog;
     private float buttonHeight;
     private List<FriendItem> steamFriends = new List<FriendItem>();
 
@@ -204,6 +207,54 @@ public class Multiplayer : VTOLMOD
         }
     }
 
+    public void displayError(string errorText)
+    {
+        try
+        {
+            contentJoinLog.text = "";
+            contentJoinLog.color = new Color32(255, 0, 0, 255);
+        }
+        catch (Exception err)
+        {
+            Debug.Log("Got an error trying to update the contentJoinLog");
+            Debug.Log(err.ToString());
+        }
+
+    }
+
+
+    public void displayInfo(string infoText)
+    {
+        try
+        {
+            contentJoinLog.text = "";
+            contentJoinLog.color = new Color32(255, 255, 255, 255);
+        }
+        catch (Exception err)
+        {
+            Debug.Log("Got an error trying to update the contentJoinLog");
+            Debug.Log(err.ToString());
+        }
+    }
+
+    public void clearJoinLog()
+    {
+        try
+        {
+            contentJoinLog.text = "";
+            contentJoinLog.color = new Color32(255, 255, 255, 255);
+
+        }
+        catch (Exception err)
+        {
+            Debug.Log("Got an error trying to clear the contentJoinLog");
+            Debug.Log(err.ToString());
+        }
+
+
+    }
+
+
     private void CreateUI()
     {
 
@@ -283,10 +334,47 @@ public class Multiplayer : VTOLMOD
         content = ScrollView.transform.GetChild(0).GetChild(0).gameObject;
         selectionTF = content.transform.GetChild(0);
         selectionTF.GetComponent<Image>().color = new Color(0, 0, 0, 0);
-        Log("Copying the List from select Campaign for friends");//Copying the List from select Campaign for friends
+        Log("Copying the List from select Campaign for friends"); //Copying the List from select Campaign for friends
         friendsTemplate = content.transform.GetChild(1).gameObject;
         buttonHeight = ((RectTransform)friendsTemplate.transform).rect.height;
 
+        Log("Getting the headers from the campaign display for the join log"); //Getting the headers from the campaign display
+        GameObject lableTemplateHeader = ScenarioDisplay.Find("Title").gameObject;
+        lableVTOLMPHeader = Instantiate(lableTemplateHeader, MPMenu.transform);
+
+        lableVTOLMPHeader.GetComponent<RectTransform>().localPosition = new Vector3(-200, 320);
+        lableVTOLMPHeader.GetComponentInChildren<Text>().text = "Welcome to VTOL VR Multiplayer!";
+        lableVTOLMPHeader.GetComponentInChildren<Text>().resizeTextForBestFit = true;
+        lableVTOLMPHeader.GetComponentInChildren<Text>().color = new Color32(252, 183, 34, 255);
+        lableVTOLMPHeader.GetComponentInChildren<Text>().fontSize = 55;
+        lableVTOLMPHeader.SetActive(true);
+
+
+        Log("Getting the headers from the campaign display for the join log"); //Getting the headers from the campaign display
+        GameObject lableTemplateIntro = ScenarioDisplay.Find("Title").gameObject;
+        lableVTOLMPIntro = Instantiate(lableTemplateIntro, MPMenu.transform);
+
+        lableVTOLMPIntro.GetComponent<RectTransform>().localPosition = new Vector3(-200, 200);
+        lableVTOLMPIntro.GetComponent<RectTransform>().sizeDelta = new Vector2(850, 500.3f);
+        lableVTOLMPIntro.GetComponentInChildren<Text>().text = $"Hello and welcome to multiplayer version {ModVersionString.ModVersionNumber}!\n\nThis is an alpha release and very much so a work in progress. Expect bugs!\n\nPlease report any issues at https://vtolvr-mods.com or on the modding discord here: https://discord.com/sdfsadfdsf";
+        //lableVTOLJoinLog.GetComponentInChildren<Text>().resizeTextForBestFit = true;
+        lableVTOLMPIntro.GetComponentInChildren<Text>().color = new Color32(255, 255, 255, 255);
+        lableVTOLMPIntro.GetComponentInChildren<Text>().fontSize = 20;
+        lableVTOLMPIntro.SetActive(true);
+
+        Log("Getting the headers from the campaign display for the join log"); //Getting the headers from the campaign display
+        GameObject lableTemplateLog = ScenarioDisplay.Find("Title").gameObject;
+        lableVTOLJoinLog = Instantiate(lableTemplateLog, MPMenu.transform);
+
+        lableVTOLJoinLog.GetComponent<RectTransform>().localPosition = new Vector3(-200, 00);
+        lableVTOLJoinLog.GetComponent<RectTransform>().sizeDelta = new Vector2(850, 300f);
+        lableVTOLJoinLog.GetComponentInChildren<Text>().text = $"Error!\n\nAn error occured. Please stop...... something bad happened.... I dunno! This is just some place holder string hopefully it doesn't get too long. But maybe it will and we'll have to chop it up.";
+        //lableVTOLJoinLog.GetComponentInChildren<Text>().resizeTextForBestFit = true;
+        lableVTOLJoinLog.GetComponentInChildren<Text>().color = new Color32(255, 0, 0, 255);
+        lableVTOLJoinLog.GetComponentInChildren<Text>().fontSize = 20;
+        lableVTOLJoinLog.SetActive(false);
+
+        contentJoinLog = lableVTOLJoinLog.GetComponentInChildren<Text>();
 
         Log("Getting the headers from the campaign display"); //Getting the headers from the campaign display
         GameObject lableTemplate = ScenarioDisplay.parent.GetChild(0).GetChild(5).GetChild(0).GetChild(0).GetChild(2).gameObject;
