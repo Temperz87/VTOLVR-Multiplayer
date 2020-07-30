@@ -32,7 +32,7 @@ class Patch2
     }
 }
 
-/* patch to grab all the events being loaded on creation this replaces original method
+// patch to grab all the events being loaded on creation this replaces original method
 [HarmonyPatch(typeof(VTEventInfo), "LoadFromInfoNode")]
 class Patch3
 {
@@ -53,12 +53,12 @@ class Patch3
             int hash = actionIdentifier.GetHashCode();
             Debug.Log("Compiling scenario dictonary  adding to my dictionary");
 
-            if (!PlayerManager.scenarioActionsList.ContainsKey(hash))
-                PlayerManager.scenarioActionsList.Add(hash, vTEventTarget);
+            if (!ObjectiveNetworker_Reciever.scenarioActionsList.ContainsKey(hash))
+                ObjectiveNetworker_Reciever.scenarioActionsList.Add(hash, vTEventTarget);
         }
         return false;//dont run bahas code
     }
-}*/
+}
 
 
 

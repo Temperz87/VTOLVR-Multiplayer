@@ -53,6 +53,14 @@ class LockingRadarNetworker_Receiver : MonoBehaviour
         if (lastLockingMessage.senderUID != networkUID)
             return;
 
+        if (lockingRadar.radar == null)
+        {
+            lockingRadar.radar = gameObject.GetComponentInChildren<Radar>();
+            if (lockingRadar.radar == null)
+            {
+                Debug.Log($"Radar was null on network uID {networkUID}");
+            }
+        }
         if (!lockingRadar.radar.radarEnabled)
         {
             lockingRadar.radar.radarEnabled = true;
@@ -81,7 +89,7 @@ class LockingRadarNetworker_Receiver : MonoBehaviour
             }
             else
             {
-                Debug.Log($"Could not resolve a lock on uID {lastLockingMessage.actorUID}.");
+                Debug.Log($"Could not resolve a lock on uID {lastLockingMessage.actorUID} from sender {lastLockingMessage.senderUID}.");
             }
             /*foreach (var AI in AIManager.AIVehicles)
             {
@@ -133,7 +141,7 @@ class LockingRadarNetworker_Receiver : MonoBehaviour
     public void OnDestroy()
     {
         Networker.RadarUpdate -= RadarUpdate;
-        Debug.Log("Radar update");
+        Debug.Log("Radar update destroyed");
         Debug.Log(gameObject.name);
     }
 }

@@ -23,6 +23,7 @@ public class Message_ObjectiveSync : Message
     public Message_ObjectiveSync(ulong uid, int objID, ObjSyncType stat)
     {
         UID = uid;
+        objID = this.objID;
         status = stat;
         type = MessageType.ObjectiveSync;
     }

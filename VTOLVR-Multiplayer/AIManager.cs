@@ -75,7 +75,14 @@ public static class AIManager
         //Debug.Log("Setting vehicle name");
         newAI.name = message.aiVehicleName;
         Actor actor = newAI.GetComponent<Actor>();
-        Traverse.Create(actor).Field("_unitInstanceID").SetValue(message.unitInstanceID); // To make objectives work.
+        Debug.Log("Making unit spawn.");
+        UnitSpawner unitSpawn = actor.unitSpawn.unitSpawner = new UnitSpawner();
+        Debug.Log("New unit spawn.");
+        unitSpawn.team = actor.team;
+        Debug.Log("Unit spawn team.");
+        unitSpawn.unitName = actor.unitSpawn.unitName;
+        Debug.Log("Unit spawn name.");
+        Traverse.Create(actor.unitSpawn.unitSpawner).Field("_unitInstanceID").SetValue(message.unitInstanceID); // To make objectives work.
         Debug.Log(actor.name + $" has had its unitInstanceID set at value {actor.unitSpawn.unitSpawner.unitInstanceID}.");
         VTScenario.current.units.AddSpawner(actor.unitSpawn.unitSpawner);
         Debug.Log($"Spawned new vehicle at {newAI.transform.position}");

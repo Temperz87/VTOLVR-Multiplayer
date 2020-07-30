@@ -933,6 +933,8 @@ public static class PlayerManager
         localUID = 0;
         worldData = null;
         players?.Clear();
+        ObjectiveNetworker_Reciever.scenarioActionsList?.Clear();
+        ObjectiveNetworker_Reciever.scenarioActionsListCoolDown?.Clear();
         PlaneNetworker_Receiver.dontPrefixNextJettison = false;
     }
 
