@@ -44,23 +44,60 @@ static class MapAndScenarioVersionChecker
         }
         else
         {
-            filePath = VTResources.GetMapFilePath(PilotSaveManager.currentScenario.customScenarioInfo.mapID);
-            using (FileStream mapFile = File.OpenRead(filePath))
-            {
-                mapHash = hashCalculator.ComputeHash(mapFile);
-            }
+
+
+            Debug.Log("Found custom scenario - setting map hash to 0.");
+            mapHash = new byte[0];
 
             filePath = PilotSaveManager.currentScenario.customScenarioInfo.filePath;
+            Debug.Log($"Custom Scenario Location: {filePath}");
             using (FileStream scenarioFile = File.OpenRead(filePath))
             {
                 scenarioHash = hashCalculator.ComputeHash(scenarioFile);
             }
 
-            filePath = VTResources.GetCustomCampaigns().Find(id => id.campaignID == PilotSaveManager.currentCampaign.campaignID).filePath;
-            using (FileStream campaignFile = File.OpenRead(filePath))
+            filePath = null;
+
+            if (PilotSaveManager.currentCampaign.campaignID != null)
             {
-                campaignHash = hashCalculator.ComputeHash(campaignFile);
+                Debug.Log("Campaign ID Is not null");
+
+
+                //VTCampaignInfo campaignInfo = VTResources.GetCustomCampaigns().Find(id => id.campaignID == PilotSaveManager.currentCampaign.campaignID);
+
+
+                VTCampaignInfo campaignInfo = VTResources.GetSteamWorkshopCampaign(PilotSaveManager.currentCampaign.campaignID);
+
+                if (campaignInfo != null)
+                {
+                    filePath = campaignInfo.filePath;
+
+                    if (filePath != null)
+                    {
+                        Debug.Log($"Campaign File path: {filePath}");
+                        using (FileStream campaignFile = File.OpenRead(filePath))
+                        {
+                            campaignHash = hashCalculator.ComputeHash(campaignFile);
+                        }
+                    }
+                    else
+                    {
+                        Debug.Log("Campaign file path is null, we may not be playing a campaign? Setting the hash to 0.");
+                        campaignHash = new byte[0];
+                    }
+                }
+                else
+                {
+                    Debug.Log("Campaign info is null");
+                    campaignHash = new byte[0];
+                }
             }
+            else
+            {
+                Debug.Log("Campaign ID is null!");
+                campaignHash = new byte[0];
+            }
+
         }
         Debug.Log($"Campaign File Path: {filePath}");
         Debug.Log($"Campaign Hash: {campaignHash}");
