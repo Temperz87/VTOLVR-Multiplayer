@@ -211,7 +211,7 @@ public class Multiplayer : VTOLMOD
     {
         try
         {
-            contentJoinLog.text = "";
+            contentJoinLog.text = errorText;
             contentJoinLog.color = new Color32(255, 0, 0, 255);
         }
         catch (Exception err)
@@ -219,15 +219,13 @@ public class Multiplayer : VTOLMOD
             Debug.Log("Got an error trying to update the contentJoinLog");
             Debug.Log(err.ToString());
         }
-
     }
-
 
     public void displayInfo(string infoText)
     {
         try
         {
-            contentJoinLog.text = "";
+            contentJoinLog.text = infoText;
             contentJoinLog.color = new Color32(255, 255, 255, 255);
         }
         catch (Exception err)
@@ -368,11 +366,11 @@ public class Multiplayer : VTOLMOD
 
         lableVTOLJoinLog.GetComponent<RectTransform>().localPosition = new Vector3(-200, 00);
         lableVTOLJoinLog.GetComponent<RectTransform>().sizeDelta = new Vector2(850, 300f);
-        lableVTOLJoinLog.GetComponentInChildren<Text>().text = $"Error!\n\nAn error occured. Please stop...... something bad happened.... I dunno! This is just some place holder string hopefully it doesn't get too long. But maybe it will and we'll have to chop it up.";
+        lableVTOLJoinLog.GetComponentInChildren<Text>().text = "";
         //lableVTOLJoinLog.GetComponentInChildren<Text>().resizeTextForBestFit = true;
         lableVTOLJoinLog.GetComponentInChildren<Text>().color = new Color32(255, 0, 0, 255);
         lableVTOLJoinLog.GetComponentInChildren<Text>().fontSize = 20;
-        lableVTOLJoinLog.SetActive(false);
+        lableVTOLJoinLog.SetActive(true);
 
         contentJoinLog = lableVTOLJoinLog.GetComponentInChildren<Text>();
 
