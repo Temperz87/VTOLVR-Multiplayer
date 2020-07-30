@@ -84,6 +84,14 @@ public static class PlayerManager
             {
                 TargetManager.instance.UnregisterActor(actor);
                 GameObject.Destroy(actor.gameObject);
+
+            }
+            VTScenario.current.units.units.Clear();
+            VTScenario.current.units.alliedUnits.Clear();
+            VTScenario.current.units.enemyUnits.Clear();
+            foreach (var actor in TargetManager.instance.allActors)
+            {
+                VTScenario.current.units.AddSpawner(actor.unitSpawn.unitSpawner);
             }
             NetworkSenderThread.Instance.SendPacketToSpecificPlayer(Networker.hostID, new Message(MessageType.RequestSpawn), EP2PSend.k_EP2PSendReliable);
         }

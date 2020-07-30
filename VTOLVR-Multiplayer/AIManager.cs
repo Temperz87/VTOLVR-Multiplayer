@@ -75,6 +75,9 @@ public static class AIManager
         //Debug.Log("Setting vehicle name");
         newAI.name = message.aiVehicleName;
         Actor actor = newAI.GetComponent<Actor>();
+        Traverse.Create(actor).Field("_unitInstanceID").SetValue(message.unitInstanceID); // To make objectives work.
+        Debug.Log(actor.name + $" has had its unitInstanceID set at value {actor.unitSpawn.unitSpawner.unitInstanceID}.");
+        VTScenario.current.units.AddSpawner(actor.unitSpawn.unitSpawner);
         Debug.Log($"Spawned new vehicle at {newAI.transform.position}");
         TargetManager.instance.RegisterActor(actor);
 
@@ -299,7 +302,7 @@ public static class AIManager
                     Debug.Log("Finally sending AI " + actor.name + " to client " + steamID);
                     NetworkSenderThread.Instance.SendPacketToSpecificPlayer(steamID, new Message_SpawnAIVehicle(actor.name, GetUnitNameFromCatalog(actor.unitSpawn.unitName), 
                         VTMapManager.WorldToGlobalPoint(actor.gameObject.transform.position), 
-                        new Vector3D(actor.gameObject.transform.rotation.eulerAngles), uidSender.networkUID, hPInfos2, cmLoadout, 0.65f, Aggresion), EP2PSend.k_EP2PSendReliable);
+                        new Vector3D(actor.gameObject.transform.rotation.eulerAngles), uidSender.networkUID, hPInfos2, cmLoadout, 0.65f, Aggresion, actor.unitSpawn.unitSpawner.unitInstanceID), EP2PSend.k_EP2PSendReliable);
 
                 }
                 else

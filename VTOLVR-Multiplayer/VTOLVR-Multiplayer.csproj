@@ -117,6 +117,7 @@
     <Compile Include="Messages\Message_LoadingTextUpdate.cs" />
     <Compile Include="Messages\Message_LobbyInfoRequest.cs" />
     <Compile Include="Messages\Message_MissileUpdate.cs" />
+    <Compile Include="Messages\Message_ObjectiveSync.cs" />
     <Compile Include="Messages\Message_PlaneUpdate.cs" />
     <Compile Include="Messages\Message_LockingRadarLock.cs" />
     <Compile Include="Messages\Message_RadarUpdate.cs" />
@@ -124,6 +125,7 @@
     <Compile Include="Messages\Message_RequestNetworkUID.cs" />
     <Compile Include="Messages\Message_RequestSpawn.cs" />
     <Compile Include="Messages\Message_RigidbodyUpdate.cs" />
+    <Compile Include="Messages\Message_ScenarioAction.cs" />
     <Compile Include="Messages\Message_ShipUpdate.cs" />
     <Compile Include="Messages\Message_SpawnAIVehicle.cs" />
     <Compile Include="Messages\Message_SpawnPlayerVehicle.cs" />
@@ -165,6 +167,7 @@
     <Compile Include="Networkers\WorldDataNetworker_Receiver.cs" />
     <Compile Include="Networkers\WorldDataNetworker_Sender.cs" />
     <Compile Include="Patches\Patch_LoadingSceneController.cs" />
+    <Compile Include="Patches\Patch_VTEventInfo.cs" />
     <Compile Include="Patches\Patch_VTMapManager.cs" />
     <Compile Include="Patches\Patch_VTTMapTrees.cs" />
     <Compile Include="PlaneEquippableManager.cs" />
