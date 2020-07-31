@@ -13,7 +13,7 @@ class Patch2
 {
     static void Postfix(VTEventTarget __instance)
     {
-        String actionIdentifier = __instance.eventName + __instance.methodName + __instance.targetID;
+        String actionIdentifier = __instance.eventName + __instance.methodName + __instance.targetID+ + __instance.targetType;
         int hash = actionIdentifier.GetHashCode();
 
         Message_ScenarioAction ScanarioActionOutMessage = new Message_ScenarioAction(PlayerManager.localUID, hash);
@@ -48,7 +48,7 @@ class Patch3
             vTEventTarget.LoadFromNode(node);
             __instance.actions.Add(vTEventTarget);
             Debug.Log("Compiling scenario dictonary my codd2");
-            String actionIdentifier = vTEventTarget.eventName + vTEventTarget.methodName + vTEventTarget.targetID;
+            String actionIdentifier = vTEventTarget.eventName + vTEventTarget.methodName + vTEventTarget.targetID + vTEventTarget.targetType;
             Debug.Log(actionIdentifier);
             int hash = actionIdentifier.GetHashCode();
             Debug.Log("Compiling scenario dictonary  adding to my dictionary");
