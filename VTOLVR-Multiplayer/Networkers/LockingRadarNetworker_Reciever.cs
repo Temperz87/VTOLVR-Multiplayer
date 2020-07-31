@@ -85,6 +85,8 @@ class LockingRadarNetworker_Receiver : MonoBehaviour
                 else
                     Debug.Log($"Radar " + gameObject.name + " found its lock " + lastActor.name + $" with an id of {lastLock} while trying to lock id {lastLockingMessage.actorUID}. Trying to force a lock.");
                 lockingRadar.ForceLock(lastActor, out radarLockData);
+                lastLock = lastActor.vehicleUID;
+                lastLocked = true;
                 Debug.Log($"The lock data is Locked: {radarLockData.locked}, Locked Actor: " + radarLockData.actor.name);
             }
             else
@@ -120,6 +122,8 @@ class LockingRadarNetworker_Receiver : MonoBehaviour
             {
                 Debug.Log("Radar" + gameObject.name + $"refound its lock after dropping it at  {lastLock} while trying to relock id {lastLockingMessage.actorUID}. Trying to force a lock.");
                 lockingRadar.ForceLock(lastActor, out radarLockData);
+                lastLock = lastActor.vehicleUID;
+                lastLocked = true;
                 Debug.Log($"The lock data is Locked: {radarLockData.locked}, reLocked Actor: " + radarLockData.actor.name);
             }
             /*foreach (var AI in AIManager.AIVehicles)
