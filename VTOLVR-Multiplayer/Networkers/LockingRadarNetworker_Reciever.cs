@@ -141,7 +141,8 @@ class LockingRadarNetworker_Receiver : MonoBehaviour
     public void OnDestroy()
     {
         Networker.RadarUpdate -= RadarUpdate;
-        Debug.Log("Radar update destroyed");
+        Networker.LockingRadarUpdate -= LockingRadarUpdate;
+        Debug.Log("Radar update and Locking Radar update destroyed");
         Debug.Log(gameObject.name);
     }
 }

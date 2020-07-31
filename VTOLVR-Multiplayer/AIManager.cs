@@ -120,7 +120,7 @@ public static class AIManager
             aIPilot.enabled = false;
             aIPilot.kPlane.SetToKinematic();
             aIPilot.kPlane.enabled = false;
-            aIPilot.commandState = AIPilot.CommandStates.Override;
+            aIPilot.commandState = AIPilot.CommandStates.Navigation;
             aIPilot.kPlane.enabled = true;
             aIPilot.kPlane.SetVelocity(Vector3.zero);
             aIPilot.kPlane.SetToDynamic();
