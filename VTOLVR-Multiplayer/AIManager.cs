@@ -83,6 +83,10 @@ public static class AIManager
         unitSpawn.unitName = actor.unitSpawn.unitName;
         Debug.Log("Unit spawn name.");
         Traverse.Create(actor.unitSpawn.unitSpawner).Field("_unitInstanceID").SetValue(message.unitInstanceID); // To make objectives work.
+        if (message.hasGroup)
+        {
+            VTScenario.current.groups.AddUnitToGroup(unitSpawn, message.unitGroup);
+        }
         Debug.Log(actor.name + $" has had its unitInstanceID set at value {actor.unitSpawn.unitSpawner.unitInstanceID}.");
         VTScenario.current.units.AddSpawner(actor.unitSpawn.unitSpawner);
         Debug.Log($"Spawned new vehicle at {newAI.transform.position}");
@@ -306,11 +310,38 @@ public static class AIManager
                     {
                         Aggresion = aIUnitSpawn.engageEnemies;
                     }
+                    bool canBreak = false;
+                    PhoneticLetters letters = new PhoneticLetters();
+                    foreach (var Group in VTScenario.current.groups.GetExistingGroups(actor.team))
+                    {
+                        foreach (var ID in Group.unitIDs)
+                        {
+                            if (ID == actor.unitSpawn.unitID)
+                            {
+                                letters = Group.groupID;
+                                canBreak = true;
+                                break;
+                            }
+                        }
+                        if (canBreak)
+                            break;
+                    }
                     Debug.Log("Finally sending AI " + actor.name + " to client " + steamID);
-                    NetworkSenderThread.Instance.SendPacketToSpecificPlayer(steamID, new Message_SpawnAIVehicle(actor.name, GetUnitNameFromCatalog(actor.unitSpawn.unitName), 
-                        VTMapManager.WorldToGlobalPoint(actor.gameObject.transform.position), 
-                        new Vector3D(actor.gameObject.transform.rotation.eulerAngles), uidSender.networkUID, hPInfos2, cmLoadout, 0.65f, Aggresion, actor.unitSpawn.unitSpawner.unitInstanceID), EP2PSend.k_EP2PSendReliable);
-
+                    if (canBreak)
+                    {
+                        NetworkSenderThread.Instance.SendPacketToSpecificPlayer(steamID, new Message_SpawnAIVehicle(actor.name, GetUnitNameFromCatalog(actor.unitSpawn.unitName),
+                            VTMapManager.WorldToGlobalPoint(actor.gameObject.transform.position),
+                            new Vector3D(actor.gameObject.transform.rotation.eulerAngles), uidSender.networkUID, hPInfos2, cmLoadout, 0.65f, Aggresion, actor.unitSpawn.unitSpawner.unitInstanceID, letters),
+                            EP2PSend.k_EP2PSendReliable);
+                    }
+                    else
+                    {
+                        Debug.Log("It seems that " + actor.name + " is not in a unit group, sending anyways.");
+                        NetworkSenderThread.Instance.SendPacketToSpecificPlayer(steamID, new Message_SpawnAIVehicle(actor.name, GetUnitNameFromCatalog(actor.unitSpawn.unitName),
+                            VTMapManager.WorldToGlobalPoint(actor.gameObject.transform.position),
+                            new Vector3D(actor.gameObject.transform.rotation.eulerAngles), uidSender.networkUID, hPInfos2, cmLoadout, 0.65f, Aggresion, actor.unitSpawn.unitSpawner.unitInstanceID),
+                            EP2PSend.k_EP2PSendReliable);
+                    }
                 }
                 else
                 {

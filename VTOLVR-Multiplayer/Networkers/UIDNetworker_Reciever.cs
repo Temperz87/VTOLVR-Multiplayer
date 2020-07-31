@@ -6,7 +6,7 @@ using UnityEngine;
 public class UIDNetworker_Receiver : MonoBehaviour
 {
     public ulong networkUID;
-    private Actor actor;
+    //private Actor actor;
     /*private void Awake()
     {
        /* actor = base.GetComponent<Actor>();

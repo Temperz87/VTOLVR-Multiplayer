@@ -89,6 +89,7 @@ public static class PlayerManager
             VTScenario.current.units.units.Clear();
             VTScenario.current.units.alliedUnits.Clear();
             VTScenario.current.units.enemyUnits.Clear();
+            VTScenario.current.groups.DestroyAll();
             foreach (var actor in TargetManager.instance.allActors)
             {
                 VTScenario.current.units.AddSpawner(actor.unitSpawn.unitSpawner);
@@ -157,7 +158,12 @@ public static class PlayerManager
                     {
                         actor.gameObject.GetComponent<AirportManager>().airportName = "USS TEMPERZ " + networkUID;
                     }
+                    if (!actor.unitSpawn.unitSpawner.spawned)
+                    {
+                        Debug.Log("Actor " + actor.name + " isn't spawned yet, still sending.");
+                    }
                 }
+
                 else
                     Debug.Log(actor.name + " has a parent, not giving an uID sender.");
             }
