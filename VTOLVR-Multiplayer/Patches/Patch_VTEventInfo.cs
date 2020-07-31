@@ -207,7 +207,7 @@ class Patch7
         else
         {
 
-            Debug.Log("Client sent objective BeginMission " + __instance.objectiveID);
+            Debug.Log("Client sent objective CancelObjective " + __instance.objectiveID);
             NetworkSenderThread.Instance.SendPacketToSpecificPlayer(Networker.hostID, objOutMessage, Steamworks.EP2PSend.k_EP2PSendUnreliableNoDelay);
         }
         return true;
