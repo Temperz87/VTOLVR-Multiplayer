@@ -9,7 +9,7 @@ public class UIDNetworker_Receiver : MonoBehaviour
     private Actor actor;
     /*private void Awake()
     {
-        actor = base.GetComponent<Actor>();
+       /* actor = base.GetComponent<Actor>();
         if (actor != null)
         {
             if (!VTOLVR_Multiplayer.AIDictionaries.allActors.ContainsKey(networkUID))
@@ -20,6 +20,5 @@ public class UIDNetworker_Receiver : MonoBehaviour
             {
                 VTOLVR_Multiplayer.AIDictionaries.reverseAllActors.Add(actor, networkUID);
             }
-        }
-    }*/
+            }*/
 }
