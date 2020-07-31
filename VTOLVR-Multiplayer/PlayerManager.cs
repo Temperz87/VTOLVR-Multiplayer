@@ -398,6 +398,10 @@ public static class PlayerManager
         if (packet == null) {
             Debug.Log("Spawn player packet is null, this is bad.");
         }
+        else
+        {
+            Debug.Log("Spawn player packet isnt null, this is good.");
+        }
 
         Message_SpawnPlayerVehicle message = (Message_SpawnPlayerVehicle)((PacketSingle)packet).message;
 
@@ -405,6 +409,20 @@ public static class PlayerManager
         {
             Debug.Log("Spawn player message is null, this is bad.");
         }
+        else
+        {
+            Debug.Log("Spawn player message isnt null, this is good.");
+        }
+
+        Debug.Log("message.cmLoadout" + message.cmLoadout);
+        Debug.Log("message.csteamID" + message.csteamID);
+        Debug.Log("message.hpLoadout" + message.hpLoadout);
+        Debug.Log("message.networkID" + message.networkID);
+        Debug.Log("message.normalizedFuel" + message.normalizedFuel);
+        Debug.Log("message.position" + message.position);
+        Debug.Log("message.rotation" + message.rotation);
+        Debug.Log("message.type" + message.type);
+        Debug.Log("message.vehicle" + message.vehicle);
 
         Debug.Log($"Recived a Spawn Vehicle Message from: {message.csteamID}");
         CSteamID spawnerSteamId = new CSteamID(message.csteamID);
