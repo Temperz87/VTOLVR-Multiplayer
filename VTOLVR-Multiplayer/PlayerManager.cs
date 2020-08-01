@@ -434,15 +434,15 @@ public static class PlayerManager
             playersToSpawnIdQueue.Enqueue(sender);
             return;
         }
-        foreach (ulong id in spawnedVehicles)
-        {
-            if (id == message.csteamID)
-            {
-                Debug.Log("Got a spawnedVehicle message for a vehicle we have already added! Returning....");
-                return;
-            }
-        }
-        spawnedVehicles.Add(message.csteamID);
+        //foreach (ulong id in spawnedVehicles)
+        //{
+        //    if (id == message.csteamID)
+        //    {
+        //        Debug.Log("Got a spawnedVehicle message for a vehicle we have already added! Returning....");
+        //        return;
+        //    }
+        //}
+        //spawnedVehicles.Add(message.csteamID);
         Debug.Log("Got a new spawnVehicle uID.");
         if (Networker.isHost)
         {
@@ -499,28 +499,36 @@ public static class PlayerManager
                     //Debug.Log($"We don't need to resync the host weapons, that's guaranteed to already be up to date.");
                     continue;
                 }
-                PlaneNetworker_Receiver existingPlayersPR = players[i].vehicle.GetComponent<PlaneNetworker_Receiver>();
-                //We first send the new player to an existing spawned in player
-                NetworkSenderThread.Instance.SendPacketToSpecificPlayer(players[i].cSteamID, message, EP2PSend.k_EP2PSendReliable);
-                //Then we send this current player to the new player.
-                NetworkSenderThread.Instance.SendPacketToSpecificPlayer(spawnerSteamId,
-                    new Message_SpawnPlayerVehicle(
-                        players[i].vehicleType,
-                        VTMapManager.WorldToGlobalPoint(players[i].vehicle.transform.position),
-                        new Vector3D(players[i].vehicle.transform.rotation.eulerAngles),
-                        players[i].cSteamID.m_SteamID,
-                        players[i].vehicleUID,
-                        existingPlayersPR.GenerateHPInfo(),
-                        existingPlayersPR.GetCMS(),
-                        existingPlayersPR.GetFuel()),
-                    EP2PSend.k_EP2PSendReliable);
-                //Debug.Log($"We have told {players[i].cSteamID.m_SteamID} about the new player ({message.csteamID}) and the other way round.");
 
-                //We ask the existing player what their load out just incase the host's player receiver was out of sync.
-                NetworkSenderThread.Instance.SendPacketToSpecificPlayer(players[i].cSteamID,
-                    new Message(MessageType.WeaponsSet),
-                    EP2PSend.k_EP2PSendReliable);
-                //Debug.Log($"We have asked {players[i].cSteamID.m_SteamID} what their current weapons are, and now waiting for a responce."); // marsh typo response lmaooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo
+                if (players[i].vehicle != null)
+                {
+                    PlaneNetworker_Receiver existingPlayersPR = players[i].vehicle.GetComponent<PlaneNetworker_Receiver>();
+                    //We first send the new player to an existing spawned in player
+                    NetworkSenderThread.Instance.SendPacketToSpecificPlayer(players[i].cSteamID, message, EP2PSend.k_EP2PSendReliable);
+                    //Then we send this current player to the new player.
+                    NetworkSenderThread.Instance.SendPacketToSpecificPlayer(spawnerSteamId,
+                        new Message_SpawnPlayerVehicle(
+                            players[i].vehicleType,
+                            VTMapManager.WorldToGlobalPoint(players[i].vehicle.transform.position),
+                            new Vector3D(players[i].vehicle.transform.rotation.eulerAngles),
+                            players[i].cSteamID.m_SteamID,
+                            players[i].vehicleUID,
+                            existingPlayersPR.GenerateHPInfo(),
+                            existingPlayersPR.GetCMS(),
+                            existingPlayersPR.GetFuel()),
+                        EP2PSend.k_EP2PSendReliable);
+                    //Debug.Log($"We have told {players[i].cSteamID.m_SteamID} about the new player ({message.csteamID}) and the other way round.");
+
+                    //We ask the existing player what their load out just incase the host's player receiver was out of sync.
+                    NetworkSenderThread.Instance.SendPacketToSpecificPlayer(players[i].cSteamID,
+                        new Message(MessageType.WeaponsSet),
+                        EP2PSend.k_EP2PSendReliable);
+                        //Debug.Log($"We have asked {players[i].cSteamID.m_SteamID} what their current weapons are, and now waiting for a responce."); // marsh typo response lmao
+                }
+                else
+                {
+                    Debug.Log("players[" + i + "].vehicle is null");
+                }
             }
         }
 
@@ -540,7 +548,8 @@ public static class PlayerManager
         if (networkID == localUID)
             return null;
 
-        Player player = FindPlayerFromNetworkUID(networkID);
+        int playerID = FindPlayerIDFromNetworkUID(networkID);
+        Player player = players[playerID];
 
         GameObject.Destroy(player.vehicle);
 
@@ -651,6 +660,7 @@ public static class PlayerManager
         TargetManager.instance.RegisterActor(aIPilot.actor);
             
         player.vehicle = newVehicle;
+        players[playerID] = player;
 
         VTOLVR_Multiplayer.AIDictionaries.allActors[networkID] = aIPilot.actor;
         VTOLVR_Multiplayer.AIDictionaries.reverseAllActors[aIPilot.actor] = networkID;
@@ -658,13 +668,14 @@ public static class PlayerManager
         return newVehicle;
     }
 
-    static Player FindPlayerFromNetworkUID(ulong networkUID) {
-        foreach (Player player in players) {
-            if (player.vehicleUID == networkUID) {
-                return player;
+    static int FindPlayerIDFromNetworkUID(ulong networkUID) {
+        for (int i = 0; i < players.Count; i++) {
+            if (players[i].vehicleUID == networkUID) {
+                return i;
             }
         }
-        return new Player();
+        Debug.Log("Could not find player with that UID, this is a problem.");
+        return -1;
     }
 
     /// <summary>
