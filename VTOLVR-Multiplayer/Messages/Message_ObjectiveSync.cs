@@ -20,10 +20,10 @@ public class Message_ObjectiveSync : Message
     public ulong UID;
     public ObjSyncType status;
     public int objID;
-    public Message_ObjectiveSync(ulong uid, int objID, ObjSyncType stat)
+    public Message_ObjectiveSync(ulong uid, int objid, ObjSyncType stat)
     {
         UID = uid;
-        objID = this.objID;
+        this.objID = objid;
         status = stat;
         type = MessageType.ObjectiveSync;
     }
