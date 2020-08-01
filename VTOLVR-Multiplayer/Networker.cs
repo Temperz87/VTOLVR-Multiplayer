@@ -33,7 +33,8 @@ static class MapAndScenarioVersionChecker
     public static void CreateHashes()
     {
         Debug.Log("Creating Hashes");
-        if (PilotSaveManager.currentCampaign.isBuiltIn)
+        // if (PilotSaveManager.currentCampaign.isBuiltIn)
+        if (true)
         {
             // Only need to get the scenario ID in this case
             builtInCampaign = true;

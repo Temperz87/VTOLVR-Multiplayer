@@ -12,6 +12,7 @@ class ObjectiveNetworker_Reciever
     public static Dictionary<int, float> scenarioActionsListCoolDown = new Dictionary<int, float>();
     public static void objectiveUpdate(int id, ObjSyncType status)
     {
+        Debug.Log($"Doing objective update for id {id}.");
         if (mManager == null)
         {
             mManager = MissionManager.instance;

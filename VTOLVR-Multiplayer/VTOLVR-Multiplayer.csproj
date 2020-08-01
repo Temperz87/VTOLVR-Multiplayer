@@ -143,6 +143,7 @@
     <Compile Include="ModVersionString.cs" />
     <Compile Include="Networkers\HealthNetworker_Receiver.cs" />
     <Compile Include="Networkers\HealthNetworker_Sender.cs" />
+    <Compile Include="Networkers\HealthNetworker_ReceiverHostEnforced.cs" />
     <Compile Include="Networkers\LockingRadarNetworker_Reciever.cs" />
     <Compile Include="Networkers\LockingRadarNetworker_Sender.cs" />
     <Compile Include="Networkers\NetworkSenderThread.cs" />
@@ -168,6 +169,7 @@
     <Compile Include="Networkers\WorldDataNetworker_Receiver.cs" />
     <Compile Include="Networkers\WorldDataNetworker_Sender.cs" />
     <Compile Include="Patches\Patch_LoadingSceneController.cs" />
+    <Compile Include="Patches\Patch_OnSpawnUnit.cs" />
     <Compile Include="Patches\Patch_VTEventInfo.cs" />
     <Compile Include="Patches\Patch_VTMapManager.cs" />
     <Compile Include="Patches\Patch_VTTMapTrees.cs" />

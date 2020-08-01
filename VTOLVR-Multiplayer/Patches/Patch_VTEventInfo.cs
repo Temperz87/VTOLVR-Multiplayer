@@ -83,7 +83,7 @@ class Patch4
         Debug.Log(actionIdentifier);
 
 
-        Message_ObjectiveSync objOutMessage = new Message_ObjectiveSync(PlayerManager.localUID, __instance.objectiveID, ObjSyncType.EMissionCompleted);
+        Message_ObjectiveSync objOutMessage = new Message_ObjectiveSync(PlayerManager.localUID, MissionManager.instance.IndexOfObjective(__instance), ObjSyncType.EMissionCompleted);
         if (Networker.isHost)
         {
 
@@ -121,7 +121,7 @@ class Patch5
         Debug.Log(actionIdentifier);
 
 
-        Message_ObjectiveSync objOutMessage = new Message_ObjectiveSync(PlayerManager.localUID, __instance.objectiveID, ObjSyncType.EMissionFailed);
+        Message_ObjectiveSync objOutMessage = new Message_ObjectiveSync(PlayerManager.localUID, MissionManager.instance.IndexOfObjective(__instance), ObjSyncType.EMissionFailed);
         if (Networker.isHost)
         {
             Debug.Log("Host sent objective fail " + __instance.objectiveID);
@@ -158,7 +158,7 @@ class Patch6
         Debug.Log(actionIdentifier);
 
 
-        Message_ObjectiveSync objOutMessage = new Message_ObjectiveSync(PlayerManager.localUID, __instance.objectiveID, ObjSyncType.EMissionBegin);
+        Message_ObjectiveSync objOutMessage = new Message_ObjectiveSync(PlayerManager.localUID, MissionManager.instance.IndexOfObjective(__instance), ObjSyncType.EMissionBegin);
         if (Networker.isHost)
         {
 
@@ -197,7 +197,7 @@ class Patch7
         Debug.Log(actionIdentifier);
 
 
-        Message_ObjectiveSync objOutMessage = new Message_ObjectiveSync(PlayerManager.localUID, __instance.objectiveID, ObjSyncType.EMissionCanceled);
+        Message_ObjectiveSync objOutMessage = new Message_ObjectiveSync(PlayerManager.localUID, MissionManager.instance.IndexOfObjective(__instance), ObjSyncType.EMissionCanceled);
         if (Networker.isHost)
         {
 
