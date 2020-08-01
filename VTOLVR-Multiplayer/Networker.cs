@@ -349,6 +349,7 @@ public class Networker : MonoBehaviour
         if (gameState != GameState.Menu)
         {
             Debug.LogError("Can't host game as already in one");
+            Multiplayer._instance.displayError("Can't host game as already in one");
             return;
         }
         Debug.Log("Hosting game");
@@ -381,6 +382,7 @@ public class Networker : MonoBehaviour
         if (gameState != GameState.Menu)
         {
             Debug.LogError("Can't join game as already in one");
+            Multiplayer._instance.displayError("Can't join game as already in one");
             return;
         }
         isHost = false;
@@ -538,6 +540,7 @@ public class Networker : MonoBehaviour
                     break;
                 case MessageType.JoinRequestAccepted_Result:
                     Debug.Log($"case join request accepted result, joining {csteamID.m_SteamID}");
+                    Multiplayer._instance.displayInfo($"case join request accepted result, joining {csteamID.m_SteamID}");
                     hostID = csteamID;
                     TimeoutCounter = 0;
                     HeartbeatTimerRunning = true;
@@ -549,6 +552,7 @@ public class Networker : MonoBehaviour
                     Debug.Log("case join request rejected result");
                     Message_JoinRequestRejected_Result joinResultRejected = packetS.message as Message_JoinRequestRejected_Result;
                     Debug.LogWarning($"We can't join {csteamID.m_SteamID} reason = \n{joinResultRejected.reason}");
+                    Multiplayer._instance.displayError($"We can't join {csteamID.m_SteamID} reason = \n{joinResultRejected.reason}");
                     break;
                 case MessageType.Ready:
                     if (!isHost)
@@ -682,6 +686,7 @@ public class Networker : MonoBehaviour
                             if (flightSceneManager == null)
                                 Debug.LogError("FlightSceneManager was null when host quit");
                             flightSceneManager.ExitScene();
+                            Multiplayer._instance.displayError($"Host disconnected from session.");
                         }
                         else
                         {
