@@ -707,7 +707,7 @@ public static class PlayerManager
         Debug.Log("Generating Spawns!");
         Actor curPlayer = FlightSceneManager.instance.playerActor;
         GameObject lastSpawn;
-        spawnPoints = new List<Transform>(spawnsCount);
+        spawnPoints = new List<Transform>();
         int spawnCounter = 0;
         //If the player starts on the ground
         Debug.Log($"The player's velocity is {curPlayer.velocity.magnitude}");

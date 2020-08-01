@@ -167,6 +167,7 @@
     <Compile Include="Patches\Patch_ActorExtensions.cs" />
     <Compile Include="Patches\Patch_LoadingSceneController.cs" />
     <Compile Include="Patches\Patch_VTMapManager.cs" />
+    <Compile Include="Patches\Patch_RespawnRelatedPatches.cs" />
     <Compile Include="Patches\Patch_VTTMapTrees.cs" />
     <Compile Include="PlaneEquippableManager.cs" />
     <Compile Include="PlayerManager.cs" />
