@@ -535,10 +535,16 @@ public static class PlayerManager
         //Debug.Log("Setting vehicle name");
         newVehicle.name = $"Client [{message.csteamID}]";
         Debug.Log($"Spawned new vehicle at {newVehicle.transform.position}");
-
-        HealthNetworker_ReceiverHostEnforced healthNetworker = newVehicle.AddComponent<HealthNetworker_ReceiverHostEnforced>();
-        healthNetworker.networkUID = message.networkID;
-
+        if (Networker.isHost)
+        {
+            HealthNetworker_Receiver healthNetworker = newVehicle.AddComponent<HealthNetworker_Receiver>();
+            healthNetworker.networkUID = message.networkID;
+        }
+        else
+        {
+            HealthNetworker_ReceiverHostEnforced healthNetworker = newVehicle.AddComponent<HealthNetworker_ReceiverHostEnforced>();
+            healthNetworker.networkUID = message.networkID;
+        }
         RigidbodyNetworker_Receiver rbNetworker = newVehicle.AddComponent<RigidbodyNetworker_Receiver>();
         rbNetworker.networkUID = message.networkID;
 

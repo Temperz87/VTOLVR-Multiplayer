@@ -95,13 +95,13 @@ class LockingRadarNetworker_Receiver : MonoBehaviour
             }
         }
     }
-    private void FixedUpdate()
+    /*private void FixedUpdate()
     {
         if (lastLocked && !lockingRadar.IsLocked() && lastLock != 0)
         {
             if (VTOLVR_Multiplayer.AIDictionaries.allActors.TryGetValue(lastLock, out lastActor))
             {
-                Debug.Log("Radar" + gameObject.name + $"refound its lock after dropping it at  {lastLock} while trying to relock id {lastLockingMessage.actorUID}. Last locked: {lastLocked}, lockingRadar.isLocked {lockingRadar.IsLocked()}, lastLock: {lastLock}. Trying to force a lock.");
+                Debug.Log("Radar " + gameObject.name + $" refound its lock after dropping it at  {lastLock} while trying to relock id {lastLockingMessage.actorUID}. Last locked: {lastLocked}, lockingRadar.isLocked {lockingRadar.IsLocked()}, lastLock: {lastLock}. Trying to force a lock.");
                 lockingRadar.ForceLock(lastActor, out radarLockData);
                 // lastLocked = true;
                 Debug.Log($"The lock data is Locked: {radarLockData.locked}, reLocked Actor: " + radarLockData.actor.name);
@@ -112,7 +112,7 @@ class LockingRadarNetworker_Receiver : MonoBehaviour
             Debug.Log($"Radar is locked when it shouldn't be, unlocking. LastLocked: {lastLocked}, lockingRadar.IsLocked() {lockingRadar.IsLocked()}");
             lockingRadar.Unlock();
         }
-    }
+    }*/
     public void OnDestroy()
     {
         Networker.RadarUpdate -= RadarUpdate;
