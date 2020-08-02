@@ -13,7 +13,7 @@ class Patch2
 {
     static void Postfix(VTEventTarget __instance)
     {
-        String actionIdentifier = __instance.eventName + __instance.methodName + __instance.targetID+ __instance.targetType.ToString();
+        String actionIdentifier = __instance.eventName + __instance.methodName + __instance.targetID + __instance.targetType.ToString();
         int hash = actionIdentifier.GetHashCode();
 
         Message_ScenarioAction ScanarioActionOutMessage = new Message_ScenarioAction(PlayerManager.localUID, hash);
@@ -56,8 +56,8 @@ class Patch3
             if (!ObjectiveNetworker_Reciever.scenarioActionsList.ContainsKey(hash))
                 ObjectiveNetworker_Reciever.scenarioActionsList.Add(hash, vTEventTarget);
             else
-             Debug.Log("Duplicate VT scenario actions found, we should probably rewrite the dictionary code");
-                
+                Debug.Log("Duplicate VT scenario actions found, we should probably rewrite the dictionary code");
+
         }
         return false;//dont run bahas code
     }
@@ -76,7 +76,7 @@ class Patch4
     {
         //prevents infinite client host pings
         //if (__instance.completed)
-         //   return false;
+        //   return false;
         Debug.Log("A mission got completed we need to send it");
 
 
@@ -95,16 +95,17 @@ class Patch4
         }
         else
         {
-            return true; // clients should not send obj packets
+            if (VTScenario.current.objectives.GetObjective(__instance.objectiveID).objectiveType == VTObjective.ObjectiveTypes.Destroy)
+            {
+                Debug.Log("Making client not send kill objective packet.");
+                return true;// clients should not send kill obj packets
+            }
             Debug.Log("Client sent objective complete " + __instance.objectiveID);
             NetworkSenderThread.Instance.SendPacketToSpecificPlayer(Networker.hostID, objOutMessage, Steamworks.EP2PSend.k_EP2PSendUnreliableNoDelay);
         }
         return true;
     }
 }
-
-
-
 
 //patch to grab all the events being loaded on creation this replaces original method
 [HarmonyPatch(typeof(MissionObjective), "FailObjective")]
@@ -132,17 +133,16 @@ class Patch5
         }
         else
         {
-            return true;// clients should not send obj packets
-            Debug.Log("Client sent objective fail " + __instance.objectiveID);
+            if (VTScenario.current.objectives.GetObjective(__instance.objectiveID).objectiveType == VTObjective.ObjectiveTypes.Destroy)
+            {
+                Debug.Log("Making client not send kill objective packet.");
+                return true;// clients should not send kill obj packets
+            }
             NetworkSenderThread.Instance.SendPacketToSpecificPlayer(Networker.hostID, objOutMessage, Steamworks.EP2PSend.k_EP2PSendUnreliableNoDelay);
         }
         return true;
     }
 }
-
-
-
-
 
 //patch to grab all the events being loaded on creation this replaces original method
 [HarmonyPatch(typeof(MissionObjective), "BeginMission")]
@@ -152,7 +152,7 @@ class Patch6
     {
         //prevents infinite client host pings
         //if (__instance.started)
-         //   return true;
+        //   return true;
         Debug.Log("A mission got BeginMission we need to send it");
 
 
@@ -171,17 +171,17 @@ class Patch6
         }
         else
         {
-            return true;// clients should not send obj packets
+            if (VTScenario.current.objectives.GetObjective(__instance.objectiveID).objectiveType == VTObjective.ObjectiveTypes.Destroy)
+            {
+                Debug.Log("Making client not send kill objective packet.");
+                return true;// clients should not send kill obj packets
+            }
             Debug.Log("Client sent objective BeginMission " + __instance.objectiveID);
             NetworkSenderThread.Instance.SendPacketToSpecificPlayer(Networker.hostID, objOutMessage, Steamworks.EP2PSend.k_EP2PSendUnreliableNoDelay);
         }
         return true;
     }
 }
-
-
-
-
 
 //patch to grab all the events being loaded on creation this replaces original method
 [HarmonyPatch(typeof(MissionObjective), "CancelObjective")]
@@ -191,8 +191,8 @@ class Patch7
     {
         //prevents infinite client host pings
         //if (__instance.cancelled)
-         //   return true;
-        }
+        //   return true;
+
         Debug.Log("A mission got CancelObjective we need to send it");
 
 
@@ -211,7 +211,11 @@ class Patch7
         }
         else
         {
-            return true;// clients should not send obj packets
+            if (VTScenario.current.objectives.GetObjective(__instance.objectiveID).objectiveType == VTObjective.ObjectiveTypes.Destroy)
+            {
+                Debug.Log("Making client not send kill objective packet.");
+                return true;// clients should not send kill obj packets
+            }
             Debug.Log("Client sent objective CancelObjective " + __instance.objectiveID);
             NetworkSenderThread.Instance.SendPacketToSpecificPlayer(Networker.hostID, objOutMessage, Steamworks.EP2PSend.k_EP2PSendUnreliableNoDelay);
         }

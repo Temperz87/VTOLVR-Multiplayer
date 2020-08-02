@@ -14,7 +14,7 @@ using System.Text.RegularExpressions;
 public static class PlayerManager
 {
     public static List<Transform> spawnPoints { private set; get; }
-    
+
     private static float spawnSpacing = 20;
     private static int spawnsCount = 20;
     private static int spawnTicker = 0;
@@ -73,7 +73,7 @@ public static class PlayerManager
         {
             Debug.Log($"Sending spawn request to host, host id: {Networker.hostID}, client id: {SteamUser.GetSteamID().m_SteamID}");
             Debug.Log("Killing all units currently on the map.");
-            List<Actor> allActors = new List<Actor>(); 
+            List<Actor> allActors = new List<Actor>();
             foreach (var actor in TargetManager.instance.allActors)
             {
                 if (!actor.isPlayer)
@@ -190,11 +190,12 @@ public static class PlayerManager
         {
             AIManager.SpawnAIVehicle(AIManager.AIsToSpawnQueue.Dequeue());
         }
-        while (playersToSpawnQueue.Count > 0) {
+        while (playersToSpawnQueue.Count > 0)
+        {
             SpawnPlayerVehicle(playersToSpawnQueue.Dequeue(), playersToSpawnIdQueue.Dequeue());
         }
 
-        
+
         if (!Networker.isHost)
         {
             // If the player is not the host, they only need a receiver?
@@ -338,7 +339,8 @@ public static class PlayerManager
             Debug.Log("local player has no health?");
         }
 
-        if (localVehicle.GetComponentInChildren<WingFoldController>() != null) {
+        if (localVehicle.GetComponentInChildren<WingFoldController>() != null)
+        {
             WingFoldNetworker_Sender wingFold = localVehicle.AddComponent<WingFoldNetworker_Sender>();
             wingFold.wingController = localVehicle.GetComponentInChildren<WingFoldController>().toggler;
             wingFold.networkUID = UID;
@@ -372,17 +374,18 @@ public static class PlayerManager
             // Not host, so send host the spawn vehicle message
             Debug.Log($"Sending spawn vehicle message to: {Networker.hostID}");
             NetworkSenderThread.Instance.SendPacketToSpecificPlayer(Networker.hostID,
-                new Message_SpawnPlayerVehicle(currentVehicle, 
-                    new Vector3D(pos), 
-                    new Vector3D(rot), 
-                    SteamUser.GetSteamID().m_SteamID, 
-                    UID, 
-                    hpInfos.ToArray(), 
-                    cm.ToArray(), 
+                new Message_SpawnPlayerVehicle(currentVehicle,
+                    new Vector3D(pos),
+                    new Vector3D(rot),
+                    SteamUser.GetSteamID().m_SteamID,
+                    UID,
+                    hpInfos.ToArray(),
+                    cm.ToArray(),
                     fuel),
                 EP2PSend.k_EP2PSendReliable);
         }
-        else {
+        else
+        {
             Debug.Log("I am host, no need to immediately forward my assembled vehicle");
         }
     }
@@ -508,19 +511,22 @@ public static class PlayerManager
                 Debug.LogError("Vehcile Enum seems to be none, couldn't spawn player vehicle");
                 return;
             case VTOLVehicles.AV42C:
-                if (null == av42cPrefab) {
+                if (null == av42cPrefab)
+                {
                     SetPrefabs();
                 }
                 newVehicle = GameObject.Instantiate(av42cPrefab, message.position.toVector3, Quaternion.Euler(message.rotation.toVector3));
                 break;
             case VTOLVehicles.FA26B:
-                if (null == fa26bPrefab) {
+                if (null == fa26bPrefab)
+                {
                     SetPrefabs();
                 }
                 newVehicle = GameObject.Instantiate(fa26bPrefab, new Vector3(message.position.toVector3.x, message.position.toVector3.y + 2f, message.position.toVector3.z), Quaternion.Euler(message.rotation.toVector3));
                 break;
             case VTOLVehicles.F45A:
-                if (null == f45Prefab) {
+                if (null == f45Prefab)
+                {
                     SetPrefabs();
                 }
                 newVehicle = GameObject.Instantiate(f45Prefab, message.position.toVector3, Quaternion.Euler(message.rotation.toVector3));
@@ -546,13 +552,14 @@ public static class PlayerManager
             tiltReceiver.networkUID = message.networkID;
         }
 
-        
+
 
         Rigidbody rb = newVehicle.GetComponent<Rigidbody>();
         AIPilot aIPilot = newVehicle.GetComponent<AIPilot>();
 
         RotationToggle wingRotator = aIPilot.wingRotator;
-        if (wingRotator != null) {
+        if (wingRotator != null)
+        {
             WingFoldNetworker_Receiver wingFoldReceiver = newVehicle.AddComponent<WingFoldNetworker_Receiver>();
             wingFoldReceiver.networkUID = message.networkID;
             wingFoldReceiver.wingController = wingRotator;
@@ -662,14 +669,15 @@ public static class PlayerManager
                     }
                 }
             }
-            else if (equip is HPEquipGunTurret) {
+            else if (equip is HPEquipGunTurret)
+            {
                 TurretNetworker_Receiver reciever = equip.gameObject.AddComponent<TurretNetworker_Receiver>();
                 reciever.networkUID = message.networkID;
                 reciever.turret = equip.GetComponent<ModuleTurret>();
-                equip.enabled = false; 
+                equip.enabled = false;
             }
         }
-            FuelTank fuelTank = newVehicle.GetComponent<FuelTank>();
+        FuelTank fuelTank = newVehicle.GetComponent<FuelTank>();
         if (fuelTank == null)
             Debug.LogError("Failed to get fuel tank on " + newVehicle.name);
         fuelTank.startingFuel = loadout.normalizedFuel * fuelTank.maxFuel;
@@ -871,7 +879,8 @@ public static class PlayerManager
                         if (!parkingSpace.occupiedBy)
                         {
                             Debug.Log($"Parking space distance from host: {Vector3.Distance(curPlayer.flightInfo.transform.position, parkingSpace.transform.position)}");
-                            if (Vector3.Distance(curPlayer.flightInfo.transform.position, parkingSpace.transform.position) > 2f) { 
+                            if (Vector3.Distance(curPlayer.flightInfo.transform.position, parkingSpace.transform.position) > 2f)
+                            {
                                 lastSpawn = new GameObject("MP Spawn " + spawnCounter);
                                 lastSpawn.AddComponent<FloatingOriginTransform>();
                                 lastSpawn.transform.position = parkingSpace.transform.position;
@@ -926,15 +935,16 @@ public static class PlayerManager
             Transform returnValue = new GameObject().transform;
             Debug.LogError("Spawn Points was null, we can't find a spawn point.\nReturning a new transform at " + returnValue.position);
             return returnValue;
-        } 
+        }
         spawnTicker += 1;
-        if(spawnTicker > spawnsCount-1);
-           spwanTicker = 0;
-        
+        if (spawnTicker > spawnsCount - 1)
+            spawnTicker = 0;
+
         return spawnPoints[spawnTicker];
     }
 
-    public static void CleanUpPlayerManagerStaticVariables() {
+    public static void CleanUpPlayerManagerStaticVariables()
+    {
         spawnPoints?.Clear();
         spawnRequestQueue?.Clear();
         playersToSpawnQueue?.Clear();
