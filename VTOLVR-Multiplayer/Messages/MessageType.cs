@@ -41,8 +41,10 @@ public enum MessageType
     LockingRadarUpdate, //See above nerd
     TurretUpdate, //This is turret aiming data
     JettisonUpdate, // Used when weapons are jettisoned
-    ServerHeartbeat,
-    ServerHeartbeat_Response,
-    ServerReportingPingTime,
-    LoadingTextRequest //Clients request for loading text
+    ServerHeartbeat, // Ping
+    ServerHeartbeat_Response, // Pong
+    ServerReportingPingTime, // Ping
+    LoadingTextRequest, //Clients request for loading text
+    ObjectiveSync, // To sync objectives
+    ScenarioAction // To sync scenario actions which have their hand in objectives
 }

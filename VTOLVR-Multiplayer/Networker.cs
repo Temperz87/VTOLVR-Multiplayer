@@ -33,7 +33,8 @@ static class MapAndScenarioVersionChecker
     public static void CreateHashes()
     {
         Debug.Log("Creating Hashes");
-        if (PilotSaveManager.currentCampaign.isBuiltIn)
+        // if (PilotSaveManager.currentCampaign.isBuiltIn)
+        if (true)
         {
             // Only need to get the scenario ID in this case
             builtInCampaign = true;
@@ -843,6 +844,44 @@ public class Networker : MonoBehaviour
                     Debug.Log("case jettison update");
                     if (JettisonUpdate != null)
                         JettisonUpdate.Invoke(packet);
+                    break;
+                case MessageType.ScenarioAction:
+                    Debug.Log("case scenario action packet");
+                    Message_ScenarioAction lastMessage = (Message_ScenarioAction)((PacketSingle)packet).message;
+
+                    Debug.Log("recieved action from other");
+                    // do not run scenarios on self
+                    if (lastMessage.UID == PlayerManager.localUID)
+                    {
+                        Debug.Log("ignored action as local event");
+
+                    }
+                    else
+                    {
+                        Debug.Log("running event from another person");
+                        ObjectiveNetworker_Reciever.runScenarioAction(lastMessage.scenarioActionHash);
+                    }
+
+                    break;
+
+                case MessageType.ObjectiveSync:
+                    Debug.Log("case Objective");
+
+                    Message_ObjectiveSync lastMessageobbj = (Message_ObjectiveSync)((PacketSingle)packet).message;
+
+                    Debug.Log("recieved action from other");
+                    // do not run scenarios on self
+                    if (lastMessageobbj.UID == PlayerManager.localUID)
+                    {
+                        Debug.Log("ignored objective as local obj objective");
+
+                    }
+                    else
+                    {
+                        Debug.Log("running obj event from another person");
+                        ObjectiveNetworker_Reciever.objectiveUpdate(lastMessageobbj.objID, lastMessageobbj.status);
+                    }
+
                     break;
                 default:
                     Debug.Log("default case");
