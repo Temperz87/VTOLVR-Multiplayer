@@ -17,6 +17,7 @@ public static class PlayerManager
     
     private static float spawnSpacing = 20;
     private static int spawnsCount = 20;
+    private static int spawnTicker = 0;
     /// <summary>
     /// This is the queue for people waiting to get a spawn point,
     /// incase the host hasn't loaded in, in time.
@@ -925,8 +926,12 @@ public static class PlayerManager
             Transform returnValue = new GameObject().transform;
             Debug.LogError("Spawn Points was null, we can't find a spawn point.\nReturning a new transform at " + returnValue.position);
             return returnValue;
-        }   
-        return spawnPoints[UnityEngine.Random.Range(0, spawnsCount - 1)];
+        } 
+        spawnTicker += 1;
+        if(spawnTicker > spawnsCount-1);
+           spwanTicker = 0;
+        
+        return spawnPoints[spawnTicker];
     }
 
     public static void CleanUpPlayerManagerStaticVariables() {
