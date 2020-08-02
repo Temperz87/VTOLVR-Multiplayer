@@ -178,7 +178,7 @@ public class Networker : MonoBehaviour
         get { lock (timeoutCounterLock) { return timeoutCounterInternal; } }
         set { lock (timeoutCounterLock) { timeoutCounterInternal = value; } }
     }
-    private static readonly int clientTimeoutInSeconds = 5;
+    private static readonly int clientTimeoutInSeconds = 60;
     private static readonly object disconnectForClientTimeoutLock = new object();
     private static bool disconnectForClientTimeoutInternal = false;
     private static bool disconnectForClientTimeout
@@ -731,6 +731,11 @@ public class Networker : MonoBehaviour
                     if (Death != null)
                         Death.Invoke(packet);
                     break;
+                case MessageType.Respawn:
+                    Debug.Log("case respawn");
+                    Message_Respawn respawnMessage = ((PacketSingle)packet).message as Message_Respawn;
+                    PlayerManager.SpawnRepresentation(respawnMessage.UID, respawnMessage.position, respawnMessage.rotation);
+                    break;
                 case MessageType.WingFold:
                     Debug.Log("case wingfold");
                     if (WingFold != null)
@@ -796,15 +801,6 @@ public class Networker : MonoBehaviour
                     {
                         Debug.Log("Host is already loaded");
                     }
-                    break;
-                case MessageType.ActorSync:
-                    Debug.Log("case actor sync");
-                    if (isHost)
-                    {
-                        Debug.LogWarning("Host shouldn't get an actor sync...");
-                        break;
-                    }
-                    ActorNetworker_Reciever.syncActors(packet);
                     break;
                 case MessageType.ServerHeartbeat:
                     if (!isHost)
