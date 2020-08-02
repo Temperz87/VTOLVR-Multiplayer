@@ -10,6 +10,7 @@ class ObjectiveNetworker_Reciever
     private static MissionManager mManager = MissionManager.instance;
     public static Dictionary<int, VTEventTarget> scenarioActionsList = new Dictionary<int, VTEventTarget>();
     public static Dictionary<int, float> scenarioActionsListCoolDown = new Dictionary<int, float>();
+    public static bool completeNext = false;
     public static void objectiveUpdate(int id, ObjSyncType status)
     {
         Debug.Log($"Doing objective update for id {id}.");
@@ -33,7 +34,7 @@ class ObjectiveNetworker_Reciever
         if (status == ObjSyncType.EMissionCompleted && !obj.completed)
         {
             Debug.Log("Completeing mission complete locally");
-
+            completeNext = true;
             obj.CompleteObjective();
         }
 

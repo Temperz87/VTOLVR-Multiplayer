@@ -89,8 +89,8 @@ class Patch4
         Message_ObjectiveSync objOutMessage = new Message_ObjectiveSync(PlayerManager.localUID, MissionManager.instance.IndexOfObjective(__instance), ObjSyncType.EMissionCompleted);
         if (Networker.isHost)
         {
-
             Debug.Log("Host sent objective complete " + __instance.objectiveID);
+            ObjectiveNetworker_Reciever.completeNext = false;
             NetworkSenderThread.Instance.SendPacketAsHostToAllClients(objOutMessage, Steamworks.EP2PSend.k_EP2PSendUnreliableNoDelay);
         }
         else
@@ -98,8 +98,11 @@ class Patch4
             if (VTScenario.current.objectives.GetObjective(__instance.objectiveID).objectiveType == VTObjective.ObjectiveTypes.Destroy)
             {
                 Debug.Log("Making client not send kill objective packet.");
-                return true;// clients should not send kill obj packets
+                bool shouldComplete = ObjectiveNetworker_Reciever.completeNext;
+                ObjectiveNetworker_Reciever.completeNext = false;
+                return shouldComplete;// clients should not send kill obj packets or have them complete
             }
+            ObjectiveNetworker_Reciever.completeNext = false;
             Debug.Log("Client sent objective complete " + __instance.objectiveID);
             NetworkSenderThread.Instance.SendPacketToSpecificPlayer(Networker.hostID, objOutMessage, Steamworks.EP2PSend.k_EP2PSendUnreliableNoDelay);
         }
