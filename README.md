@@ -18,6 +18,16 @@ Because the mod is currently in pre-alpha testing phase, the dll is not provided
 
 [MarshMellow0](https://github.com/MarshMello0 "MarshMello0's Github") for making the foundation of the multiplayer mod, so others can finish the fight.
 
+[Dib](https://github.com/Nisenogen "Dib's Github") for being someone we can ask general C# questions about, and casually threading the networker class.
+
+[THEGREATOVERLORDLORDOFALLCHEESE](https://github.com/THE-GREAT-OVERLORD-LORD-OF-ALL-CHEESE "Cheese's Github") for syncing features of the aircraft such as wingfold, and making the small details work, along with the aircraft carrier.
+
+[mrdoctorsurgeon](https://github.com/omarehaly "surgeon's Github") for understanding how objectives work in game and helping us out with making it happen, he's the only reason objectives work.
+
+[nebriv](https://github.com/nebriv "Nebriv's Github") for making the UI look pretty and general things with mods and hashes.
+
+[Zaelix](https://github.com/Zaelix "Zaelix's Github") for also helping with the UI.
+
 Contributions are welcomed, if you would like to help out with creating multiplayer, fork the project, add your code then create a pull request.
 
 ## Useful Links

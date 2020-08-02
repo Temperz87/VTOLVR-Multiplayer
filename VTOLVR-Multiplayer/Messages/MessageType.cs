@@ -30,6 +30,7 @@ public enum MessageType
     MissileUpdate, //This is when a missile is updating its state across the network.
     FireCountermeasure, //This is when a player fires a countermeasure
     Death, //This is when a player dies
+    Respawn, //This is when a player respawns
     HostLoaded, // This is when the host has loaded and the clients can load
     WingFold, //this is when a player folds or unfolds their wings
     ActorSync, // This updates actors
@@ -39,8 +40,11 @@ public enum MessageType
     RadarUpdate, //this is when the radar is turned on or off, or the fov is changed, make a messsage called LockingRadarUpdate in the future to deal with locks
     LockingRadarUpdate, //See above nerd
     TurretUpdate, //This is turret aiming data
-    ServerHeartbeat,
-    ServerHeartbeat_Response,
-    ServerReportingPingTime,
-    LoadingTextRequest //Clients request for loading text
+    JettisonUpdate, // Used when weapons are jettisoned
+    ServerHeartbeat, // Ping
+    ServerHeartbeat_Response, // Pong
+    ServerReportingPingTime, // Ping
+    LoadingTextRequest, //Clients request for loading text
+    ObjectiveSync, // To sync objectives
+    ScenarioAction // To sync scenario actions which have their hand in objectives
 }

@@ -33,7 +33,8 @@ static class MapAndScenarioVersionChecker
     public static void CreateHashes()
     {
         Debug.Log("Creating Hashes");
-        if (PilotSaveManager.currentCampaign.isBuiltIn)
+        // if (PilotSaveManager.currentCampaign.isBuiltIn)
+        if (true)
         {
             // Only need to get the scenario ID in this case
             builtInCampaign = true;
@@ -44,23 +45,60 @@ static class MapAndScenarioVersionChecker
         }
         else
         {
-            filePath = VTResources.GetMapFilePath(PilotSaveManager.currentScenario.customScenarioInfo.mapID);
-            using (FileStream mapFile = File.OpenRead(filePath))
-            {
-                mapHash = hashCalculator.ComputeHash(mapFile);
-            }
+
+
+            Debug.Log("Found custom scenario - setting map hash to 0.");
+            mapHash = new byte[0];
 
             filePath = PilotSaveManager.currentScenario.customScenarioInfo.filePath;
+            Debug.Log($"Custom Scenario Location: {filePath}");
             using (FileStream scenarioFile = File.OpenRead(filePath))
             {
                 scenarioHash = hashCalculator.ComputeHash(scenarioFile);
             }
 
-            filePath = VTResources.GetCustomCampaigns().Find(id => id.campaignID == PilotSaveManager.currentCampaign.campaignID).filePath;
-            using (FileStream campaignFile = File.OpenRead(filePath))
+            filePath = null;
+
+            if (PilotSaveManager.currentCampaign.campaignID != null)
             {
-                campaignHash = hashCalculator.ComputeHash(campaignFile);
+                Debug.Log("Campaign ID Is not null");
+
+
+                //VTCampaignInfo campaignInfo = VTResources.GetCustomCampaigns().Find(id => id.campaignID == PilotSaveManager.currentCampaign.campaignID);
+
+
+                VTCampaignInfo campaignInfo = VTResources.GetSteamWorkshopCampaign(PilotSaveManager.currentCampaign.campaignID);
+
+                if (campaignInfo != null)
+                {
+                    filePath = campaignInfo.filePath;
+
+                    if (filePath != null)
+                    {
+                        Debug.Log($"Campaign File path: {filePath}");
+                        using (FileStream campaignFile = File.OpenRead(filePath))
+                        {
+                            campaignHash = hashCalculator.ComputeHash(campaignFile);
+                        }
+                    }
+                    else
+                    {
+                        Debug.Log("Campaign file path is null, we may not be playing a campaign? Setting the hash to 0.");
+                        campaignHash = new byte[0];
+                    }
+                }
+                else
+                {
+                    Debug.Log("Campaign info is null");
+                    campaignHash = new byte[0];
+                }
             }
+            else
+            {
+                Debug.Log("Campaign ID is null!");
+                campaignHash = new byte[0];
+            }
+
         }
         Debug.Log($"Campaign File Path: {filePath}");
         Debug.Log($"Campaign Hash: {campaignHash}");
@@ -141,7 +179,7 @@ public class Networker : MonoBehaviour
         get { lock (timeoutCounterLock) { return timeoutCounterInternal; } }
         set { lock (timeoutCounterLock) { timeoutCounterInternal = value; } }
     }
-    private static readonly int clientTimeoutInSeconds = 5;
+    private static readonly int clientTimeoutInSeconds = 60;
     private static readonly object disconnectForClientTimeoutLock = new object();
     private static bool disconnectForClientTimeoutInternal = false;
     private static bool disconnectForClientTimeout
@@ -206,6 +244,7 @@ public class Networker : MonoBehaviour
     public static event UnityAction<Packet> WorldDataUpdate;
     public static event UnityAction<Packet> RequestNetworkUID;
     public static event UnityAction<Packet> LockingRadarUpdate;
+    public static event UnityAction<Packet> JettisonUpdate;
     #endregion
     #region Host Forwarding Suppress By Message Type List
     private List<MessageType> hostMessageForwardingSuppressList = new List<MessageType> {
@@ -311,6 +350,7 @@ public class Networker : MonoBehaviour
         if (gameState != GameState.Menu)
         {
             Debug.LogError("Can't host game as already in one");
+            Multiplayer._instance.displayError("Can't host game as already in one");
             return;
         }
         Debug.Log("Hosting game");
@@ -343,6 +383,7 @@ public class Networker : MonoBehaviour
         if (gameState != GameState.Menu)
         {
             Debug.LogError("Can't join game as already in one");
+            Multiplayer._instance.displayError("Can't join game as already in one");
             return;
         }
         isHost = false;
@@ -500,6 +541,7 @@ public class Networker : MonoBehaviour
                     break;
                 case MessageType.JoinRequestAccepted_Result:
                     Debug.Log($"case join request accepted result, joining {csteamID.m_SteamID}");
+                    Multiplayer._instance.displayInfo($"case join request accepted result, joining {csteamID.m_SteamID}");
                     hostID = csteamID;
                     TimeoutCounter = 0;
                     HeartbeatTimerRunning = true;
@@ -511,6 +553,7 @@ public class Networker : MonoBehaviour
                     Debug.Log("case join request rejected result");
                     Message_JoinRequestRejected_Result joinResultRejected = packetS.message as Message_JoinRequestRejected_Result;
                     Debug.LogWarning($"We can't join {csteamID.m_SteamID} reason = \n{joinResultRejected.reason}");
+                    Multiplayer._instance.displayError($"We can't join {csteamID.m_SteamID} reason = \n{joinResultRejected.reason}");
                     break;
                 case MessageType.Ready:
                     if (!isHost)
@@ -644,6 +687,7 @@ public class Networker : MonoBehaviour
                             if (flightSceneManager == null)
                                 Debug.LogError("FlightSceneManager was null when host quit");
                             flightSceneManager.ExitScene();
+                            Multiplayer._instance.displayError($"Host disconnected from session.");
                         }
                         else
                         {
@@ -687,6 +731,11 @@ public class Networker : MonoBehaviour
                     Debug.Log("case death");
                     if (Death != null)
                         Death.Invoke(packet);
+                    break;
+                case MessageType.Respawn:
+                    Debug.Log("case respawn");
+                    Message_Respawn respawnMessage = ((PacketSingle)packet).message as Message_Respawn;
+                    PlayerManager.SpawnRepresentation(respawnMessage.UID, respawnMessage.position, respawnMessage.rotation);
                     break;
                 case MessageType.WingFold:
                     Debug.Log("case wingfold");
@@ -754,15 +803,6 @@ public class Networker : MonoBehaviour
                         Debug.Log("Host is already loaded");
                     }
                     break;
-                case MessageType.ActorSync:
-                    Debug.Log("case actor sync");
-                    if (isHost)
-                    {
-                        Debug.LogWarning("Host shouldn't get an actor sync...");
-                        break;
-                    }
-                    ActorNetworker_Reciever.syncActors(packet);
-                    break;
                 case MessageType.ServerHeartbeat:
                     if (!isHost)
                     {
@@ -799,6 +839,49 @@ public class Networker : MonoBehaviour
                     {
                         Debug.Log("Received loading text request and we're not the host.");
                     }
+                    break;
+                case MessageType.JettisonUpdate:
+                    Debug.Log("case jettison update");
+                    if (JettisonUpdate != null)
+                        JettisonUpdate.Invoke(packet);
+                    break;
+                case MessageType.ScenarioAction:
+                    Debug.Log("case scenario action packet");
+                    Message_ScenarioAction lastMessage = (Message_ScenarioAction)((PacketSingle)packet).message;
+
+                    Debug.Log("recieved action from other");
+                    // do not run scenarios on self
+                    if (lastMessage.UID == PlayerManager.localUID)
+                    {
+                        Debug.Log("ignored action as local event");
+
+                    }
+                    else
+                    {
+                        Debug.Log("running event from another person");
+                        ObjectiveNetworker_Reciever.runScenarioAction(lastMessage.scenarioActionHash);
+                    }
+
+                    break;
+
+                case MessageType.ObjectiveSync:
+                    Debug.Log("case Objective");
+
+                    Message_ObjectiveSync lastMessageobbj = (Message_ObjectiveSync)((PacketSingle)packet).message;
+
+                    Debug.Log("recieved action from other");
+                    // do not run scenarios on self
+                    if (lastMessageobbj.UID == PlayerManager.localUID)
+                    {
+                        Debug.Log("ignored objective as local obj objective");
+
+                    }
+                    else
+                    {
+                        Debug.Log("running obj event from another person");
+                        ObjectiveNetworker_Reciever.objectiveUpdate(lastMessageobbj.objID, lastMessageobbj.status);
+                    }
+
                     break;
                 default:
                     Debug.Log("default case");
@@ -1054,7 +1137,6 @@ public class Networker : MonoBehaviour
                 return;
             }
         }
-
         if (Multiplayer._instance.restrictToHostMods)
         {
             if (BitConverter.ToString(joinRequest.modloaderHash).Replace("-", "").ToLowerInvariant() != BitConverter.ToString(MapAndScenarioVersionChecker.modloaderHash).Replace("-", "").ToLowerInvariant())
@@ -1166,7 +1248,6 @@ public class Networker : MonoBehaviour
     {
         DisconnectionTasks();
     }
-
     public void DisconnectionTasks()
     {
         Debug.Log("Running disconnection tasks");

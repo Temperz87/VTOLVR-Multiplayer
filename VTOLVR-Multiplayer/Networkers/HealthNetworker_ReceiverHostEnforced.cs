@@ -3,7 +3,7 @@ using System.Text;
 using System.Threading.Tasks;
 using UnityEngine;
 
-class HealthNetworker_Receiver : MonoBehaviour
+class HealthNetworker_ReceiverHostEnforced : MonoBehaviour
 {
     public ulong networkUID;
     private Message_Death lastMessage;
@@ -15,7 +15,7 @@ class HealthNetworker_Receiver : MonoBehaviour
         Networker.Death += Death;
 
         health = GetComponent<Health>();
-        health.invincible = false;
+        health.invincible = true;
     }
 
     public void Death(Packet packet)
@@ -29,7 +29,8 @@ class HealthNetworker_Receiver : MonoBehaviour
         {
             Debug.Log("actor was null");
         }
-        else {
+        else
+        {
             if (actor.unitSpawn != null)
             {
                 if (actor.unitSpawn.unitSpawner == null)
@@ -39,6 +40,9 @@ class HealthNetworker_Receiver : MonoBehaviour
                 }
             }
         }
+
+
+        health.invincible = false;
         health.Kill();
     }
 
@@ -47,8 +51,5 @@ class HealthNetworker_Receiver : MonoBehaviour
         Networker.Death -= Death;
         Debug.Log("Destroyed DeathUpdate");
         Debug.Log(gameObject.name);
-
-        VTOLVR_Multiplayer.AIDictionaries.reverseAllActors.Remove(GetComponent<Actor>());
-        UnitIconManager.instance.UnregisterIcon(GetComponent<Actor>());
     }
 }
