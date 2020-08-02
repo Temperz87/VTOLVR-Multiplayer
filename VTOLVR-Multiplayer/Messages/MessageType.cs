@@ -30,6 +30,7 @@ public enum MessageType
     MissileUpdate, //This is when a missile is updating its state across the network.
     FireCountermeasure, //This is when a player fires a countermeasure
     Death, //This is when a player dies
+    Respawn, //This is when a player respawns
     HostLoaded, // This is when the host has loaded and the clients can load
     WingFold, //this is when a player folds or unfolds their wings
     ActorSync, // This updates actors
