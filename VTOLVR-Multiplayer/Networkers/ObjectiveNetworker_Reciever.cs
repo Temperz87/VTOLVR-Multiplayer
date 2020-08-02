@@ -23,6 +23,11 @@ class ObjectiveNetworker_Reciever
                 return;
             }
         }
+        if (id == -1)
+        {
+            Debug.Log("Got a -1 ID, not doing it.");
+            return;
+        }
         MissionObjective obj = mManager.GetObjective(id);
         if (obj == null)
         {

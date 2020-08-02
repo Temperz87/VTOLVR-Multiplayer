@@ -255,6 +255,15 @@ public static class AIManager
                     ground.enabled = false;
                 }
             }
+            SAMLauncher launcher = newAI.GetComponent<SAMLauncher>();
+            if (launcher != null)
+            {
+                SamNetworker_Reciever samNetworker = launcher.gameObject.AddComponent<SamNetworker_Reciever>();
+                samNetworker.networkUID = message.networkID;
+                launcher.fireInterval = float.MaxValue;
+                TurretNetworker_Receiver tRec = newAI.AddComponent<TurretNetworker_Receiver>();
+                tRec.networkUID = message.networkID;
+            }
         }
         if (actor.gameObject.GetComponentInChildren<LockingRadar>() != null)
         {

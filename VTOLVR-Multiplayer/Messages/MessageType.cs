@@ -46,5 +46,6 @@ public enum MessageType
     ServerReportingPingTime, // Ping
     LoadingTextRequest, //Clients request for loading text
     ObjectiveSync, // To sync objectives
-    ScenarioAction // To sync scenario actions which have their hand in objectives
+    ScenarioAction, // To sync scenario actions which have their hand in objectives
+    SamUpdate // Guess you nerd
 }

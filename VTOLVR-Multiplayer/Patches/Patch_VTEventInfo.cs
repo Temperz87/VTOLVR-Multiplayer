@@ -87,7 +87,7 @@ class Patch4
 
 
         Message_ObjectiveSync objOutMessage = new Message_ObjectiveSync(PlayerManager.localUID, MissionManager.instance.IndexOfObjective(__instance), ObjSyncType.EMissionCompleted);
-        if (Networker.isHost)
+        if (Networker.isHost && objOutMessage.objID != -1)
         {
             Debug.Log("Host sent objective complete " + __instance.objectiveID);
             ObjectiveNetworker_Reciever.completeNext = false;
@@ -129,7 +129,7 @@ class Patch5
 
 
         Message_ObjectiveSync objOutMessage = new Message_ObjectiveSync(PlayerManager.localUID, MissionManager.instance.IndexOfObjective(__instance), ObjSyncType.EMissionFailed);
-        if (Networker.isHost)
+        if (Networker.isHost && objOutMessage.objID != -1)
         {
             Debug.Log("Host sent objective fail " + __instance.objectiveID);
             NetworkSenderThread.Instance.SendPacketAsHostToAllClients(objOutMessage, Steamworks.EP2PSend.k_EP2PSendUnreliableNoDelay);
@@ -166,7 +166,7 @@ class Patch6
 
 
         Message_ObjectiveSync objOutMessage = new Message_ObjectiveSync(PlayerManager.localUID, MissionManager.instance.IndexOfObjective(__instance), ObjSyncType.EMissionBegin);
-        if (Networker.isHost)
+        if (Networker.isHost && objOutMessage.objID != -1)
         {
 
             Debug.Log("Host sent objective BeginMission " + __instance.objectiveID);
@@ -206,7 +206,7 @@ class Patch7
 
 
         Message_ObjectiveSync objOutMessage = new Message_ObjectiveSync(PlayerManager.localUID, MissionManager.instance.IndexOfObjective(__instance), ObjSyncType.EMissionCanceled);
-        if (Networker.isHost)
+        if (Networker.isHost && objOutMessage.objID != -1)
         {
 
             Debug.Log("Host sent objective CancelObjective " + __instance.objectiveID);
