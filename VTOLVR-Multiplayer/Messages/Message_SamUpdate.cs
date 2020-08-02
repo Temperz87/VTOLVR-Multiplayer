@@ -4,11 +4,12 @@ public class Message_SamUpdate : Message
 {
     public ulong senderUID;
     public ulong actorUID;
-
-    public Message_SamUpdate(ulong actorUID, ulong senderUID)
+    public ulong missileUID;
+    public Message_SamUpdate(ulong actorUID, ulong missileUID, ulong senderUID)
     {
-        this.senderUID = senderUID;
         this.actorUID = actorUID;
+        this.missileUID = missileUID;
+        this.senderUID = senderUID;
         type = MessageType.SamUpdate;
     }
 }

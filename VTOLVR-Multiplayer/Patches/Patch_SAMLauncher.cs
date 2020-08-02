@@ -19,7 +19,14 @@ class Patch9
             {
                 if (VTOLVR_Multiplayer.AIDictionaries.reverseAllActors.TryGetValue(___lockData.actor, out ulong actorUID))
                 {
-                    NetworkSenderThread.Instance.SendPacketAsHostToAllClients(new Message_SamUpdate(actorUID, senderUID), Steamworks.EP2PSend.k_EP2PSendReliable);
+                    Missile missile = (Missile)Traverse.Create(__instance).Field("firedMissile").GetValue();
+                    if (missile == null)
+                    {
+                        Debug.LogError($"last fired missile on " + __instance.name + " is null.");
+                    }
+                    MissileNetworker_Sender sender = missile.gameObject.AddComponent<MissileNetworker_Sender>();
+                    sender.networkUID = Networker.GenerateNetworkUID();
+                    NetworkSenderThread.Instance.SendPacketAsHostToAllClients(new Message_SamUpdate(actorUID, sender.networkUID, senderUID), Steamworks.EP2PSend.k_EP2PSendReliable);
                 }
                 else
                     Debug.LogWarning($"Could not resolve SAMLauncher {senderUID}'s target.");

@@ -9,6 +9,14 @@ class TurretNetworker_Sender : MonoBehaviour
     private void Awake()
     {
         lastMessage = new Message_TurretUpdate(new Vector3D(), networkUID);
+        if (turret == null)
+        {
+            turret = base.GetComponentInChildren<ModuleTurret>();
+            if (turret == null)
+            {
+                Debug.LogError($"Turret was null on ID {networkUID}");
+            }
+        }
     }
 
     void FixedUpdate()
