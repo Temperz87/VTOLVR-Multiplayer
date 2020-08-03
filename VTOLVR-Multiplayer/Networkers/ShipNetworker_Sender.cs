@@ -9,7 +9,7 @@ class ShipNetworker_Sender : MonoBehaviour
 
     private void Awake()
     {
-        lastMessage = new Message_ShipUpdate(new Vector3D(), new Vector3D(), new Vector3D(), new Vector3D(), networkUID);
+        lastMessage = new Message_ShipUpdate(new Vector3D(), new Quaternion(), new Vector3D(), new Vector3D(), networkUID);
         ship = GetComponent<ShipMover>();
     }
 
@@ -20,7 +20,7 @@ class ShipNetworker_Sender : MonoBehaviour
             timer = 0;
 
             lastMessage.position = VTMapManager.WorldToGlobalPoint(ship.transform.position);
-            lastMessage.rotation = new Vector3D(ship.transform.rotation.eulerAngles);
+            lastMessage.rotation =  ship.transform.rotation;
             lastMessage.velocity = new Vector3D(ship.velocity);
 
             if (ship.currWpt != null) {

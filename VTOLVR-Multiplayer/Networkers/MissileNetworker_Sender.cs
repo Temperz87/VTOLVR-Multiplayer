@@ -35,7 +35,7 @@ public class MissileNetworker_Sender : MonoBehaviour
                 Debug.LogError("gameObject null in MissileNetworker_Sender");
             }
             lastMessage.position = VTMapManager.WorldToGlobalPoint(gameObject.transform.position);
-            lastMessage.rotation = new Vector3D(gameObject.transform.rotation.eulerAngles);
+            lastMessage.rotation = gameObject.transform.rotation;
             lastMessage.guidanceMode = thisMissile.guidanceMode;
             if (thisMissile.guidanceMode == Missile.GuidanceModes.Radar)
             {
