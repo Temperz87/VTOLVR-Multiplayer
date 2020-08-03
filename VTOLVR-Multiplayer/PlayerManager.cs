@@ -559,7 +559,7 @@ public static class PlayerManager
         GameObject puppet = SpawnRepresentation(message.networkID, message.position, message.rotation);
         if (puppet != null)
         {
-            LoadoutManager.SetLoadout(puppet, message.networkID, message.normalizedFuel, message.hpLoadout, message.cmLoadout);
+            PlaneEquippableManager.SetLoadout(puppet, message.networkID, message.normalizedFuel, message.hpLoadout, message.cmLoadout);
         }
     }
 
