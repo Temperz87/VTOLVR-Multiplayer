@@ -50,7 +50,7 @@ public static class PlaneEquippableManager
                     switch (networkType) {
                         case HPInfoListGenerateNetworkType.generate:
                             MissileNetworker_Sender mnSender = HPml.ml.missiles[j].gameObject.AddComponent<MissileNetworker_Sender>();
-                            mnSender.networkUID = Networker.GenerateNetworkUID();
+                            //mnSender.networkUID = Networker.GenerateNetworkUID();
                             missileUIDS.Add(mnSender.networkUID);
                             break;
                         case HPInfoListGenerateNetworkType.sender:
@@ -78,11 +78,10 @@ public static class PlaneEquippableManager
                 switch (networkType)
                 {
                     case HPInfoListGenerateNetworkType.generate:
+                        Debug.Log("Added m230 turret sender");
                         TurretNetworker_Sender sender = HPm230.gameObject.AddComponent<TurretNetworker_Sender>();
                         sender.networkUID = networkID;
                         sender.turret = HPm230.GetComponent<ModuleTurret>();
-                        break;
-                    case HPInfoListGenerateNetworkType.receiver:
                         break;
                     default:
                         break;
@@ -169,6 +168,7 @@ public static class PlaneEquippableManager
                             if (uIDidx < thingy.missileUIDS.Length)
                             {
                                 lastReciever.networkUID = thingy.missileUIDS[uIDidx];
+                                Debug.Log($"Missile ({lastReciever.gameObject.name}) has received their UID from the host. \n Missiles UID = {lastReciever.networkUID}");
                                 lastReciever.thisML = hpML.ml;
                                 lastReciever.idx = j;
                                 uIDidx++;
@@ -183,6 +183,7 @@ public static class PlaneEquippableManager
                 reciever.networkUID = networkID;
                 reciever.turret = equip.GetComponent<ModuleTurret>();
                 equip.enabled = false;
+                Debug.Log("Added m230 turret reciever");
             }
         }
         FuelTank fuelTank = vehicle.GetComponent<FuelTank>();

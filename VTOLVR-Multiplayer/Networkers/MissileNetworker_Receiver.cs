@@ -24,6 +24,7 @@ public class MissileNetworker_Receiver : MonoBehaviour
         Networker.MissileUpdate += MissileUpdate;
         thisMissile.OnDetonate.AddListener(new UnityEngine.Events.UnityAction(() => { Debug.Log("Missile detonated: " + thisMissile.name); }));
     }
+
     public void MissileUpdate(Packet packet)
     {
         if (!thisMissile.gameObject.activeSelf)

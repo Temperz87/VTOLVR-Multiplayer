@@ -174,7 +174,7 @@ public static class PlayerManager
                 UIDNetworker_Sender hostSender = localVehicle.AddComponent<UIDNetworker_Sender>();
                 hostSender.networkUID = localUID;
                 Debug.Log($"The host's uID is {localUID}");
-                SpawnLocalVehicleAndInformOtherClients(localVehicle, localVehicle.transform.position, localVehicle.transform.rotation , localUID);
+                SpawnLocalVehicleAndInformOtherClients(localVehicle, localVehicle.transform.position, localVehicle.transform.rotation, localUID);
             }
             else
                 Debug.Log("Local vehicle for host was null");
@@ -187,10 +187,7 @@ public static class PlayerManager
         {
             AIManager.SpawnAIVehicle(AIManager.AIsToSpawnQueue.Dequeue());
         }
-        while (playersToSpawnQueue.Count > 0)
-        {
-            SpawnPlayerVehicle(playersToSpawnQueue.Dequeue(), playersToSpawnIdQueue.Dequeue());
-        }
+        SpawnPlayersInPlayerSpawnQueue();
 
 
         if (!Networker.isHost)
@@ -206,6 +203,13 @@ public static class PlayerManager
             Debug.Log($"Player is the host, setting up the world data sender");
             worldData = new GameObject();
             worldData.AddComponent<WorldDataNetworker_Sender>();
+        }
+    }
+
+    public static void SpawnPlayersInPlayerSpawnQueue() {
+        while (playersToSpawnQueue.Count > 0)
+        {
+            SpawnPlayerVehicle(playersToSpawnQueue.Dequeue(), playersToSpawnIdQueue.Dequeue());
         }
     }
 
