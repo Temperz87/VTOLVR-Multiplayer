@@ -13,6 +13,6 @@ public class Message_Respawn : Message
         UID = uID;
         this.position = position;
         this.rotation = rotation;
-    type = MessageType.Respawn;
+        type = MessageType.Respawn;
     }
 }

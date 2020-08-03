@@ -183,33 +183,36 @@ public class PlaneNetworker_Receiver : MonoBehaviour
         if (message.UID != networkUID)
             return;
 
-        List<string> hpLoadoutNames = new List<string>();
-        for (int i = 0; i < message.hpLoadout.Length; i++)
+        if (Networker.isHost && packet.networkUID != networkUID)
         {
-            hpLoadoutNames.Add(message.hpLoadout[i].hpName);
+            //Debug.Log("Generating UIDS for any missiles the new vehicle has");
+            for (int i = 0; i < message.hpLoadout.Length; i++)
+            {
+                for (int j = 0; j < message.hpLoadout[i].missileUIDS.Length; j++)
+                {
+                    if (message.hpLoadout[i].missileUIDS[j] != 0)
+                    {
+                        //Storing the old one
+                        ulong clientsUID = message.hpLoadout[i].missileUIDS[j];
+                        //Generating a new global UID for that missile
+                        message.hpLoadout[i].missileUIDS[j] = Networker.GenerateNetworkUID();
+                        //Sending it back to that client
+                        NetworkSenderThread.Instance.SendPacketToSpecificPlayer(PlayerManager.GetPlayerCSteamID(message.UID),
+                            new Message_RequestNetworkUID(clientsUID, message.hpLoadout[i].missileUIDS[j]),
+                            EP2PSend.k_EP2PSendReliable);
+                    }
+                }
+            }
         }
 
+        PlaneEquippableManager.SetLoadout(gameObject, networkUID, message.normalizedFuel, message.hpLoadout, message.cmLoadout);
 
-        Loadout loadout = new Loadout();
-        loadout.hpLoadout = hpLoadoutNames.ToArray();
-        loadout.cmLoadout = message.cmLoadout;
-        loadout.normalizedFuel = message.normalizedFuel;
-        if (weaponManager == null)
+        if (Networker.isHost)
         {
-            Debug.LogError("Weapon set was called this vehicle which has a null weapon manager " + gameObject.name);
+            NetworkSenderThread.Instance.SendPacketAsHostToAllButOneSpecificClient(PlayerManager.GetPlayerCSteamID(message.UID),
+                message,
+                Steamworks.EP2PSend.k_EP2PSendReliable);
         }
-        weaponManager.EquipWeapons(loadout);
-
-        for (int i = 0; i < cmManager.countermeasures.Count; i++)
-        {
-            //There should only ever be two counter measures.
-            //So the second array in message should be fine.
-            cmManager.countermeasures[i].count = message.cmLoadout[i];
-        }
-
-        fuelTank.startingFuel = loadout.normalizedFuel;
-        fuelTank.SetNormFuel(loadout.normalizedFuel);
-
     }
 
     private void JettisonUpdate(Packet packet)
@@ -295,13 +298,13 @@ public class PlaneNetworker_Receiver : MonoBehaviour
             return null;
         }
 
-        return VTOLVR_Multiplayer.PlaneEquippableManager.generateHpInfoListFromWeaponManager(weaponManager,
-            VTOLVR_Multiplayer.PlaneEquippableManager.HPInfoListGenerateNetworkType.receiver).ToArray();
+        return PlaneEquippableManager.generateHpInfoListFromWeaponManager(weaponManager,
+            PlaneEquippableManager.HPInfoListGenerateNetworkType.receiver).ToArray();
     }
     public int[] GetCMS()
     {
         //There is only ever 2 counter measures, thats why it's hard coded.
-        return VTOLVR_Multiplayer.PlaneEquippableManager.generateCounterMeasuresFromCmManager(cmManager).ToArray();
+        return PlaneEquippableManager.generateCounterMeasuresFromCmManager(cmManager).ToArray();
     }
     public float GetFuel()
     {
