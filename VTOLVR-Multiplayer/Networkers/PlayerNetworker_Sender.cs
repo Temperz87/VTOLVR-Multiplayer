@@ -255,6 +255,7 @@ class PlayerNetworker_Sender : MonoBehaviour
 
     void Eject()
     {
+        health.invincible = false;
         health.Kill();
     }
 
