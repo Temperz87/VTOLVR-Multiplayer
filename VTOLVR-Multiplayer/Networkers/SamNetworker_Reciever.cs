@@ -37,7 +37,7 @@ class SamNetworker_Reciever : MonoBehaviour
                     {
                         if (missiles[i] != null)
                         {
-                            Debug.Log("Found a suitable missile to attach a sender to.");
+                            Debug.Log("Found a suitable missile to attach a reciever to.");
                             MissileNetworker_Receiver missileReciever = missiles[i].gameObject.AddComponent<MissileNetworker_Receiver>();
                             missileReciever.networkUID = lastMessage.missileUID;
                             Debug.Log($"Made new missile receiver with uID {missileReciever.networkUID}");
