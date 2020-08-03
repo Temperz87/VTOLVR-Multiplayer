@@ -205,31 +205,7 @@ public class PlaneNetworker_Receiver : MonoBehaviour
             }
         }
 
-        List<string> hpLoadoutNames = new List<string>();
-        for (int i = 0; i < message.hpLoadout.Length; i++)
-        {
-            hpLoadoutNames.Add(message.hpLoadout[i].hpName);
-        }
-
-        Loadout loadout = new Loadout();
-        loadout.hpLoadout = hpLoadoutNames.ToArray();
-        loadout.cmLoadout = message.cmLoadout;
-        loadout.normalizedFuel = message.normalizedFuel;
-        if (weaponManager == null)
-        {
-            Debug.LogError("Weapon set was called this vehicle which has a null weapon manager " + gameObject.name);
-        }
-        weaponManager.EquipWeapons(loadout);
-
-        for (int i = 0; i < cmManager.countermeasures.Count; i++)
-        {
-            //There should only ever be two counter measures.
-            //So the second array in message should be fine.
-            cmManager.countermeasures[i].count = message.cmLoadout[i];
-        }
-
-        fuelTank.startingFuel = loadout.normalizedFuel;
-        fuelTank.SetNormFuel(loadout.normalizedFuel);
+        PlaneEquippableManager.SetLoadout(gameObject, networkUID, message.normalizedFuel, message.hpLoadout, message.cmLoadout);
 
         if (Networker.isHost)
         {
