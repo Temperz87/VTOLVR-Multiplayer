@@ -71,7 +71,7 @@ public class PlaneNetworker_Sender : MonoBehaviour
         if (fuelTank == null)
             Debug.LogError("FuelTank was null on vehicle " + gameObject.name);
 
-       
+
         Debug.Log("Done Plane Sender");
         tailhook = GetComponentInChildren<Tailhook>();
         launchBar = GetComponentInChildren<CatapultHook>();
@@ -168,7 +168,8 @@ public class PlaneNetworker_Sender : MonoBehaviour
             NetworkSenderThread.Instance.SendPacketToSpecificPlayer(Networker.hostID, lastCountermeasureMessage, Steamworks.EP2PSend.k_EP2PSendUnreliableNoDelay);
     }
 
-    public void Rearm(HPEquippable hpEquip) {
+    public void Rearm(HPEquippable hpEquip)
+    {
         Rearm();
     }
 
@@ -191,9 +192,10 @@ public class PlaneNetworker_Sender : MonoBehaviour
             PlaneEquippableManager.generateLocalFuelValue(),
             PlayerManager.localUID);
 
-        NetworkSenderThread.Instance.SendPacketToSpecificPlayer(Networker.hostID,
-            rearm,
-            Steamworks.EP2PSend.k_EP2PSendReliable);
+        if (Networker.isHost)
+            NetworkSenderThread.Instance.SendPacketAsHostToAllClients(rearm, Steamworks.EP2PSend.k_EP2PSendReliable);
+        else
+            NetworkSenderThread.Instance.SendPacketToSpecificPlayer(Networker.hostID, rearm, Steamworks.EP2PSend.k_EP2PSendReliable);
     }
 
     public void OnDestroy()
