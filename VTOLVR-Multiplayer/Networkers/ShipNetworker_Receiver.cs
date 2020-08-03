@@ -17,7 +17,7 @@ class ShipNetworker_Receiver : MonoBehaviour
 
     private void Awake()
     {
-        lastMessage = new Message_ShipUpdate(new Vector3D(), new Vector3D(), new Vector3D(), new Vector3D(), networkUID);
+        lastMessage = new Message_ShipUpdate(new Vector3D(), new Quaternion(), new Vector3D(), new Vector3D(), networkUID);
         Networker.ShipUpdate += ShipUpdate;
 
         waypoint = new Waypoint();
@@ -44,7 +44,7 @@ class ShipNetworker_Receiver : MonoBehaviour
         targetPositionGlobal = lastMessage.position.toVector3;
         targetVelocity = lastMessage.velocity.toVector3;
 
-        ship.transform.rotation = Quaternion.Euler(lastMessage.rotation.toVector3);
+        ship.transform.rotation =  lastMessage.rotation;
 
         //if (lastMessage.destination.toVector3 != Vector3.zero)
         //{

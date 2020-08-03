@@ -96,7 +96,7 @@ public class MissileNetworker_Receiver : MonoBehaviour
         }
 
         // gameObject.transform.velocity = lastMessage.velocity.toVector3;
-        gameObject.transform.rotation = Quaternion.Euler(lastMessage.rotation.toVector3);
+        gameObject.transform.rotation = lastMessage.rotation;
         if (Vector3.Distance(gameObject.transform.position, VTMapManager.GlobalToWorldPoint(lastMessage.position)) > positionThreshold)
         {
             // Debug.LogWarning($"Missile ({gameObject.name}) is outside the threshold. Teleporting to position.");
