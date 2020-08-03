@@ -191,10 +191,9 @@ public class PlaneNetworker_Sender : MonoBehaviour
             PlaneEquippableManager.generateLocalFuelValue(),
             PlayerManager.localUID);
 
-        if (Networker.isHost)
-            NetworkSenderThread.Instance.SendPacketAsHostToAllClients(rearm, Steamworks.EP2PSend.k_EP2PSendReliable);
-        else
-            NetworkSenderThread.Instance.SendPacketToSpecificPlayer(Networker.hostID, rearm, Steamworks.EP2PSend.k_EP2PSendReliable);
+        NetworkSenderThread.Instance.SendPacketToSpecificPlayer(Networker.hostID,
+            rearm,
+            Steamworks.EP2PSend.k_EP2PSendReliable);
     }
 
     public void OnDestroy()

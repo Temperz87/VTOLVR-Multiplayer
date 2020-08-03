@@ -183,12 +183,33 @@ public class PlaneNetworker_Receiver : MonoBehaviour
         if (message.UID != networkUID)
             return;
 
+        if (Networker.isHost && packet.networkUID != networkUID)
+        {
+            //Debug.Log("Generating UIDS for any missiles the new vehicle has");
+            for (int i = 0; i < message.hpLoadout.Length; i++)
+            {
+                for (int j = 0; j < message.hpLoadout[i].missileUIDS.Length; j++)
+                {
+                    if (message.hpLoadout[i].missileUIDS[j] != 0)
+                    {
+                        //Storing the old one
+                        ulong clientsUID = message.hpLoadout[i].missileUIDS[j];
+                        //Generating a new global UID for that missile
+                        message.hpLoadout[i].missileUIDS[j] = Networker.GenerateNetworkUID();
+                        //Sending it back to that client
+                        NetworkSenderThread.Instance.SendPacketToSpecificPlayer(PlayerManager.GetPlayerCSteamID(message.UID),
+                            new Message_RequestNetworkUID(clientsUID, message.hpLoadout[i].missileUIDS[j]),
+                            EP2PSend.k_EP2PSendReliable);
+                    }
+                }
+            }
+        }
+
         List<string> hpLoadoutNames = new List<string>();
         for (int i = 0; i < message.hpLoadout.Length; i++)
         {
             hpLoadoutNames.Add(message.hpLoadout[i].hpName);
         }
-
 
         Loadout loadout = new Loadout();
         loadout.hpLoadout = hpLoadoutNames.ToArray();
@@ -210,6 +231,12 @@ public class PlaneNetworker_Receiver : MonoBehaviour
         fuelTank.startingFuel = loadout.normalizedFuel;
         fuelTank.SetNormFuel(loadout.normalizedFuel);
 
+        if (Networker.isHost)
+        {
+            NetworkSenderThread.Instance.SendPacketAsHostToAllButOneSpecificClient(PlayerManager.GetPlayerCSteamID(message.UID),
+                message,
+                Steamworks.EP2PSend.k_EP2PSendReliable);
+        }
     }
 
     private void JettisonUpdate(Packet packet)
