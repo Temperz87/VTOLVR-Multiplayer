@@ -716,8 +716,19 @@ public static class PlayerManager
         player.vehicle = newVehicle;
         players[playerID] = player;
 
-        VTOLVR_Multiplayer.AIDictionaries.allActors[networkID] = aIPilot.actor;
-        VTOLVR_Multiplayer.AIDictionaries.reverseAllActors[aIPilot.actor] = networkID;
+        if (!VTOLVR_Multiplayer.AIDictionaries.allActors.ContainsKey(networkID))
+        {
+            VTOLVR_Multiplayer.AIDictionaries.allActors[networkID] = aIPilot.actor;
+            VTOLVR_Multiplayer.AIDictionaries.reverseAllActors[aIPilot.actor] = networkID;
+        }else
+        {
+            VTOLVR_Multiplayer.AIDictionaries.allActors.Remove(networkID);
+            VTOLVR_Multiplayer.AIDictionaries.reverseAllActors.Remove(aIPilot.actor);
+
+            VTOLVR_Multiplayer.AIDictionaries.allActors[networkID] = aIPilot.actor;
+            VTOLVR_Multiplayer.AIDictionaries.reverseAllActors[aIPilot.actor] = networkID;
+
+        }
 
         return newVehicle;
     }
