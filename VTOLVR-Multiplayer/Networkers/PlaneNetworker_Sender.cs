@@ -54,7 +54,12 @@ public class PlaneNetworker_Sender : MonoBehaviour
         if (weaponManager == null)
             Debug.LogError("Weapon Manager was null on vehicle " + gameObject.name);
         else
+        {
             traverse = Traverse.Create(weaponManager);
+            Networker.WeaponSet += WeaponSet;
+            weaponManager.OnWeaponEquipped += Rearm;
+            weaponManager.OnWeaponUnequippedHPIdx += Rearm;
+        }
 
         cmManager = GetComponentInChildren<CountermeasureManager>();
         if (cmManager == null)
@@ -66,10 +71,7 @@ public class PlaneNetworker_Sender : MonoBehaviour
         if (fuelTank == null)
             Debug.LogError("FuelTank was null on vehicle " + gameObject.name);
 
-        if (weaponManager)
-        {
-            Networker.WeaponSet += WeaponSet;
-        }
+       
         Debug.Log("Done Plane Sender");
         tailhook = GetComponentInChildren<Tailhook>();
         launchBar = GetComponentInChildren<CatapultHook>();
@@ -145,17 +147,18 @@ public class PlaneNetworker_Sender : MonoBehaviour
     public void WeaponSet(Packet packet)
     {
         //This message has only been sent to us so no need to check UID
-        List<HPInfo> hpInfos = VTOLVR_Multiplayer.PlaneEquippableManager.generateHpInfoListFromWeaponManager(weaponManager,
-            VTOLVR_Multiplayer.PlaneEquippableManager.HPInfoListGenerateNetworkType.sender);
+        List<HPInfo> hpInfos = PlaneEquippableManager.generateHpInfoListFromWeaponManager(weaponManager,
+            PlaneEquippableManager.HPInfoListGenerateNetworkType.sender);
 
-        List<int> cm = VTOLVR_Multiplayer.PlaneEquippableManager.generateCounterMeasuresFromCmManager(cmManager);
+        List<int> cm = PlaneEquippableManager.generateCounterMeasuresFromCmManager(cmManager);
 
-        float fuel = VTOLVR_Multiplayer.PlaneEquippableManager.generateLocalFuelValue();
+        float fuel = PlaneEquippableManager.generateLocalFuelValue();
 
         NetworkSenderThread.Instance.SendPacketToSpecificPlayer(Networker.hostID,
             new Message_WeaponSet_Result(hpInfos.ToArray(), cm.ToArray(), fuel, networkUID),
             Steamworks.EP2PSend.k_EP2PSendReliable);
     }
+
     public void FireCountermeasure()
     {
         lastCountermeasureMessage.UID = networkUID;
@@ -164,14 +167,36 @@ public class PlaneNetworker_Sender : MonoBehaviour
         else
             NetworkSenderThread.Instance.SendPacketToSpecificPlayer(Networker.hostID, lastCountermeasureMessage, Steamworks.EP2PSend.k_EP2PSendUnreliableNoDelay);
     }
-    public void Death()
-    {
-        lastDeathMessage.UID = networkUID;
-        if (Networker.isHost)
-            NetworkSenderThread.Instance.SendPacketAsHostToAllClients(lastDeathMessage, Steamworks.EP2PSend.k_EP2PSendUnreliable);
-        else
-            NetworkSenderThread.Instance.SendPacketToSpecificPlayer(Networker.hostID, lastDeathMessage, Steamworks.EP2PSend.k_EP2PSendUnreliable);
+
+    public void Rearm(HPEquippable hpEquip) {
+        Rearm();
     }
+
+    public void Rearm(int i)
+    {
+        Rearm();
+    }
+
+    public void Rearm()
+    {
+        Debug.Log("Rearm!");
+
+        GameObject vehicle = VTOLAPI.GetPlayersVehicleGameObject();
+        WeaponManager wm = vehicle.GetComponentInChildren<WeaponManager>();
+        CountermeasureManager cm = vehicle.GetComponentInChildren<CountermeasureManager>();
+
+        Message_WeaponSet_Result rearm = new Message_WeaponSet_Result(
+            PlaneEquippableManager.generateHpInfoListFromWeaponManager(wm, PlaneEquippableManager.HPInfoListGenerateNetworkType.generate, PlayerManager.localUID).ToArray(),
+            PlaneEquippableManager.generateCounterMeasuresFromCmManager(cm).ToArray(),
+            PlaneEquippableManager.generateLocalFuelValue(),
+            PlayerManager.localUID);
+
+        if (Networker.isHost)
+            NetworkSenderThread.Instance.SendPacketAsHostToAllClients(rearm, Steamworks.EP2PSend.k_EP2PSendReliable);
+        else
+            NetworkSenderThread.Instance.SendPacketToSpecificPlayer(Networker.hostID, rearm, Steamworks.EP2PSend.k_EP2PSendReliable);
+    }
+
     public void OnDestroy()
     {
         Networker.WeaponSet -= WeaponSet;

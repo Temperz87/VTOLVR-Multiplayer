@@ -234,6 +234,7 @@ public class Networker : MonoBehaviour
     public static event UnityAction<Packet> WeaponFiring;
     public static event UnityAction<Packet> WeaponStoppedFiring;
     public static event UnityAction<Packet> FireCountermeasure;
+    public static event UnityAction<Packet> Rearm;
     public static event UnityAction<Packet> Death;
     public static event UnityAction<Packet> WingFold;
     public static event UnityAction<Packet> ExtLight;

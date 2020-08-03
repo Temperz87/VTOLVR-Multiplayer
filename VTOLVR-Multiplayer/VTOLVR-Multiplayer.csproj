@@ -122,6 +122,7 @@
     <Compile Include="Messages\Message_LockingRadarLock.cs" />
     <Compile Include="Messages\Message_RadarUpdate.cs" />
     <Compile Include="Messages\Message_Ready.cs" />
+    <Compile Include="Messages\Message_Rearm.cs" />
     <Compile Include="Messages\Message_RequestNetworkUID.cs" />
     <Compile Include="Messages\Message_RequestSpawn.cs" />
     <Compile Include="Messages\Message_Respawn.cs" />
@@ -171,6 +172,7 @@
     <Compile Include="Patches\Patch_ActorExtensions.cs" />
     <Compile Include="Patches\Patch_LoadingSceneController.cs" />
     <Compile Include="Patches\Patch_OnSpawnUnit.cs" />
+    <Compile Include="Patches\Patch_ReArmingPoint.cs" />
     <Compile Include="Patches\Patch_VTEventInfo.cs" />
     <Compile Include="Patches\Patch_VTMapManager.cs" />
     <Compile Include="Patches\Patch_RespawnRelatedPatches.cs" />

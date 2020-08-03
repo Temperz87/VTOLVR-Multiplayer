@@ -295,13 +295,13 @@ public class PlaneNetworker_Receiver : MonoBehaviour
             return null;
         }
 
-        return VTOLVR_Multiplayer.PlaneEquippableManager.generateHpInfoListFromWeaponManager(weaponManager,
-            VTOLVR_Multiplayer.PlaneEquippableManager.HPInfoListGenerateNetworkType.receiver).ToArray();
+        return PlaneEquippableManager.generateHpInfoListFromWeaponManager(weaponManager,
+            PlaneEquippableManager.HPInfoListGenerateNetworkType.receiver).ToArray();
     }
     public int[] GetCMS()
     {
         //There is only ever 2 counter measures, thats why it's hard coded.
-        return VTOLVR_Multiplayer.PlaneEquippableManager.generateCounterMeasuresFromCmManager(cmManager).ToArray();
+        return PlaneEquippableManager.generateCounterMeasuresFromCmManager(cmManager).ToArray();
     }
     public float GetFuel()
     {
