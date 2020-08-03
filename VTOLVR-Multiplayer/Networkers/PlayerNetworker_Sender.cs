@@ -29,7 +29,7 @@ class PlayerNetworker_Sender : MonoBehaviour
 
     void Awake()
     {
-        lastMessage = new Message_Respawn(networkUID, new Vector3D(), new Vector3D());
+        lastMessage = new Message_Respawn(networkUID, new Vector3D(), new Quaternion());
 
         health = GetComponent<Health>();
 
@@ -105,7 +105,7 @@ class PlayerNetworker_Sender : MonoBehaviour
 
         rearmPoint.BeginReArm();
 
-        PlayerManager.SetupLocalAircraft(newPlayer, newPlayer.transform.position, newPlayer.transform.position, networkUID);
+        PlayerManager.SetupLocalAircraft(newPlayer, newPlayer.transform.position, newPlayer.transform.rotation, networkUID);
 
         lastMessage.UID = networkUID;
         

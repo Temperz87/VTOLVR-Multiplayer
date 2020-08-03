@@ -19,7 +19,7 @@ public class RigidbodyNetworker_Receiver : MonoBehaviour
     private Rigidbody rb;
     private float positionThreshold = 100f;
     private float smoothingTime = 1f;
-    private float latency = 0f;//latency in seccond, set this variable when we get a heartbeat working
+    private float latency = 0.05f;//if its zero we get jitter
     private float velocityMatchingForce = 10f;
 
     private void Awake()
@@ -51,7 +51,7 @@ public class RigidbodyNetworker_Receiver : MonoBehaviour
         targetVelocity = rigidbodyUpdate.velocity.toVector3;
 
         rb.angularVelocity = rigidbodyUpdate.angularVelocity.toVector3;
-        transform.rotation = Quaternion.Euler(rigidbodyUpdate.rotation.toVector3); //Angular Velocity doesn't seem to be working so I'm just setting the rotation.
+        transform.rotation =  rigidbodyUpdate.rotation; //Angular Velocity doesn't seem to be working so I'm just setting the rotation.
 
         if (Vector3.Distance(transform.position, localTargetPosition) > positionThreshold)
         {

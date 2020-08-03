@@ -174,7 +174,7 @@ public static class PlayerManager
                 UIDNetworker_Sender hostSender = localVehicle.AddComponent<UIDNetworker_Sender>();
                 hostSender.networkUID = localUID;
                 Debug.Log($"The host's uID is {localUID}");
-                SpawnLocalVehicleAndInformOtherClients(localVehicle, localVehicle.transform.position, localVehicle.transform.rotation.eulerAngles, localUID);
+                SpawnLocalVehicleAndInformOtherClients(localVehicle, localVehicle.transform.position, localVehicle.transform.rotation , localUID);
             }
             else
                 Debug.Log("Local vehicle for host was null");
@@ -232,7 +232,7 @@ public static class PlayerManager
             Debug.Log("The players spawn will be " + lastSpawn);
             NetworkSenderThread.Instance.SendPacketToSpecificPlayer(
                 spawnRequestQueue.Dequeue(),
-                new Message_RequestSpawn_Result(new Vector3D(lastSpawn.position), new Vector3D(lastSpawn.rotation.eulerAngles), Networker.GenerateNetworkUID(), players.Count),
+                new Message_RequestSpawn_Result(new Vector3D(lastSpawn.position), lastSpawn.rotation , Networker.GenerateNetworkUID(), players.Count),
                 EP2PSend.k_EP2PSendReliable);
         }
     }
@@ -260,7 +260,7 @@ public static class PlayerManager
         }
         Transform spawn = FindFreeSpawn();
         Debug.Log("The players spawn will be " + spawn);
-        NetworkSenderThread.Instance.SendPacketToSpecificPlayer(sender, new Message_RequestSpawn_Result(new Vector3D(spawn.position), new Vector3D(spawn.rotation.eulerAngles), Networker.GenerateNetworkUID(), players.Count), EP2PSend.k_EP2PSendReliable);
+        NetworkSenderThread.Instance.SendPacketToSpecificPlayer(sender, new Message_RequestSpawn_Result(new Vector3D(spawn.position), spawn.rotation , Networker.GenerateNetworkUID(), players.Count), EP2PSend.k_EP2PSendReliable);
     }
     /// <summary>
     /// When the client receives a P2P message of their spawn point, 
@@ -282,8 +282,8 @@ public static class PlayerManager
             return;
         }
         localVehicle.transform.position = result.position.toVector3;
-        localVehicle.transform.rotation = Quaternion.Euler(result.rotation.toVector3);
-        SpawnLocalVehicleAndInformOtherClients(localVehicle, result.position.toVector3, result.rotation.toVector3, result.vehicleUID);
+        localVehicle.transform.rotation =  result.rotation ;
+        SpawnLocalVehicleAndInformOtherClients(localVehicle, result.position.toVector3, result.rotation , result.vehicleUID);
         localUID = result.vehicleUID;
     }
     /// <summary>
@@ -291,7 +291,7 @@ public static class PlayerManager
     /// spawn their representation of this vehicle
     /// </summary>
     /// <param name="localVehicle">The local clients gameobject</param>
-    public static void SpawnLocalVehicleAndInformOtherClients(GameObject localVehicle, Vector3 pos, Vector3 rot, ulong UID) //Both
+    public static void SpawnLocalVehicleAndInformOtherClients(GameObject localVehicle, Vector3 pos, Quaternion rot, ulong UID) //Both
     {
         Debug.Log("Sending our location to spawn our vehicle");
         VTOLVehicles currentVehicle = VTOLAPI.GetPlayersVehicleEnum();
@@ -317,7 +317,7 @@ public static class PlayerManager
             NetworkSenderThread.Instance.SendPacketToSpecificPlayer(Networker.hostID,
                 new Message_SpawnPlayerVehicle(currentVehicle,
                     new Vector3D(pos),
-                    new Vector3D(rot),
+                    rot,
                     SteamUser.GetSteamID().m_SteamID,
                     UID,
                     hpInfos.ToArray(),
@@ -331,7 +331,7 @@ public static class PlayerManager
         }
     }
 
-    public static void SetupLocalAircraft(GameObject localVehicle, Vector3 pos, Vector3 rot, ulong UID)
+    public static void SetupLocalAircraft(GameObject localVehicle, Vector3 pos, Quaternion rot, ulong UID)
     {
         VTOLVehicles currentVehicle = VTOLAPI.GetPlayersVehicleEnum();
         Actor actor = localVehicle.GetComponent<Actor>();
@@ -418,7 +418,7 @@ public static class PlayerManager
             NetworkSenderThread.Instance.SendPacketToSpecificPlayer(Networker.hostID,
                 new Message_SpawnPlayerVehicle(currentVehicle,
                     new Vector3D(pos),
-                    new Vector3D(rot),
+                    rot,
                     SteamUser.GetSteamID().m_SteamID,
                     UID,
                     hpInfos.ToArray(),
@@ -535,7 +535,7 @@ public static class PlayerManager
                         new Message_SpawnPlayerVehicle(
                             players[i].vehicleType,
                             VTMapManager.WorldToGlobalPoint(players[i].vehicle.transform.position),
-                            new Vector3D(players[i].vehicle.transform.rotation.eulerAngles),
+                            players[i].vehicle.transform.rotation,
                             players[i].cSteamID.m_SteamID,
                             players[i].vehicleUID,
                             hpInfos.ToArray(),
@@ -558,7 +558,7 @@ public static class PlayerManager
                         new Message_SpawnPlayerVehicle(
                             players[i].vehicleType,
                             VTMapManager.WorldToGlobalPoint(players[i].vehicle.transform.position),
-                            new Vector3D(players[i].vehicle.transform.rotation.eulerAngles),
+                             players[i].vehicle.transform.rotation ,
                             players[i].cSteamID.m_SteamID,
                             players[i].vehicleUID,
                             existingPlayersPR.GenerateHPInfo(),
@@ -592,7 +592,7 @@ public static class PlayerManager
         }
     }
 
-    public static GameObject SpawnRepresentation(ulong networkID, Vector3D position, Vector3D rotation)
+    public static GameObject SpawnRepresentation(ulong networkID, Vector3D position, Quaternion rotation)
     {
         if (networkID == localUID)
             return null;
@@ -613,21 +613,21 @@ public static class PlayerManager
                 {
                     SetPrefabs();
                 }
-                newVehicle = GameObject.Instantiate(av42cPrefab, VTMapManager.GlobalToWorldPoint(position), Quaternion.Euler(rotation.toVector3));
+                newVehicle = GameObject.Instantiate(av42cPrefab, VTMapManager.GlobalToWorldPoint(position),  rotation );
                 break;
             case VTOLVehicles.FA26B:
                 if (null == fa26bPrefab)
                 {
                     SetPrefabs();
                 }
-                newVehicle = GameObject.Instantiate(fa26bPrefab, VTMapManager.GlobalToWorldPoint(position), Quaternion.Euler(rotation.toVector3));
+                newVehicle = GameObject.Instantiate(fa26bPrefab, VTMapManager.GlobalToWorldPoint(position), rotation  );
                 break;
             case VTOLVehicles.F45A:
                 if (null == f45Prefab)
                 {
                     SetPrefabs();
                 }
-                newVehicle = GameObject.Instantiate(f45Prefab, VTMapManager.GlobalToWorldPoint(position), Quaternion.Euler(rotation.toVector3));
+                newVehicle = GameObject.Instantiate(f45Prefab, VTMapManager.GlobalToWorldPoint(position), rotation );
                 break;
         }
         //Debug.Log("Setting vehicle name");
