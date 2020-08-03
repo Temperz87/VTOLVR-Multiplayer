@@ -16,10 +16,6 @@ class SamNetworker_Reciever : MonoBehaviour
         samLauncher = GetComponentInChildren<SAMLauncher>();
         Networker.SAMUpdate += SamUpdate;
         samLauncher.LoadAllMissiles();
-        foreach (var missile in (Missile[])Traverse.Create(samLauncher).Field("missiles").GetValue())
-        {
-            
-        }
     }
     private void SamUpdate(Packet packet)
     {
@@ -34,11 +30,25 @@ class SamNetworker_Reciever : MonoBehaviour
                 radar.ForceLock(lastActor, out lastData);
                 if (lastData.locked)
                 {
+                    Debug.Log("Beginning sam launch routine for reciever.");
+                    int j = 0;
+                    Missile[] missiles = (Missile[])Traverse.Create(samLauncher).Field("missiles").GetValue();
+                    for (int i = 0; i < missiles.Length; i = j + 1)
+                    {
+                        if (missiles[i] != null)
+                        {
+                            Debug.Log("Found a suitable missile to attach a sender to.");
+                            MissileNetworker_Receiver missileReciever = missiles[i].gameObject.AddComponent<MissileNetworker_Receiver>();
+                            missileReciever.networkUID = lastMessage.missileUID;
+                            Debug.Log($"Made new missile receiver with uID {missileReciever.networkUID}");
+                            break;
+                        }
+                    }
+                    Debug.Log("Firing sam.");
                     samLauncher.FireMissile(lastData);
-                    Missile missile = (Missile)Traverse.Create(samLauncher).Field("firedMissile").GetValue();
+                    /*Missile missile = (Missile)Traverse.Create(samLauncher).Field("firedMissile").GetValue();
                     MissileNetworker_Receiver reciever = missile.gameObject.AddComponent<MissileNetworker_Receiver>();
-                    reciever.networkUID = lastMessage.missileUID;
-                    Debug.Log($"Made new missile receiver with uID {reciever.networkUID}");
+                    reciever.networkUID = lastMessage.missileUID;*/
                     return;
                 }
             }

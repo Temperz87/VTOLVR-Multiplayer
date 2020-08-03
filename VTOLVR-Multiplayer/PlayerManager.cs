@@ -152,7 +152,7 @@ public static class PlayerManager
                         lastPlaneSender = actor.gameObject.AddComponent<PlaneNetworker_Sender>();
                         lastPlaneSender.networkUID = networkUID;
                     }
-                    if (actor.gameObject.GetComponent<SAMLauncher>() != null)
+                    if (actor.gameObject.GetComponentInChildren<ModuleTurret>() != null)
                     {
                         TurretNetworker_Sender tSender = actor.gameObject.AddComponent<TurretNetworker_Sender>();
                         tSender.networkUID = networkUID;

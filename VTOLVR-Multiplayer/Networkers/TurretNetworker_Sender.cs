@@ -19,7 +19,7 @@ class TurretNetworker_Sender : MonoBehaviour
         }
     }
 
-    void FixedUpdate()
+    private void FixedUpdate()
     {
         Vector3D dir = new Vector3D(turret.pitchTransform.forward);
         lastMessage.direction = dir;
