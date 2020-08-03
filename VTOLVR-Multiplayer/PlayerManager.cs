@@ -432,7 +432,16 @@ public static class PlayerManager
         }
         else
         {
-            Debug.Log("I am host, no need to immediately forward my assembled vehicle");
+            //Debug.Log("I am host, no need to immediately forward my assembled vehicle");
+            NetworkSenderThread.Instance.SendPacketAsHostToAllClients(new Message_SpawnPlayerVehicle(currentVehicle,
+                    new Vector3D(pos),
+                    rot,
+                    SteamUser.GetSteamID().m_SteamID,
+                    UID,
+                    hpInfos.ToArray(),
+                    cm.ToArray(),
+                    fuel),
+                EP2PSend.k_EP2PSendReliable);
         }
     }
     /// <summary>
@@ -446,6 +455,10 @@ public static class PlayerManager
         // We don't actually need the "sender" id, unless we're a client and want to check that the packet came from the host
         // which we're not doing right now.
         Message_SpawnPlayerVehicle message = (Message_SpawnPlayerVehicle)((PacketSingle)packet).message;
+
+        if (message.networkID == PlayerManager.localUID) {
+            return;
+        }
 
         Debug.Log($"Recived a Spawn Vehicle Message from: {message.csteamID}");
         CSteamID spawnerSteamId = new CSteamID(message.csteamID);
