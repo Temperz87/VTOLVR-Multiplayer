@@ -247,6 +247,7 @@ public class Networker : MonoBehaviour
     public static event UnityAction<Packet> LockingRadarUpdate;
     public static event UnityAction<Packet> JettisonUpdate;
     public static event UnityAction<Packet> SAMUpdate;
+    public static event UnityAction<Packet> AAAUpdate;
     #endregion
     #region Host Forwarding Suppress By Message Type List
     private List<MessageType> hostMessageForwardingSuppressList = new List<MessageType> {
@@ -850,6 +851,11 @@ public class Networker : MonoBehaviour
                     Debug.Log("case sam update");
                     if (SAMUpdate != null)
                         SAMUpdate.Invoke(packet);
+                    break;
+                case MessageType.AAAUpdate:
+                    Debug.Log("case AAA update");
+                    if (AAAUpdate != null)
+                        AAAUpdate.Invoke(packet);
                     break;
                 case MessageType.ScenarioAction:
                     Debug.Log("case scenario action packet");

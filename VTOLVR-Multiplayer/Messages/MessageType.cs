@@ -47,5 +47,6 @@ public enum MessageType
     LoadingTextRequest, //Clients request for loading text
     ObjectiveSync, // To sync objectives
     ScenarioAction, // To sync scenario actions which have their hand in objectives
-    SamUpdate // Guess you nerd
+    SamUpdate, // To sync sams
+    AAAUpdate // To sync A's x 3
 }

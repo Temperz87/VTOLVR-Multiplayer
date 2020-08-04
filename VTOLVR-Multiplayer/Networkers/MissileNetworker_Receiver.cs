@@ -51,9 +51,12 @@ public class MissileNetworker_Receiver : MonoBehaviour
             if (lastMessage.guidanceMode == Missile.GuidanceModes.Radar)
             {
                 // thisMissile.debugMissile = true;
-                Debug.Log("Guidance mode radar, firing it as a radar missile.");
                 HPEquipMissileLauncher radarLauncher = thisML.gameObject.GetComponent<HPEquipMissileLauncher>();
-                radarLauncher.OnStartFire();
+                if (radarLauncher != null)
+                {
+                    Debug.Log("Guidance mode radar, firing it as a radar missile.");
+                    radarLauncher.OnStartFire();
+                }
             }
             else
             {
