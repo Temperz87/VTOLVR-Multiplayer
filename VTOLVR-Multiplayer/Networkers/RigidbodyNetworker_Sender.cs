@@ -14,50 +14,20 @@ public class RigidbodyNetworker_Sender : MonoBehaviour
     public Quaternion spawnRot;
     private Vector3 lastPos;
     private Actor actor;
-    private float Threshold;
+    private float threshold = 5;
     private bool sentFirstMessage;
+
     private void Awake()
     {
         actor = gameObject.GetComponent<Actor>();
-
-        if (actor.role == Actor.Roles.Air)
-        {
-            Threshold = 1f;
-        }
-        else if (actor.role == Actor.Roles.Ground)
-        {
-            Threshold = 5f;
-        }
-        else
-        {
-            Threshold = 5f;
-        }
-        // Debug.Log($"Threshold for {actor.name} is now {Threshold}.");
         lastPos = gameObject.transform.position;
         rb = GetComponent<Rigidbody>();
         lastMessage = new Message_RigidbodyUpdate(new Vector3D(rb.velocity), new Vector3D(rb.angularVelocity), new Vector3D(transform.position),  transform.rotation, networkUID);
     }
 
     private void FixedUpdate()
-    {
-
-        // If the player is landed change the threshold to be lower
-        if (actor.role == Actor.Roles.Air)
-        {
-            if (actor.flightInfo != null)
-            {
-                if (actor.flightInfo.isLanded)
-                {
-                    Threshold = .2f;
-                }
-                else
-                {
-                    Threshold = 1f;
-                }
-            }
-        }
-        
-        if (Vector3.Distance(lastPos, gameObject.transform.position) > Threshold || sentFirstMessage == false)
+    {        
+        if (Vector3.Distance(lastPos, gameObject.transform.position) > threshold || sentFirstMessage == false)
         {
             lastMessage.position = VTMapManager.WorldToGlobalPoint(transform.position);
             lastMessage.rotation = transform.rotation;
