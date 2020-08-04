@@ -139,6 +139,7 @@
     <Compile Include="Messages\Message_WingFold.cs" />
     <Compile Include="Messages\Message_WorldData.cs" />
     <Compile Include="Messages\Packet.cs" />
+    <Compile Include="Networkers\AAANetowrker_Sender.cs" />
     <Compile Include="Networkers\AAANetworker_Reciever.cs" />
     <Compile Include="Networkers\ExtLightNetworker_Receiver.cs" />
     <Compile Include="Networkers\ExtLightNetworker_Sender.cs" />
@@ -173,7 +174,6 @@
     <Compile Include="Networkers\WorldDataNetworker_Receiver.cs" />
     <Compile Include="Networkers\WorldDataNetworker_Sender.cs" />
     <Compile Include="Patches\Patch_ActorExtensions.cs" />
-    <Compile Include="Patches\Patch_GunTurretAI.cs" />
     <Compile Include="Patches\Patch_LoadingSceneController.cs" />
     <Compile Include="Patches\Patch_OnSpawnUnit.cs" />
     <Compile Include="Patches\Patch_SAMLauncher.cs" />

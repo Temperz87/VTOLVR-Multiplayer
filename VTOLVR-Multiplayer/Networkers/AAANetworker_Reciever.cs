@@ -14,13 +14,20 @@ class AAANetworker_Reciever : MonoBehaviour
     {
         gunTurret = gameObject.GetComponentInChildren<GunTurretAI>();
         Networker.AAAUpdate += AAAUpdate;
+        gunTurret.gun.currentAmmo = gunTurret.gun.maxAmmo;
     }
     private void AAAUpdate(Packet packet)
     {
         lastMessage = (Message_AAAUpdate)((PacketSingle)packet).message;
         if (lastMessage.networkUID != networkUID)
             return;
-        Debug.Log("Doing AAA Update");
         gunTurret.gun.SetFire(lastMessage.isFiring);
+    }
+
+    public void OnDestroy()
+    {
+        Networker.AAAUpdate -= AAAUpdate;
+        Debug.Log("Destroyed AAAUpdate");
+        Debug.Log(gameObject.name);
     }
 }

@@ -157,6 +157,11 @@ public static class PlayerManager
                         TurretNetworker_Sender tSender = actor.gameObject.AddComponent<TurretNetworker_Sender>();
                         tSender.networkUID = networkUID;
                     }
+                    if (actor.gameObject.GetComponentInChildren<GunTurretAI>())
+                    {
+                        AAANetworker_Sender gunTurret = actor.gameObject.AddComponent<AAANetworker_Sender>();
+                        gunTurret.networkUID = networkUID;
+                    }
                     if (actor.gameObject.GetComponent<AirportManager>() != null)
                     {
                         actor.gameObject.GetComponent<AirportManager>().airportName = "USS TEMPERZ " + networkUID;

@@ -263,7 +263,7 @@ public static class AIManager
             {
                 gunTurret.SetEngageEnemies(false);
                 AAANetworker_Reciever aaaRec = newAI.AddComponent<AAANetworker_Reciever>();
-                Debug.Log($"Added aaaRec to {message.networkID}");
+                Debug.Log($"Added aaaRec to uID {message.networkID}");
                 aaaRec.networkUID = message.networkID;
             }
             SAMLauncher launcher = newAI.GetComponent<SAMLauncher>();
@@ -276,25 +276,6 @@ public static class AIManager
                 launcher.SetEngageEnemies(false);
                 launcher.fireInterval = float.MaxValue;
                 launcher.lockingRadars = null;
-                /*List<LockingRadar> lockingRadars = new List<LockingRadar>();
-                Actor lastActor;
-                foreach (var uID in message.radarIDs)
-                {
-                    Debug.Log($"Try adding uID {uID} to SAM's radars.");
-                    if (VTOLVR_Multiplayer.AIDictionaries.allActors.TryGetValue(uID, out lastActor))
-                    {
-                        Debug.Log("Got the actor.");
-                        foreach (var radar in lastActor.gameObject.GetComponentsInChildren<LockingRadar>())
-                        {
-                            lockingRadars.Add(radar);
-                            Debug.Log("Added radar to a sam launcher!");
-                        }
-                    }
-                    else
-                    {
-                        Debug.LogError($"Could not resolve actor from uID {uID}.");
-                    }
-                }*/
             }
         }
         if (actor.gameObject.GetComponentInChildren<LockingRadar>() != null)

@@ -113,4 +113,11 @@ class SamNetworker_Reciever : MonoBehaviour
             Debug.Log($"Could not resolve lock for sam {networkUID}.");
         }
     }
+
+    public void OnDestroy()
+    {
+        Networker.SAMUpdate -= SamUpdate;
+        Debug.Log("Destroyed SamUpdate");
+        Debug.Log(gameObject.name);
+    }
 }
