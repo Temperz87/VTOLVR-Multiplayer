@@ -162,6 +162,19 @@ public static class PlayerManager
                         AAANetworker_Sender gunTurret = actor.gameObject.AddComponent<AAANetworker_Sender>();
                         gunTurret.networkUID = networkUID;
                     }
+                    IRSamLauncher ml = actor.gameObject.GetComponentInChildren<IRSamLauncher>();
+                    if (ml != null)
+                    {
+                        List<ulong> samIDS = new List<ulong>();
+                        MissileNetworker_Sender lastSender;
+                        for (int i = 0; i < ml.ml.missiles.Length; i++)
+                        {
+                            lastSender = ml.ml.missiles[i].gameObject.AddComponent<MissileNetworker_Sender>();
+                            lastSender.networkUID = Networker.GenerateNetworkUID();
+                            samIDS.Add(lastSender.networkUID);
+                        }
+                        actor.gameObject.AddComponent<IRSAMNetworker_Sender>().irIDs = samIDS.ToArray();
+                    }
                     if (actor.gameObject.GetComponent<AirportManager>() != null)
                     {
                         actor.gameObject.GetComponent<AirportManager>().airportName = "USS TEMPERZ " + networkUID;
