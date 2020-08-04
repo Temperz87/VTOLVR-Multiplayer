@@ -27,6 +27,7 @@ class SamNetworker_Reciever : MonoBehaviour
         {
             foreach (var radar in samLauncher.lockingRadars)
             {
+                Debug.Log("Found a suitable radar for this sam.");
                 radar.ForceLock(lastActor, out lastData);
                 if (lastData.locked)
                 {
@@ -52,6 +53,10 @@ class SamNetworker_Reciever : MonoBehaviour
                     return;
                 }
             }
+        }
+        else
+        {
+            Debug.Log($"Could not resolve lock for sam {networkUID}.");
         }
     }
 }

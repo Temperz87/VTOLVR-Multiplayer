@@ -42,7 +42,7 @@ class Patch9
        // __state = 0;
     }
     [HarmonyPostfix]
-    public static void Postix(SAMLauncher __instance, RadarLockData lockData)
+    public static void Postfix(SAMLauncher __instance, RadarLockData lockData)
     {
         if (Networker.isHost)
         {
@@ -51,24 +51,15 @@ class Patch9
             {
                 if (VTOLVR_Multiplayer.AIDictionaries.reverseAllActors.TryGetValue(lockData.actor, out ulong actorUID))
                 {
-                    /*Missile missile = (Missile)Traverse.Create(__instance).Field("firedMissile").GetValue();
-                    if (missile == null)
-                    {
-                        Debug.LogError($"last fired missile on " + __instance.name + " is null.");
-                    }
-                    else
-                    {
-                        MissileNetworker_Sender missileSender = missile.gameObject.AddComponent<MissileNetworker_Sender>();
-                        missileSender.networkUID = Networker.GenerateNetworkUID();*/
+                    Debug.Log($"Sending sam launch with a missile uID of {SAMHelper.SAMmissile}, sender uID will be {senderUID}, and the actorUID will be {actorUID}.");
+                    NetworkSenderThread.Instance.SendPacketAsHostToAllClients(new Message_SamUpdate(actorUID, SAMHelper.SAMmissile, senderUID), Steamworks.EP2PSend.k_EP2PSendReliable);
+                    SAMHelper.SAMmissile = 0;
                 }
-                Debug.Log($"Sending sam launch with uID {SAMHelper.SAMmissile}.");
-                NetworkSenderThread.Instance.SendPacketAsHostToAllClients(new Message_SamUpdate(actorUID, SAMHelper.SAMmissile, senderUID), Steamworks.EP2PSend.k_EP2PSendReliable);
-                SAMHelper.SAMmissile = 0;
+                else
+                    Debug.LogWarning($"Could not resolve SAMLauncher {senderUID}'s target.");
             }
             else
-                Debug.LogWarning($"Could not resolve SAMLauncher {senderUID}'s target.");
+                Debug.LogWarning($"Could not resolve a SAMLauncher's uid.");
         }
-        else
-            Debug.LogWarning($"Could not resolve a SAMLauncher's uid.");
     }
 }

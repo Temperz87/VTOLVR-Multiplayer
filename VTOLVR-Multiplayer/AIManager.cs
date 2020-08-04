@@ -240,8 +240,8 @@ public static class AIManager
             AIUnitSpawn aIUnitSpawn = newAI.GetComponent<AIUnitSpawn>();
             if (aIUnitSpawn == null)
                 Debug.LogWarning("AI unit spawn is null on respawned unit " + aIUnitSpawn);
-            else
-                newAI.GetComponent<AIUnitSpawn>().SetEngageEnemies(message.Aggresive);
+            // else
+                // newAI.GetComponent<AIUnitSpawn>().SetEngageEnemies(message.Aggresive);
             VehicleMover vehicleMover = newAI.GetComponent<VehicleMover>();
             if (vehicleMover != null)
             {
@@ -267,6 +267,7 @@ public static class AIManager
             {
                 SamNetworker_Reciever samNetworker = launcher.gameObject.AddComponent<SamNetworker_Reciever>();
                 samNetworker.networkUID = message.networkID;
+                Debug.Log($"Added samNetworker to uID {message.networkID}");
                 launcher.fireInterval = float.MaxValue;
             }
         }

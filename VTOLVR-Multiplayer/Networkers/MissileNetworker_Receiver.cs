@@ -54,24 +54,6 @@ public class MissileNetworker_Receiver : MonoBehaviour
                 Debug.Log("Guidance mode radar, firing it as a radar missile.");
                 HPEquipMissileLauncher radarLauncher = thisML.gameObject.GetComponent<HPEquipMissileLauncher>();
                 radarLauncher.OnStartFire();
-                /*RadarLockData lockData = new RadarLockData();
-                // lockData.locked = true;
-                // lockData.lockingRadar = GetComponentInChildren<LockingRadar>();     //Unsure if these are on a child or not
-                //lockData.radarSymbol = GetComponentInChildren<Radar>().radarSymbol; //I'm just guessing they are
-                LockingRadar radar = thisMissile.lockingRadar;
-
-                RadarMissileLauncher radarML = thisML as RadarMissileLauncher;
-                foreach (var AI in AIManager.AIVehicles)
-                {
-                    if (AI.vehicleUID == lastMessage.radarLock)
-                    {
-                        Debug.Log("Missile found its lock on actor " + AI.actor.name + " with an uid of " + AI.vehicleUID + " while trying to lock " + lastMessage.networkUID);
-                        radarML.lockingRadar.ForceLock(AI.actor, out lockData);
-                        // radar.ForceLock(AI.actor, out lockData);
-                        break;
-                    }
-                }
-                Debug.Log($"Lock data for missileLaucher of missile {thisMissile.name}, Locked: {lockData.locked}, Actor: {lockData.actor}.");*/
             }
             else
             {
