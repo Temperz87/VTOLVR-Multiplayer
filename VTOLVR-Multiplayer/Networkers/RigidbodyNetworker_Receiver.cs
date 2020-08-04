@@ -40,7 +40,7 @@ public class RigidbodyNetworker_Receiver : MonoBehaviour
         localTargetPosition = VTMapManager.GlobalToWorldPoint(globalTargetPosition);
 
         rb.MovePosition(transform.position + targetVelocity * Time.fixedDeltaTime + ((localTargetPosition - transform.position) * Time.fixedDeltaTime) / smoothingTime);
-        rb.MoveRotation(Quaternion.Lerp(transform.rotation, targetRotation, Time.time * smoothingTime));
+        //rb.MoveRotation(Quaternion.Lerp(transform.rotation, targetRotation, Time.fixedDeltaTime / smoothingTime));
     }
 
     public void RigidbodyUpdate(Packet packet)
@@ -59,10 +59,10 @@ public class RigidbodyNetworker_Receiver : MonoBehaviour
         {
             //Debug.Log("Outside of thresh hold, moving " + gameObject.name);
             transform.position = localTargetPosition;
-            rb.velocity = rigidbodyUpdate.velocity.toVector3;
+            //rb.velocity = rigidbodyUpdate.velocity.toVector3;
             
             transform.rotation = rigidbodyUpdate.rotation;
-            rb.angularVelocity = rigidbodyUpdate.angularVelocity.toVector3;
+            //rb.angularVelocity = rigidbodyUpdate.angularVelocity.toVector3;
         }
     }
 
