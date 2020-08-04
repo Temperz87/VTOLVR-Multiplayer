@@ -9,7 +9,7 @@ public class Message_SpawnPlayerVehicle : Message
 {
     public VTOLVehicles vehicle;
     public Vector3D position;
-    public Vector3D rotation;
+    public SerializableQuaternion rotation;
     public ulong csteamID;
     public ulong networkID;
     public HPInfo[] hpLoadout;
@@ -17,7 +17,7 @@ public class Message_SpawnPlayerVehicle : Message
     public float normalizedFuel;
     // public int playerCount;
 
-    public Message_SpawnPlayerVehicle(VTOLVehicles vehicle, Vector3D position, Vector3D rotation, ulong csteamID, ulong networkID, HPInfo[] hpLoadout, int[] cmLoadout, float normalizedFuel)
+    public Message_SpawnPlayerVehicle(VTOLVehicles vehicle, Vector3D position, Quaternion rotation, ulong csteamID, ulong networkID, HPInfo[] hpLoadout, int[] cmLoadout, float normalizedFuel)
     {
         this.vehicle = vehicle;
         this.position = position;

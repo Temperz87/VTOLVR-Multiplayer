@@ -179,7 +179,7 @@ public class Networker : MonoBehaviour
         get { lock (timeoutCounterLock) { return timeoutCounterInternal; } }
         set { lock (timeoutCounterLock) { timeoutCounterInternal = value; } }
     }
-    private static readonly int clientTimeoutInSeconds = 60;
+    private static readonly int clientTimeoutInSeconds = 6000;
     private static readonly object disconnectForClientTimeoutLock = new object();
     private static bool disconnectForClientTimeoutInternal = false;
     private static bool disconnectForClientTimeout
@@ -234,6 +234,7 @@ public class Networker : MonoBehaviour
     public static event UnityAction<Packet> WeaponFiring;
     public static event UnityAction<Packet> WeaponStoppedFiring;
     public static event UnityAction<Packet> FireCountermeasure;
+    public static event UnityAction<Packet> Rearm;
     public static event UnityAction<Packet> Death;
     public static event UnityAction<Packet> WingFold;
     public static event UnityAction<Packet> ExtLight;
@@ -969,6 +970,10 @@ public class Networker : MonoBehaviour
         ulong result = networkUID + 1;
         networkUID = result;
         //Debug.Log($"Generated New UID ({result})");
+        if (isClient)
+        {
+            Debug.Log("why is client generating uids? this is fubar...");
+        }
         return result;
     }
     public static void ResetNetworkUID()

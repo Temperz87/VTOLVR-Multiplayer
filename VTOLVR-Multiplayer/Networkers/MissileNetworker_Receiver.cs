@@ -24,6 +24,7 @@ public class MissileNetworker_Receiver : MonoBehaviour
         Networker.MissileUpdate += MissileUpdate;
         thisMissile.OnDetonate.AddListener(new UnityEngine.Events.UnityAction(() => { Debug.Log("Missile detonated: " + thisMissile.name); }));
     }
+
     public void MissileUpdate(Packet packet)
     {
         if (!thisMissile.gameObject.activeSelf)
@@ -96,7 +97,7 @@ public class MissileNetworker_Receiver : MonoBehaviour
         }
 
         // gameObject.transform.velocity = lastMessage.velocity.toVector3;
-        gameObject.transform.rotation = Quaternion.Euler(lastMessage.rotation.toVector3);
+        gameObject.transform.rotation = lastMessage.rotation;
         if (Vector3.Distance(gameObject.transform.position, VTMapManager.GlobalToWorldPoint(lastMessage.position)) > positionThreshold)
         {
             // Debug.LogWarning($"Missile ({gameObject.name}) is outside the threshold. Teleporting to position.");

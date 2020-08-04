@@ -29,6 +29,8 @@ public class WorldDataNetworker_Receiver : MonoBehaviour
             Debug.Log($"Client timescale { Time.timeScale } mismatch with server { serverTimescale } - Forcing client update");
             Time.timeScale = serverTimescale;
         }
+
+        PlayerManager.SpawnPlayersInPlayerSpawnQueue();//addmitedly, this probably isnt the best place to put this, feel free to move it somewhere else
     }
 
     public void WorldDataUpdate(Packet packet)

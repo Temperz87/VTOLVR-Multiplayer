@@ -15,7 +15,7 @@ class HealthNetworker_ReceiverHostEnforced : MonoBehaviour
         Networker.Death += Death;
 
         health = GetComponent<Health>();
-        health.invincible = true;
+        //health.invincible = true;
     }
 
     public void Death(Packet packet)
