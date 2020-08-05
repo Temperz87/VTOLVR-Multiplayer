@@ -77,6 +77,7 @@ public class MissileNetworker_Receiver : MonoBehaviour
         if (lastMessage.hasExploded)
         {
             Debug.Log("Missile exploded.");
+            if(thisMissile != null)
             thisMissile.Detonate();
             return;
         }
