@@ -89,10 +89,10 @@ public static class PlayerManager
             VTScenario.current.units.alliedUnits.Clear();
             VTScenario.current.units.enemyUnits.Clear();
             VTScenario.current.groups.DestroyAll();
-            foreach (var actor in TargetManager.instance.allActors)
+            /*foreach (var actor in TargetManager.instance.allActors)
             {
                 VTScenario.current.units.AddSpawner(actor.unitSpawn.unitSpawner);
-            }
+            }*/
             NetworkSenderThread.Instance.SendPacketToSpecificPlayer(Networker.hostID, new Message(MessageType.RequestSpawn), EP2PSend.k_EP2PSendReliable);
         }
         else
@@ -710,17 +710,15 @@ public static class PlayerManager
         nameTag.AddComponent<Nametag>().SetText(
             SteamFriends.GetFriendPersonaName(player.cSteamID),
             newVehicle.transform, VRHead.instance.transform);
-        TargetManager.instance.RegisterActor(aIPilot.actor);
-        player.leftie = isLeft;
-        player.vehicle = newVehicle;
-        players[playerID] = player;
-
         if (isLeft != PlayerManager.teamLeftie)
         {
             aIPilot.actor.team = Teams.Enemy;
         }
-        TargetManager.instance.UnregisterActor(aIPilot.actor);
+
         TargetManager.instance.RegisterActor(aIPilot.actor);
+        player.leftie = isLeft;
+        player.vehicle = newVehicle;
+        players[playerID] = player;
 
         if (!VTOLVR_Multiplayer.AIDictionaries.allActors.ContainsKey(networkID))
         {

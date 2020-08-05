@@ -76,8 +76,37 @@ public static class AIManager
         newAI.name = message.aiVehicleName;
         Actor actor = newAI.GetComponent<Actor>();
         UnitSpawner unitSpawn = actor.unitSpawn.unitSpawner = new UnitSpawner();
+
         unitSpawn.team = actor.team;
         unitSpawn.unitName = actor.unitSpawn.unitName;
+
+        if (!PlayerManager.teamLeftie)
+        {
+            unitSpawn.team = actor.team;
+        }
+        else
+        {
+            if (actor.team == Teams.Enemy)
+            {
+                actor.team = Teams.Allied;
+            }
+            else
+            if (actor.team == Teams.Allied)
+            {
+                actor.team = Teams.Enemy;
+            }
+            unitSpawn.team = actor.team;
+
+            //TargetManager.instance.UnregisterActor(actor);
+            //TargetManager.instance.RegisterActor(actor);
+        }
+        if (TargetManager.instance.allActors.Contains(actor))
+        {
+            TargetManager.instance.UnregisterActor(actor);
+        }
+        
+        TargetManager.instance.RegisterActor(actor);
+
         Traverse.Create(actor.unitSpawn.unitSpawner).Field("_unitInstanceID").SetValue(message.unitInstanceID); // To make objectives work.
         if (message.hasGroup)
         {
@@ -86,7 +115,6 @@ public static class AIManager
         Debug.Log(actor.name + $" has had its unitInstanceID set at value {actor.unitSpawn.unitSpawner.unitInstanceID}.");
         VTScenario.current.units.AddSpawner(actor.unitSpawn.unitSpawner);
         Debug.Log($"Spawned new vehicle at {newAI.transform.position}");
-        TargetManager.instance.RegisterActor(actor);
 
         newAI.AddComponent<FloatingOriginTransform>();
 
@@ -291,26 +319,6 @@ public static class AIManager
         AIVehicles.Add(new AI(newAI, message.aiVehicleName, actor, message.networkID));
         Debug.Log("Spawned in AI " + newAI.name);
 
-        if (!PlayerManager.teamLeftie)
-        {
-            unitSpawn.team = actor.team;
-        }
-        else
-        {
-            if (actor.team == Teams.Enemy)
-            {
-                actor.team = Teams.Allied;
-            }
-            else
-            if (actor.team == Teams.Allied)
-            {
-                actor.team = Teams.Enemy;
-            }
-            unitSpawn.team = actor.team;
-
-            TargetManager.instance.UnregisterActor(actor);
-            TargetManager.instance.RegisterActor(actor);
-        }
         if (!VTOLVR_Multiplayer.AIDictionaries.allActors.ContainsKey(message.networkID))
         {
             VTOLVR_Multiplayer.AIDictionaries.allActors.Add(message.networkID, actor);
