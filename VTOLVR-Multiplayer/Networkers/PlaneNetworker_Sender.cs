@@ -30,6 +30,7 @@ public class PlaneNetworker_Sender : MonoBehaviour
     private RefuelPort refuelPort;
     private Traverse traverseThrottle;
     private Actor actor;
+    private InternalWeaponBay iwb = null;
     private ulong sequenceNumber;
     private void Awake()
     {
@@ -59,6 +60,10 @@ public class PlaneNetworker_Sender : MonoBehaviour
             Networker.WeaponSet += WeaponSet;
             weaponManager.OnWeaponEquipped += Rearm;
             weaponManager.OnWeaponUnequippedHPIdx += Rearm;
+            if (actor.isPlayer &&  weaponManager.GetIWBForEquip(3) != null)
+            {
+                iwb = weaponManager.GetIWBForEquip(3);
+            }
         }
 
         cmManager = GetComponentInChildren<CountermeasureManager>();
@@ -109,6 +114,10 @@ public class PlaneNetworker_Sender : MonoBehaviour
         lastMessage.landingGear = LandingGearState();
         lastMessage.networkUID = networkUID;
         lastMessage.sequenceNumber = ++sequenceNumber;
+        if (iwb != null)
+        {
+            lastMessage.doorState = iwb.doorState;
+        }
         if (engine != null)
         {
             lastMessage.throttle = engine.finalThrottle;
