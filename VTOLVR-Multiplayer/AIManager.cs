@@ -290,6 +290,27 @@ public static class AIManager
         }
         AIVehicles.Add(new AI(newAI, message.aiVehicleName, actor, message.networkID));
         Debug.Log("Spawned in AI " + newAI.name);
+
+        if (!PlayerManager.teamLeftie)
+        {
+            unitSpawn.team = actor.team;
+        }
+        else
+        {
+            if (actor.team == Teams.Enemy)
+            {
+                actor.team = Teams.Allied;
+            }
+            else
+            if (actor.team == Teams.Allied)
+            {
+                actor.team = Teams.Enemy;
+            }
+            unitSpawn.team = actor.team;
+
+            TargetManager.instance.UnregisterActor(actor);
+            TargetManager.instance.RegisterActor(actor);
+        }
         if (!VTOLVR_Multiplayer.AIDictionaries.allActors.ContainsKey(message.networkID))
         {
             VTOLVR_Multiplayer.AIDictionaries.allActors.Add(message.networkID, actor);
