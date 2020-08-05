@@ -67,7 +67,17 @@ class PlayerNetworker_Sender : MonoBehaviour
 
         Debug.Log("Finished respawn timer.");
 
+        var rearmPoints = GameObject.FindObjectsOfType<ReArmingPoint>();
+        //back up option below
         ReArmingPoint rearmPoint = GameObject.FindObjectOfType<ReArmingPoint>();
+        foreach (ReArmingPoint rep in rearmPoints)
+        {
+            if(rep.team == Teams.Allied)
+            {
+                rearmPoint = rep;
+            }
+        }
+        
 
         //UnEject();
         //PutPlayerBackInAircraft();
