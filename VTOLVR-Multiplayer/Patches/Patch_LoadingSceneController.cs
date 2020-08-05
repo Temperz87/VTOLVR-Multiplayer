@@ -101,7 +101,7 @@ class Patch_LoadingSceneHelmet_Update
                         else
                         {
                             Debug.Log("client is a rightie");
-                            PlayerManager.teamLeftie = true;
+                            PlayerManager.teamLeftie = false;
                         }
                         if (!Networker.readySent)
                         {
