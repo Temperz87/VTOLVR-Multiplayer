@@ -324,6 +324,9 @@ public static class PlayerManager
         List<int> cm = PlaneEquippableManager.generateCounterMeasuresFromCmManager(cmManager);
         float fuel = PlaneEquippableManager.generateLocalFuelValue();
 
+
+        /*
+         * //bad code we ran this before in  SetupLocalAircraft(localVehicle, pos, rot, UID);
         Debug.Log("Assembled our local vehicle");
         if (!Networker.isHost || Multiplayer.SoloTesting)
         {
@@ -343,7 +346,7 @@ public static class PlayerManager
         else
         {
             Debug.Log("I am host, no need to immediately forward my assembled vehicle");
-        }
+        }*/
     }
 
     public static void SetupLocalAircraft(GameObject localVehicle, Vector3 pos, Quaternion rot, ulong UID)
