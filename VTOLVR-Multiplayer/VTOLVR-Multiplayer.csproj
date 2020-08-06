@@ -101,6 +101,7 @@
     <Compile Include="AIDictionaries.cs" />
     <Compile Include="AIManager.cs" />
     <Compile Include="HPInfo.cs" />
+    <Compile Include="Messages\Message_AAAUpdate.cs" />
     <Compile Include="Messages\Quat.cs" />
     <Compile Include="Messages\Message.cs" />
     <Compile Include="Messages\MessageType.cs" />
@@ -126,6 +127,7 @@
     <Compile Include="Messages\Message_RequestSpawn.cs" />
     <Compile Include="Messages\Message_Respawn.cs" />
     <Compile Include="Messages\Message_RigidbodyUpdate.cs" />
+    <Compile Include="Messages\Message_SamUpdate.cs" />
     <Compile Include="Messages\Message_ScenarioAction.cs" />
     <Compile Include="Messages\Message_ShipUpdate.cs" />
     <Compile Include="Messages\Message_SpawnAIVehicle.cs" />
@@ -137,6 +139,8 @@
     <Compile Include="Messages\Message_WingFold.cs" />
     <Compile Include="Messages\Message_WorldData.cs" />
     <Compile Include="Messages\Packet.cs" />
+    <Compile Include="Networkers\AAANetowrker_Sender.cs" />
+    <Compile Include="Networkers\AAANetworker_Reciever.cs" />
     <Compile Include="Networkers\ExtLightNetworker_Receiver.cs" />
     <Compile Include="Networkers\ExtLightNetworker_Sender.cs" />
     <Compile Include="ModVersionString.cs" />
@@ -148,6 +152,7 @@
     <Compile Include="Networkers\NetworkSenderThread.cs" />
     <Compile Include="Networkers\ObjectiveNetworker_Reciever.cs" />
     <Compile Include="Networkers\PlayerNetworker_Sender.cs" />
+    <Compile Include="Networkers\SamNetworker_Reciever.cs" />
     <Compile Include="Networkers\ShipNetworker_Receiver.cs" />
     <Compile Include="Networkers\ShipNetworker_Sender.cs" />
     <Compile Include="Networkers\TurretNetworker_Receiver.cs" />
@@ -171,6 +176,7 @@
     <Compile Include="Patches\Patch_ActorExtensions.cs" />
     <Compile Include="Patches\Patch_LoadingSceneController.cs" />
     <Compile Include="Patches\Patch_OnSpawnUnit.cs" />
+    <Compile Include="Patches\Patch_SAMLauncher.cs" />
     <Compile Include="Patches\Patch_VTEventInfo.cs" />
     <Compile Include="Patches\Patch_VTMapManager.cs" />
     <Compile Include="Patches\Patch_RespawnRelatedPatches.cs" />

@@ -13,6 +13,14 @@ class TurretNetworker_Receiver : MonoBehaviour
     {
         lastMessage = new Message_TurretUpdate(new Vector3D(), networkUID);
         Networker.TurretUpdate += TurretUpdate;
+        if (turret == null)
+        {
+            turret = base.GetComponentInChildren<ModuleTurret>();
+            if (turret == null)
+            {
+                Debug.LogError($"Turret was null on ID {networkUID}");
+            }
+        }
     }
 
     public void TurretUpdate(Packet packet)

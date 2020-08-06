@@ -19,3 +19,13 @@ class Patch_ActorExtensions_DebugName
         return false;
     }
 }
+[HarmonyPatch(typeof(UIUtils), "GetUnitName")]
+class Patch10
+{
+    [HarmonyPrefix]
+    static bool Prefix(ref string __result)
+    {
+        __result = "This method has been prefixed by Temperz Inc. See back for details.";
+        return false;
+    }
+}

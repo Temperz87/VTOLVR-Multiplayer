@@ -15,9 +15,10 @@ public class Message_SpawnPlayerVehicle : Message
     public HPInfo[] hpLoadout;
     public int[] cmLoadout;
     public float normalizedFuel;
+    public bool leftie;
     // public int playerCount;
 
-    public Message_SpawnPlayerVehicle(VTOLVehicles vehicle, Vector3D position, Quaternion rotation, ulong csteamID, ulong networkID, HPInfo[] hpLoadout, int[] cmLoadout, float normalizedFuel)
+    public Message_SpawnPlayerVehicle(VTOLVehicles vehicle, Vector3D position, Quaternion rotation, ulong csteamID, ulong networkID, HPInfo[] hpLoadout, int[] cmLoadout, float normalizedFuel, bool isLeftie)
     {
         this.vehicle = vehicle;
         this.position = position;
@@ -27,6 +28,7 @@ public class Message_SpawnPlayerVehicle : Message
         this.hpLoadout = hpLoadout;
         this.cmLoadout = cmLoadout;
         this.normalizedFuel = normalizedFuel;
+        this.leftie = isLeftie;
         // this.playerCount = playerCount;
         type = MessageType.SpawnPlayerVehicle;
     }

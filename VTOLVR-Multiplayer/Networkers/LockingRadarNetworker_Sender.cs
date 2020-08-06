@@ -35,7 +35,7 @@ class LockingRadarNetworker_Sender : MonoBehaviour
         }
         else
         {
-            Debug.Log($"Radar sender successfully attached to object {gameObject.name}.");
+           // Debug.Log($"Radar sender successfully attached to object {gameObject.name}.");
         }
         controller = gameObject.GetComponentInChildren<TacticalSituationController>();
         if (controller != null)
@@ -61,13 +61,13 @@ class LockingRadarNetworker_Sender : MonoBehaviour
             }
             if (lr.radar.radarEnabled != lastOn || lr.radar.sweepFov != lastFov)
             {
-                Debug.Log("radar.radar is not equal to last on");
+                // Debug.Log("radar.radar is not equal to last on");
                 lastRadarMessage.UID = networkUID;
-                Debug.Log("last uid");
+                // Debug.Log("last uid");
                 lastRadarMessage.on = lr.radar.radarEnabled;
-                Debug.Log("on enabled");
+                // Debug.Log("on enabled");
                 lastRadarMessage.fov = lr.radar.sweepFov;
-                Debug.Log("sweep fov and SENDING!");
+                Debug.Log("Sending sweepFOV");
 
                 if (Networker.isHost)
                     NetworkSenderThread.Instance.SendPacketAsHostToAllClients(lastRadarMessage, Steamworks.EP2PSend.k_EP2PSendReliable);
@@ -120,7 +120,7 @@ class LockingRadarNetworker_Sender : MonoBehaviour
                 }
                 else
                 {
-                    Debug.Log("Else going into dictionary");
+                    // Debug.Log("Else going into dictionary");
                     try
                     {
                         // ulong key = (from p in VTOLVR_Multiplayer.AIDictionaries.allActors where p.Value == lr.currentLock.actor select p.Key).FirstOrDefault();

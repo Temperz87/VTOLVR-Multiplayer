@@ -51,27 +51,12 @@ public class MissileNetworker_Receiver : MonoBehaviour
             if (lastMessage.guidanceMode == Missile.GuidanceModes.Radar)
             {
                 // thisMissile.debugMissile = true;
-                Debug.Log("Guidance mode radar, firing it as a radar missile.");
                 HPEquipMissileLauncher radarLauncher = thisML.gameObject.GetComponent<HPEquipMissileLauncher>();
-                radarLauncher.OnStartFire();
-                /*RadarLockData lockData = new RadarLockData();
-                // lockData.locked = true;
-                // lockData.lockingRadar = GetComponentInChildren<LockingRadar>();     //Unsure if these are on a child or not
-                //lockData.radarSymbol = GetComponentInChildren<Radar>().radarSymbol; //I'm just guessing they are
-                LockingRadar radar = thisMissile.lockingRadar;
-
-                RadarMissileLauncher radarML = thisML as RadarMissileLauncher;
-                foreach (var AI in AIManager.AIVehicles)
+                if (radarLauncher != null)
                 {
-                    if (AI.vehicleUID == lastMessage.radarLock)
-                    {
-                        Debug.Log("Missile found its lock on actor " + AI.actor.name + " with an uid of " + AI.vehicleUID + " while trying to lock " + lastMessage.networkUID);
-                        radarML.lockingRadar.ForceLock(AI.actor, out lockData);
-                        // radar.ForceLock(AI.actor, out lockData);
-                        break;
-                    }
+                    Debug.Log("Guidance mode radar, firing it as a radar missile.");
+                    radarLauncher.OnStartFire();
                 }
-                Debug.Log($"Lock data for missileLaucher of missile {thisMissile.name}, Locked: {lockData.locked}, Actor: {lockData.actor}.");*/
             }
             else
             {
@@ -92,6 +77,7 @@ public class MissileNetworker_Receiver : MonoBehaviour
         if (lastMessage.hasExploded)
         {
             Debug.Log("Missile exploded.");
+            if(thisMissile != null)
             thisMissile.Detonate();
             return;
         }

@@ -41,7 +41,6 @@ class HealthNetworker_ReceiverHostEnforced : MonoBehaviour
             }
         }
 
-
         health.invincible = false;
         health.Kill();
     }

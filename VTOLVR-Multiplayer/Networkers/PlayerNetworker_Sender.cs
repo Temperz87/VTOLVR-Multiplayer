@@ -29,7 +29,7 @@ class PlayerNetworker_Sender : MonoBehaviour
 
     void Awake()
     {
-        lastMessage = new Message_Respawn(networkUID, new Vector3D(), new Quaternion());
+        lastMessage = new Message_Respawn(networkUID, new Vector3D(), new Quaternion(), false);
 
         health = GetComponent<Health>();
 
@@ -67,7 +67,17 @@ class PlayerNetworker_Sender : MonoBehaviour
 
         Debug.Log("Finished respawn timer.");
 
+        var rearmPoints = GameObject.FindObjectsOfType<ReArmingPoint>();
+        //back up option below
         ReArmingPoint rearmPoint = GameObject.FindObjectOfType<ReArmingPoint>();
+        foreach (ReArmingPoint rep in rearmPoints)
+        {
+            if(rep.team == Teams.Allied)
+            {
+                rearmPoint = rep;
+            }
+        }
+        
 
         //UnEject();
         //PutPlayerBackInAircraft();
@@ -108,7 +118,8 @@ class PlayerNetworker_Sender : MonoBehaviour
         PlayerManager.SetupLocalAircraft(newPlayer, newPlayer.transform.position, newPlayer.transform.rotation, networkUID);
 
         lastMessage.UID = networkUID;
-        
+        lastMessage.isLeftie = PlayerManager.teamLeftie;
+
         if (Networker.isHost)
             NetworkSenderThread.Instance.SendPacketAsHostToAllClients(lastMessage, Steamworks.EP2PSend.k_EP2PSendUnreliableNoDelay);
         else

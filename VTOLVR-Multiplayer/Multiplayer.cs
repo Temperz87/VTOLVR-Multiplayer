@@ -17,7 +17,7 @@ public class Multiplayer : VTOLMOD
 {
     private static string TesterURL = "http://marsh.vtolvr-mods.com/?id=";
     public static bool SoloTesting = true;
-    public static Multiplayer _instance;
+    public static Multiplayer _instance = null;
 
     private struct FriendItem
     {
@@ -72,9 +72,12 @@ public class Multiplayer : VTOLMOD
 
     private void Start()
     {
+        if (_instance == null)
+        {
+            HarmonyInstance harmony = HarmonyInstance.Create("marsh.vtolvr.multiplayer.temperzFork");
+            harmony.PatchAll(Assembly.GetExecutingAssembly());
+        }
         _instance = this;
-        HarmonyInstance harmony = HarmonyInstance.Create("marsh.vtolvr.multiplayer.temperzFork");
-        harmony.PatchAll(Assembly.GetExecutingAssembly());
         Networker.SetMultiplayerInstance(this);
     }
 
