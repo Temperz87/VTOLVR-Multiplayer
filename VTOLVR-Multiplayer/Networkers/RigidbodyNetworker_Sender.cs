@@ -10,33 +10,56 @@ public class RigidbodyNetworker_Sender : MonoBehaviour
     public ulong networkUID;
     private Rigidbody rb;
     private Message_RigidbodyUpdate lastMessage;
-    public Vector3 spawnPos;
-    public Quaternion spawnRot;
-    private Vector3 lastPos;
+    public Vector3 originOffset;
+    private Vector3D globalLastPosition;
+    private Vector3 localLastPosition;
+    private Vector3 lastVelocity;
+    private Vector3 lastUp;
+    private Vector3 lastForward;
+    private Quaternion lastRotation;
+    private Vector3 lastAngularVelocity;
     private Actor actor;
-    private float threshold = 5;
-    private bool sentFirstMessage;
+    private float threshold = 0.5f;
+    private float angleThreshold = 5f;
+    
+    private ulong updateNumber;
 
     private void Awake()
     {
         actor = gameObject.GetComponent<Actor>();
-        lastPos = gameObject.transform.position;
         rb = GetComponent<Rigidbody>();
-        lastMessage = new Message_RigidbodyUpdate(new Vector3D(rb.velocity), new Vector3D(rb.angularVelocity), new Vector3D(transform.position),  transform.rotation, networkUID);
+        lastMessage = new Message_RigidbodyUpdate(new Vector3D(), new Vector3D(), new Vector3D(), Quaternion.identity, 0, networkUID);
     }
 
     private void FixedUpdate()
-    {        
-        if (Vector3.Distance(lastPos, gameObject.transform.position) > threshold || sentFirstMessage == false)
+    {
+        globalLastPosition += new Vector3D(lastVelocity * Time.fixedDeltaTime);
+        localLastPosition = VTMapManager.GlobalToWorldPoint(globalLastPosition);
+        Quaternion quatVel = Quaternion.Euler(lastAngularVelocity * Time.fixedDeltaTime);
+        lastRotation *= quatVel;
+
+        lastUp = lastRotation * Vector3.up;
+        lastForward = lastRotation * Vector3.forward;
+
+        if (Vector3.Distance(localLastPosition, transform.TransformPoint(originOffset)) > threshold || Vector3.Angle(lastUp, transform.up) > angleThreshold || Vector3.Angle(lastForward, transform.forward) > angleThreshold)
         {
-            lastMessage.position = VTMapManager.WorldToGlobalPoint(transform.position);
+            lastUp = transform.up;
+            lastForward = transform.forward;
+
+            globalLastPosition = VTMapManager.WorldToGlobalPoint(transform.TransformPoint(originOffset));
+            lastVelocity = rb.velocity;
+
+            lastRotation = transform.rotation;
+            lastAngularVelocity = rb.angularVelocity * Mathf.Rad2Deg;
+
+            lastMessage.position = VTMapManager.WorldToGlobalPoint(transform.TransformPoint(originOffset));
             lastMessage.rotation = transform.rotation;
             if (Multiplayer.SoloTesting)
                 lastMessage.position += new Vector3D(-30, 0, 0);
             lastMessage.velocity = new Vector3D(rb.velocity);
-            lastMessage.angularVelocity = new Vector3D(rb.angularVelocity);
+            lastMessage.angularVelocity = new Vector3D(rb.angularVelocity * Mathf.Rad2Deg);
             lastMessage.networkUID = networkUID;
-            sentFirstMessage = true;
+            lastMessage.sequenceNumber = ++updateNumber;
             if (Networker.isHost)
                 NetworkSenderThread.Instance.SendPacketAsHostToAllClients(lastMessage, Steamworks.EP2PSend.k_EP2PSendUnreliableNoDelay);
             else
@@ -46,12 +69,12 @@ public class RigidbodyNetworker_Sender : MonoBehaviour
             //Debug.Log($"{actor.name} is not outside of the threshold {Threshold}, the distance is {Vector3.Distance(lastPos, gameObject.transform.position)} not updating it.");
     }
 
-    public void SetSpawn()
+    public void SetSpawn(Vector3 spawnPos, Quaternion spawnRot)
     {
-        StartCoroutine(SetSpawnEnumerator());
+        StartCoroutine(SetSpawnEnumerator(spawnPos, spawnRot));
     }
 
-    private IEnumerator SetSpawnEnumerator()
+    private IEnumerator SetSpawnEnumerator(Vector3 spawnPos, Quaternion spawnRot)
     {
         yield return new WaitForSeconds(0.5f);
         rb.position = spawnPos;
