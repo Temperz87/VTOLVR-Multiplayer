@@ -17,7 +17,7 @@ class ShipNetworker_Receiver : MonoBehaviour
 
     private void Awake()
     {
-        lastMessage = new Message_ShipUpdate(new Vector3D(), new Quaternion(), new Vector3D(), new Vector3D(), networkUID);
+        lastMessage = new Message_ShipUpdate(new Vector3D(), new Quaternion(), new Vector3D(), networkUID);
         Networker.ShipUpdate += ShipUpdate;
 
         waypoint = new Waypoint();

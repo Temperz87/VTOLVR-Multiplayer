@@ -360,9 +360,10 @@ public static class PlayerManager
 
         RigidbodyNetworker_Sender rbSender = localVehicle.AddComponent<RigidbodyNetworker_Sender>();
         rbSender.networkUID = UID;
-        rbSender.spawnPos = pos;
-        rbSender.spawnRot = rot;
-        rbSender.SetSpawn();
+        rbSender.SetSpawn(pos, rot);
+        if (currentVehicle == VTOLVehicles.AV42C) {
+            rbSender.originOffset = new Vector3(0, 0.97f, -5.137f);
+        }
 
         Debug.Log("Adding Plane Sender");
         PlaneNetworker_Sender planeSender = localVehicle.AddComponent<PlaneNetworker_Sender>();
