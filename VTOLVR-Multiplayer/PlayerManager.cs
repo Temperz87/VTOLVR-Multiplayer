@@ -422,6 +422,8 @@ public static class PlayerManager
             radarSender.networkUID = UID;
         }
 
+        AvatarManager.SetupAircraftRoundels(localVehicle.transform, currentVehicle, GetPlayerCSteamID(localUID), Vector3.zero);
+
         if (Multiplayer.SoloTesting)
             pos += new Vector3(20, 0, 0);
 
@@ -706,6 +708,8 @@ public static class PlayerManager
         rb.interpolation = RigidbodyInterpolation.Interpolate;
 
         Debug.Log($"Finished changing {newVehicle.name}\n Pos:{rb.position} Rotation:{rb.rotation.eulerAngles}");
+
+        AvatarManager.SetupAircraftRoundels(newVehicle.transform, player.vehicleType, player.cSteamID, Vector3.zero);
 
         GameObject parent = new GameObject("Name Tag Holder");
         GameObject nameTag = new GameObject("Name Tag");
