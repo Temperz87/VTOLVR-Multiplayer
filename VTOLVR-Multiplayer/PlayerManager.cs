@@ -319,14 +319,15 @@ public static class PlayerManager
         if (Multiplayer.SoloTesting)
             pos += new Vector3(20, 0, 0);
 
-        List<HPInfo> hpInfos = PlaneEquippableManager.generateLocalHpInfoList(UID);
+        /// * //bad code we ran this before in  SetupLocalAircraft(localVehicle, pos, rot, UID);
+        /*List<HPInfo> hpInfos = PlaneEquippableManager.generateLocalHpInfoList(UID);
         CountermeasureManager cmManager = localVehicle.GetComponentInChildren<CountermeasureManager>();
         List<int> cm = PlaneEquippableManager.generateCounterMeasuresFromCmManager(cmManager);
         float fuel = PlaneEquippableManager.generateLocalFuelValue();
 
 
-        /*
-         * //bad code we ran this before in  SetupLocalAircraft(localVehicle, pos, rot, UID);
+        
+        
         Debug.Log("Assembled our local vehicle");
         if (!Networker.isHost || Multiplayer.SoloTesting)
         {
