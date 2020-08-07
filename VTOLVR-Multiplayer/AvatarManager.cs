@@ -62,7 +62,7 @@ public static class AvatarManager
             new RoundelPosition(new Vector3(-1.723f, 1.008f, -3.852f), Quaternion.Euler(new Vector3(-19.71f,90,0)), new Vector3(0.8f,0.8f,0.8f)),//roundel on the left tail
             new RoundelPosition(new Vector3(1.723f, 1.008f, -3.852f), Quaternion.Euler(new Vector3(-19.71f,-90,0)), new Vector3(0.8f,0.8f,0.8f)),//roundel on the right tail
             new RoundelPosition(new Vector3(-2.801f, 0.18f, -1.617f), Quaternion.Euler(new Vector3(-96.71f,270,-90)), new Vector3(1.0f,1.0f,1.0f)),//roundel on the bottom of the left wing
-            new RoundelPosition(new Vector3(-2.801f, 0.18f, -1.617f), Quaternion.Euler(new Vector3(-96.71f,-270,90)), new Vector3(1.0f,1.0f,1.0f)),//roundel on the bottom of the right wing
+            new RoundelPosition(new Vector3(2.801f, 0.18f, -1.617f), Quaternion.Euler(new Vector3(-96.71f,-270,90)), new Vector3(1.0f,1.0f,1.0f)),//roundel on the bottom of the right wing
             new RoundelPosition(new Vector3(-0.609f, 0.018f, 5.622f), Quaternion.Euler(new Vector3(-21.99f,96.01501f,-2.259f)), new Vector3(0.6f,0.6f,0.6f)),//roundel on the left of the cockpit
             new RoundelPosition(new Vector3(0.609f, 0.018f, 5.622f), Quaternion.Euler(new Vector3(-21.99f,-96.01501f,2.259f)), new Vector3(0.6f,0.6f,0.6f))//roundel on the right of the cockpit
         })
