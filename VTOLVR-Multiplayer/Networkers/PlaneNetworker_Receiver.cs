@@ -20,6 +20,7 @@ public class PlaneNetworker_Receiver : MonoBehaviour
     private CountermeasureManager cmManager;
     private FuelTank fuelTank;
     private Traverse traverse;
+    private HPEquipMissileLauncher lastml;
     private int idx;
     // private RadarLockData radarLockData;
     private ulong mostCurrentUpdateNumber;
@@ -265,8 +266,13 @@ public class PlaneNetworker_Receiver : MonoBehaviour
                 {
                     weaponManager.ToggleMasterArmed();
                 }
-
-                if (weaponManager.currentEquip is HPEquipIRML || weaponManager.currentEquip is HPEquipRadarML || weaponManager.currentEquip is RocketLauncher)
+                if (weaponManager.currentEquip is HPEquipMissileLauncher)
+                {
+                    lastml = weaponManager.currentEquip as HPEquipMissileLauncher;
+                    Traverse.Create(lastml.ml).Field("missileIdx").SetValue(lastMessage.missileIdx);
+                    weaponManager.SingleFire();
+                }
+                else if (weaponManager.currentEquip is RocketLauncher)
                 {
                     weaponManager.SingleFire();
                 }
