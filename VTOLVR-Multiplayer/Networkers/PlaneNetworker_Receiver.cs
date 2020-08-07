@@ -249,7 +249,7 @@ public class PlaneNetworker_Receiver : MonoBehaviour
             {
                 weaponManager.ToggleMasterArmed();
             }
-            weaponManager.CycleActiveWeapons(false);
+            weaponManager.SetWeapon(message.weaponIdx);
             idx = (int)traverse.Field("weaponIdx").GetValue();
             // Debug.Log(idx + " " + message.weaponIdx);
             i++;
@@ -270,6 +270,7 @@ public class PlaneNetworker_Receiver : MonoBehaviour
                 {
                     lastml = weaponManager.currentEquip as HPEquipMissileLauncher;
                     Traverse.Create(lastml.ml).Field("missileIdx").SetValue(lastMessage.missileIdx);
+                    Debug.Log("Single firing this missile.");
                     weaponManager.SingleFire();
                 }
                 else if (weaponManager.currentEquip is RocketLauncher)
