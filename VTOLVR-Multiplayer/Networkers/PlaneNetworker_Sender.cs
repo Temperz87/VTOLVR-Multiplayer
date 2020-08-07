@@ -31,6 +31,7 @@ public class PlaneNetworker_Sender : MonoBehaviour
     private Traverse traverseThrottle;
     private Actor actor;
     private ulong sequenceNumber;
+    private HPEquipMissileLauncher lastml;
     private void Awake()
     {
         actor = gameObject.GetComponent<Actor>();
@@ -91,6 +92,11 @@ public class PlaneNetworker_Sender : MonoBehaviour
                 lastFiringMessage.UID = networkUID;
                 // lastStoppedFiringMessage.UID = networkUID;
                 lastFiringMessage.isFiring = weaponManager.isFiring;
+                if ( weaponManager.isFiring && weaponManager.currentEquip is HPEquipMissileLauncher)
+                {
+                    lastml = weaponManager.currentEquip as HPEquipMissileLauncher;
+                    lastMessage.missileIdx = (int)Traverse.Create(lastml.ml).Field("missileIdx").GetValue();
+                }
                 if (Networker.isHost)
                     NetworkSenderThread.Instance.SendPacketAsHostToAllClients(lastFiringMessage, Steamworks.EP2PSend.k_EP2PSendUnreliableNoDelay);
                 else

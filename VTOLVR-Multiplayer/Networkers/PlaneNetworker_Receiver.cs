@@ -265,12 +265,6 @@ public class PlaneNetworker_Receiver : MonoBehaviour
                 {
                     weaponManager.ToggleMasterArmed();
                 }
-                InternalWeaponBay bay =  weaponManager.GetIWBForEquip(weaponManager.currentEquip.hardpointIdx);
-
-                    if(bay)
-                    {
-                        bay.RegisterOpenReq(weaponManager.currentEquip);
-                    }
 
                 if (weaponManager.currentEquip is HPEquipIRML || weaponManager.currentEquip is HPEquipRadarML || weaponManager.currentEquip is RocketLauncher)
                 {
@@ -284,13 +278,7 @@ public class PlaneNetworker_Receiver : MonoBehaviour
             }
             else
             {
-                InternalWeaponBay bay = weaponManager.GetIWBForEquip(weaponManager.currentEquip.hardpointIdx);
-                if (bay)
-                {
-                    bay.UnregisterOpenReq(weaponManager.currentEquip);
-                }
-
-                if (!(weaponManager.currentEquip is HPEquipIRML || weaponManager.currentEquip is RocketLauncher)) // I removed one for radar code because it's shooting missiles twice
+                if (!(weaponManager.currentEquip is HPEquipMissileLauncher || weaponManager.currentEquip is RocketLauncher))
                     weaponManager.EndFire();
             }
         }

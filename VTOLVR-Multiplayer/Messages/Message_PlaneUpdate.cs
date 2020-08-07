@@ -13,6 +13,7 @@ public class Message_PlaneUpdate : Message
     public bool tailHook, fuelPort, launchBar;
     public ulong networkUID;
     public ulong sequenceNumber;
+    public int missileIdx;
     public Message_PlaneUpdate(bool landingGear, float flaps, float pitch, float roll, float yaw, float breaks, float throttle, bool tailHook, bool launchBar, bool fuelPort, ulong networkUID, ulong sequenceNumber)
     {
         this.landingGear = landingGear;
