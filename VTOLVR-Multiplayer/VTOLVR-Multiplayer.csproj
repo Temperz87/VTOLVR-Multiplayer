@@ -100,6 +100,7 @@
   <ItemGroup>
     <Compile Include="AIDictionaries.cs" />
     <Compile Include="AIManager.cs" />
+    <Compile Include="AvatarManager.cs" />
     <Compile Include="HPInfo.cs" />
     <Compile Include="Messages\Message_AAAUpdate.cs" />
     <Compile Include="Messages\Quat.cs" />

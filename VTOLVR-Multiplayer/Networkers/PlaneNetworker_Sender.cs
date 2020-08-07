@@ -30,7 +30,9 @@ public class PlaneNetworker_Sender : MonoBehaviour
     private RefuelPort refuelPort;
     private Traverse traverseThrottle;
     private Actor actor;
+    private InternalWeaponBay iwb = null;
     private ulong sequenceNumber;
+    private HPEquipMissileLauncher lastml;
     private void Awake()
     {
         actor = gameObject.GetComponent<Actor>();
@@ -59,6 +61,10 @@ public class PlaneNetworker_Sender : MonoBehaviour
             Networker.WeaponSet += WeaponSet;
             weaponManager.OnWeaponEquipped += Rearm;
             weaponManager.OnWeaponUnequippedHPIdx += Rearm;
+            if (actor.isPlayer &&  weaponManager.GetIWBForEquip(3) != null)
+            {
+                iwb = weaponManager.GetIWBForEquip(3);
+            }
         }
 
         cmManager = GetComponentInChildren<CountermeasureManager>();
@@ -91,6 +97,11 @@ public class PlaneNetworker_Sender : MonoBehaviour
                 lastFiringMessage.UID = networkUID;
                 // lastStoppedFiringMessage.UID = networkUID;
                 lastFiringMessage.isFiring = weaponManager.isFiring;
+                if ( weaponManager.isFiring && weaponManager.currentEquip is HPEquipMissileLauncher)
+                {
+                    lastml = weaponManager.currentEquip as HPEquipMissileLauncher;
+                    lastMessage.missileIdx = (int)Traverse.Create(lastml.ml).Field("missileIdx").GetValue();
+                }
                 if (Networker.isHost)
                     NetworkSenderThread.Instance.SendPacketAsHostToAllClients(lastFiringMessage, Steamworks.EP2PSend.k_EP2PSendUnreliableNoDelay);
                 else
@@ -109,6 +120,10 @@ public class PlaneNetworker_Sender : MonoBehaviour
         lastMessage.landingGear = LandingGearState();
         lastMessage.networkUID = networkUID;
         lastMessage.sequenceNumber = ++sequenceNumber;
+        if (iwb != null)
+        {
+            lastMessage.doorState = iwb.doorState;
+        }
         if (engine != null)
         {
             lastMessage.throttle = engine.finalThrottle;

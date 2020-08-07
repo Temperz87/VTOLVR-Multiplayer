@@ -25,7 +25,7 @@ class Patch9
         Debug.Log("Beginning sam launch prefix.");
         int j = 0;
         Missile[] missiles = (Missile[])Traverse.Create(__instance).Field("missiles").GetValue();
-        for (int i = 0; i < missiles.Length; i = j + 1)
+        for (int i = 0; i < missiles.Length; i++)
         {
             if (missiles[i] != null)
             {

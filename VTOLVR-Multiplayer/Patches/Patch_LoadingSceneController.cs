@@ -73,6 +73,11 @@ class Patch_LoadingSceneHelmet_Update
                 {
                     if (Networker.isHost)
                     {
+                        if (c.isLeft)
+                        {
+                            Debug.Log("host used left hand cant be a leftie, made righty");
+                        }
+                        PlayerManager.teamLeftie = false; //host cant be team leftie so ai doesnt break;
                         if (Networker.EveryoneElseReady())
                         {
                             Debug.Log("Everyone is ready, starting game");
@@ -88,6 +93,16 @@ class Patch_LoadingSceneHelmet_Update
                     }
                     else
                     {
+                        if (c.isLeft)
+                        {
+                            PlayerManager.teamLeftie = true;
+                            Debug.Log("client is a leftie");
+                        }
+                        else
+                        {
+                            Debug.Log("client is a rightie");
+                            PlayerManager.teamLeftie = false;
+                        }
                         if (!Networker.readySent)
                         {
                             Networker.readySent = true;

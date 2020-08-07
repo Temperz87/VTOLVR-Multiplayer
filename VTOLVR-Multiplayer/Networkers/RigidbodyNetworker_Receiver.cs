@@ -16,27 +16,66 @@ public class RigidbodyNetworker_Receiver : MonoBehaviour
     private Vector3D globalTargetPosition;
     private Vector3 localTargetPosition;
     private Vector3 targetVelocity;
+    private Quaternion targetRotation;
+    private Vector3 targetRotationVelocity;
     private Rigidbody rb;
+    private KinematicPlane kplane;
     private float positionThreshold = 100f;
     private float smoothingTime = 1f;
-    private float latency = 0.05f;//if its zero we get jitter
-    private float velocityMatchingForce = 10f;
+    private float rotSmoothingTime = 0.2f;
+    private float latency = 0.0f;
+
+    private ulong mostCurrentUpdateNumber;
 
     private void Awake()
     {
+        kplane = GetComponent<KinematicPlane>();
+
+        if (kplane != null)
+        {
+            kplane.enabled = false;
+            Debug.Log("Dissabled kplane on " + gameObject.name);
+        }
+        else {
+            Debug.Log("Could not find kplane on" + gameObject.name);
+        }
+
         rb = GetComponent<Rigidbody>();
+        rb.isKinematic = true;
+
         FloatingOriginTransform originTransform = GetComponent<FloatingOriginTransform>();
         if (originTransform == null)
             originTransform = gameObject.AddComponent<FloatingOriginTransform>();
+
         originTransform.SetRigidbody(rb);
+
         Networker.RigidbodyUpdate += RigidbodyUpdate;
     }
 
     void FixedUpdate() {
+        if (rb.isKinematic == false)
+        {
+            rb.isKinematic = true;
+            Debug.Log("Rigidbody was not kinematic on " + gameObject.name);
+        }
+
+        if (kplane.enabled == true)
+        {
+            kplane.enabled = false;
+            Debug.Log("Dissabled kplane again on " + gameObject.name);
+        }
+
         globalTargetPosition += new Vector3D(targetVelocity * Time.fixedDeltaTime);
         localTargetPosition = VTMapManager.GlobalToWorldPoint(globalTargetPosition);
-        Vector3 catchUpVelocity = targetVelocity + (localTargetPosition - rb.transform.position) / smoothingTime;
-        rb.AddForce((catchUpVelocity - rb.velocity) * velocityMatchingForce, ForceMode.Acceleration);
+
+        Quaternion quatVel = Quaternion.Euler(targetRotationVelocity * Time.fixedDeltaTime);
+        Quaternion currentRotation = transform.rotation;
+        currentRotation *= quatVel;
+        targetRotation *= quatVel;
+
+        rb.velocity = targetVelocity + (localTargetPosition - transform.position) / smoothingTime;
+        rb.MovePosition(transform.position + targetVelocity * Time.fixedDeltaTime + ((localTargetPosition - transform.position) * Time.fixedDeltaTime) / smoothingTime);
+        rb.MoveRotation(Quaternion.Lerp(currentRotation, targetRotation, Time.fixedDeltaTime / rotSmoothingTime));
     }
 
     public void RigidbodyUpdate(Packet packet)
@@ -46,23 +85,22 @@ public class RigidbodyNetworker_Receiver : MonoBehaviour
         if (rigidbodyUpdate.networkUID != networkUID)
             return;
 
+        if (rigidbodyUpdate.sequenceNumber <= mostCurrentUpdateNumber)
+            return;
+        mostCurrentUpdateNumber = rigidbodyUpdate.sequenceNumber;
+
         globalTargetPosition = rigidbodyUpdate.position + rigidbodyUpdate.velocity * latency;
         localTargetPosition = VTMapManager.GlobalToWorldPoint(globalTargetPosition);
         targetVelocity = rigidbodyUpdate.velocity.toVector3;
-
-        rb.angularVelocity = rigidbodyUpdate.angularVelocity.toVector3;
-        transform.rotation =  rigidbodyUpdate.rotation; //Angular Velocity doesn't seem to be working so I'm just setting the rotation.
+        targetRotation = rigidbodyUpdate.rotation;
+        targetRotationVelocity = rigidbodyUpdate.angularVelocity.toVector3;
 
         if (Vector3.Distance(transform.position, localTargetPosition) > positionThreshold)
         {
             //Debug.Log("Outside of thresh hold, moving " + gameObject.name);
             transform.position = localTargetPosition;
-            rb.velocity = rigidbodyUpdate.velocity.toVector3;
-        }
-        else
-        {
-            //Debug.Log($"Updating Position of UID {networkUID} to {transform.position} : {rb.velocity}" + 
-            //   $"\nNetwork Message was {rigidbodyUpdate.position} : {rigidbodyUpdate.velocity}");
+            
+            transform.rotation = rigidbodyUpdate.rotation;
         }
     }
 

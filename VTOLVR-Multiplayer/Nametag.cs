@@ -9,7 +9,7 @@ using UnityEngine;
 public class Nametag : MonoBehaviour
 {
     private TextMeshPro textMesh;
-    public Transform head;
+    public static Transform head;
 
     /// <summary>
     /// Sets the text
@@ -19,7 +19,7 @@ public class Nametag : MonoBehaviour
     /// <param name="head">The GameObject to rotate towards, typically the head of the player</param>
     public void SetText(string name, Transform parent, Transform head)
     {
-        this.head = head;
+        Nametag.head = head;
         textMesh = gameObject.AddComponent<TextMeshPro>();
         textMesh.alignment = TextAlignmentOptions.Center;
         textMesh.overflowMode = TextOverflowModes.Overflow;
@@ -32,6 +32,8 @@ public class Nametag : MonoBehaviour
     {
         if (head != null)
             transform.LookAt(2 * transform.position - head.position);
+        else
+            Nametag.head = VRHead.instance.transform;
         if (transform.parent != null)
             transform.position = transform.parent.position + Vector3.up * 10;
     }

@@ -10,71 +10,85 @@ using System.Collections;
 
 public static class PlaneEquippableManager
 {
-    public enum HPInfoListGenerateNetworkType {
+    public enum HPInfoListGenerateNetworkType
+    {
         generate,
         sender,
         receiver
     }
 
-    public static List<HPInfo> generateHpInfoListFromWeaponManager(WeaponManager weaponManager, HPInfoListGenerateNetworkType networkType, ulong networkID = 0) {
+    public static List<HPInfo> generateHpInfoListFromWeaponManager(WeaponManager weaponManager, HPInfoListGenerateNetworkType networkType, ulong networkID = 0)
+    {
         List<HPInfo> hpInfos = new List<HPInfo>();
         HPEquippable lastEquippable;
 
-        for (int i = 0; i < weaponManager.equipCount; i++) {
+        for (int i = 0; i < weaponManager.equipCount; i++)
+        {
             //Debug.Log("Weapon Manager, Equip " + i);
             lastEquippable = weaponManager.GetEquip(i);
             if (lastEquippable == null) //If this is null, it means there isn't any weapon in that slot.
                 continue;
             //Debug.Log("Last Equippable = " + lastEquippable.fullName);
             List<ulong> missileUIDS = new List<ulong>();
-            if (lastEquippable is HPEquipMissileLauncher HPml) {
+            if (lastEquippable is HPEquipMissileLauncher HPml)
+            {
                 //Debug.Log("This last equip is a missile launcher");
-                if (HPml.ml == null) {
+                if (HPml.ml == null)
+                {
                     Debug.LogError("The Missile Launcher was null on this Missile Launcher");
                     Debug.LogError("Type was = " + lastEquippable.weaponType);
                     continue;
                 }
-                if (HPml.ml.missiles == null) {
+                if (HPml.ml.missiles == null)
+                {
                     Debug.LogError("The missile list is null");
                     continue;
                 }
                 //Debug.Log($"This has {HPml.ml.missiles.Length} missiles");
-                for (int j = 0; j < HPml.ml.missiles.Length; j++) {
+                for (int j = 0; j < HPml.ml.missiles.Length; j++)
+                {
                     //There shouldn't be any shot missiles, but if so this skips them as they are null.
-                    if (HPml.ml.missiles[j] == null) {
+                    if (HPml.ml.missiles[j] == null)
+                    {
                         missileUIDS.Add(0);
                         //Debug.LogError("It seems there was a missile shot as it was null");
                         continue;
                     }
                     //Debug.Log("Adding Missle Networker to missile");
-                    switch (networkType) {
+                    switch (networkType)
+                    {
                         case HPInfoListGenerateNetworkType.generate:
                             MissileNetworker_Sender mnSender = HPml.ml.missiles[j].gameObject.AddComponent<MissileNetworker_Sender>();
-                            //mnSender.networkUID = Networker.GenerateNetworkUID();
+                            mnSender.networkUID = Networker.GenerateNetworkUID();
                             missileUIDS.Add(mnSender.networkUID);
                             break;
                         case HPInfoListGenerateNetworkType.sender:
                             MissileNetworker_Sender sender = HPml.ml.missiles[j].gameObject.GetComponent<MissileNetworker_Sender>();
-                            if (sender != null) {
+                            if (sender != null)
+                            {
                                 missileUIDS.Add(sender.networkUID);
                             }
-                            else {
+                            else
+                            {
                                 Debug.LogError($"Failed to get NetworkUID for missile ({HPml.ml.missiles[j].gameObject.name})");
                             }
                             break;
                         case HPInfoListGenerateNetworkType.receiver:
                             MissileNetworker_Receiver reciever = HPml.ml.missiles[j].gameObject.GetComponent<MissileNetworker_Receiver>();
-                            if (reciever != null) {
+                            if (reciever != null)
+                            {
                                 missileUIDS.Add(reciever.networkUID);
                             }
-                            else {
+                            else
+                            {
                                 Debug.LogError($"Receiver null, Failed to get NetworkUID for missile ({HPml.ml.missiles[j].gameObject.name})");
                             }
                             break;
                     }
                 }
             }
-            else if (lastEquippable is HPEquipGunTurret HPm230 && networkID != 0) {
+            else if (lastEquippable is HPEquipGunTurret HPm230 && networkID != 0)
+            {
                 switch (networkType)
                 {
                     case HPInfoListGenerateNetworkType.generate:
@@ -98,26 +112,31 @@ public static class PlaneEquippableManager
         return hpInfos;
     }
 
-    public static List<HPInfo> generateLocalHpInfoList(ulong UID = 0) {
+    public static List<HPInfo> generateLocalHpInfoList(ulong UID = 0)
+    {
         GameObject localVehicle = VTOLAPI.GetPlayersVehicleGameObject();
         WeaponManager localWeaponManager = localVehicle.GetComponent<WeaponManager>();
         return generateHpInfoListFromWeaponManager(localWeaponManager, HPInfoListGenerateNetworkType.generate, UID);
     }
 
-    public static List<int> generateCounterMeasuresFromCmManager(CountermeasureManager cmManager) {
+    public static List<int> generateCounterMeasuresFromCmManager(CountermeasureManager cmManager)
+    {
         List<int> cm = new List<int>();
 
-        for (int i = 0; i < cmManager.countermeasures.Count; i++) {
+        for (int i = 0; i < cmManager.countermeasures.Count; i++)
+        {
             cm.Add(cmManager.countermeasures[i].count);
         }
 
         return cm;
     }
 
-    public static float generateLocalFuelValue() {
+    public static float generateLocalFuelValue()
+    {
         float fuel = 0.65f;
 
-        if (VehicleEquipper.loadoutSet) {
+        if (VehicleEquipper.loadoutSet)
+        {
             fuel = VehicleEquipper.loadout.normalizedFuel;
         }
 

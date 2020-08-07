@@ -737,7 +737,7 @@ public class Networker : MonoBehaviour
                 case MessageType.Respawn:
                     Debug.Log("case respawn");
                     Message_Respawn respawnMessage = ((PacketSingle)packet).message as Message_Respawn;
-                    PlayerManager.SpawnRepresentation(respawnMessage.UID, respawnMessage.position, respawnMessage.rotation);
+                    PlayerManager.SpawnRepresentation(respawnMessage.UID, respawnMessage.position, respawnMessage.rotation,respawnMessage.isLeftie);
                     break;
                 case MessageType.WingFold:
                     Debug.Log("case wingfold");

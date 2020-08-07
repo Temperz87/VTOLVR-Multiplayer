@@ -85,7 +85,9 @@ class Patch4
 
         Debug.Log(actionIdentifier);
 
-
+        //dont run corrupt objectives
+        if (MissionManager.instance.IndexOfObjective(__instance) == -1)
+            return false;
         Message_ObjectiveSync objOutMessage = new Message_ObjectiveSync(PlayerManager.localUID, MissionManager.instance.IndexOfObjective(__instance), ObjSyncType.EMissionCompleted);
         if (Networker.isHost && objOutMessage.objID != -1)
         {
@@ -127,7 +129,9 @@ class Patch5
 
         Debug.Log(actionIdentifier);
 
-
+        //dont run corrupt objectives
+        if (MissionManager.instance.IndexOfObjective(__instance) == -1)
+            return false;
         Message_ObjectiveSync objOutMessage = new Message_ObjectiveSync(PlayerManager.localUID, MissionManager.instance.IndexOfObjective(__instance), ObjSyncType.EMissionFailed);
         if (Networker.isHost && objOutMessage.objID != -1)
         {
@@ -163,8 +167,9 @@ class Patch6
         String actionIdentifier = __instance.objectiveName + __instance.objectiveID;
 
         Debug.Log(actionIdentifier);
-
-
+        //dont run corrupt objectives
+        if (MissionManager.instance.IndexOfObjective(__instance) == -1)
+            return false;
         Message_ObjectiveSync objOutMessage = new Message_ObjectiveSync(PlayerManager.localUID, MissionManager.instance.IndexOfObjective(__instance), ObjSyncType.EMissionBegin);
         if (Networker.isHost && objOutMessage.objID != -1)
         {
@@ -204,7 +209,9 @@ class Patch7
 
         Debug.Log(actionIdentifier);
 
-
+        //dont run corrupt objectives
+        if (MissionManager.instance.IndexOfObjective(__instance) == -1)
+            return false;
         Message_ObjectiveSync objOutMessage = new Message_ObjectiveSync(PlayerManager.localUID, MissionManager.instance.IndexOfObjective(__instance), ObjSyncType.EMissionCanceled);
         if (Networker.isHost && objOutMessage.objID != -1)
         {

@@ -20,6 +20,7 @@ public class PlaneNetworker_Receiver : MonoBehaviour
     private CountermeasureManager cmManager;
     private FuelTank fuelTank;
     private Traverse traverse;
+    private HPEquipMissileLauncher lastml;
     private int idx;
     // private RadarLockData radarLockData;
     private ulong mostCurrentUpdateNumber;
@@ -42,6 +43,10 @@ public class PlaneNetworker_Receiver : MonoBehaviour
             Debug.LogError("Weapon Manager was null on " + gameObject.name);
         else
             traverse = Traverse.Create(weaponManager);
+        foreach (var iwb in weaponManager.internalWeaponBays)
+        {
+            iwb.openOnAnyWeaponMatch = true;
+        }
         cmManager = GetComponentInChildren<CountermeasureManager>();
         if (cmManager == null)
             Debug.LogError("CountermeasureManager was null on " + gameObject.name);
@@ -206,7 +211,6 @@ public class PlaneNetworker_Receiver : MonoBehaviour
         }
 
         PlaneEquippableManager.SetLoadout(gameObject, networkUID, message.normalizedFuel, message.hpLoadout, message.cmLoadout);
-
         if (Networker.isHost)
         {
             NetworkSenderThread.Instance.SendPacketAsHostToAllButOneSpecificClient(PlayerManager.GetPlayerCSteamID(message.UID),
@@ -248,7 +252,7 @@ public class PlaneNetworker_Receiver : MonoBehaviour
             {
                 weaponManager.ToggleMasterArmed();
             }
-            weaponManager.CycleActiveWeapons(false);
+            weaponManager.SetWeapon(message.weaponIdx);
             idx = (int)traverse.Field("weaponIdx").GetValue();
             // Debug.Log(idx + " " + message.weaponIdx);
             i++;
@@ -265,7 +269,14 @@ public class PlaneNetworker_Receiver : MonoBehaviour
                 {
                     weaponManager.ToggleMasterArmed();
                 }
-                if (weaponManager.currentEquip is HPEquipIRML || weaponManager.currentEquip is HPEquipRadarML || weaponManager.currentEquip is RocketLauncher)
+                if (weaponManager.currentEquip is HPEquipMissileLauncher)
+                {
+                    lastml = weaponManager.currentEquip as HPEquipMissileLauncher;
+                    Traverse.Create(lastml.ml).Field("missileIdx").SetValue(lastMessage.missileIdx);
+                    Debug.Log("Single firing this missile.");
+                    weaponManager.SingleFire();
+                }
+                else if (weaponManager.currentEquip is RocketLauncher)
                 {
                     weaponManager.SingleFire();
                 }
@@ -277,7 +288,7 @@ public class PlaneNetworker_Receiver : MonoBehaviour
             }
             else
             {
-                if (!(weaponManager.currentEquip is HPEquipIRML || weaponManager.currentEquip is RocketLauncher)) // I removed one for radar code because it's shooting missiles twice
+                if (!(weaponManager.currentEquip is HPEquipMissileLauncher || weaponManager.currentEquip is RocketLauncher))
                     weaponManager.EndFire();
             }
         }
