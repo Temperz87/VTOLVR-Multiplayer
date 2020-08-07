@@ -80,6 +80,45 @@ public static class AIManager
         unitSpawn.team = actor.team;
         unitSpawn.unitName = actor.unitSpawn.unitName;
 
+        AirportManager airport = newAI.GetComponent<AirportManager>();
+        if (airport != null)
+        {
+            airport.airportName = "USS TEMPERZ " + message.networkID;
+            VTMapManager.fetch.airports.Add(airport);
+
+            if (airport.carrierOlsTransform == null)
+            {
+                GameObject olsTransfrom = new GameObject();
+                olsTransfrom.transform.parent = newAI.transform;
+                olsTransfrom.transform.position = airport.runways[0].transform.position + airport.runways[0].transform.forward * 30;
+                olsTransfrom.transform.localRotation = Quaternion.Euler(-3.5f, 180f, 0f);
+            }
+
+            if (airport.voiceProfile == null) {
+                GameObject carrier = UnitCatalogue.GetUnitPrefab("AlliedCarrier");
+                if (carrier != null)
+                {
+                    airport.voiceProfile = carrier.GetComponent<AirportManager>().voiceProfile;
+                    Debug.Log("Set ATC voice!");
+                }
+                else {
+                    Debug.Log("Could not find carrier...");
+                }
+            }
+
+            foreach (AirportManager.ParkingSpace parkingSpace in airport.parkingSpaces) {
+                GameObject rearmingGameObject = new GameObject();
+                ReArmingPoint rearmingPoint = rearmingGameObject.AddComponent<ReArmingPoint>();
+                rearmingGameObject.transform.parent = parkingSpace.transform.parent;
+                rearmingGameObject.transform.localPosition = Vector3.zero;
+                rearmingGameObject.transform.localRotation = Quaternion.identity;
+                rearmingPoint.team = Teams.Allied;
+                rearmingPoint.radius = 18.93f;
+                rearmingPoint.canArm = true;
+                rearmingPoint.canRefuel = true;
+            }
+        }
+
         if (!PlayerManager.teamLeftie)
         {
             unitSpawn.team = actor.team;
@@ -88,23 +127,26 @@ public static class AIManager
         {
             if (actor.team == Teams.Enemy)
             {
-                actor.team = Teams.Allied;
+                foreach (Actor subActor in newAI.GetComponentsInChildren<Actor>())
+                    subActor.team = Teams.Allied;
             }
             else
             if (actor.team == Teams.Allied)
             {
-                actor.team = Teams.Enemy;
+                foreach (Actor subActor in newAI.GetComponentsInChildren<Actor>())
+                    subActor.team = Teams.Enemy;
             }
             unitSpawn.team = actor.team;
+
+            if (airport != null)
+            {
+                airport.team = actor.team;
+            }
 
             //TargetManager.instance.UnregisterActor(actor);
             //TargetManager.instance.RegisterActor(actor);
         }
-        if (TargetManager.instance.allActors.Contains(actor))
-        {
-            TargetManager.instance.UnregisterActor(actor);
-        }
-        
+        TargetManager.instance.UnregisterActor(actor);
         TargetManager.instance.RegisterActor(actor);
 
         Traverse.Create(actor.unitSpawn.unitSpawner).Field("_unitInstanceID").SetValue(message.unitInstanceID); // To make objectives work.
@@ -125,8 +167,8 @@ public static class AIManager
         {
             HealthNetworker_Receiver healthNetworker = newAI.AddComponent<HealthNetworker_Receiver>();
             healthNetworker.networkUID = message.networkID;
-            HealthNetworker_Sender healthNetworkerS = newAI.AddComponent<HealthNetworker_Sender>();
-            healthNetworkerS.networkUID = message.networkID;
+            //HealthNetworker_Sender healthNetworkerS = newAI.AddComponent<HealthNetworker_Sender>();
+            //healthNetworkerS.networkUID = message.networkID;
             // Debug.Log("added health Sender to ai");
             // Debug.Log("added health reciever to ai");
         }
@@ -311,10 +353,6 @@ public static class AIManager
             // Debug.Log($"Adding radar reciever to object {actor.name}.");
             LockingRadarNetworker_Receiver lr = actor.gameObject.AddComponent<LockingRadarNetworker_Receiver>();
             lr.networkUID = message.networkID;
-        }
-        if (newAI.GetComponent<AirportManager>() != null) {
-            newAI.GetComponent<AirportManager>().airportName = "USS WE SHOULD REALLLY SYNC AIRPORT NAMES " + message.networkID;
-            VTMapManager.fetch.airports.Add(newAI.GetComponent<AirportManager>());
         }
         AIVehicles.Add(new AI(newAI, message.aiVehicleName, actor, message.networkID));
         Debug.Log("Spawned in AI " + newAI.name);
