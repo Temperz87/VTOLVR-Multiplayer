@@ -35,6 +35,8 @@ public static class PlayerManager
     public static Multiplayer multiplayerInstance = null;
     public static bool teamLeftie = false;
 
+    public static Vector3 av42Offset = new Vector3(0, 0.972f, -5.126f);//the difference between the origin of the ai and player AV-42s
+
     public struct Player
     {
         public CSteamID cSteamID;
@@ -362,7 +364,7 @@ public static class PlayerManager
         rbSender.networkUID = UID;
         rbSender.SetSpawn(pos, rot);
         if (currentVehicle == VTOLVehicles.AV42C) {
-            rbSender.originOffset = new Vector3(0, 0.97f, -5.137f);
+            rbSender.originOffset = av42Offset;
         }
 
         Debug.Log("Adding Plane Sender");
@@ -422,7 +424,10 @@ public static class PlayerManager
             radarSender.networkUID = UID;
         }
 
-        AvatarManager.SetupAircraftRoundels(localVehicle.transform, currentVehicle, GetPlayerCSteamID(localUID), Vector3.zero);
+        if (currentVehicle == VTOLVehicles.AV42C)
+            AvatarManager.SetupAircraftRoundels(localVehicle.transform, currentVehicle, GetPlayerCSteamID(localUID), av42Offset);
+        else
+            AvatarManager.SetupAircraftRoundels(localVehicle.transform, currentVehicle, GetPlayerCSteamID(localUID), Vector3.zero);
 
         if (Multiplayer.SoloTesting)
             pos += new Vector3(20, 0, 0);
