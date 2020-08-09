@@ -178,9 +178,10 @@ public static class PlayerManager
                         }
                         actor.gameObject.AddComponent<IRSAMNetworker_Sender>().irIDs = samIDS.ToArray();
                     }
-                    if (actor.gameObject.GetComponent<AirportManager>() != null)
+                    AirportManager airport = actor.gameObject.GetComponent<AirportManager>();
+                    if (airport != null)
                     {
-                        actor.gameObject.GetComponent<AirportManager>().airportName = "USS TEMPERZ " + networkUID;
+                        AIManager.SetUpCarrier(actor.gameObject, networkUID, actor.team);
                     }
                     if (!actor.unitSpawn.unitSpawner.spawned)
                     {
