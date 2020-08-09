@@ -96,6 +96,8 @@ class PlayerNetworker_Sender : MonoBehaviour
         Destroy(detacher.gameObject);
         Destroy(ejection.gameObject);
         Destroy(BlackoutEffect.instance);
+        Destroy(GetComponent<PlayerSpawn>());
+
         foreach (EngineEffects effect in effects) {
             Destroy(effect);
         }
@@ -104,6 +106,7 @@ class PlayerNetworker_Sender : MonoBehaviour
         AudioController.instance.ClearAllOpenings();
 
         GameObject newPlayer = Instantiate(PilotSaveManager.currentVehicle.vehiclePrefab);
+
         FlightSceneManager.instance.playerActor = newPlayer.GetComponent<Actor>();
         FlightSceneManager.instance.playerActor.flightInfo.PauseGCalculations();
         FlightSceneManager.instance.playerActor.flightInfo.OverrideRecordedAcceleration(Vector3.zero);
@@ -124,7 +127,13 @@ class PlayerNetworker_Sender : MonoBehaviour
             NetworkSenderThread.Instance.SendPacketAsHostToAllClients(lastMessage, Steamworks.EP2PSend.k_EP2PSendUnreliableNoDelay);
         else
             NetworkSenderThread.Instance.SendPacketToSpecificPlayer(Networker.hostID, lastMessage, Steamworks.EP2PSend.k_EP2PSendUnreliableNoDelay);
-        
+
+        foreach (UnitSpawner spawner in VTScenario.current.units.units.Values) {
+            if (spawner.unitName == null) {
+                spawner.unitName = "";
+                Debug.Log(spawner.unitName + " had a null unit id, setting to a blank string");
+            }
+        }
     }
 
     void UnEject()

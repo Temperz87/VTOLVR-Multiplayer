@@ -83,40 +83,7 @@ public static class AIManager
         AirportManager airport = newAI.GetComponent<AirportManager>();
         if (airport != null)
         {
-            airport.airportName = "USS TEMPERZ " + message.networkID;
-            VTMapManager.fetch.airports.Add(airport);
-
-            if (airport.carrierOlsTransform == null)
-            {
-                GameObject olsTransfrom = new GameObject();
-                olsTransfrom.transform.parent = newAI.transform;
-                olsTransfrom.transform.position = airport.runways[0].transform.position + airport.runways[0].transform.forward * 30;
-                olsTransfrom.transform.localRotation = Quaternion.Euler(-3.5f, 180f, 0f);
-            }
-
-            if (airport.voiceProfile == null) {
-                GameObject carrier = UnitCatalogue.GetUnitPrefab("AlliedCarrier");
-                if (carrier != null)
-                {
-                    airport.voiceProfile = carrier.GetComponent<AirportManager>().voiceProfile;
-                    Debug.Log("Set ATC voice!");
-                }
-                else {
-                    Debug.Log("Could not find carrier...");
-                }
-            }
-
-            foreach (AirportManager.ParkingSpace parkingSpace in airport.parkingSpaces) {
-                GameObject rearmingGameObject = new GameObject();
-                ReArmingPoint rearmingPoint = rearmingGameObject.AddComponent<ReArmingPoint>();
-                rearmingGameObject.transform.parent = parkingSpace.transform.parent;
-                rearmingGameObject.transform.localPosition = Vector3.zero;
-                rearmingGameObject.transform.localRotation = Quaternion.identity;
-                rearmingPoint.team = Teams.Allied;
-                rearmingPoint.radius = 18.93f;
-                rearmingPoint.canArm = true;
-                rearmingPoint.canRefuel = true;
-            }
+            SetUpCarrier(newAI, message.networkID);
         }
 
         if (!PlayerManager.teamLeftie)
@@ -552,6 +519,104 @@ public static class AIManager
                 {
                     Debug.Log("Could not find the UIDNetworker_Sender");
                 }
+            }
+        }
+    }
+
+    public static void SetUpCarrier(GameObject carrier, ulong id) {
+        AirportManager airport = carrier.GetComponent<AirportManager>();
+        if (airport != null)
+        {
+            airport.airportName = "USS TEMPERZ " + id;
+            VTMapManager.fetch.airports.Add(airport);
+
+            if (airport.carrierOlsTransform == null)
+            {
+                GameObject olsTransfrom = new GameObject();
+                olsTransfrom.transform.parent = carrier.transform;
+                olsTransfrom.transform.position = airport.runways[0].transform.position + airport.runways[0].transform.forward * 30;
+                olsTransfrom.transform.localRotation = Quaternion.Euler(-3.5f, 180f, 0f);
+            }
+
+            GameObject carrierPrefab = UnitCatalogue.GetUnitPrefab("AlliedCarrier");
+            if (airport.voiceProfile == null)
+            {
+                if (carrierPrefab != null)
+                {
+                    airport.voiceProfile = carrierPrefab.GetComponent<AirportManager>().voiceProfile;
+                    Debug.Log("Set ATC voice!");
+                }
+                else
+                {
+                    Debug.Log("Could not find carrier...");
+                }
+            }
+
+            if (airport.ols == null && airport.vtolOnlyLanding == false)
+            {
+                if (carrierPrefab != null)
+                {
+                    GameObject olsObject = GameObject.Instantiate(carrierPrefab.GetComponent<AirportManager>().ols.gameObject);
+                    olsObject.transform.parent = carrier.transform;
+                    olsObject.transform.localPosition = new Vector3(-25f, 19.7f, 45f);
+                    olsObject.transform.localRotation = Quaternion.Euler(-3.5f, 180, 0);
+
+                    OpticalLandingSystem ols = olsObject.GetComponent<OpticalLandingSystem>();
+                    airport.ols = ols;
+                    airport.runways[0].ols = ols;
+
+                    Debug.Log("Stole the OLS!");
+                }
+                else
+                {
+                    Debug.Log("Could not find carrier...");
+                }
+            }
+
+            if (airport.carrierCables.Length == 0)
+            {
+                airport.carrierCables = carrier.GetComponentsInChildren<CarrierCable>();
+                Debug.Log("Assigned the carrier wires!");
+            }
+
+            if (airport.surfaceColliders.Length == 0)
+            {
+                airport.surfaceColliders = carrier.GetComponentsInChildren<Collider>();
+                Debug.Log("Assigned the surface colliders!");
+            }
+
+            airport.waveOffCheckDist = 400;
+            airport.waveOffMinDist = 200;
+            airport.waveOffAoA.max = 12;
+            airport.waveOffAoA.min = 7;
+
+            if (carrier.GetComponentInChildren<ReArmingPoint>() == null)
+            {
+                Debug.Log("Carrier had no rearming points, adding my own!");
+                foreach (AirportManager.ParkingSpace parkingSpace in airport.parkingSpaces)
+                {
+                    GameObject rearmingGameObject = new GameObject();
+                    ReArmingPoint rearmingPoint = rearmingGameObject.AddComponent<ReArmingPoint>();
+                    rearmingGameObject.transform.parent = parkingSpace.transform.parent;
+                    rearmingGameObject.transform.localPosition = Vector3.zero;
+                    rearmingGameObject.transform.localRotation = Quaternion.identity;
+                    rearmingPoint.team = Teams.Allied;
+                    rearmingPoint.radius = 18.93f;
+                    rearmingPoint.canArm = true;
+                    rearmingPoint.canRefuel = true;
+                    Debug.Log("Added a rearming point!");
+                }
+            }
+            else {
+                Debug.Log("Carrier already had rearming points");
+            }
+
+            Actor actor = carrier.GetComponent<Actor>();
+            if (actor != null)
+            {
+                actor.iconType = UnitIconManager.MapIconTypes.Carrier;
+                actor.useIconRotation = true;
+                actor.iconRotationReference = airport.runways[0].transform  ;
             }
         }
     }

@@ -168,42 +168,7 @@ public static class PlayerManager
                     AirportManager airport = actor.gameObject.GetComponent<AirportManager>();
                     if (airport != null)
                     {
-                        airport.airportName = "USS TEMPERZ " + networkUID;
-
-                        if (airport.carrierOlsTransform == null)
-                        {
-                            GameObject olsTransfrom = new GameObject();
-                            olsTransfrom.transform.parent = actor.gameObject.transform;
-                            olsTransfrom.transform.position = airport.runways[0].transform.position + airport.runways[0].transform.forward * 30;
-                            olsTransfrom.transform.localRotation = Quaternion.Euler(-3.5f, 180f, 0f);
-                        }
-
-                        if (airport.voiceProfile == null)
-                        {
-                            GameObject carrier = UnitCatalogue.GetUnitPrefab("AlliedCarrier");
-                            if (carrier != null)
-                            {
-                                airport.voiceProfile = carrier.GetComponent<AirportManager>().voiceProfile;
-                                Debug.Log("Set ATC voice!");
-                            }
-                            else
-                            {
-                                Debug.Log("Could not find carrier...");
-                            }
-                        }
-
-                        foreach (AirportManager.ParkingSpace parkingSpace in airport.parkingSpaces)
-                        {
-                            GameObject rearmingGameObject = new GameObject();
-                            ReArmingPoint rearmingPoint  = rearmingGameObject.AddComponent<ReArmingPoint>();
-                            rearmingGameObject.transform.parent = parkingSpace.transform.parent;
-                            rearmingGameObject.transform.localPosition = Vector3.zero;
-                            rearmingGameObject.transform.localRotation = Quaternion.identity;
-                            rearmingPoint.team = Teams.Allied;
-                            rearmingPoint.radius = 18.93f;
-                            rearmingPoint.canArm = true;
-                            rearmingPoint.canRefuel = true;
-                        }
+                        AIManager.SetUpCarrier(actor.gameObject, networkUID);
                     }
                     if (!actor.unitSpawn.unitSpawner.spawned)
                     {
