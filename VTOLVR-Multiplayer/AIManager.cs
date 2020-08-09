@@ -30,6 +30,9 @@ public static class AIManager
             this.vehicleUID = vehicleUID;
         }
     }
+
+    static string[] carrierNames = {"HMS Marsh", "HNLMS KetKev", "USS Temperz", "USS Doctor", "USS Dib", "USS Nebriv", "USS Zaelix", "HMS Cheese"};
+
     /// <summary>
     /// This is used by the client and only the client to spawn ai vehicles.
     /// </summary>
@@ -88,23 +91,25 @@ public static class AIManager
         {
             if (actor.team == Teams.Enemy)
             {
-                actor.team = Teams.Allied;
+                foreach (Actor subActor in newAI.GetComponentsInChildren<Actor>())
+                    subActor.team = Teams.Allied;
             }
             else
             if (actor.team == Teams.Allied)
             {
-                actor.team = Teams.Enemy;
+                foreach (Actor subActor in newAI.GetComponentsInChildren<Actor>())
+                    subActor.team = Teams.Enemy;
             }
             unitSpawn.team = actor.team;
 
-            //TargetManager.instance.UnregisterActor(actor);
-            //TargetManager.instance.RegisterActor(actor);
+            AirportManager airport = newAI.GetComponent<AirportManager>();
+            if (airport != null)
+            {
+                airport.team = actor.team;
+                SetUpCarrier(newAI, message.networkID, actor.team);
+            }
         }
-        if (TargetManager.instance.allActors.Contains(actor))
-        {
-            TargetManager.instance.UnregisterActor(actor);
-        }
-        
+        TargetManager.instance.UnregisterActor(actor);
         TargetManager.instance.RegisterActor(actor);
 
         Traverse.Create(actor.unitSpawn.unitSpawner).Field("_unitInstanceID").SetValue(message.unitInstanceID); // To make objectives work.
@@ -125,8 +130,8 @@ public static class AIManager
         {
             HealthNetworker_Receiver healthNetworker = newAI.AddComponent<HealthNetworker_Receiver>();
             healthNetworker.networkUID = message.networkID;
-            HealthNetworker_Sender healthNetworkerS = newAI.AddComponent<HealthNetworker_Sender>();
-            healthNetworkerS.networkUID = message.networkID;
+            //HealthNetworker_Sender healthNetworkerS = newAI.AddComponent<HealthNetworker_Sender>();
+            //healthNetworkerS.networkUID = message.networkID;
             // Debug.Log("added health Sender to ai");
             // Debug.Log("added health reciever to ai");
         }
@@ -311,10 +316,6 @@ public static class AIManager
             // Debug.Log($"Adding radar reciever to object {actor.name}.");
             LockingRadarNetworker_Receiver lr = actor.gameObject.AddComponent<LockingRadarNetworker_Receiver>();
             lr.networkUID = message.networkID;
-        }
-        if (newAI.GetComponent<AirportManager>() != null) {
-            newAI.GetComponent<AirportManager>().airportName = "USS WE SHOULD REALLLY SYNC AIRPORT NAMES " + message.networkID;
-            VTMapManager.fetch.airports.Add(newAI.GetComponent<AirportManager>());
         }
         AIVehicles.Add(new AI(newAI, message.aiVehicleName, actor, message.networkID));
         Debug.Log("Spawned in AI " + newAI.name);
@@ -514,6 +515,125 @@ public static class AIManager
                 {
                     Debug.Log("Could not find the UIDNetworker_Sender");
                 }
+            }
+        }
+    }
+
+    public static void SetUpCarrier(GameObject carrier, ulong id, Teams team) {
+        AirportManager airport = carrier.GetComponent<AirportManager>();
+        if (airport != null)
+        {
+            airport.airportName = carrierNames[(int)id % carrierNames.Length] + " " + id;
+            if (Networker.isClient) {
+                VTMapManager.fetch.airports.Add(airport);
+            }
+
+            GameObject carrierPrefab = UnitCatalogue.GetUnitPrefab("AlliedCarrier");
+            if (airport.voiceProfile == null)
+            {
+                if (carrierPrefab != null)
+                {
+                    airport.voiceProfile = carrierPrefab.GetComponent<AirportManager>().voiceProfile;
+                    Debug.Log("Set ATC voice!");
+                }
+                else
+                {
+                    Debug.Log("Could not find carrier...");
+                }
+            }
+
+            if (airport.vtolOnlyLanding == false)
+            {//this stops inapropriate code from running on either the LHA or the Cruiser, and causing problems
+                if (airport.carrierOlsTransform == null)
+                {
+                    GameObject olsTransform = new GameObject();
+                    olsTransform.transform.parent = carrier.transform;
+                    olsTransform.transform.position = airport.runways[0].transform.position + airport.runways[0].transform.forward * 30;
+                    olsTransform.transform.localRotation = Quaternion.Euler(-3.5f, 180f, 0f);
+                    airport.carrierOlsTransform = olsTransform.transform;
+                }
+
+                if (airport.ols == null)
+                {
+                    if (carrierPrefab != null)
+                    {
+                        GameObject olsObject = GameObject.Instantiate(carrierPrefab.GetComponent<AirportManager>().ols.gameObject);
+                        olsObject.transform.parent = carrier.transform;
+                        olsObject.transform.localPosition = new Vector3(-25f, 19.7f, 45f);
+                        olsObject.transform.localRotation = Quaternion.Euler(-3.5f, 180, 0);
+
+                        OpticalLandingSystem ols = olsObject.GetComponent<OpticalLandingSystem>();
+                        airport.ols = ols;
+                        airport.runways[0].ols = ols;
+
+                        Debug.Log("Stole the OLS!");
+                    }
+                    else
+                    {
+                        Debug.Log("Could not find carrier...");
+                    }
+                }
+
+                Actor actor = carrier.GetComponent<Actor>();
+                if (actor != null)
+                {
+                    actor.iconType = UnitIconManager.MapIconTypes.Carrier;
+                    actor.useIconRotation = true;
+                    actor.iconRotationReference = airport.runways[0].transform;
+                }
+            }
+            else
+            {
+                Debug.Log("This is a cruiser or an LHA, no need to set up runways or landing systems");
+            }
+
+            if (airport.carrierCables.Length == 0)
+            {
+                airport.carrierCables = carrier.GetComponentsInChildren<CarrierCable>();
+                Debug.Log("Assigned the carrier wires!");
+            }
+
+            int catCount = 1;
+            foreach (CarrierCatapult catapult in carrier.GetComponentsInChildren<CarrierCatapult>())
+            {
+                if (catapult.catapultDesignation == 0)
+                {
+                    catapult.catapultDesignation = catCount;
+                    catCount++;
+                }
+            }
+
+            if (airport.surfaceColliders.Length == 0)
+            {
+                airport.surfaceColliders = carrier.GetComponentsInChildren<Collider>();
+                Debug.Log("Assigned the surface colliders!");
+            }
+
+            airport.waveOffCheckDist = 400;
+            airport.waveOffMinDist = 200;
+            airport.waveOffAoA.max = 12;
+            airport.waveOffAoA.min = 7;
+
+            if (carrier.GetComponentInChildren<ReArmingPoint>() == null)
+            {
+                Debug.Log("Carrier had no rearming points, adding my own!");
+                foreach (AirportManager.ParkingSpace parkingSpace in airport.parkingSpaces)
+                {
+                    GameObject rearmingGameObject = new GameObject();
+                    ReArmingPoint rearmingPoint = rearmingGameObject.AddComponent<ReArmingPoint>();
+                    rearmingGameObject.transform.parent = parkingSpace.transform;
+                    rearmingGameObject.transform.localPosition = Vector3.zero;
+                    rearmingGameObject.transform.localRotation = Quaternion.identity;
+                    rearmingPoint.team = team;
+                    rearmingPoint.radius = 18.93f;
+                    rearmingPoint.canArm = true;
+                    rearmingPoint.canRefuel = true;
+                    Debug.Log("Added a rearming point at " + rearmingGameObject.transform.position.ToString() + "!");
+                    Debug.Log("There are now " + ReArmingPoint.reArmingPoints.Count + " rearm points!");
+                }
+            }
+            else {
+                Debug.Log("Carrier already had rearming points");
             }
         }
     }
