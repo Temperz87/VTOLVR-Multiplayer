@@ -43,6 +43,10 @@ public class PlaneNetworker_Receiver : MonoBehaviour
             Debug.LogError("Weapon Manager was null on " + gameObject.name);
         else
             traverse = Traverse.Create(weaponManager);
+        foreach (var iwb in weaponManager.internalWeaponBays)
+        {
+            iwb.openOnAnyWeaponMatch = true;
+        }
         cmManager = GetComponentInChildren<CountermeasureManager>();
         if (cmManager == null)
             Debug.LogError("CountermeasureManager was null on " + gameObject.name);
@@ -207,7 +211,6 @@ public class PlaneNetworker_Receiver : MonoBehaviour
         }
 
         PlaneEquippableManager.SetLoadout(gameObject, networkUID, message.normalizedFuel, message.hpLoadout, message.cmLoadout);
-
         if (Networker.isHost)
         {
             NetworkSenderThread.Instance.SendPacketAsHostToAllButOneSpecificClient(PlayerManager.GetPlayerCSteamID(message.UID),
