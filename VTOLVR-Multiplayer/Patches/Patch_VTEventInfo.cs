@@ -151,11 +151,12 @@ class Patch5
     }
 }
 
-//patch to grab all the events being loaded on creation this replaces original method
+/* Redundant, there is no reason for this.
 [HarmonyPatch(typeof(MissionObjective), "BeginMission")]
 class Patch6
 {
-    static bool Prefix(MissionObjective __instance)
+    [HarmonyPostfix]
+    static void Postfix(MissionObjective __instance)
     {
         //prevents infinite client host pings
         //if (__instance.started)
@@ -167,13 +168,12 @@ class Patch6
         String actionIdentifier = __instance.objectiveName + __instance.objectiveID;
 
         Debug.Log(actionIdentifier);
-        //dont run corrupt objectives
+        /*dont run corrupt objectives 
         if (MissionManager.instance.IndexOfObjective(__instance) == -1)
-            return false;
+            return false; // This code breaks objectives, literally everything objective related
         Message_ObjectiveSync objOutMessage = new Message_ObjectiveSync(PlayerManager.localUID, MissionManager.instance.IndexOfObjective(__instance), ObjSyncType.EMissionBegin);
-        if (Networker.isHost && objOutMessage.objID != -1)
+        if (Networker.isHost)
         {
-
             Debug.Log("Host sent objective BeginMission " + __instance.objectiveID);
             NetworkSenderThread.Instance.SendPacketAsHostToAllClients(objOutMessage, Steamworks.EP2PSend.k_EP2PSendUnreliableNoDelay);
         }
@@ -182,14 +182,13 @@ class Patch6
             if (VTScenario.current.objectives.GetObjective(__instance.objectiveID).objectiveType == VTObjective.ObjectiveTypes.Destroy)
             {
                 Debug.Log("Making client not send kill objective packet.");
-                return true;// clients should not send kill obj packets
+                return;// clients should not send kill obj packets
             }
             Debug.Log("Client sent objective BeginMission " + __instance.objectiveID);
             NetworkSenderThread.Instance.SendPacketToSpecificPlayer(Networker.hostID, objOutMessage, Steamworks.EP2PSend.k_EP2PSendUnreliableNoDelay);
         }
-        return true;
     }
-}
+}*/
 
 //patch to grab all the events being loaded on creation this replaces original method
 [HarmonyPatch(typeof(MissionObjective), "CancelObjective")]

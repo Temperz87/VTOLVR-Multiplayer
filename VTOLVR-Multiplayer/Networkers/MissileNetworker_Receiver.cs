@@ -46,7 +46,7 @@ public class MissileNetworker_Receiver : MonoBehaviour
             Debug.Log(thisMissile.gameObject.name + " missile fired on one end but not another, firing here.");
             if (thisML == null)
             {
-                Debug.LogError($"Missile launcher is null on missile {thisMissile.actor.name}.");
+                Debug.LogError($"Missile launcher is null on missile {thisMissile.actor.name}, someone forgot to assign it.");
             }
             if (lastMessage.guidanceMode == Missile.GuidanceModes.Radar)
             {

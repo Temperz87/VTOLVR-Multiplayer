@@ -53,6 +53,10 @@ public class RigidbodyNetworker_Receiver : MonoBehaviour
     }
 
     void FixedUpdate() {
+        if (rb == null)
+        {
+            Debug.LogError("Rigid body is null on object " + gameObject.name);
+        }
         if (rb.isKinematic == false)
         {
             rb.isKinematic = true;
@@ -62,7 +66,7 @@ public class RigidbodyNetworker_Receiver : MonoBehaviour
         if (kplane.enabled == true)
         {
             kplane.enabled = false;
-            Debug.Log("Dissabled kplane again on " + gameObject.name);
+            Debug.Log("Disabled kplane again on " + gameObject.name);
         }
 
         globalTargetPosition += new Vector3D(targetVelocity * Time.fixedDeltaTime);
