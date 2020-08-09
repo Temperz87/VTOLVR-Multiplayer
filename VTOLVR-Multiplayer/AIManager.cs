@@ -302,6 +302,19 @@ public static class AIManager
                 Debug.Log($"Added aaaRec to uID {message.networkID}");
                 aaaRec.networkUID = message.networkID;
             }
+            IRSamLauncher iLauncher = newAI.GetComponent<IRSamLauncher>();
+            if (iLauncher != null)
+            {
+                iLauncher.SetEngageEnemies(false);
+                MissileNetworker_Receiver mlr;
+                Debug.Log("Adding IR id's");
+                for (int i = 0; i < message.IRSamMissiles.Length; i++)
+                {
+                    mlr = iLauncher.ml.missiles[i]?.gameObject.AddComponent<MissileNetworker_Receiver>();
+                    mlr.networkUID = message.IRSamMissiles[i];
+                }
+                Debug.Log("Added IR id's");
+            }
             SAMLauncher launcher = newAI.GetComponent<SAMLauncher>();
             if (launcher != null)
             {
