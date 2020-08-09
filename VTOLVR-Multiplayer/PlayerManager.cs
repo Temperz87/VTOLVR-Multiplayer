@@ -168,7 +168,7 @@ public static class PlayerManager
                     AirportManager airport = actor.gameObject.GetComponent<AirportManager>();
                     if (airport != null)
                     {
-                        AIManager.SetUpCarrier(actor.gameObject, networkUID);
+                        AIManager.SetUpCarrier(actor.gameObject, networkUID, actor.team);
                     }
                     if (!actor.unitSpawn.unitSpawner.spawned)
                     {

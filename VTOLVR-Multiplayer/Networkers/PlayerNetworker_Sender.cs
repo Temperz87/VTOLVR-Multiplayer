@@ -33,7 +33,6 @@ class PlayerNetworker_Sender : MonoBehaviour
 
         health = GetComponent<Health>();
 
-
         if (health == null)
             Debug.LogError("health was null on player " + gameObject.name);
         else
