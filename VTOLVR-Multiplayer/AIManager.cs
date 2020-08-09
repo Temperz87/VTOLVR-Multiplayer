@@ -30,6 +30,9 @@ public static class AIManager
             this.vehicleUID = vehicleUID;
         }
     }
+
+    static string[] carrierNames = {"HMS Marsh", "HNLMS KetKev", "USS Temperz", "USS Doctor", "USS Dib", "USS Nebriv", "USS Zaelix", "HMS Cheese"};
+
     /// <summary>
     /// This is used by the client and only the client to spawn ai vehicles.
     /// </summary>
@@ -520,7 +523,7 @@ public static class AIManager
         AirportManager airport = carrier.GetComponent<AirportManager>();
         if (airport != null)
         {
-            airport.airportName = "USS TEMPERZ " + id;
+            airport.airportName = carrierNames[(int)id % carrierNames.Length] + " " + id;
             if (Networker.isClient) {
                 VTMapManager.fetch.airports.Add(airport);
             }
