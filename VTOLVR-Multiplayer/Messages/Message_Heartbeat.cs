@@ -1,5 +1,6 @@
 ﻿using System;
 using UnityEngine;
+using Steamworks;
 
 [Serializable]
 public class Message_Heartbeat : Message

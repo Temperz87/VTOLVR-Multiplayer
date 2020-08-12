@@ -1110,7 +1110,7 @@ public static class PlayerManager
         return spawnPoints[spawnTicker];
     }
 
-    public static ulong GetPlayerIDFromCSteamID(CSteamID cSteamID)
+    public static ulong GetPlayerUIDFromCSteamID(CSteamID cSteamID)
     {
         for (int i = 0; i < players.Count; i++)
         {
@@ -1132,6 +1132,17 @@ public static class PlayerManager
             }
         }
         return new CSteamID();
+    }
+    public static int GetPlayerIDFromCSteamID(CSteamID cSteamID)
+    {
+        for (int i = 0; i < players.Count; i++)
+        {
+            if (players[i].cSteamID == cSteamID)
+            {
+                return i;
+            }
+        }
+        return -1;
     }
 
     public static void CleanUpPlayerManagerStaticVariables()

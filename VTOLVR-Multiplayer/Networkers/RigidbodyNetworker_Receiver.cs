@@ -70,7 +70,7 @@ public class RigidbodyNetworker_Receiver : MonoBehaviour
         if (playerWeRepresent == null) {
             int playerID = PlayerManager.FindPlayerIDFromNetworkUID(networkUID);//get the ping of the player we represent
             if (playerID == -1) {//we are not a player, get the ping from the host
-                playerID = PlayerManager.FindPlayerIDFromNetworkUID(PlayerManager.GetPlayerIDFromCSteamID(Networker.hostID));//getting the host
+                playerID = PlayerManager.FindPlayerIDFromNetworkUID(PlayerManager.GetPlayerUIDFromCSteamID(Networker.hostID));//getting the host
             }
             playerWeRepresent = PlayerManager.players[playerID];
         }

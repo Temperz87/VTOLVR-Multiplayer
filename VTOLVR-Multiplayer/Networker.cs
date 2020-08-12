@@ -814,7 +814,9 @@ public class Networker : MonoBehaviour
                         Message_Heartbeat heartbeatMessage = ((PacketSingle)packet).message as Message_Heartbeat;
 
                         TimeoutCounter = 0;
-                        NetworkSenderThread.Instance.SendPacketToSpecificPlayer(hostID, new Message_Heartbeat_Result(heartbeatMessage.TimeOnServerGame, networkUID), EP2PSend.k_EP2PSendUnreliableNoDelay);
+                        NetworkSenderThread.Instance.SendPacketToSpecificPlayer(hostID, new Message_Heartbeat_Result(heartbeatMessage.TimeOnServerGame, PlayerManager.localUID), EP2PSend.k_EP2PSendUnreliableNoDelay);
+                        
+                        Debug.Log($"sending back host time lmao");
                     }
                     break;
                 case MessageType.ServerHeartbeat_Response:
@@ -830,6 +832,8 @@ public class Networker : MonoBehaviour
                         }
 
                         NetworkSenderThread.Instance.SendPacketAsHostToAllClients(new Message_ReportPingTime(pingTime/2.0f, heartbeatResult.from), EP2PSend.k_EP2PSendUnreliableNoDelay);
+
+                        Debug.Log("we recieved out own time from " + heartbeatResult.from + " lmao, comparing to get ping (" + pingTime + "), and forwarding");
                     }
                     break;
                 case MessageType.ServerReportingPingTime:
@@ -837,9 +841,14 @@ public class Networker : MonoBehaviour
                     {
                         // You can use ping report however you want
                         Message_ReportPingTime pingTimeMessage = packetS.message as Message_ReportPingTime;
-                        if (pingTimeMessage.from == networkUID)
+                        if (pingTimeMessage.from == PlayerManager.localUID)
                         {
                             pingToHost = pingTimeMessage.PingTime;
+                            int playerID = PlayerManager.GetPlayerIDFromCSteamID(hostID);
+                            if (playerID != -1)
+                            {
+                                PlayerManager.players[playerID].ping = pingTimeMessage.PingTime;
+                            }
                         }
                         else {
                             int playerID = PlayerManager.FindPlayerIDFromNetworkUID(pingTimeMessage.from);
@@ -849,7 +858,7 @@ public class Networker : MonoBehaviour
                             }
                         }
 
-                        Debug.Log($"Current ping is: {pingTimeMessage.PingTime}");
+                        Debug.Log("we recieved " + pingTimeMessage.from + "'s ping lmao " + pingTimeMessage.PingTime);
                     }
                     break;
                 case MessageType.LoadingTextRequest:

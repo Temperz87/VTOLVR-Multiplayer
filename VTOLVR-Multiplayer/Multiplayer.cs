@@ -70,7 +70,7 @@ public class Multiplayer : VTOLMOD
     public bool FreeForAllMode = false; // not implemented
     private UnityAction<bool> FreeForAllMode_changed;
 
-    public bool displayPing = false; // not implemented lmao
+    public bool displayPing = true;
     private UnityAction<bool> DisplayPing_changed;
 
     private void Start()
