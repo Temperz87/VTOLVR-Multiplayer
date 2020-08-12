@@ -70,6 +70,9 @@ public class Multiplayer : VTOLMOD
     public bool FreeForAllMode = false; // not implemented
     private UnityAction<bool> FreeForAllMode_changed;
 
+    public bool displayPing = false;
+    private UnityAction<bool> DisplayPing_changed;
+
     private void Start()
     {
         if (_instance == null)
@@ -149,6 +152,10 @@ public class Multiplayer : VTOLMOD
         settings.CreateCustomLabel("Free For All Mode! Sets all clients to enemies (Not functional).");
         settings.CreateBoolSetting("Default = True", FreeForAllMode_changed, FreeForAllMode);
 
+        DisplayPing_changed += DisplayPing_Settings;
+        settings.CreateCustomLabel("Show ping on the screen. (Not vr)");
+        settings.CreateBoolSetting("Default = False", DisplayPing_changed, displayPing);
+
         VTOLAPI.CreateSettingsMenu(settings);
     }
 
@@ -171,9 +178,27 @@ public class Multiplayer : VTOLMOD
     {
         forceWinds = newval;
     }
+
     public void FreeForAllMode_Settings(bool newval)
     {
         FreeForAllMode = newval;
+    }
+
+    public void DisplayPing_Settings(bool newval)
+    {
+        displayPing = newval;
+    }
+
+    void OnGUI()//the 2d ping display, feel free to move elsewhere
+    {
+        if (displayPing) {
+            string temp = "";
+            foreach (PlayerManager.Player player in PlayerManager.players)
+            {
+                temp += player.cSteamID + ": " + Mathf.Round(player.ping * 1000f) + "\n";
+            }
+            GUI.TextArea(new Rect(100, 100, 800, 800), temp);
+        }
     }
 
     private void SceneLoaded(VTOLScenes scene)

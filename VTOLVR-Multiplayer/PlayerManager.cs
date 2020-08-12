@@ -37,13 +37,14 @@ public static class PlayerManager
 
     public static Vector3 av42Offset = new Vector3(0, 0.972f, -5.126f);//the difference between the origin of the ai and player AV-42s
 
-    public struct Player
+    public class Player
     {
         public CSteamID cSteamID;
         public GameObject vehicle;
         public VTOLVehicles vehicleType;
         public ulong vehicleUID;
         public bool leftie;
+        public float ping;
         public Player(CSteamID cSteamID, GameObject vehicle, VTOLVehicles vehicleType, ulong vehicleUID, bool leftTeam)
         {
             this.cSteamID = cSteamID;
@@ -53,6 +54,7 @@ public static class PlayerManager
             this.leftie = leftTeam;
         }
     }
+
     public static List<Player> players = new List<Player>(); //This is the list of players
     /// <summary>
     /// This runs when the map has finished loading and hopefully 
@@ -746,7 +748,6 @@ public static class PlayerManager
         TargetManager.instance.RegisterActor(aIPilot.actor);
         player.leftie = isLeft;
         player.vehicle = newVehicle;
-        players[playerID] = player;
 
         if (!VTOLVR_Multiplayer.AIDictionaries.allActors.ContainsKey(networkID))
         {
@@ -1122,6 +1123,18 @@ public static class PlayerManager
         return spawnPoints[spawnTicker];
     }
 
+    public static ulong GetPlayerUIDFromCSteamID(CSteamID cSteamID)
+    {
+        for (int i = 0; i < players.Count; i++)
+        {
+            if (players[i].cSteamID == cSteamID)
+            {
+                return players[i].vehicleUID;
+            }
+        }
+        return 0;
+    }
+
     public static CSteamID GetPlayerCSteamID(ulong uid)
     {
         for (int i = 0; i < players.Count; i++)
@@ -1132,6 +1145,17 @@ public static class PlayerManager
             }
         }
         return new CSteamID();
+    }
+    public static int GetPlayerIDFromCSteamID(CSteamID cSteamID)
+    {
+        for (int i = 0; i < players.Count; i++)
+        {
+            if (players[i].cSteamID == cSteamID)
+            {
+                return i;
+            }
+        }
+        return -1;
     }
 
     public static void CleanUpPlayerManagerStaticVariables()

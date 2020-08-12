@@ -25,6 +25,8 @@ public class RigidbodyNetworker_Receiver : MonoBehaviour
     private float rotSmoothingTime = 0.2f;
     private float latency = 0.0f;
 
+    private PlayerManager.Player playerWeRepresent;
+
     private ulong mostCurrentUpdateNumber;
 
     private void Awake()
@@ -69,6 +71,15 @@ public class RigidbodyNetworker_Receiver : MonoBehaviour
             Debug.Log("Disabled kplane again on " + gameObject.name);
         }
 
+        if (playerWeRepresent == null) {
+            int playerID = PlayerManager.FindPlayerIDFromNetworkUID(networkUID);//get the ping of the player we represent
+            if (playerID == -1) {//we are not a player, get the ping from the host
+                playerID = PlayerManager.FindPlayerIDFromNetworkUID(PlayerManager.GetPlayerUIDFromCSteamID(Networker.hostID));//getting the host
+            }
+            playerWeRepresent = PlayerManager.players[playerID];
+        }
+        latency = playerWeRepresent.ping;
+
         globalTargetPosition += new Vector3D(targetVelocity * Time.fixedDeltaTime);
         localTargetPosition = VTMapManager.GlobalToWorldPoint(globalTargetPosition);
 
@@ -96,7 +107,7 @@ public class RigidbodyNetworker_Receiver : MonoBehaviour
         globalTargetPosition = rigidbodyUpdate.position + rigidbodyUpdate.velocity * latency;
         localTargetPosition = VTMapManager.GlobalToWorldPoint(globalTargetPosition);
         targetVelocity = rigidbodyUpdate.velocity.toVector3;
-        targetRotation = rigidbodyUpdate.rotation;
+        targetRotation = rigidbodyUpdate.rotation * Quaternion.Euler(rigidbodyUpdate.angularVelocity.toVector3 * latency);
         targetRotationVelocity = rigidbodyUpdate.angularVelocity.toVector3;
 
         if (Vector3.Distance(transform.position, localTargetPosition) > positionThreshold)
