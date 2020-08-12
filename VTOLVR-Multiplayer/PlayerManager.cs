@@ -187,9 +187,9 @@ public static class PlayerManager
                         {
                             List<ulong> samIDS = new List<ulong>();
                             MissileNetworker_Sender lastSender;
-                            for (int i = 0; i < ml.ml.missiles.Length; i++)
+                            for (int i = 0; i < soldier.irMissileLauncher.missiles.Length; i++)
                             {
-                                lastSender = ml.ml.missiles[i].gameObject.AddComponent<MissileNetworker_Sender>();
+                                lastSender = soldier.irMissileLauncher.missiles[i].gameObject.AddComponent<MissileNetworker_Sender>();
                                 lastSender.networkUID = Networker.GenerateNetworkUID();
                                 samIDS.Add(lastSender.networkUID);
                             }
