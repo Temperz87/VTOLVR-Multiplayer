@@ -280,6 +280,7 @@ public static class AIManager
             if (vehicleMover != null)
             {
                 vehicleMover.enabled = false;
+                vehicleMover.behavior = GroundUnitMover.Behaviors.Parked;
             }
             else
             {
@@ -287,6 +288,7 @@ public static class AIManager
                 if (ground != null)
                 {
                     ground.enabled = false;
+                    ground.behavior = GroundUnitMover.Behaviors.Parked;
                 }
             }
             ModuleTurret turret = newAI.GetComponentInChildren<ModuleTurret>();
@@ -307,13 +309,14 @@ public static class AIManager
             IRSamLauncher iLauncher = newAI.GetComponent<IRSamLauncher>();
             if (iLauncher != null)
             {
-                iLauncher.ml.RemoveAllMissiles();
+                //iLauncher.ml.RemoveAllMissiles();
+                iLauncher.ml.LoadAllMissiles();
                 iLauncher.SetEngageEnemies(false);
                 MissileNetworker_Receiver mlr;
+                //iLauncher.ml.LoadCount(message.IRSamMissiles.Length);
                 Debug.Log($"Adding IR id's on IR SAM, len = {message.IRSamMissiles.Length}.");
                 for (int i = 0; i < message.IRSamMissiles.Length; i++)
                 {
-                    iLauncher.ml.LoadCount(1);
                     mlr = iLauncher.ml.missiles[i]?.gameObject.AddComponent<MissileNetworker_Receiver>();
                     mlr.thisML = iLauncher.ml;
                     mlr.networkUID = message.IRSamMissiles[i];
@@ -330,12 +333,13 @@ public static class AIManager
                     IRMissileLauncher ir = soldier.irMissileLauncher;
                     if (ir != null)
                     {
-                        ir.RemoveAllMissiles();
+                        //ir.RemoveAllMissiles();
+                        ir.LoadAllMissiles();
                         MissileNetworker_Receiver mlr;
+                        //ir.LoadCount(message.IRSamMissiles.Length);
                         Debug.Log($"Adding IR id's on manpads, len = {message.IRSamMissiles.Length}.");
                         for (int i = 0; i < message.IRSamMissiles.Length; i++)
                         {
-                            ir.LoadCount(1);
                             mlr = ir.missiles[i]?.gameObject.AddComponent<MissileNetworker_Receiver>();
                             mlr.thisML = ir;
                             mlr.networkUID = message.IRSamMissiles[i];
