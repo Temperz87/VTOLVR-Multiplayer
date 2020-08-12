@@ -20,7 +20,7 @@ public class RigidbodyNetworker_Sender : MonoBehaviour
     private Vector3 lastAngularVelocity;
     private Actor actor;
     private float threshold = 0.5f;
-    private float angleThreshold = 5f;
+    private float angleThreshold = 1f;
     
     private ulong updateNumber;
 
