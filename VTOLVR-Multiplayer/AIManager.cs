@@ -269,7 +269,7 @@ public static class AIManager
                 fuelTank.SetNormFuel(loadout.normalizedFuel);
             }
         }
-        else if (actor.role == Actor.Roles.Ground)
+        else if (actor.role == Actor.Roles.Ground || actor.role == Actor.Roles.GroundArmor)
         {
             AIUnitSpawn aIUnitSpawn = newAI.GetComponent<AIUnitSpawn>();
             if (aIUnitSpawn == null)
@@ -318,7 +318,7 @@ public static class AIManager
                     mlr.thisML = iLauncher.ml;
                     mlr.networkUID = message.IRSamMissiles[i];
                 }
-                Debug.Log("Added IR id's");
+                Debug.Log("Added IR id's.");
             }
             Soldier soldier = newAI.GetComponent<Soldier>();
             if (soldier != null)
@@ -340,7 +340,7 @@ public static class AIManager
                             mlr.thisML = ir;
                             mlr.networkUID = message.IRSamMissiles[i];
                         }
-                        Debug.Log("Added IR id's on manpads/");
+                        Debug.Log("Added IR id's on manpads.");
                     }
                     else
                     {

@@ -40,7 +40,7 @@ public class RigidbodyNetworker_Receiver : MonoBehaviour
         }
         else
         {
-            Debug.Log("Could not find kplane on" + gameObject.name);
+            Debug.Log("Could not find kplane on " + gameObject.name);
         }
 
         rb = GetComponent<Rigidbody>();
