@@ -38,7 +38,8 @@ public class RigidbodyNetworker_Receiver : MonoBehaviour
             kplane.enabled = false;
             Debug.Log("Dissabled kplane on " + gameObject.name);
         }
-        else {
+        else
+        {
             Debug.Log("Could not find kplane on" + gameObject.name);
         }
 
@@ -54,7 +55,8 @@ public class RigidbodyNetworker_Receiver : MonoBehaviour
         Networker.RigidbodyUpdate += RigidbodyUpdate;
     }
 
-    void FixedUpdate() {
+    void FixedUpdate()
+    {
         if (rb == null)
         {
             Debug.LogError("Rigid body is null on object " + gameObject.name);
@@ -65,15 +67,19 @@ public class RigidbodyNetworker_Receiver : MonoBehaviour
             Debug.Log("Rigidbody was not kinematic on " + gameObject.name);
         }
 
-        if (kplane.enabled == true)
+        if (kplane != null) // yes this can be null on objects that arent airplanes
         {
-            kplane.enabled = false;
-            Debug.Log("Disabled kplane again on " + gameObject.name);
+            if (kplane.enabled == true)
+            {
+                kplane.enabled = false;
+                Debug.Log("Disabled kplane again on " + gameObject.name);
+            }
         }
-
-        if (playerWeRepresent == null) {
+        if (playerWeRepresent == null)
+        {
             int playerID = PlayerManager.FindPlayerIDFromNetworkUID(networkUID);//get the ping of the player we represent
-            if (playerID == -1) {//we are not a player, get the ping from the host
+            if (playerID == -1)
+            {//we are not a player, get the ping from the host
                 playerID = PlayerManager.FindPlayerIDFromNetworkUID(PlayerManager.GetPlayerUIDFromCSteamID(Networker.hostID));//getting the host
             }
             playerWeRepresent = PlayerManager.players[playerID];
@@ -114,7 +120,7 @@ public class RigidbodyNetworker_Receiver : MonoBehaviour
         {
             //Debug.Log("Outside of thresh hold, moving " + gameObject.name);
             transform.position = localTargetPosition;
-            
+
             transform.rotation = rigidbodyUpdate.rotation;
         }
     }

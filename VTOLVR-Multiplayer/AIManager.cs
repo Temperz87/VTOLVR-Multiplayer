@@ -307,11 +307,13 @@ public static class AIManager
             IRSamLauncher iLauncher = newAI.GetComponent<IRSamLauncher>();
             if (iLauncher != null)
             {
+                iLauncher.ml.RemoveAllMissiles();
                 iLauncher.SetEngageEnemies(false);
                 MissileNetworker_Receiver mlr;
-                Debug.Log("Adding IR id's");
+                Debug.Log($"Adding IR id's on IR SAM, len = {message.IRSamMissiles.Length}.");
                 for (int i = 0; i < message.IRSamMissiles.Length; i++)
                 {
+                    iLauncher.ml.LoadCount(1);
                     mlr = iLauncher.ml.missiles[i]?.gameObject.AddComponent<MissileNetworker_Receiver>();
                     mlr.thisML = iLauncher.ml;
                     mlr.networkUID = message.IRSamMissiles[i];
@@ -328,15 +330,17 @@ public static class AIManager
                     IRMissileLauncher ir = soldier.irMissileLauncher;
                     if (ir != null)
                     {
+                        ir.RemoveAllMissiles();
                         MissileNetworker_Receiver mlr;
-                        Debug.Log("Adding IR id's");
+                        Debug.Log($"Adding IR id's on manpads, len = {message.IRSamMissiles.Length}.");
                         for (int i = 0; i < message.IRSamMissiles.Length; i++)
                         {
+                            ir.LoadCount(1);
                             mlr = ir.missiles[i]?.gameObject.AddComponent<MissileNetworker_Receiver>();
                             mlr.thisML = ir;
                             mlr.networkUID = message.IRSamMissiles[i];
                         }
-                        Debug.Log("Added IR id's");
+                        Debug.Log("Added IR id's on manpads/");
                     }
                     else
                     {

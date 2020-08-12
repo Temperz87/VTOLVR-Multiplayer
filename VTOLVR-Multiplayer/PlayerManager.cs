@@ -180,6 +180,22 @@ public static class PlayerManager
                         }
                         actor.gameObject.AddComponent<IRSAMNetworker_Sender>().irIDs = samIDS.ToArray();
                     }
+                    Soldier soldier = actor.gameObject.GetComponentInChildren<Soldier>();
+                    if (soldier != null)
+                    {
+                        if (soldier.soldierType == Soldier.SoldierTypes.IRMANPAD)
+                        {
+                            List<ulong> samIDS = new List<ulong>();
+                            MissileNetworker_Sender lastSender;
+                            for (int i = 0; i < ml.ml.missiles.Length; i++)
+                            {
+                                lastSender = ml.ml.missiles[i].gameObject.AddComponent<MissileNetworker_Sender>();
+                                lastSender.networkUID = Networker.GenerateNetworkUID();
+                                samIDS.Add(lastSender.networkUID);
+                            }
+                            actor.gameObject.AddComponent<IRSAMNetworker_Sender>().irIDs = samIDS.ToArray();
+                        }
+                    }
                     AirportManager airport = actor.gameObject.GetComponent<AirportManager>();
                     if (airport != null)
                     {
