@@ -641,6 +641,10 @@ public static class PlayerManager
             return null;
 
         int playerID = FindPlayerIDFromNetworkUID(networkID);
+        if (playerID == -1)
+        {
+            Debug.LogError("Spawn Representation couldn't find a player id.");
+        }
         Player player = players[playerID];
 
         GameObject.Destroy(player.vehicle);
