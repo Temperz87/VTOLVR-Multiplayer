@@ -179,7 +179,7 @@ public class Networker : MonoBehaviour
         get { lock (timeoutCounterLock) { return timeoutCounterInternal; } }
         set { lock (timeoutCounterLock) { timeoutCounterInternal = value; } }
     }
-    private static readonly int clientTimeoutInSeconds = 6000;
+    private static readonly int clientTimeoutInSeconds = 60;
     private static readonly object disconnectForClientTimeoutLock = new object();
     private static bool disconnectForClientTimeoutInternal = false;
     private static bool disconnectForClientTimeout
@@ -218,6 +218,8 @@ public class Networker : MonoBehaviour
 
     public static bool HeartbeatTimerRunning = false;
     public static readonly System.Timers.Timer HeartbeatTimer = new System.Timers.Timer(1000);
+
+    public static float pingToHost = 0;
 
     #region Message Type Callbacks
     //These callbacks are use for other scripts to know when a network message has been
@@ -811,7 +813,7 @@ public class Networker : MonoBehaviour
                         Message_Heartbeat heartbeatMessage = ((PacketSingle)packet).message as Message_Heartbeat;
 
                         TimeoutCounter = 0;
-                        NetworkSenderThread.Instance.SendPacketToSpecificPlayer(hostID, new Message_Heartbeat_Result(heartbeatMessage.TimeOnServerGame), EP2PSend.k_EP2PSendUnreliableNoDelay);
+                        NetworkSenderThread.Instance.SendPacketToSpecificPlayer(hostID, new Message_Heartbeat_Result(heartbeatMessage.TimeOnServerGame, PlayerManager.localUID), EP2PSend.k_EP2PSendUnreliableNoDelay);
                     }
                     break;
                 case MessageType.ServerHeartbeat_Response:
@@ -819,8 +821,14 @@ public class Networker : MonoBehaviour
                     {
                         Message_Heartbeat_Result heartbeatResult = ((PacketSingle)packet).message as Message_Heartbeat_Result;
 
-                        float pingTime = Time.fixedTime - heartbeatResult.TimeOnServerGame;
-                        NetworkSenderThread.Instance.SendPacketToSpecificPlayer(csteamID, new Message_ReportPingTime(pingTime), EP2PSend.k_EP2PSendUnreliableNoDelay);
+                        float pingTime = Time.unscaledTime - heartbeatResult.TimeOnServerGame;
+
+                        int playerID = PlayerManager.FindPlayerIDFromNetworkUID(heartbeatResult.from);
+                        if (playerID != -1) {
+                            PlayerManager.players[playerID].ping = pingTime / 2.0f;
+                        }
+
+                        NetworkSenderThread.Instance.SendPacketAsHostToAllClients(new Message_ReportPingTime(pingTime/2.0f, heartbeatResult.from), EP2PSend.k_EP2PSendUnreliableNoDelay);
                     }
                     break;
                 case MessageType.ServerReportingPingTime:
@@ -828,7 +836,22 @@ public class Networker : MonoBehaviour
                     {
                         // You can use ping report however you want
                         Message_ReportPingTime pingTimeMessage = packetS.message as Message_ReportPingTime;
-                        Debug.Log($"Current ping is: {pingTimeMessage.PingTime}");
+                        if (pingTimeMessage.from == PlayerManager.localUID)
+                        {
+                            pingToHost = pingTimeMessage.PingTime;
+                            int playerID = PlayerManager.GetPlayerIDFromCSteamID(hostID);
+                            if (playerID != -1)
+                            {
+                                PlayerManager.players[playerID].ping = pingTimeMessage.PingTime;
+                            }
+                        }
+                        else {
+                            int playerID = PlayerManager.FindPlayerIDFromNetworkUID(pingTimeMessage.from);
+                            if (playerID != -1)
+                            {
+                                PlayerManager.players[playerID].ping = pingToHost + pingTimeMessage.PingTime;
+                            }
+                        }
                     }
                     break;
                 case MessageType.LoadingTextRequest:
@@ -1285,6 +1308,7 @@ public class Networker : MonoBehaviour
         readySent = false;
         alreadyInGame = false;
         hostID = new CSteamID(0);
+        pingToHost = 0;
 
         AIManager.CleanUpOnDisconnect();
         multiplayerInstance?.CleanUpOnDisconnect();

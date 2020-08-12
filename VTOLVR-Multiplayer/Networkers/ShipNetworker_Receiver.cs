@@ -11,9 +11,11 @@ class ShipNetworker_Receiver : MonoBehaviour
     public Waypoint waypoint;
 
     public float smoothTime = 5f;
+    public float rotSmoothTime = 5f;
     public Vector3 targetPositionGlobal;
     public Vector3 targetPosition;
     public Vector3 targetVelocity;
+    public Quaternion targetRotation;
 
     private void Awake()
     {
@@ -33,6 +35,7 @@ class ShipNetworker_Receiver : MonoBehaviour
         targetPosition = VTMapManager.GlobalToWorldPoint(new Vector3D(targetPositionGlobal));
         ship.rb.MovePosition(ship.transform.position + targetVelocity * Time.fixedDeltaTime + ((targetPosition - ship.transform.position) * Time.fixedDeltaTime) / smoothTime);
         ship.rb.velocity = targetVelocity + (targetPosition - ship.transform.position)/smoothTime;
+        ship.rb.MoveRotation(Quaternion.Lerp(ship.transform.rotation, targetRotation, Time.fixedDeltaTime/rotSmoothTime));
     }
 
     public void ShipUpdate(Packet packet)
@@ -41,20 +44,9 @@ class ShipNetworker_Receiver : MonoBehaviour
         if (lastMessage.UID != networkUID)
             return;
 
-        targetPositionGlobal = lastMessage.position.toVector3;
+        targetPositionGlobal = lastMessage.position.toVector3 + lastMessage.velocity.toVector3 * Networker.pingToHost;
         targetVelocity = lastMessage.velocity.toVector3;
-
-        ship.transform.rotation =  lastMessage.rotation;
-
-        //if (lastMessage.destination.toVector3 != Vector3.zero)
-        //{
-            //waypoint.GetTransform().position = VTMapManager.GlobalToWorldPoint(lastMessage.destination);
-            //ship.MoveTo(waypoint);
-        //}
-        //else {
-            //waypoint.GetTransform().position = ship.transform.position;
-            //ship.MoveTo(waypoint);
-        //}
+        targetRotation =  lastMessage.rotation;
 
         if ((VTMapManager.GlobalToWorldPoint(lastMessage.position) - ship.transform.position).magnitude > 100) {
             Debug.Log("Ship is too far, teleporting. This message should apear once per ship at spawn, if ur seeing more something is probably fucky");

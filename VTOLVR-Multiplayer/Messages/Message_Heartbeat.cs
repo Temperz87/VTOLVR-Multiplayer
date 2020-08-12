@@ -1,4 +1,6 @@
 ﻿using System;
+using UnityEngine;
+using Steamworks;
 
 [Serializable]
 public class Message_Heartbeat : Message
@@ -6,11 +8,7 @@ public class Message_Heartbeat : Message
     public float TimeOnServerGame;
 
     public Message_Heartbeat() {
-        TimeOnServerGame = UnityEngine.Time.fixedTime;
-        type = MessageType.ServerHeartbeat;
-    }
-    public Message_Heartbeat(float time) {
-        TimeOnServerGame = time;
+        TimeOnServerGame = Time.unscaledTime;
         type = MessageType.ServerHeartbeat;
     }
 }
@@ -19,9 +17,11 @@ public class Message_Heartbeat : Message
 public class Message_Heartbeat_Result : Message
 {
     public float TimeOnServerGame;
+    public ulong from;
 
-    public Message_Heartbeat_Result(float time) {
+    public Message_Heartbeat_Result(float time, ulong from) {
         TimeOnServerGame = time;
+        this.from = from;
         type = MessageType.ServerHeartbeat_Response;
     }
 }
@@ -30,9 +30,11 @@ public class Message_Heartbeat_Result : Message
 public class Message_ReportPingTime : Message
 {
     public float PingTime;
+    public ulong from;
 
-    public Message_ReportPingTime(float pingTime) {
+    public Message_ReportPingTime(float pingTime, ulong from) {
         PingTime = pingTime;
+        this.from = from;
         type = MessageType.ServerReportingPingTime;
     }
 }

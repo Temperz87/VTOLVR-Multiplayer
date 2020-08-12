@@ -31,7 +31,7 @@ public static class AIManager
         }
     }
 
-    static string[] carrierNames = {"HMS Marsh", "HNLMS KetKev", "USS Temperz", "USS Doctor", "USS Dib", "USS Nebriv", "USS Zaelix", "HMS Cheese"};
+    static string[] carrierNames = {"HMS Marsh", "HNLMS KetKev", "USS Temperz", "ENS Surgeon", "USS Dib", "USS Nebriv", "USS Zaelix", "HMS Cheese"};
 
     /// <summary>
     /// This is used by the client and only the client to spawn ai vehicles.
