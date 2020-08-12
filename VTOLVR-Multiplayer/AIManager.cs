@@ -149,10 +149,16 @@ public static class AIManager
         }
         else if (newAI.GetComponent<Rigidbody>() != null)
         {
+            Rigidbody rb = newAI.GetComponent<Rigidbody>();
+            Debug.Log($"Changing {newAI.name}'s position and rotation\nPos:{rb.position} Rotation:{rb.rotation.eulerAngles}");
+            rb.interpolation = RigidbodyInterpolation.None;
+            rb.position = message.position.toVector3;
+            rb.rotation = Quaternion.Euler(message.rotation.toVector3);
+            rb.interpolation = RigidbodyInterpolation.Interpolate;
+            Debug.Log($"Finished changing {newAI.name}\n Pos:{rb.position} Rotation:{rb.rotation.eulerAngles}");
             RigidbodyNetworker_Receiver rbNetworker = newAI.AddComponent<RigidbodyNetworker_Receiver>();
             rbNetworker.networkUID = message.networkID;
         }
-
         if (actor.role == Actor.Roles.Air)
         {
             PlaneNetworker_Receiver planeReceiver = newAI.AddComponent<PlaneNetworker_Receiver>();
@@ -189,12 +195,7 @@ public static class AIManager
                     collider.gameObject.layer = 9;
                 }
             }
-            Debug.Log($"Changing {newAI.name}'s position and rotation\nPos:{rb.position} Rotation:{rb.rotation.eulerAngles}");
-            rb.interpolation = RigidbodyInterpolation.None;
-            rb.position = message.position.toVector3;
-            rb.rotation = Quaternion.Euler(message.rotation.toVector3);
-            rb.interpolation = RigidbodyInterpolation.Interpolate;
-            Debug.Log($"Finished changing {newAI.name}\n Pos:{rb.position} Rotation:{rb.rotation.eulerAngles}");
+            
             //Debug.Log("Doing weapon manager shit on " + newAI.name + ".");
             WeaponManager weaponManager = newAI.GetComponent<WeaponManager>();
             if (weaponManager == null)
