@@ -335,7 +335,6 @@ public class Networker : MonoBehaviour
         if (isHost)
         {
             // Host, send heartbeat
-            Debug.Log("sending heartbeat lmao");
             NetworkSenderThread.Instance.SendPacketAsHostToAllClients(new Message_Heartbeat(), EP2PSend.k_EP2PSendUnreliableNoDelay);
         }
         else
@@ -815,8 +814,6 @@ public class Networker : MonoBehaviour
 
                         TimeoutCounter = 0;
                         NetworkSenderThread.Instance.SendPacketToSpecificPlayer(hostID, new Message_Heartbeat_Result(heartbeatMessage.TimeOnServerGame, PlayerManager.localUID), EP2PSend.k_EP2PSendUnreliableNoDelay);
-                        
-                        Debug.Log($"sending back host time lmao");
                     }
                     break;
                 case MessageType.ServerHeartbeat_Response:
@@ -832,8 +829,6 @@ public class Networker : MonoBehaviour
                         }
 
                         NetworkSenderThread.Instance.SendPacketAsHostToAllClients(new Message_ReportPingTime(pingTime/2.0f, heartbeatResult.from), EP2PSend.k_EP2PSendUnreliableNoDelay);
-
-                        Debug.Log("we recieved out own time from " + heartbeatResult.from + " lmao, comparing to get ping (" + pingTime + "), and forwarding");
                     }
                     break;
                 case MessageType.ServerReportingPingTime:
@@ -857,8 +852,6 @@ public class Networker : MonoBehaviour
                                 PlayerManager.players[playerID].ping = pingToHost + pingTimeMessage.PingTime;
                             }
                         }
-
-                        Debug.Log("we recieved " + pingTimeMessage.from + "'s ping lmao " + pingTimeMessage.PingTime);
                     }
                     break;
                 case MessageType.LoadingTextRequest:
