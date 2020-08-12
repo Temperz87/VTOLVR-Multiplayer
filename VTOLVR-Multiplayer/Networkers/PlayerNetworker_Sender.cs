@@ -103,6 +103,36 @@ class PlayerNetworker_Sender : MonoBehaviour
         
         AudioController.instance.ClearAllOpenings();
 
+        UnitIconManager.instance.UnregisterAll();
+        TargetManager.instance.detectedByAllies.Clear();
+        TargetManager.instance.detectedByEnemies.Clear();
+
+        foreach (var actor in TargetManager.instance.allActors)
+        {
+            //if (actor.discovered == true)
+            {
+                actor.discovered = false;
+                actor.drawIcon = true;
+                //actor.DiscoverActor();
+
+
+                actor.permanentDiscovery = true;
+
+                Traverse.Create(actor).Field("detectedByAllied").SetValue(false);
+                Traverse.Create(actor).Field("detectedByEnemy").SetValue(false);
+
+                if (actor.team == Teams.Allied)
+                {
+                    actor.DetectActor(Teams.Allied);
+                    actor.UpdateKnownPosition(actor.team);
+                }
+
+                //actor.DiscoverActor(); <----------------breaks and only works on every 2nd spawn
+                // UnitIconManager.instance.RegisterIcon(actor, 0.07f * actor.iconScale, actor.iconOffset);
+
+            }
+        }
+
         GameObject newPlayer = Instantiate(PilotSaveManager.currentVehicle.vehiclePrefab);
         FlightSceneManager.instance.playerActor = newPlayer.GetComponent<Actor>();
         FlightSceneManager.instance.playerActor.flightInfo.PauseGCalculations();
