@@ -297,8 +297,11 @@ class PlayerNetworker_Sender : MonoBehaviour
 
     void Eject()
     {
+
+        FlightSceneManager.instance.playerActor.health.Kill();
         health.invincible = false;
         health.Kill();
+
     }
 
     void Death()

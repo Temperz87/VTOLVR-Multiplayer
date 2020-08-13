@@ -23,12 +23,14 @@ public class RigidbodyNetworker_Sender : MonoBehaviour
     private float angleThreshold = 1f;
     
     private ulong updateNumber;
-
+    private int tick;
+    private int tickRate = 10;
     private void Awake()
     {
         actor = gameObject.GetComponent<Actor>();
         rb = GetComponent<Rigidbody>();
         lastMessage = new Message_RigidbodyUpdate(new Vector3D(), new Vector3D(), new Vector3D(), Quaternion.identity, 0, networkUID);
+        tick = 0;
     }
 
     private void FixedUpdate()
@@ -40,9 +42,10 @@ public class RigidbodyNetworker_Sender : MonoBehaviour
 
         lastUp = lastRotation * Vector3.up;
         lastForward = lastRotation * Vector3.forward;
-
-        if (Vector3.Distance(localLastPosition, transform.TransformPoint(originOffset)) > threshold || Vector3.Angle(lastUp, transform.up) > angleThreshold || Vector3.Angle(lastForward, transform.forward) > angleThreshold)
+        tick++;
+        if (tick >tickRate || Vector3.Distance(localLastPosition, transform.TransformPoint(originOffset)) > threshold || Vector3.Angle(lastUp, transform.up) > angleThreshold || Vector3.Angle(lastForward, transform.forward) > angleThreshold)
         {
+            tick = 0;
             lastUp = transform.up;
             lastForward = transform.forward;
 
@@ -76,9 +79,12 @@ public class RigidbodyNetworker_Sender : MonoBehaviour
 
     private IEnumerator SetSpawnEnumerator(Vector3 spawnPos, Quaternion spawnRot)
     {
-        yield return new WaitForSeconds(0.5f);
+        
+        rb.velocity = new Vector3(0, 0, 0);
         rb.position = spawnPos;
         rb.rotation = spawnRot;
+        rb.Sleep();
+        yield return new WaitForSeconds(0.5f);
         Debug.Log($"Our position is now {rb.position}");
     }
 }

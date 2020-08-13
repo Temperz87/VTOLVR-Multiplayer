@@ -116,15 +116,21 @@ public static class PlayerManager
             
             if (teamLeftie)
                 foreach (ReArmingPoint rep in rearmPoints)
-            {
+              {
                     if (rep.team == Teams.Allied)
                     {
                         rep.team = Teams.Enemy;
+                        rep.canArm = true;
+                        rep.canRefuel = true;
 
-                    }else
+                    }
+                    else
                     if (rep.team == Teams.Enemy)
                     {
                         rep.team = Teams.Allied;
+                    
+                        rep.canArm = true;
+                        rep.canRefuel = true;
                     }
                 }
 
@@ -133,7 +139,8 @@ public static class PlayerManager
             {
                 VTScenario.current.units.AddSpawner(actor.unitSpawn.unitSpawner);
             }*/
-            NetworkSenderThread.Instance.SendPacketToSpecificPlayer(Networker.hostID, new Message(MessageType.RequestSpawn), EP2PSend.k_EP2PSendReliable);
+            Message_RequestSpawn msg = new Message_RequestSpawn(teamLeftie);
+            NetworkSenderThread.Instance.SendPacketToSpecificPlayer(Networker.hostID, msg, EP2PSend.k_EP2PSendReliable);
         }
         else
         {
@@ -259,6 +266,7 @@ public static class PlayerManager
     }
 
     public static void SpawnPlayersInPlayerSpawnQueue() {
+        if(gameLoaded)
         while (playersToSpawnQueue.Count > 0)
         {
             SpawnPlayerVehicle(playersToSpawnQueue.Dequeue(), playersToSpawnIdQueue.Dequeue());
@@ -300,6 +308,18 @@ public static class PlayerManager
     /// </summary>
     /// <param name="packet">The Message</param>
     /// <param name="sender">The client who sent it</param>
+    public static bool GetPlayerTeam(CSteamID sender)
+    {
+        for (int i = 0; i < players.Count; i++)
+        {
+            if (players[i].cSteamID.m_SteamID == sender.m_SteamID)
+            {
+                return players[i].leftie;
+            }
+        }
+        return false;
+    }
+
     public static void RequestSpawn(Packet packet, CSteamID sender) //Run by Host Only
     {
         Debug.Log("A player has requested for a spawn point");
@@ -315,6 +335,30 @@ public static class PlayerManager
             return;
         }
         Transform spawn = FindFreeSpawn();
+
+        Message_RequestSpawn  result = (Message_RequestSpawn)((PacketSingle)packet).message;
+        if (result.teaml) //leftie
+        {
+
+            var rearmPoints = GameObject.FindObjectsOfType<ReArmingPoint>();
+
+            ReArmingPoint rearmPoint = GameObject.FindObjectOfType<ReArmingPoint>();
+            List<ReArmingPoint> EnemyPoints = new List<ReArmingPoint>();
+            foreach (ReArmingPoint rep in rearmPoints)
+            {
+                if (rep.team == Teams.Enemy)
+                {
+                    EnemyPoints.Add(rep);
+                }
+            }
+
+            System.Random rnd = new System.Random((int)Time.time);
+            int r = rnd.Next(0, EnemyPoints.Count() - 1);
+            rearmPoint = EnemyPoints[r];
+
+            spawn = rearmPoint.transform;
+        }
+
         Debug.Log("The players spawn will be " + spawn);
         NetworkSenderThread.Instance.SendPacketToSpecificPlayer(sender, new Message_RequestSpawn_Result(new Vector3D(spawn.position), spawn.rotation , Networker.GenerateNetworkUID(), players.Count), EP2PSend.k_EP2PSendReliable);
     }
@@ -338,7 +382,7 @@ public static class PlayerManager
             return;
         }
         localVehicle.transform.position = result.position.toVector3;
-        localVehicle.transform.rotation =  result.rotation ;
+        localVehicle.transform.rotation =  result.rotation;
         SpawnLocalVehicleAndInformOtherClients(localVehicle, result.position.toVector3, result.rotation , result.vehicleUID);
         localUID = result.vehicleUID;
 
@@ -401,9 +445,11 @@ public static class PlayerManager
         VTOLVR_Multiplayer.AIDictionaries.allActors[UID] = actor;
         VTOLVR_Multiplayer.AIDictionaries.reverseAllActors[actor] = UID;
         actor.SetCustomVelocity(new Vector3(0, 0, 0));
+
         RigidbodyNetworker_Sender rbSender = localVehicle.AddComponent<RigidbodyNetworker_Sender>();
         rbSender.networkUID = UID;
         rbSender.SetSpawn(pos, rot);
+        
         if (currentVehicle == VTOLVehicles.AV42C) {
             rbSender.originOffset = av42Offset;
         }
