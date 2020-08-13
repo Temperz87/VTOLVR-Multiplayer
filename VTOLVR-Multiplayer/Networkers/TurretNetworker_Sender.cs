@@ -3,12 +3,13 @@
 class TurretNetworker_Sender : MonoBehaviour
 {
     public ulong networkUID;
+    public ulong turretID;
     private Message_TurretUpdate lastMessage;
     public ModuleTurret turret;
 
     private void Awake()
     {
-        lastMessage = new Message_TurretUpdate(new Vector3D(), networkUID);
+        lastMessage = new Message_TurretUpdate(new Vector3D(), networkUID, turretID);
         if (turret == null)
         {
             turret = base.GetComponentInChildren<ModuleTurret>();
@@ -25,6 +26,7 @@ class TurretNetworker_Sender : MonoBehaviour
         lastMessage.direction = dir;
 
         lastMessage.UID = networkUID;
+        lastMessage.turretID = turretID;
         if (Networker.isHost)
             NetworkSenderThread.Instance.SendPacketAsHostToAllClients(lastMessage, Steamworks.EP2PSend.k_EP2PSendUnreliable);
         else

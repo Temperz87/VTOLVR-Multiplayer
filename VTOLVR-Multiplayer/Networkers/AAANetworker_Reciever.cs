@@ -8,8 +8,10 @@ using UnityEngine;
 class AAANetworker_Reciever : MonoBehaviour
 {
     public ulong networkUID;
+    public ulong gunID;
     private Message_AAAUpdate lastMessage;
     private GunTurretAI gunTurret;
+
     private void Awake()
     {
         gunTurret = gameObject.GetComponentInChildren<GunTurretAI>();
@@ -20,6 +22,8 @@ class AAANetworker_Reciever : MonoBehaviour
     {
         lastMessage = (Message_AAAUpdate)((PacketSingle)packet).message;
         if (lastMessage.networkUID != networkUID)
+            return;
+        if (lastMessage.gunID != gunID)
             return;
         gunTurret.gun.SetFire(lastMessage.isFiring);
     }

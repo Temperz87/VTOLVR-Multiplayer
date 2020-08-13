@@ -6,12 +6,13 @@ using UnityEngine;
 class TurretNetworker_Receiver : MonoBehaviour
 {
     public ulong networkUID;
+    public ulong turretID;
     private Message_TurretUpdate lastMessage;
     public ModuleTurret turret;
 
     private void Awake()
     {
-        lastMessage = new Message_TurretUpdate(new Vector3D(), networkUID);
+        lastMessage = new Message_TurretUpdate(new Vector3D(), networkUID, turretID);
         Networker.TurretUpdate += TurretUpdate;
         if (turret == null)
         {
@@ -27,6 +28,8 @@ class TurretNetworker_Receiver : MonoBehaviour
     {
         lastMessage = (Message_TurretUpdate)((PacketSingle)packet).message;
         if (lastMessage.UID != networkUID)
+            return;
+        if (lastMessage.turretID != turretID)
             return;
 
         turret.AimToTargetImmediate(turret.pitchTransform.position + lastMessage.direction.toVector3.normalized * 1000);

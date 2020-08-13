@@ -76,11 +76,11 @@ class Patch8
                 {
                     Debug.Log("Actor " + actor.name + " isn't spawned yet, still sending.");
                 }
+                AIManager.TellClientAboutAI(new Steamworks.CSteamID(0));
             }
             else
                 Debug.Log(actor.name + " has a parent, not giving an uID sender.");
         }
-        AIManager.TellClientAboutAI();
     }
 }
 
