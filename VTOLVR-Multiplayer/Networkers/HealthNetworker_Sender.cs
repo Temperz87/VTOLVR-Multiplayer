@@ -4,7 +4,7 @@ class HealthNetworker_Sender : MonoBehaviour
 {
     public ulong networkUID;
     private Message_Death lastMessage;
-    public Health health;
+    private Health health;
 
     private void Awake()
     {

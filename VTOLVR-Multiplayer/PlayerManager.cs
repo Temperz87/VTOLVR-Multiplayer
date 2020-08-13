@@ -212,7 +212,8 @@ public static class PlayerManager
                                         samIDS.Add(lastSender.networkUID);
                                     }
                                     subUnit.gameObject.AddComponent<IRSAMNetworker_Sender>().irIDs = samIDS.ToArray();
-                                }
+                                }   
+                                subUnit.gameObject.AddComponent<HealthNetworker_Sender>().networkUID = subUnitID;
                                 if (subUnit.gameObject.GetComponentInChildren<GunTurretAI>())
                                 {
                                     AAANetworker_Sender gunTurret = subUnit.gameObject.AddComponent<AAANetworker_Sender>();

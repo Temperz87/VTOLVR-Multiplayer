@@ -120,7 +120,7 @@ public static class AIManager
                 SetUpCarrier(newAI, message.networkID, actor.team);
             }
         }
-        foreach (Actor subActor in newAI.GetComponentsInChildren<Actor>()) {
+        /*foreach (Actor subActor in newAI.GetComponentsInChildren<Actor>()) {
             if (subActor.parentActor != null) {
                 Debug.Log("This is a subunit, disabling AI to avoid desync");
                 if (subActor.gameObject.GetComponentInChildren<GunTurretAI>() != null)
@@ -134,7 +134,7 @@ public static class AIManager
                     subActor.gameObject.GetComponentInChildren<SAMLauncher>().enabled = false;
                 }
             }
-        }
+        }*/
 
         TargetManager.instance.UnregisterActor(actor);
         TargetManager.instance.RegisterActor(actor);
