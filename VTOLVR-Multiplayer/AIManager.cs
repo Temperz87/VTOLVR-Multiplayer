@@ -92,13 +92,21 @@ public static class AIManager
             if (actor.team == Teams.Enemy)
             {
                 foreach (Actor subActor in newAI.GetComponentsInChildren<Actor>())
+                {
                     subActor.team = Teams.Allied;
+                    TargetManager.instance.UnregisterActor(subActor);
+                    TargetManager.instance.RegisterActor(subActor);
+                }
             }
             else
             if (actor.team == Teams.Allied)
             {
                 foreach (Actor subActor in newAI.GetComponentsInChildren<Actor>())
+                {
                     subActor.team = Teams.Enemy;
+                    TargetManager.instance.UnregisterActor(subActor);
+                    TargetManager.instance.RegisterActor(subActor);
+                }
             }
             unitSpawn.team = actor.team;
 
@@ -109,6 +117,22 @@ public static class AIManager
                 SetUpCarrier(newAI, message.networkID, actor.team);
             }
         }
+        foreach (Actor subActor in newAI.GetComponentsInChildren<Actor>()) {
+            if (subActor.parentActor != null) {
+                Debug.Log("This is a subunit, disabling AI to avoid desync");
+                if (actor.gameObject.GetComponentInChildren<GunTurretAI>() != null)
+                {
+                    Debug.Log("Gunturret AI disabled");
+                    GameObject.Destroy(actor.gameObject.GetComponentInChildren<GunTurretAI>());
+                }
+                if (actor.gameObject.GetComponentInChildren<SAMLauncher>() != null)
+                {
+                    Debug.Log("SAM Launcher disabled");
+                    actor.gameObject.GetComponentInChildren<SAMLauncher>().enabled = false;
+                }
+            }
+        }
+
         TargetManager.instance.UnregisterActor(actor);
         TargetManager.instance.RegisterActor(actor);
 
