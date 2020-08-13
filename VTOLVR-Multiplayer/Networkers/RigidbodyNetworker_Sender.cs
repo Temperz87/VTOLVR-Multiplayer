@@ -19,14 +19,16 @@ public class RigidbodyNetworker_Sender : MonoBehaviour
     private Quaternion lastRotation;
     private Vector3 lastAngularVelocity;
     private float threshold = 0.5f;
-    private float angleThreshold = 5f;
+    private float angleThreshold = 1f;
     
     private ulong updateNumber;
-
+    private float tick;
+    private float tickRate = 10;
     private void Awake()
     {
         rb = GetComponent<Rigidbody>();
         lastMessage = new Message_RigidbodyUpdate(new Vector3D(), new Vector3D(), new Vector3D(), Quaternion.identity, 0, networkUID);
+        tick = 0;
     }
 
     private void FixedUpdate()
@@ -38,9 +40,10 @@ public class RigidbodyNetworker_Sender : MonoBehaviour
 
         lastUp = lastRotation * Vector3.up;
         lastForward = lastRotation * Vector3.forward;
-
-        if (Vector3.Distance(localLastPosition, transform.TransformPoint(originOffset)) > threshold || Vector3.Angle(lastUp, transform.up) > angleThreshold || Vector3.Angle(lastForward, transform.forward) > angleThreshold)
+        tick += Time.fixedDeltaTime;
+        if (tick > 1/tickRate || Vector3.Distance(localLastPosition, transform.TransformPoint(originOffset)) > threshold || Vector3.Angle(lastUp, transform.up) > angleThreshold || Vector3.Angle(lastForward, transform.forward) > angleThreshold)
         {
+            tick = 0;
             lastUp = transform.up;
             lastForward = transform.forward;
 
@@ -69,14 +72,18 @@ public class RigidbodyNetworker_Sender : MonoBehaviour
 
     public void SetSpawn(Vector3 spawnPos, Quaternion spawnRot)
     {
-        StartCoroutine(SetSpawnEnumerator(spawnPos, spawnRot));
-    }
-
-    private IEnumerator SetSpawnEnumerator(Vector3 spawnPos, Quaternion spawnRot)
-    {
-        yield return new WaitForSeconds(0.5f);
+        //StartCoroutine(SetSpawnEnumerator(spawnPos, spawnRot));
+        rb.velocity = new Vector3(0, 0, 0);
         rb.position = spawnPos;
         rb.rotation = spawnRot;
-        Debug.Log($"Our position is now {rb.position}");
+        rb.Sleep();
     }
+
+    /*private IEnumerator SetSpawnEnumerator(Vector3 spawnPos, Quaternion spawnRot)
+    {
+        
+        
+        yield return new WaitForSeconds(0.5f);
+        Debug.Log($"Our position is now {rb.position}");
+    }*/
 }

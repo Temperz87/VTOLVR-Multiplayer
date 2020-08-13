@@ -7,6 +7,7 @@ class PlayerNetworker_Sender : MonoBehaviour
     public ulong networkUID;
     private Message_Respawn lastMessage;
     public Health health;
+    public Actor actor;
 
     public TempPilotDetacher detacher;
     //public GearAnimator[] gears;
@@ -32,6 +33,7 @@ class PlayerNetworker_Sender : MonoBehaviour
         lastMessage = new Message_Respawn(networkUID, new Vector3D(), new Quaternion(), false);
 
         health = GetComponent<Health>();
+        actor = GetComponent<Actor>();
 
         if (health == null)
             Debug.LogError("health was null on player " + gameObject.name);
@@ -66,12 +68,18 @@ class PlayerNetworker_Sender : MonoBehaviour
 
         Debug.Log("Finished respawn timer.");
 
-        var rearmPoints = GameObject.FindObjectsOfType<ReArmingPoint>();
-        //back up option below
-        ReArmingPoint rearmPoint = GameObject.FindObjectOfType<ReArmingPoint>();
+        ReArmingPoint[] rearmPoints = GameObject.FindObjectsOfType<ReArmingPoint>();
+        ReArmingPoint rearmPoint = rearmPoints[Random.Range(0, rearmPoints.Length)];
         foreach (ReArmingPoint rep in rearmPoints)
         {
-            if(rep.team == Teams.Allied)
+            if (rep.CheckIsClear(actor))
+            {
+                rearmPoint = rep;
+            }
+        }
+        foreach (ReArmingPoint rep in rearmPoints)
+        {
+            if(rep.team == Teams.Allied && rep.CheckIsClear(actor))
             {
                 rearmPoint = rep;
             }
@@ -297,8 +305,11 @@ class PlayerNetworker_Sender : MonoBehaviour
 
     void Eject()
     {
+
+        FlightSceneManager.instance.playerActor.health.Kill();
         health.invincible = false;
         health.Kill();
+
     }
 
     void Death()

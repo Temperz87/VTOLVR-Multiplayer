@@ -22,3 +22,15 @@ public class Message_RequestSpawn_Result : Message
         type = MessageType.RequestSpawn_Result;
     }
 }
+ 
+
+[Serializable]
+public class Message_RequestSpawn : Message
+{
+    public bool teaml;
+
+    public Message_RequestSpawn(bool team) {
+        type = MessageType.RequestSpawn;
+        this.teaml = team;
+    }
+}

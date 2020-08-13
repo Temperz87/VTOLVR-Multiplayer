@@ -170,7 +170,6 @@ class Patch6
         Debug.Log(actionIdentifier);
         /*dont run corrupt objectives 
         if (MissionManager.instance.IndexOfObjective(__instance) == -1)
-            return false; // This code breaks objectives, literally everything objective related
         Message_ObjectiveSync objOutMessage = new Message_ObjectiveSync(PlayerManager.localUID, MissionManager.instance.IndexOfObjective(__instance), ObjSyncType.EMissionBegin);
         if (Networker.isHost)
         {

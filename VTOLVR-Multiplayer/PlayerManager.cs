@@ -93,11 +93,53 @@ public static class PlayerManager
             VTScenario.current.units.alliedUnits.Clear();
             VTScenario.current.units.enemyUnits.Clear();
             VTScenario.current.groups.DestroyAll();
+            
+
+            if(teamLeftie)
+            foreach (AirportManager airportManager in VTMapManager.fetch.airports)
+            {
+                   if (airportManager.team == Teams.Allied)
+                    {
+                        airportManager.team = Teams.Enemy;
+
+                    }else
+                    if (airportManager.team == Teams.Enemy)
+                    {
+                        airportManager.team = Teams.Allied;
+                    }
+                }
+
+          
+                var rearmPoints = GameObject.FindObjectsOfType<ReArmingPoint>();
+            //back up option below
+            
+            if (teamLeftie)
+                foreach (ReArmingPoint rep in rearmPoints)
+              {
+                    if (rep.team == Teams.Allied)
+                    {
+                        rep.team = Teams.Enemy;
+                        rep.canArm = true;
+                        rep.canRefuel = true;
+
+                    }
+                    else
+                    if (rep.team == Teams.Enemy)
+                    {
+                        rep.team = Teams.Allied;
+                    
+                        rep.canArm = true;
+                        rep.canRefuel = true;
+                    }
+                }
+
+
             /*foreach (var actor in TargetManager.instance.allActors)
             {
                 VTScenario.current.units.AddSpawner(actor.unitSpawn.unitSpawner);
             }*/
-            NetworkSenderThread.Instance.SendPacketToSpecificPlayer(Networker.hostID, new Message(MessageType.RequestSpawn), EP2PSend.k_EP2PSendReliable);
+            Message_RequestSpawn msg = new Message_RequestSpawn(teamLeftie);
+            NetworkSenderThread.Instance.SendPacketToSpecificPlayer(Networker.hostID, msg, EP2PSend.k_EP2PSendReliable);
         }
         else
         {
@@ -252,6 +294,7 @@ public static class PlayerManager
     }
 
     public static void SpawnPlayersInPlayerSpawnQueue() {
+        if(gameLoaded)
         while (playersToSpawnQueue.Count > 0)
         {
             SpawnPlayerVehicle(playersToSpawnQueue.Dequeue(), playersToSpawnIdQueue.Dequeue());
@@ -293,6 +336,18 @@ public static class PlayerManager
     /// </summary>
     /// <param name="packet">The Message</param>
     /// <param name="sender">The client who sent it</param>
+    public static bool GetPlayerTeam(CSteamID sender)
+    {
+        for (int i = 0; i < players.Count; i++)
+        {
+            if (players[i].cSteamID.m_SteamID == sender.m_SteamID)
+            {
+                return players[i].leftie;
+            }
+        }
+        return false;
+    }
+
     public static void RequestSpawn(Packet packet, CSteamID sender) //Run by Host Only
     {
         Debug.Log("A player has requested for a spawn point");
@@ -308,6 +363,29 @@ public static class PlayerManager
             return;
         }
         Transform spawn = FindFreeSpawn();
+
+        Message_RequestSpawn  result = (Message_RequestSpawn)((PacketSingle)packet).message;
+        if (result.teaml) //leftie
+        {
+
+            var rearmPoints = GameObject.FindObjectsOfType<ReArmingPoint>();
+
+            ReArmingPoint rearmPoint = GameObject.FindObjectOfType<ReArmingPoint>();
+            List<ReArmingPoint> EnemyPoints = new List<ReArmingPoint>();
+            foreach (ReArmingPoint rep in rearmPoints)
+            {
+                if (rep.team == Teams.Enemy)
+                {
+                    EnemyPoints.Add(rep);
+                }
+            }
+            
+            if (EnemyPoints.Count() > 0) {
+                rearmPoint = EnemyPoints[UnityEngine.Random.Range(0, EnemyPoints.Count)];
+                spawn = rearmPoint.transform;
+            }
+        }
+
         Debug.Log("The players spawn will be " + spawn);
         NetworkSenderThread.Instance.SendPacketToSpecificPlayer(sender, new Message_RequestSpawn_Result(new Vector3D(spawn.position), spawn.rotation , Networker.GenerateNetworkUID(), players.Count), EP2PSend.k_EP2PSendReliable);
     }
@@ -331,7 +409,7 @@ public static class PlayerManager
             return;
         }
         localVehicle.transform.position = result.position.toVector3;
-        localVehicle.transform.rotation =  result.rotation ;
+        localVehicle.transform.rotation =  result.rotation;
         SpawnLocalVehicleAndInformOtherClients(localVehicle, result.position.toVector3, result.rotation , result.vehicleUID);
         localUID = result.vehicleUID;
     }
@@ -395,6 +473,7 @@ public static class PlayerManager
         RigidbodyNetworker_Sender rbSender = localVehicle.AddComponent<RigidbodyNetworker_Sender>();
         rbSender.networkUID = UID;
         rbSender.SetSpawn(pos, rot);
+        
         if (currentVehicle == VTOLVehicles.AV42C) {
             rbSender.originOffset = av42Offset;
         }
@@ -797,7 +876,7 @@ public static class PlayerManager
                 return i;
             }
         }
-        Debug.Log("Could not find player with that UID, this is a problem.");
+        //Debug.Log("Could not find player with that UID, this is a problem.");
         return -1;
     }
 
