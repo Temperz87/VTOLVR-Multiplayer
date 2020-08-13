@@ -9,6 +9,7 @@ public class MissileNetworker_Sender : MonoBehaviour
     // private Rigidbody rigidbody; doesn't exist in some missiles so we're not fucking with that shit
     private Message_MissileUpdate lastMessage;
     private Missile thisMissile;
+    private bool hasFired = false;
     private void Awake()
     {
         Networker.RequestNetworkUID += RequestUID;
@@ -22,6 +23,11 @@ public class MissileNetworker_Sender : MonoBehaviour
         if (thisMissile == null)
         {
             Debug.LogError("thisMissile null.");
+        }
+        if (hasFired != thisMissile.fired)
+        {
+            Debug.Log("Missile fired " + thisMissile.name);
+            hasFired = true;
         }
         if (thisMissile != null && thisMissile.fired)
         {
@@ -55,6 +61,7 @@ public class MissileNetworker_Sender : MonoBehaviour
             else if (thisMissile.guidanceMode == Missile.GuidanceModes.Optical)
             {
                 lastMessage.targetPosition = VTMapManager.WorldToGlobalPoint(thisMissile.opticalTargetActor.transform.position);
+                lastMessage.seekerRotation = thisMissile.heatSeeker.transform.rotation;
             }
             SendMessage(false);
         }

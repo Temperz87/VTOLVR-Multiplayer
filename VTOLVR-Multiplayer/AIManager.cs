@@ -31,7 +31,7 @@ public static class AIManager
         }
     }
 
-    static string[] carrierNames = {"HMS Marsh", "HNLMS KetKev", "USS Temperz", "ENS Surgeon", "USS Dib", "USS Nebriv", "USS Zaelix", "HMS Cheese"};
+    static string[] carrierNames = { "HMS Marsh", "HNLMS KetKev", "USS Temperz", "ENS Surgeon", "USS Dib", "USS Nebriv", "USS Zaelix", "HMS Cheese" };
 
     /// <summary>
     /// This is used by the client and only the client to spawn ai vehicles.
@@ -195,7 +195,7 @@ public static class AIManager
                     collider.gameObject.layer = 9;
                 }
             }
-            
+
             //Debug.Log("Doing weapon manager shit on " + newAI.name + ".");
             WeaponManager weaponManager = newAI.GetComponent<WeaponManager>();
             if (weaponManager == null)
@@ -436,7 +436,7 @@ public static class AIManager
                     PhoneticLetters letters = new PhoneticLetters();
                     foreach (var Group in VTScenario.current.groups.GetExistingGroups(actor.team))
                     {
-                        foreach (var    ID in Group.unitIDs)
+                        foreach (var ID in Group.unitIDs)
                         {
                             if (ID == actor.unitSpawn.unitID)
                             {
@@ -520,13 +520,15 @@ public static class AIManager
             }
         }
     }
-   
-    public static void SetUpCarrier(GameObject carrier, ulong id, Teams team) {
+
+    public static void SetUpCarrier(GameObject carrier, ulong id, Teams team)
+    {
         AirportManager airport = carrier.GetComponent<AirportManager>();
         if (airport != null)
         {
             airport.airportName = carrierNames[(int)id % carrierNames.Length] + " " + id;
-            if (Networker.isClient) {
+            if (Networker.isClient)
+            {
                 VTMapManager.fetch.airports.Add(airport);
             }
 
@@ -634,14 +636,17 @@ public static class AIManager
                     Debug.Log("There are now " + ReArmingPoint.reArmingPoints.Count + " rearm points!");
                 }
             }
-            else {
+            else
+            {
                 Debug.Log("Carrier already had rearming points");
             }
         }
     }
 
-    public static string GetUnitNameFromCatalog(string unitname) {
-        foreach (var key in UnitCatalogue.catalogue.Keys) {
+    public static string GetUnitNameFromCatalog(string unitname)
+    {
+        foreach (var key in UnitCatalogue.catalogue.Keys)
+        {
             UnitCatalogue.UnitTeam team;
             UnitCatalogue.catalogue.TryGetValue(key, out team);
             foreach (UnitCatalogue.Unit unit in team.allUnits)

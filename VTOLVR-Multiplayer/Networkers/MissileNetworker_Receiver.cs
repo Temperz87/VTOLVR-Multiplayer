@@ -14,7 +14,7 @@ public class MissileNetworker_Receiver : MonoBehaviour
     private Message_MissileUpdate lastMessage;
     private Traverse traverse;
     // private Rigidbody rigidbody; see missileSender for why i not using rigidbody
-
+    private bool hasFired = false;
     private float positionThreshold = 0.5f;
 
     private void Start()
@@ -65,12 +65,19 @@ public class MissileNetworker_Receiver : MonoBehaviour
                     foreach (var collider in thisMissile.gameObject.GetComponentsInChildren<Collider>())
                     {
                         Debug.Log("Guidance mode Optical.");
+                        thisMissile.heatSeeker.transform.rotation = lastMessage.seekerRotation;
+                        thisMissile.heatSeeker.SetHardLock();
                         // collider.gameObject.layer = 9;
                     }
                 }
                 Debug.Log("Try fire missile clientside");
                 traverse.Field("missileIdx").SetValue(idx);
                 thisML.FireMissile();
+            }
+            if (hasFired != thisMissile.fired)
+            {
+                Debug.Log("Missile fired " + thisMissile.name);
+                hasFired = true;
             }
         }
 
