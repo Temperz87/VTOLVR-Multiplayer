@@ -27,12 +27,10 @@ public class Message_RequestSpawn_Result : Message
 [Serializable]
 public class Message_RequestSpawn : Message
 {
-    public Message_RequestSpawn() { }
-    public Message_RequestSpawn(bool team) { this.type = MessageType.RequestSpawn; this.teaml = team; }
-    /// <summary>
-    /// The type of message we are sending, this needs to be set 
-    /// otherwise we won't know what to convert the message to.
-    /// </summary>
-    public MessageType type;
     public bool teaml;
+
+    public Message_RequestSpawn(bool team) {
+        type = MessageType.RequestSpawn;
+        this.teaml = team;
+    }
 }

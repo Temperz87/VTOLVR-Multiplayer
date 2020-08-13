@@ -73,7 +73,6 @@ public static class PlayerManager
         SetPrefabs();
         if (!Networker.isHost)
         {
-            Time.timeScale = 0.0f;
             Debug.Log($"Sending spawn request to host, host id: {Networker.hostID}, client id: {SteamUser.GetSteamID().m_SteamID}");
             Debug.Log("Killing all units currently on the map.");
             List<Actor> allActors = new List<Actor>();
@@ -351,12 +350,11 @@ public static class PlayerManager
                     EnemyPoints.Add(rep);
                 }
             }
-
-            System.Random rnd = new System.Random((int)Time.time);
-            int r = rnd.Next(0, EnemyPoints.Count() - 1);
-            rearmPoint = EnemyPoints[r];
-
-            spawn = rearmPoint.transform;
+            
+            if (EnemyPoints.Count() > 0) {
+                rearmPoint = EnemyPoints[UnityEngine.Random.Range(0, EnemyPoints.Count)];
+                spawn = rearmPoint.transform;
+            }
         }
 
         Debug.Log("The players spawn will be " + spawn);
@@ -385,8 +383,6 @@ public static class PlayerManager
         localVehicle.transform.rotation =  result.rotation;
         SpawnLocalVehicleAndInformOtherClients(localVehicle, result.position.toVector3, result.rotation , result.vehicleUID);
         localUID = result.vehicleUID;
-
-        Time.timeScale = 1.0f;
     }
     /// <summary>
     /// Spawns a local vehicle, and sends the message to other clients to 
@@ -444,7 +440,6 @@ public static class PlayerManager
 
         VTOLVR_Multiplayer.AIDictionaries.allActors[UID] = actor;
         VTOLVR_Multiplayer.AIDictionaries.reverseAllActors[actor] = UID;
-        actor.SetCustomVelocity(new Vector3(0, 0, 0));
 
         RigidbodyNetworker_Sender rbSender = localVehicle.AddComponent<RigidbodyNetworker_Sender>();
         rbSender.networkUID = UID;
@@ -846,7 +841,7 @@ public static class PlayerManager
                 return i;
             }
         }
-        Debug.Log("Could not find player with that UID, this is a problem.");
+        //Debug.Log("Could not find player with that UID, this is a problem.");
         return -1;
     }
 
