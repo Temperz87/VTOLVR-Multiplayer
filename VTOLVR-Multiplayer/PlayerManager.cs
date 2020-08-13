@@ -248,9 +248,21 @@ public static class PlayerManager
                         Debug.Log("Actor " + actor.name + " isn't spawned yet, still sending.");
                     }
                 }
-
                 else
+                {
                     Debug.Log(actor.name + " has a parent, not giving an uID sender.");
+                    Debug.Log("This is a subunit, disabling AI to avoid desync");
+                    if (actor.gameObject.GetComponentInChildren<GunTurretAI>() != null)
+                    {
+                        Debug.Log("Gunturret AI disabled");
+                        GameObject.Destroy(actor.gameObject.GetComponentInChildren<GunTurretAI>());
+                    }
+                    if (actor.gameObject.GetComponentInChildren<SAMLauncher>() != null)
+                    {
+                        Debug.Log("SAM Launcher disabled");
+                        actor.gameObject.GetComponentInChildren<SAMLauncher>().enabled = false;
+                    }
+                }
             }
             NetworkSenderThread.Instance.SendPacketAsHostToAllClients(new Message_HostLoaded(true), EP2PSend.k_EP2PSendReliable);
             GameObject localVehicle = VTOLAPI.GetPlayersVehicleGameObject();
