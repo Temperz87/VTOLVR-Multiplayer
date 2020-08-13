@@ -136,7 +136,7 @@
     <Compile Include="Messages\Message_WingFold.cs" />
     <Compile Include="Messages\Message_WorldData.cs" />
     <Compile Include="Messages\Packet.cs" />
-    <Compile Include="Networkers\AAANetowrker_Sender.cs" />
+    <Compile Include="Networkers\AAANetworker_Sender.cs" />
     <Compile Include="Networkers\AAANetworker_Reciever.cs" />
     <Compile Include="Networkers\ExtLightNetworker_Receiver.cs" />
     <Compile Include="Networkers\ExtLightNetworker_Sender.cs" />

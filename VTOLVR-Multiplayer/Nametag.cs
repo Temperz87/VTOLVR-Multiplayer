@@ -33,7 +33,7 @@ public class Nametag : MonoBehaviour
         if (head != null)
             transform.LookAt(2 * transform.position - head.position);
         else
-            Nametag.head = VRHead.instance.transform;
+            head = VRHead.instance.transform;
         if (transform.parent != null)
             transform.position = transform.parent.position + Vector3.up * 10;
     }
