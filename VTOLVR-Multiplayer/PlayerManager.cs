@@ -350,12 +350,11 @@ public static class PlayerManager
                     EnemyPoints.Add(rep);
                 }
             }
-
-            System.Random rnd = new System.Random((int)Time.time);
-            int r = rnd.Next(0, EnemyPoints.Count() - 1);
-            rearmPoint = EnemyPoints[r];
-
-            spawn = rearmPoint.transform;
+            
+            if (EnemyPoints.Count() > 0) {
+                rearmPoint = EnemyPoints[UnityEngine.Random.Range(0, EnemyPoints.Count)];
+                spawn = rearmPoint.transform;
+            }
         }
 
         Debug.Log("The players spawn will be " + spawn);
