@@ -179,8 +179,18 @@ public static class AIManager
                     TurretNetworker_Receiver tSender = sAI.subUnits[i].gameObject.AddComponent<TurretNetworker_Receiver>();
                     tSender.networkUID = subUnitID;
                 }
+                sAI.subUnits[i].gameObject.AddComponent<HealthNetworker_Receiver>().networkUID = subUnitID;
                 UIDNetworker_Receiver sUidSender = sAI.subUnits[i].gameObject.AddComponent<UIDNetworker_Receiver>();
                 sUidSender.networkUID = subUnitID;
+                SAMLauncher launcher = sAI.subUnits[i].GetComponent<SAMLauncher>();
+                if (launcher != null)
+                {
+                    SamNetworker_Reciever samNetworker = launcher.gameObject.AddComponent<SamNetworker_Reciever>();
+                    samNetworker.networkUID = subUnitID;
+                    Debug.Log($"Added samNetworker to sub uID {message.networkID}.");
+                    launcher.SetEngageEnemies(false);
+                    launcher.fireInterval = float.MaxValue;
+                }
                 IRSamLauncher iLauncher = sAI.subUnits[i].gameObject.GetComponent<IRSamLauncher>();
                 if (iLauncher != null)
                 {
@@ -189,7 +199,6 @@ public static class AIManager
                     iLauncher.SetEngageEnemies(false);
                     MissileNetworker_Receiver mlr;
                     //iLauncher.ml.LoadCount(message.IRSamMissiles.Length);
-                    Debug.Log($"Adding IR id's on IR SAM, len = {message.subIRIDS.Length}.");
                     for (int j = 0; j < iLauncher.ml.missiles.Length; j++)
                     {
                         mlr = iLauncher.ml.missiles[j]?.gameObject.AddComponent<MissileNetworker_Receiver>();
@@ -211,6 +220,7 @@ public static class AIManager
                 {
                     VTOLVR_Multiplayer.AIDictionaries.reverseAllActors.Add(sAI.subUnits[i], subUnitID);
                 }
+                Debug.Log("Subunit " + sAI.subUnits[i].name + " has its shit now.");
             }
         }
         else if (newAI.GetComponent<Rigidbody>() != null)

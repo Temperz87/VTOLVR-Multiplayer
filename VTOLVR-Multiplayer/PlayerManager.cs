@@ -93,29 +93,30 @@ public static class PlayerManager
             VTScenario.current.units.alliedUnits.Clear();
             VTScenario.current.units.enemyUnits.Clear();
             VTScenario.current.groups.DestroyAll();
-            
 
-            if(teamLeftie)
-            foreach (AirportManager airportManager in VTMapManager.fetch.airports)
-            {
-                   if (airportManager.team == Teams.Allied)
+
+            if (teamLeftie)
+                foreach (AirportManager airportManager in VTMapManager.fetch.airports)
+                {
+                    if (airportManager.team == Teams.Allied)
                     {
                         airportManager.team = Teams.Enemy;
 
-                    }else
-                    if (airportManager.team == Teams.Enemy)
+                    }
+                    else
+                     if (airportManager.team == Teams.Enemy)
                     {
                         airportManager.team = Teams.Allied;
                     }
                 }
 
-          
-                var rearmPoints = GameObject.FindObjectsOfType<ReArmingPoint>();
+
+            var rearmPoints = GameObject.FindObjectsOfType<ReArmingPoint>();
             //back up option below
-            
+
             if (teamLeftie)
                 foreach (ReArmingPoint rep in rearmPoints)
-              {
+                {
                     if (rep.team == Teams.Allied)
                     {
                         rep.team = Teams.Enemy;
@@ -127,7 +128,7 @@ public static class PlayerManager
                     if (rep.team == Teams.Enemy)
                     {
                         rep.team = Teams.Allied;
-                    
+
                         rep.canArm = true;
                         rep.canRefuel = true;
                     }
@@ -212,7 +213,7 @@ public static class PlayerManager
                                         samIDS.Add(lastSender.networkUID);
                                     }
                                     subUnit.gameObject.AddComponent<IRSAMNetworker_Sender>().irIDs = samIDS.ToArray();
-                                }   
+                                }
                                 subUnit.gameObject.AddComponent<HealthNetworker_Sender>().networkUID = subUnitID;
                                 if (subUnit.gameObject.GetComponentInChildren<GunTurretAI>())
                                 {
@@ -227,6 +228,7 @@ public static class PlayerManager
                                 {
                                     VTOLVR_Multiplayer.AIDictionaries.reverseAllActors.Add(subUnit, subUnitID);
                                 }
+                                Debug.Log("Subunit " + subUnit.name + " has its shit now.");
                             }
                         }
                     }
@@ -240,9 +242,11 @@ public static class PlayerManager
                         lastPlaneSender = actor.gameObject.AddComponent<PlaneNetworker_Sender>();
                         lastPlaneSender.networkUID = networkUID;
                     }
-                    if(((AIUnitSpawn)actor.unitSpawn).subUnits.Count() == 0) {//only run this code on units without subunits
+                    if (((AIUnitSpawn)actor.unitSpawn).subUnits.Count() == 0)
+                    {//only run this code on units without subunits
                         ulong turretCount = 0;
-                        foreach (ModuleTurret moduleTurret in actor.gameObject.GetComponentsInChildren<ModuleTurret>()) {
+                        foreach (ModuleTurret moduleTurret in actor.gameObject.GetComponentsInChildren<ModuleTurret>())
+                        {
                             TurretNetworker_Sender tSender = moduleTurret.gameObject.AddComponent<TurretNetworker_Sender>();
                             tSender.networkUID = networkUID;
                             tSender.turretID = turretCount;
@@ -300,18 +304,7 @@ public static class PlayerManager
                 }
                 else
                 {
-                    Debug.Log(actor.name + " has a parent, not giving an uID sender.");
-                    Debug.Log("This is a subunit, disabling AI to avoid desync");
-                    if (actor.gameObject.GetComponentInChildren<GunTurretAI>() != null)
-                    {
-                        Debug.Log("Gunturret AI disabled");
-                        GameObject.Destroy(actor.gameObject.GetComponentInChildren<GunTurretAI>());
-                    }
-                    if (actor.gameObject.GetComponentInChildren<SAMLauncher>() != null)
-                    {
-                        Debug.Log("SAM Launcher disabled");
-                        actor.gameObject.GetComponentInChildren<SAMLauncher>().enabled = false;
-                    }
+                    Debug.Log("We'll deal with this subunit later on.");
                 }
             }
             NetworkSenderThread.Instance.SendPacketAsHostToAllClients(new Message_HostLoaded(true), EP2PSend.k_EP2PSendReliable);
@@ -355,12 +348,13 @@ public static class PlayerManager
         }
     }
 
-    public static void SpawnPlayersInPlayerSpawnQueue() {
-        if(gameLoaded)
-        while (playersToSpawnQueue.Count > 0)
-        {
-            SpawnPlayerVehicle(playersToSpawnQueue.Dequeue(), playersToSpawnIdQueue.Dequeue());
-        }
+    public static void SpawnPlayersInPlayerSpawnQueue()
+    {
+        if (gameLoaded)
+            while (playersToSpawnQueue.Count > 0)
+            {
+                SpawnPlayerVehicle(playersToSpawnQueue.Dequeue(), playersToSpawnIdQueue.Dequeue());
+            }
     }
 
     /// <summary>
@@ -386,7 +380,7 @@ public static class PlayerManager
             Debug.Log("The players spawn will be " + lastSpawn);
             NetworkSenderThread.Instance.SendPacketToSpecificPlayer(
                 spawnRequestQueue.Dequeue(),
-                new Message_RequestSpawn_Result(new Vector3D(lastSpawn.position), lastSpawn.rotation , Networker.GenerateNetworkUID(), players.Count),
+                new Message_RequestSpawn_Result(new Vector3D(lastSpawn.position), lastSpawn.rotation, Networker.GenerateNetworkUID(), players.Count),
                 EP2PSend.k_EP2PSendReliable);
         }
     }
@@ -426,7 +420,7 @@ public static class PlayerManager
         }
         Transform spawn = FindFreeSpawn();
 
-        Message_RequestSpawn  result = (Message_RequestSpawn)((PacketSingle)packet).message;
+        Message_RequestSpawn result = (Message_RequestSpawn)((PacketSingle)packet).message;
         if (result.teaml) //leftie
         {
 
@@ -441,15 +435,16 @@ public static class PlayerManager
                     EnemyPoints.Add(rep);
                 }
             }
-            
-            if (EnemyPoints.Count() > 0) {
+
+            if (EnemyPoints.Count() > 0)
+            {
                 rearmPoint = EnemyPoints[UnityEngine.Random.Range(0, EnemyPoints.Count)];
                 spawn = rearmPoint.transform;
             }
         }
 
         Debug.Log("The players spawn will be " + spawn);
-        NetworkSenderThread.Instance.SendPacketToSpecificPlayer(sender, new Message_RequestSpawn_Result(new Vector3D(spawn.position), spawn.rotation , Networker.GenerateNetworkUID(), players.Count), EP2PSend.k_EP2PSendReliable);
+        NetworkSenderThread.Instance.SendPacketToSpecificPlayer(sender, new Message_RequestSpawn_Result(new Vector3D(spawn.position), spawn.rotation, Networker.GenerateNetworkUID(), players.Count), EP2PSend.k_EP2PSendReliable);
     }
     /// <summary>
     /// When the client receives a P2P message of their spawn point, 
@@ -471,8 +466,8 @@ public static class PlayerManager
             return;
         }
         localVehicle.transform.position = result.position.toVector3;
-        localVehicle.transform.rotation =  result.rotation;
-        SpawnLocalVehicleAndInformOtherClients(localVehicle, result.position.toVector3, result.rotation , result.vehicleUID);
+        localVehicle.transform.rotation = result.rotation;
+        SpawnLocalVehicleAndInformOtherClients(localVehicle, result.position.toVector3, result.rotation, result.vehicleUID);
         localUID = result.vehicleUID;
     }
     /// <summary>
@@ -535,8 +530,9 @@ public static class PlayerManager
         RigidbodyNetworker_Sender rbSender = localVehicle.AddComponent<RigidbodyNetworker_Sender>();
         rbSender.networkUID = UID;
         rbSender.SetSpawn(pos, rot);
-        
-        if (currentVehicle == VTOLVehicles.AV42C) {
+
+        if (currentVehicle == VTOLVehicles.AV42C)
+        {
             rbSender.originOffset = av42Offset;
         }
 
@@ -652,7 +648,8 @@ public static class PlayerManager
         // which we're not doing right now.
         Message_SpawnPlayerVehicle message = (Message_SpawnPlayerVehicle)((PacketSingle)packet).message;
 
-        if (message.networkID == PlayerManager.localUID) {
+        if (message.networkID == PlayerManager.localUID)
+        {
             return;
         }
 
@@ -742,7 +739,7 @@ public static class PlayerManager
                         new Message_SpawnPlayerVehicle(
                             players[i].vehicleType,
                             VTMapManager.WorldToGlobalPoint(players[i].vehicle.transform.position),
-                             players[i].vehicle.transform.rotation ,
+                             players[i].vehicle.transform.rotation,
                             players[i].cSteamID.m_SteamID,
                             players[i].vehicleUID,
                             existingPlayersPR.GenerateHPInfo(),
@@ -769,9 +766,9 @@ public static class PlayerManager
             Debug.Log("Telling connected client about AI units");
             AIManager.TellClientAboutAI(spawnerSteamId);
         }
-        players.Add(new Player(spawnerSteamId, null, message.vehicle, message.networkID,message.leftie));
+        players.Add(new Player(spawnerSteamId, null, message.vehicle, message.networkID, message.leftie));
 
-        GameObject puppet = SpawnRepresentation(message.networkID, message.position, message.rotation,message.leftie);
+        GameObject puppet = SpawnRepresentation(message.networkID, message.position, message.rotation, message.leftie);
         if (puppet != null)
         {
             PlaneEquippableManager.SetLoadout(puppet, message.networkID, message.normalizedFuel, message.hpLoadout, message.cmLoadout);
@@ -803,21 +800,21 @@ public static class PlayerManager
                 {
                     SetPrefabs();
                 }
-                newVehicle = GameObject.Instantiate(av42cPrefab, VTMapManager.GlobalToWorldPoint(position),  rotation );
+                newVehicle = GameObject.Instantiate(av42cPrefab, VTMapManager.GlobalToWorldPoint(position), rotation);
                 break;
             case VTOLVehicles.FA26B:
                 if (null == fa26bPrefab)
                 {
                     SetPrefabs();
                 }
-                newVehicle = GameObject.Instantiate(fa26bPrefab, VTMapManager.GlobalToWorldPoint(position), rotation  );
+                newVehicle = GameObject.Instantiate(fa26bPrefab, VTMapManager.GlobalToWorldPoint(position), rotation);
                 break;
             case VTOLVehicles.F45A:
                 if (null == f45Prefab)
                 {
                     SetPrefabs();
                 }
-                newVehicle = GameObject.Instantiate(f45Prefab, VTMapManager.GlobalToWorldPoint(position), rotation );
+                newVehicle = GameObject.Instantiate(f45Prefab, VTMapManager.GlobalToWorldPoint(position), rotation);
                 break;
         }
         //Debug.Log("Setting vehicle name");
@@ -916,7 +913,8 @@ public static class PlayerManager
         {
             VTOLVR_Multiplayer.AIDictionaries.allActors[networkID] = aIPilot.actor;
             VTOLVR_Multiplayer.AIDictionaries.reverseAllActors[aIPilot.actor] = networkID;
-        }else
+        }
+        else
         {
             VTOLVR_Multiplayer.AIDictionaries.allActors.Remove(networkID);
             VTOLVR_Multiplayer.AIDictionaries.reverseAllActors.Remove(aIPilot.actor);
