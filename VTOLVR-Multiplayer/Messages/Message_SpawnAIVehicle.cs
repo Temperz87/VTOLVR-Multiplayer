@@ -19,11 +19,12 @@ public class Message_SpawnAIVehicle : Message
     public bool Aggresive;
     public int unitInstanceID;
     public ulong[] radarIDs;
+    public ulong[] IRSamMissiles;
     public PhoneticLetters unitGroup;
     public bool hasGroup { get; private set; }
     // public int playerCount;
 
-    public Message_SpawnAIVehicle(string aiVehicleName, string unitName, Vector3D position, Vector3D rotation, ulong networkID, HPInfo[] hpLoadout, int[] cmLoadout, float normalizedFuel, bool Aggresive, int unitInstanceID, PhoneticLetters unitGroup, ulong[] radarIDs)
+    public Message_SpawnAIVehicle(string aiVehicleName, string unitName, Vector3D position, Vector3D rotation, ulong networkID, HPInfo[] hpLoadout, int[] cmLoadout, float normalizedFuel, bool Aggresive, int unitInstanceID, PhoneticLetters unitGroup, ulong[] radarIDs, ulong[] IRSAMissiles)
     {
         this.aiVehicleName = aiVehicleName;
         this.unitName = unitName;
@@ -38,10 +39,11 @@ public class Message_SpawnAIVehicle : Message
         this.unitGroup = unitGroup;
         this.radarIDs = radarIDs;
         hasGroup = true;
+        this.IRSamMissiles = IRSAMissiles;
         // this.playerCount = playerCount;
         type = MessageType.SpawnAiVehicle;
     }
-    public Message_SpawnAIVehicle(string aiVehicleName, string unitName, Vector3D position, Vector3D rotation, ulong networkID, HPInfo[] hpLoadout, int[] cmLoadout, float normalizedFuel, bool Aggresive, int unitInstanceID, ulong[] radarIDs)
+    public Message_SpawnAIVehicle(string aiVehicleName, string unitName, Vector3D position, Vector3D rotation, ulong networkID, HPInfo[] hpLoadout, int[] cmLoadout, float normalizedFuel, bool Aggresive, int unitInstanceID, ulong[] radarIDs, ulong[] IRSAMissiles)
     {
         this.aiVehicleName = aiVehicleName;
         this.unitName = unitName;
@@ -55,6 +57,7 @@ public class Message_SpawnAIVehicle : Message
         this.unitInstanceID = unitInstanceID;
         this.radarIDs = radarIDs;
         hasGroup = false;
+        this.IRSamMissiles = IRSAMissiles;
         // this.playerCount = playerCount;
         type = MessageType.SpawnAiVehicle;
     }

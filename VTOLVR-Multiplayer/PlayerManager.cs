@@ -209,6 +209,35 @@ public static class PlayerManager
                         AAANetworker_Sender gunTurret = actor.gameObject.AddComponent<AAANetworker_Sender>();
                         gunTurret.networkUID = networkUID;
                     }
+                    IRSamLauncher ml = actor.gameObject.GetComponentInChildren<IRSamLauncher>();
+                    if (ml != null)
+                    {
+                        List<ulong> samIDS = new List<ulong>();
+                        MissileNetworker_Sender lastSender;
+                        for (int i = 0; i < ml.ml.missiles.Length; i++)
+                        {
+                            lastSender = ml.ml.missiles[i].gameObject.AddComponent<MissileNetworker_Sender>();
+                            lastSender.networkUID = Networker.GenerateNetworkUID();
+                            samIDS.Add(lastSender.networkUID);
+                        }
+                        actor.gameObject.AddComponent<IRSAMNetworker_Sender>().irIDs = samIDS.ToArray();
+                    }
+                    Soldier soldier = actor.gameObject.GetComponentInChildren<Soldier>();
+                    if (soldier != null)
+                    {
+                        if (soldier.soldierType == Soldier.SoldierTypes.IRMANPAD)
+                        {
+                            List<ulong> samIDS = new List<ulong>();
+                            MissileNetworker_Sender lastSender;
+                            for (int i = 0; i < soldier.irMissileLauncher.missiles.Length; i++)
+                            {
+                                lastSender = soldier.irMissileLauncher.missiles[i].gameObject.AddComponent<MissileNetworker_Sender>();
+                                lastSender.networkUID = Networker.GenerateNetworkUID();
+                                samIDS.Add(lastSender.networkUID);
+                            }
+                            actor.gameObject.AddComponent<IRSAMNetworker_Sender>().irIDs = samIDS.ToArray();
+                        }
+                    }
                     AirportManager airport = actor.gameObject.GetComponent<AirportManager>();
                     if (airport != null)
                     {
@@ -685,9 +714,11 @@ public static class PlayerManager
             }
         }
 
-        Debug.Log("Telling connected client about AI units");
-        AIManager.TellClientAboutAI(spawnerSteamId);
-
+        if (Networker.isHost)
+        {
+            Debug.Log("Telling connected client about AI units");
+            AIManager.TellClientAboutAI(spawnerSteamId);
+        }
         players.Add(new Player(spawnerSteamId, null, message.vehicle, message.networkID,message.leftie));
 
         GameObject puppet = SpawnRepresentation(message.networkID, message.position, message.rotation,message.leftie);
@@ -703,6 +734,10 @@ public static class PlayerManager
             return null;
 
         int playerID = FindPlayerIDFromNetworkUID(networkID);
+        if (playerID == -1)
+        {
+            Debug.LogError("Spawn Representation couldn't find a player id.");
+        }
         Player player = players[playerID];
 
         GameObject.Destroy(player.vehicle);
@@ -892,293 +927,43 @@ public static class PlayerManager
         Debug.Log($"The player's velocity is {curPlayer.velocity.magnitude}");
         if (curPlayer.velocity.magnitude < .5f)
         {
+            var rearmPoints = GameObject.FindObjectsOfType<ReArmingPoint>();
+            //back up option below
 
-            // Hacky attempt to prevent this code being called twice
-            if (spawnCounter == 0)
+            foreach (ReArmingPoint rep in rearmPoints)
             {
-                Debug.Log("Player is landed, finding parking spots at their airport");
-                AirportManager result = null;
-                float num = float.MaxValue;
-
-                foreach (AirportManager airportManager in VTMapManager.fetch.airports)
+                if (rep.team == Teams.Allied)
                 {
-                    Debug.Log($"Checking {airportManager.airportName}");
-                    Debug.Log($"The team is: {airportManager.team}");
-                    Debug.Log($"Player team is: {curPlayer.team}");
-                    Debug.Log($"Carrier: {airportManager.isCarrier}");
-                    if (airportManager.team == curPlayer.team)
-                    {
-                        float sqrMagnitude = (curPlayer.flightInfo.transform.position - airportManager.transform.position).sqrMagnitude;
-                        if (sqrMagnitude < num)
-                        {
-                            num = sqrMagnitude;
-                            result = airportManager;
-                        }
-                    }
-                    else
-                    {
-                        Debug.Log($"{airportManager.airportName} is not on player's team!");
-                    }
-                }
-
-                if (result != null)
-                {
-                    foreach (AirportManager.ParkingSpace parkingSpace in result.parkingSpaces)
-                    {
-                        if (!parkingSpace.occupiedBy)
-                        {
-                            Debug.Log($"Parking space distance from host: {Vector3.Distance(curPlayer.flightInfo.transform.position, parkingSpace.transform.position)}");
-                            if (Vector3.Distance(curPlayer.flightInfo.transform.position, parkingSpace.transform.position) > 2f)
-                            {
-                                lastSpawn = new GameObject("MP Spawn " + spawnCounter);
-                                lastSpawn.AddComponent<FloatingOriginTransform>();
-                                lastSpawn.transform.position = parkingSpace.transform.position;
-                                lastSpawn.transform.rotation = parkingSpace.transform.rotation;
-                                spawnPoints.Add(lastSpawn.transform);
-                                Debug.Log($"Created MP Spawn at AIRPORT {result.airportName} {lastSpawn.transform.position}");
-                                spawnCounter += 1;
-                            }
-                            else
-                            {
-                                Debug.Log("This parking space is too close to the host!");
-                            }
-                        }
-                        else
-                        {
-                            Debug.Log("Parking space is occupied.");
-                        }
-                    }
-                }
-                else
-                {
-                    Debug.Log("No nearby airports found!");
-                }
-            }
-            else
-            {
-                Debug.LogError("We've already generated spawns. Why the eff was this called again??");
-            }
-
-
-        }
-        else
-        {
-            if (spawnCounter == 0)
-            {
-                if (Multiplayer._instance.replaceWingmenWithClients)
-                {
-                    Debug.Log("Player is in the air, looking for wingmen!");
-                    int wingmenCount = 0;
-                    foreach (Actor unit in TargetManager.instance.allActors)
-                    {
-                        // Need to check unit type against the player.
-
-                        Regex rgx = new Regex("[^a-zA-Z0-9 -]");
-
-                        //Debug.Log($"Unit name is {rgx.Replace(unit.actorName, "").Substring(0, 5)}");
-                        //Debug.Log($"Current player name is: {rgx.Replace(curPlayer.name, "").Substring(0, 5)}");
-
-                        if (!unit.isPlayer && unit.team == curPlayer.team && unit.enabled && unit.designation.letter == curPlayer.designation.letter && rgx.Replace(curPlayer.name, "").Substring(0, 5) == rgx.Replace(unit.actorName, "").Substring(0, 5))
-                        {
-                            wingmenCount += 1;
-                            lastSpawn = new GameObject("MP Spawn " + spawnCounter);
-                            lastSpawn.AddComponent<FloatingOriginTransform>();
-                            lastSpawn.transform.position = unit.transform.position;
-                            lastSpawn.transform.rotation = unit.transform.rotation;
-                            spawnPoints.Add(lastSpawn.transform);
-                            Debug.Log($"Created MP Spawn IN AIR REPLACING UNIT {unit.actorName} {lastSpawn.transform.position}");
-                            spawnCounter += 1;
-
-
-                            // Destroying could cause adverse affects on game objectives, but this is the way.
-                            GameObject.Destroy(unit.gameObject);
-                            //unit.gameObject.SetActive(false);
-                        }
-
-                    }
-                }
-
-                // Get other air groups of same type
-            }
-            else
-            {
-                Debug.LogError("We've already generated spawns. Why the eff was this called again??");
-            }
-
-        }
-
-        Debug.Log($"Generated {spawnPoints.Count} spawn points");
-
-        // Generate the remaining spawn points from the start position.
-        if (spawnPoints.Count < spawnsCount)
-        {
-            Debug.Log("Player is landed, finding parking spots at their airport");
-            AirportManager result = null;
-            float num = float.MaxValue;
-
-            foreach (AirportManager airportManager in VTMapManager.fetch.airports)
-            {
-                Debug.Log($"Checking {airportManager.airportName}");
-                Debug.Log($"The team is: {airportManager.team}");
-                Debug.Log($"Player team is: {curPlayer.team}");
-                Debug.Log($"Carrier: {airportManager.isCarrier}");
-                if (airportManager.team == curPlayer.team)
-                {
-                    float sqrMagnitude = (curPlayer.flightInfo.transform.position - airportManager.transform.position).sqrMagnitude;
-                    if (sqrMagnitude < num)
-                    {
-                        num = sqrMagnitude;
-                        result = airportManager;
-                    }
-                }
-                else
-                {
-                    Debug.Log($"{airportManager.airportName} is not on player's team!");
-                }
-            }
-
-            if (result != null)
-            {
-                foreach (AirportManager.ParkingSpace parkingSpace in result.parkingSpaces)
-                {
-                    if (!parkingSpace.occupiedBy)
-                    {
-                        lastSpawn = new GameObject("MP Spawn " + spawnCounter);
-                        lastSpawn.AddComponent<FloatingOriginTransform>();
-                        lastSpawn.transform.position = parkingSpace.transform.position;
-                        lastSpawn.transform.rotation = parkingSpace.transform.rotation;
-                        spawnPoints.Add(lastSpawn.transform);
-                        Debug.Log($"Created MP Spawn at AIRPORT {result.airportName} {lastSpawn.transform.position}");
-                        spawnCounter += 1;
-                    }
-                    else
-                    {
-                        Debug.Log("Parking space is occupied.");
-                    }
-                }
-
-                Debug.Log($"Generated {spawnCounter} spawn points");
-            }
-            else
-            {
-                Debug.Log("No nearby airports found!");
-            }
-
-        }
-        else
-        {
-
-            if (multiplayerInstance.replaceWingmenWithClients)
-            {
-                Debug.Log("Player is in the air, looking for wingmen!");
-                int wingmenCount = 0;
-                foreach (Actor unit in TargetManager.instance.allActors)
-                {
-                    // Need to check unit type against the player.
-
-                    Regex rgx = new Regex("[^a-zA-Z0-9 -]");
-
-                    //Debug.Log($"Unit name is {rgx.Replace(unit.actorName, "").Substring(0, 5)}");
-                    //Debug.Log($"Current player name is: {rgx.Replace(curPlayer.name, "").Substring(0, 5)}");
-
-                    if (!unit.isPlayer && unit.team == curPlayer.team && unit.enabled && unit.designation.letter == curPlayer.designation.letter && rgx.Replace(curPlayer.name, "").Substring(0, 5) == rgx.Replace(unit.actorName, "").Substring(0, 5))
-                    {
-                        wingmenCount += 1;
-                        lastSpawn = new GameObject("MP Spawn " + spawnCounter);
-                        lastSpawn.AddComponent<FloatingOriginTransform>();
-                        lastSpawn.transform.position = unit.transform.position;
-                        lastSpawn.transform.rotation = unit.transform.rotation;
-                        spawnPoints.Add(lastSpawn.transform);
-                        Debug.Log($"Created MP Spawn IN AIR REPLACING UNIT {unit.actorName} {lastSpawn.transform.position}");
-                        spawnCounter += 1;
-
-
-                        // Destroying could cause adverse affects on game objectives, but this is the way.
-                        GameObject.Destroy(unit.gameObject);
-                        //unit.gameObject.SetActive(false);
-                    }
-
-                }
-            }
-            // Get other air groups of same type
-        }
-
-
-        // Generate the remaining spawn points from the start position.
-        if (spawnPoints.Count < spawnsCount)
-        {
-            Debug.Log("We still don't have enough spawn points, creating some more!");
-            if (Multiplayer._instance.spawnRemainingPlayersAtAirBase)
-            {
-                Debug.Log("Creating spawn points at the closest airport!");
-
-                // This is messy - the spawn point at airports should be done in another function really.
-                AirportManager result2 = null;
-                float num2 = float.MaxValue;
-
-                foreach (AirportManager airportManager in VTMapManager.fetch.airports)
-                {
-
-                    if (airportManager.team == curPlayer.team)
-                    {
-                        float sqrMagnitude = (curPlayer.flightInfo.transform.position - airportManager.transform.position).sqrMagnitude;
-                        if (sqrMagnitude < num2)
-                        {
-                            num2 = sqrMagnitude;
-                            result2 = airportManager;
-                        }
-                    }
-                }
-
-                if (result2 != null)
-                {
-                    foreach (AirportManager.ParkingSpace parkingSpace in result2.parkingSpaces)
-                    {
-                        if (!parkingSpace.occupiedBy)
-                        {
-                            Debug.Log($"Parking space distance from host: {Vector3.Distance(curPlayer.flightInfo.transform.position, parkingSpace.transform.position)}");
-                            if (Vector3.Distance(curPlayer.flightInfo.transform.position, parkingSpace.transform.position) > 2f)
-                            {
-                                lastSpawn = new GameObject("MP Spawn " + spawnCounter);
-                                lastSpawn.AddComponent<FloatingOriginTransform>();
-                                lastSpawn.transform.position = parkingSpace.transform.position;
-                                lastSpawn.transform.rotation = parkingSpace.transform.rotation;
-                                spawnPoints.Add(lastSpawn.transform);
-                                Debug.Log($"Created MP Spawn at AIRPORT {result2.airportName} {lastSpawn.transform.position}");
-                                spawnCounter += 1;
-                            }
-                        }
-                        else
-                        {
-                            Debug.Log("Parking space is occupied.");
-                        }
-                    }
-                }
-                else
-                {
-                    Debug.Log("Error creating remaining spawn points at airport. Airport is null!");
-                }
-            }
-            else
-            {
-                Debug.Log($"Creating remaining spawn points ({spawnsCount - spawnPoints.Count}) next to player.");
-                int remainingSpawns = spawnsCount - spawnPoints.Count;
-                for (int i = 0; i < remainingSpawns; i++)
-                {
-                    lastSpawn = new GameObject("MP Spawn " + i);
+                    lastSpawn = new GameObject("MP Spawn ");
                     lastSpawn.AddComponent<FloatingOriginTransform>();
-                    lastSpawn.transform.position = startPosition.position + startPosition.TransformVector(new Vector3(spawnSpacing * i, 0, 0));
-                    lastSpawn.transform.rotation = startPosition.rotation;
+                    lastSpawn.transform.position = rep.transform.position;
+                    lastSpawn.transform.rotation = rep.transform.rotation;
                     spawnPoints.Add(lastSpawn.transform);
-                    Debug.Log($"Created MP Spawn {i} at {lastSpawn.transform.position}");
-                    Debug.Log($"{remainingSpawns}");
                 }
+
             }
 
+
         }
+
+
+        Debug.Log($"Creating remaining spawn points ({spawnsCount - spawnPoints.Count}) next to player.");
+        int remainingSpawns = spawnsCount - spawnPoints.Count;
+        if (remainingSpawns > 0)
+            for (int i = 0; i < remainingSpawns; i++)
+            {
+                lastSpawn = new GameObject("MP Spawn " + i);
+                lastSpawn.AddComponent<FloatingOriginTransform>();
+                lastSpawn.transform.position = startPosition.position + startPosition.TransformVector(new Vector3(spawnSpacing * i, 0, 0));
+                lastSpawn.transform.rotation = startPosition.rotation;
+                spawnPoints.Add(lastSpawn.transform);
+                Debug.Log($"Created MP Spawn {i} at {lastSpawn.transform.position}");
+                Debug.Log($"{remainingSpawns}");
+            }
+
+
 
         Debug.Log("Done creating spawns");
-
 
     }
     /// <summary>

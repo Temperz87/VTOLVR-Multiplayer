@@ -80,10 +80,6 @@
     <Reference Include="UnityEngine.CrashReportingModule">
       <HintPath>..\Dependencies\UnityEngine.CrashReportingModule.dll</HintPath>
     </Reference>
-    <Reference Include="UnityEngine.IMGUIModule, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\Dependencies\UnityEngine.IMGUIModule.dll</HintPath>
-    </Reference>
     <Reference Include="UnityEngine.PhysicsModule">
       <HintPath>..\Dependencies\UnityEngine.PhysicsModule.dll</HintPath>
     </Reference>
@@ -148,6 +144,8 @@
     <Compile Include="Networkers\HealthNetworker_Receiver.cs" />
     <Compile Include="Networkers\HealthNetworker_Sender.cs" />
     <Compile Include="Networkers\HealthNetworker_ReceiverHostEnforced.cs" />
+    <Compile Include="Networkers\IRSAMNetworker_Receiver.cs" />
+    <Compile Include="Networkers\IRSAMNetworker_Sender.cs" />
     <Compile Include="Networkers\LockingRadarNetworker_Reciever.cs" />
     <Compile Include="Networkers\LockingRadarNetworker_Sender.cs" />
     <Compile Include="Networkers\NetworkSenderThread.cs" />

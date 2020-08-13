@@ -18,7 +18,6 @@ public class RigidbodyNetworker_Sender : MonoBehaviour
     private Vector3 lastForward;
     private Quaternion lastRotation;
     private Vector3 lastAngularVelocity;
-    private Actor actor;
     private float threshold = 0.5f;
     private float angleThreshold = 1f;
     
@@ -27,7 +26,6 @@ public class RigidbodyNetworker_Sender : MonoBehaviour
     private float tickRate = 10;
     private void Awake()
     {
-        actor = gameObject.GetComponent<Actor>();
         rb = GetComponent<Rigidbody>();
         lastMessage = new Message_RigidbodyUpdate(new Vector3D(), new Vector3D(), new Vector3D(), Quaternion.identity, 0, networkUID);
         tick = 0;
