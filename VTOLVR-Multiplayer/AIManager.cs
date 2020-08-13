@@ -123,15 +123,15 @@ public static class AIManager
         foreach (Actor subActor in newAI.GetComponentsInChildren<Actor>()) {
             if (subActor.parentActor != null) {
                 Debug.Log("This is a subunit, disabling AI to avoid desync");
-                if (actor.gameObject.GetComponentInChildren<GunTurretAI>() != null)
+                if (subActor.gameObject.GetComponentInChildren<GunTurretAI>() != null)
                 {
                     Debug.Log("Gunturret AI disabled");
-                    GameObject.Destroy(actor.gameObject.GetComponentInChildren<GunTurretAI>());
+                    GameObject.Destroy(subActor.gameObject.GetComponentInChildren<GunTurretAI>());
                 }
-                if (actor.gameObject.GetComponentInChildren<SAMLauncher>() != null)
+                if (subActor.gameObject.GetComponentInChildren<SAMLauncher>() != null)
                 {
                     Debug.Log("SAM Launcher disabled");
-                    actor.gameObject.GetComponentInChildren<SAMLauncher>().enabled = false;
+                    subActor.gameObject.GetComponentInChildren<SAMLauncher>().enabled = false;
                 }
             }
         }
