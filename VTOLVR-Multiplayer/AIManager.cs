@@ -316,20 +316,28 @@ public static class AIManager
                     ground.behavior = GroundUnitMover.Behaviors.Parked;
                 }
             }
-            ModuleTurret turret = newAI.GetComponentInChildren<ModuleTurret>();
-            if (turret != null)
-            {
 
-                TurretNetworker_Receiver tRec = newAI.AddComponent<TurretNetworker_Receiver>();
-                tRec.networkUID = message.networkID;
-            }
-            GunTurretAI gunTurret = newAI.GetComponentInChildren<GunTurretAI>();
-            if (gunTurret != null)
-            {
-                gunTurret.SetEngageEnemies(false);
-                AAANetworker_Reciever aaaRec = newAI.AddComponent<AAANetworker_Reciever>();
-                Debug.Log($"Added aaaRec to uID {message.networkID}");
-                aaaRec.networkUID = message.networkID;
+            if (((AIUnitSpawn)actor.unitSpawn).subUnits.Count() == 0)
+            {//only run this code on units without subunits
+                ulong turretCount = 0;
+                foreach (ModuleTurret moduleTurret in newAI.GetComponentsInChildren<ModuleTurret>())
+                {
+                    TurretNetworker_Receiver tRec = newAI.AddComponent<TurretNetworker_Receiver>();
+                    tRec.networkUID = message.networkID;
+                    tRec.turretID = turretCount;
+                    Debug.Log("Added turret " + turretCount + " to actor " + message.networkID + " uid");
+                    turretCount++;
+                }
+                ulong gunCount = 0;
+                foreach (GunTurretAI turretAI in newAI.GetComponentsInChildren<GunTurretAI>())
+                {
+                    turretAI.SetEngageEnemies(false);
+                    AAANetworker_Reciever aaaRec = newAI.AddComponent<AAANetworker_Reciever>();
+                    aaaRec.networkUID = message.networkID;
+                    aaaRec.gunID = gunCount;
+                    Debug.Log("Added gun " + gunCount + " to actor " + message.networkID + " uid");
+                    gunCount++;
+                }
             }
             IRSamLauncher iLauncher = newAI.GetComponent<IRSamLauncher>();
             if (iLauncher != null)
