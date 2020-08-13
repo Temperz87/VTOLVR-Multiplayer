@@ -146,6 +146,48 @@ public static class AIManager
         {
             ShipNetworker_Receiver shipNetworker = newAI.AddComponent<ShipNetworker_Receiver>();
             shipNetworker.networkUID = message.networkID;
+            AISeaUnitSpawn sAI = newAI.AddComponent<AISeaUnitSpawn>();
+            for (int i = 0; i < sAI.subUnits.Count; i++)
+            {
+                ulong subUnitID = message.subActors[i];
+                if (sAI.subUnits[i].gameObject.GetComponentInChildren<ModuleTurret>() != null)
+                {
+                    TurretNetworker_Receiver tSender = sAI.subUnits[i].gameObject.AddComponent<TurretNetworker_Receiver>();
+                    tSender.networkUID = subUnitID;
+                }
+                UIDNetworker_Receiver sUidSender = sAI.subUnits[i].gameObject.AddComponent<UIDNetworker_Receiver>();
+                sUidSender.networkUID = subUnitID;
+                IRSamLauncher iLauncher = sAI.subUnits[i].gameObject.GetComponent<IRSamLauncher>();
+                if (iLauncher != null)
+                {
+                    //iLauncher.ml.RemoveAllMissiles();
+                    iLauncher.ml.LoadAllMissiles();
+                    iLauncher.SetEngageEnemies(false);
+                    MissileNetworker_Receiver mlr;
+                    //iLauncher.ml.LoadCount(message.IRSamMissiles.Length);
+                    Debug.Log($"Adding IR id's on IR SAM, len = {message.subIRIDS.Length}.");
+                    for (int j = 0; j < iLauncher.ml.missiles.Length; j++)
+                    {
+                        mlr = iLauncher.ml.missiles[j]?.gameObject.AddComponent<MissileNetworker_Receiver>();
+                        mlr.thisML = iLauncher.ml;
+                        mlr.networkUID = message.subIRIDS[i, j];
+                    }
+                    Debug.Log("Added IR id's.");
+                }
+                if (sAI.subUnits[i].gameObject.GetComponentInChildren<GunTurretAI>())
+                {
+                    AAANetworker_Reciever gunTurret = actor.gameObject.AddComponent<AAANetworker_Reciever>();
+                    gunTurret.networkUID = subUnitID;
+                }
+                if (!VTOLVR_Multiplayer.AIDictionaries.allActors.ContainsKey(subUnitID))
+                {
+                    VTOLVR_Multiplayer.AIDictionaries.allActors.Add(subUnitID, sAI.subUnits[i]);
+                }
+                if (!VTOLVR_Multiplayer.AIDictionaries.reverseAllActors.ContainsKey(actor))
+                {
+                    VTOLVR_Multiplayer.AIDictionaries.reverseAllActors.Add(sAI.subUnits[i], subUnitID);
+                }
+            }
         }
         else if (newAI.GetComponent<Rigidbody>() != null)
         {
@@ -375,7 +417,7 @@ public static class AIManager
                     lastRec.networkUID = message.IRSamMissiles[i];
                     lastRec.thisML = ml.ml;
                 }
-            }
+            }       
         }
         if (actor.gameObject.GetComponentInChildren<LockingRadar>() != null)
         {
@@ -474,6 +516,25 @@ public static class AIManager
                     {
                         irIDS = irs.irIDs;
                     }
+                    List<ulong> subIDS = null;
+                    ulong[,] subIrIDS = new ulong[10, 30];
+                    if (actor.role == Actor.Roles.Ship)
+                    {
+                        AISeaUnitSpawn seaUnitSpawn = actor.gameObject.GetComponent<AISeaUnitSpawn>();
+                        for (int i = 0; i < seaUnitSpawn.subUnits.Count; i++)
+                        {
+                            subIDS.Add(seaUnitSpawn.subUnits[i].gameObject.GetComponent<UIDNetworker_Sender>().networkUID);
+                            IRSAMNetworker_Sender irSender = seaUnitSpawn.subUnits[i].gameObject.GetComponent<IRSAMNetworker_Sender>();
+                            if (irSender != null)
+                            {
+                                for (int j = 0; j < irSender.irIDs.Length; j++)
+                                {
+                                    subIrIDS[i, j] = irSender.irIDs[j];
+                                }
+                            }
+                        }
+                    }
+
                     if (steamID != (CSteamID)0)
                     {
                         Debug.Log("Finally sending AI " + actor.name + " to client " + steamID);
@@ -481,7 +542,7 @@ public static class AIManager
                         {
                             NetworkSenderThread.Instance.SendPacketToSpecificPlayer(steamID, new Message_SpawnAIVehicle(actor.name, GetUnitNameFromCatalog(actor.unitSpawn.unitName),
                                 VTMapManager.WorldToGlobalPoint(actor.gameObject.transform.position),
-                                new Vector3D(actor.gameObject.transform.rotation.eulerAngles), uidSender.networkUID, hPInfos2, cmLoadout, 0.65f, Aggresion, actor.unitSpawn.unitSpawner.unitInstanceID, letters, ids.ToArray(), irIDS),
+                                new Vector3D(actor.gameObject.transform.rotation.eulerAngles), uidSender.networkUID, hPInfos2, cmLoadout, 0.65f, Aggresion, actor.unitSpawn.unitSpawner.unitInstanceID, letters, ids.ToArray(), irIDS, subIDS.ToArray(), subIrIDS),
                                 EP2PSend.k_EP2PSendReliable);
                         }
                         else
@@ -489,7 +550,7 @@ public static class AIManager
                             // Debug.Log("It seems that " + actor.name + " is not in a unit group, sending anyways.");
                             NetworkSenderThread.Instance.SendPacketToSpecificPlayer(steamID, new Message_SpawnAIVehicle(actor.name, GetUnitNameFromCatalog(actor.unitSpawn.unitName),
                                 VTMapManager.WorldToGlobalPoint(actor.gameObject.transform.position),
-                                new Vector3D(actor.gameObject.transform.rotation.eulerAngles), uidSender.networkUID, hPInfos2, cmLoadout, 0.65f, Aggresion, actor.unitSpawn.unitSpawner.unitInstanceID, ids.ToArray(), irIDS),
+                                new Vector3D(actor.gameObject.transform.rotation.eulerAngles), uidSender.networkUID, hPInfos2, cmLoadout, 0.65f, Aggresion, actor.unitSpawn.unitSpawner.unitInstanceID, ids.ToArray(), irIDS, subIDS.ToArray(), subIrIDS),
                                 EP2PSend.k_EP2PSendReliable);
                         }
                     }
@@ -500,7 +561,7 @@ public static class AIManager
                         {
                             NetworkSenderThread.Instance.SendPacketAsHostToAllClients(new Message_SpawnAIVehicle(actor.name, GetUnitNameFromCatalog(actor.unitSpawn.unitName),
                                 VTMapManager.WorldToGlobalPoint(actor.gameObject.transform.position),
-                                new Vector3D(actor.gameObject.transform.rotation.eulerAngles), uidSender.networkUID, hPInfos2, cmLoadout, 0.65f, Aggresion, actor.unitSpawn.unitSpawner.unitInstanceID, letters, ids.ToArray(), irIDS),
+                                new Vector3D(actor.gameObject.transform.rotation.eulerAngles), uidSender.networkUID, hPInfos2, cmLoadout, 0.65f, Aggresion, actor.unitSpawn.unitSpawner.unitInstanceID, letters, ids.ToArray(), irIDS, subIDS.ToArray(), subIrIDS),
                                 EP2PSend.k_EP2PSendReliable);
                         }
                         else
@@ -508,7 +569,7 @@ public static class AIManager
                             // Debug.Log("It seems that " + actor.name + " is not in a unit group, sending anyways.");
                             NetworkSenderThread.Instance.SendPacketAsHostToAllClients(new Message_SpawnAIVehicle(actor.name, GetUnitNameFromCatalog(actor.unitSpawn.unitName),
                                 VTMapManager.WorldToGlobalPoint(actor.gameObject.transform.position),
-                                new Vector3D(actor.gameObject.transform.rotation.eulerAngles), uidSender.networkUID, hPInfos2, cmLoadout, 0.65f, Aggresion, actor.unitSpawn.unitSpawner.unitInstanceID, ids.ToArray(), irIDS),
+                                new Vector3D(actor.gameObject.transform.rotation.eulerAngles), uidSender.networkUID, hPInfos2, cmLoadout, 0.65f, Aggresion, actor.unitSpawn.unitSpawner.unitInstanceID, ids.ToArray(), irIDS, subIDS.ToArray(), subIrIDS),
                                 EP2PSend.k_EP2PSendReliable);
                         }
                     }

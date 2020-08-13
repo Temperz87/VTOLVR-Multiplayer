@@ -188,6 +188,46 @@ public static class PlayerManager
                     {
                         ShipNetworker_Sender shipNetworker = actor.gameObject.AddComponent<ShipNetworker_Sender>();
                         shipNetworker.networkUID = networkUID;
+                        foreach (var subUnit in actor.GetComponent<AISeaUnitSpawn>().subUnits)
+                        {
+                            if (subUnit.role != Actor.Roles.Air)
+                            {
+                                ulong subUnitID = Networker.GenerateNetworkUID();
+                                if (subUnit.gameObject.GetComponentInChildren<ModuleTurret>() != null)
+                                {
+                                    TurretNetworker_Sender tSender = subUnit.gameObject.AddComponent<TurretNetworker_Sender>();
+                                    tSender.networkUID = subUnitID;
+                                }
+                                UIDNetworker_Sender sUidSender = subUnit.gameObject.AddComponent<UIDNetworker_Sender>();
+                                sUidSender.networkUID = subUnitID;
+                                IRSamLauncher sml = subUnit.gameObject.GetComponentInChildren<IRSamLauncher>();
+                                if (sml != null)
+                                {
+                                    List<ulong> samIDS = new List<ulong>();
+                                    MissileNetworker_Sender lastSender;
+                                    for (int i = 0; i < sml.ml.missiles.Length; i++)
+                                    {
+                                        lastSender = sml.ml.missiles[i].gameObject.AddComponent<MissileNetworker_Sender>();
+                                        lastSender.networkUID = subUnitID;
+                                        samIDS.Add(lastSender.networkUID);
+                                    }
+                                    subUnit.gameObject.AddComponent<IRSAMNetworker_Sender>().irIDs = samIDS.ToArray();
+                                }
+                                if (subUnit.gameObject.GetComponentInChildren<GunTurretAI>())
+                                {
+                                    AAANetworker_Sender gunTurret = subUnit.gameObject.AddComponent<AAANetworker_Sender>();
+                                    gunTurret.networkUID = subUnitID;
+                                }
+                                if (!VTOLVR_Multiplayer.AIDictionaries.allActors.ContainsKey(subUnitID))
+                                {
+                                    VTOLVR_Multiplayer.AIDictionaries.allActors.Add(subUnitID, subUnit);
+                                }
+                                if (!VTOLVR_Multiplayer.AIDictionaries.reverseAllActors.ContainsKey(subUnit))
+                                {
+                                    VTOLVR_Multiplayer.AIDictionaries.reverseAllActors.Add(subUnit, subUnitID);
+                                }
+                            }
+                        }
                     }
                     else if (actor.gameObject.GetComponent<Rigidbody>() != null)
                     {
