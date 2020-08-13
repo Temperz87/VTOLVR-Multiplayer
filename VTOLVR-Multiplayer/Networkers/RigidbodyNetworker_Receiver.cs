@@ -22,7 +22,7 @@ public class RigidbodyNetworker_Receiver : MonoBehaviour
     private Actor actor;
     private KinematicPlane kplane;
     private float positionThreshold = 100f;
-    private float smoothingTime = 1f;
+    private float smoothingTime = 0.5f;
     private float rotSmoothingTime = 0.2f;
     private float velSmoothingTime = 0.5f;//actor velocity for using with the gunsight, should stop the jitter
     private float latency = 0.0f;
@@ -88,7 +88,6 @@ public class RigidbodyNetworker_Receiver : MonoBehaviour
         targetRotation *= quatVel;
 
         rb.velocity = targetVelocity + (localTargetPosition - transform.position) / smoothingTime;
-        actor.customVelocity = true;
         actor.SetCustomVelocity(Vector3.Lerp(actor.velocity, targetVelocity + (localTargetPosition - transform.position) / smoothingTime, Time.fixedDeltaTime / velSmoothingTime));
         rb.MovePosition(transform.position + targetVelocity * Time.fixedDeltaTime + ((localTargetPosition - transform.position) * Time.fixedDeltaTime) / smoothingTime);
         rb.MoveRotation(Quaternion.Lerp(currentRotation, targetRotation, Time.fixedDeltaTime / rotSmoothingTime));

@@ -23,8 +23,8 @@ public class RigidbodyNetworker_Sender : MonoBehaviour
     private float angleThreshold = 1f;
     
     private ulong updateNumber;
-    private int tick;
-    private int tickRate = 10;
+    private float tick;
+    private float tickRate = 10;
     private void Awake()
     {
         actor = gameObject.GetComponent<Actor>();
@@ -42,8 +42,8 @@ public class RigidbodyNetworker_Sender : MonoBehaviour
 
         lastUp = lastRotation * Vector3.up;
         lastForward = lastRotation * Vector3.forward;
-        tick++;
-        if (tick >tickRate || Vector3.Distance(localLastPosition, transform.TransformPoint(originOffset)) > threshold || Vector3.Angle(lastUp, transform.up) > angleThreshold || Vector3.Angle(lastForward, transform.forward) > angleThreshold)
+        tick += Time.fixedDeltaTime;
+        if (tick > 1/tickRate || Vector3.Distance(localLastPosition, transform.TransformPoint(originOffset)) > threshold || Vector3.Angle(lastUp, transform.up) > angleThreshold || Vector3.Angle(lastForward, transform.forward) > angleThreshold)
         {
             tick = 0;
             lastUp = transform.up;
@@ -74,17 +74,18 @@ public class RigidbodyNetworker_Sender : MonoBehaviour
 
     public void SetSpawn(Vector3 spawnPos, Quaternion spawnRot)
     {
-        StartCoroutine(SetSpawnEnumerator(spawnPos, spawnRot));
-    }
-
-    private IEnumerator SetSpawnEnumerator(Vector3 spawnPos, Quaternion spawnRot)
-    {
-        
+        //StartCoroutine(SetSpawnEnumerator(spawnPos, spawnRot));
         rb.velocity = new Vector3(0, 0, 0);
         rb.position = spawnPos;
         rb.rotation = spawnRot;
         rb.Sleep();
+    }
+
+    /*private IEnumerator SetSpawnEnumerator(Vector3 spawnPos, Quaternion spawnRot)
+    {
+        
+        
         yield return new WaitForSeconds(0.5f);
         Debug.Log($"Our position is now {rb.position}");
-    }
+    }*/
 }
