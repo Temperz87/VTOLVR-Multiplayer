@@ -23,6 +23,13 @@ public class MissileNetworker_Receiver : MonoBehaviour
         // rigidbody = GetComponent<Rigidbody>();
         Networker.MissileUpdate += MissileUpdate;
         thisMissile.OnDetonate.AddListener(new UnityEngine.Events.UnityAction(() => { Debug.Log("Missile detonated: " + thisMissile.name); }));
+        if (thisMissile.guidanceMode == Missile.GuidanceModes.Bomb)
+        {
+            foreach (var collider in thisMissile.GetComponentsInChildren<Collider>())
+            {
+                collider.gameObject.layer = 9;
+            }
+        }
     }
 
     public void MissileUpdate(Packet packet)
@@ -39,7 +46,7 @@ public class MissileNetworker_Receiver : MonoBehaviour
         lastMessage = ((PacketSingle)packet).message as Message_MissileUpdate;
         if (lastMessage.networkUID != networkUID)
         {
-            return; 
+            return;
         }
         if (!thisMissile.fired)
         {
@@ -67,7 +74,6 @@ public class MissileNetworker_Receiver : MonoBehaviour
                         Debug.Log("Guidance mode Optical.");
                         thisMissile.heatSeeker.transform.rotation = lastMessage.seekerRotation;
                         thisMissile.heatSeeker.SetHardLock();
-                        // collider.gameObject.layer = 9;
                     }
                 }
                 Debug.Log("Try fire missile clientside");
@@ -84,8 +90,8 @@ public class MissileNetworker_Receiver : MonoBehaviour
         if (lastMessage.hasExploded)
         {
             Debug.Log("Missile exploded.");
-            if(thisMissile != null)
-            thisMissile.Detonate();
+            if (thisMissile != null)
+                thisMissile.Detonate();
             return;
         }
 
@@ -118,4 +124,5 @@ public class MissileNetworker_Receiver : MonoBehaviour
  * 
  * As of writing this note CMS are not networked so it wouldn't effect it, but later on it will.
  * . Marsh.Mello . 21/02/2020 
+ * Temperz87 says you suck.
  */
