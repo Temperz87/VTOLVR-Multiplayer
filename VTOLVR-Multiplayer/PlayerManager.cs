@@ -623,9 +623,11 @@ public static class PlayerManager
             }
         }
 
-        Debug.Log("Telling connected client about AI units");
-        AIManager.TellClientAboutAI(spawnerSteamId);
-
+        if (Networker.isHost)
+        {
+            Debug.Log("Telling connected client about AI units");
+            AIManager.TellClientAboutAI(spawnerSteamId);
+        }
         players.Add(new Player(spawnerSteamId, null, message.vehicle, message.networkID,message.leftie));
 
         GameObject puppet = SpawnRepresentation(message.networkID, message.position, message.rotation,message.leftie);
