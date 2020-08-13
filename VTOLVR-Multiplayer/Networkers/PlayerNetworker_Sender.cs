@@ -118,7 +118,7 @@ class PlayerNetworker_Sender : MonoBehaviour
 
         foreach (var actor in TargetManager.instance.allActors)
         {
-            //if (actor.discovered == true)
+            if (actor != null)
             {
                 actor.discovered = false;
                 actor.drawIcon = true;
