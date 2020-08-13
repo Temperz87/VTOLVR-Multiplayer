@@ -199,15 +199,24 @@ public static class PlayerManager
                         lastPlaneSender = actor.gameObject.AddComponent<PlaneNetworker_Sender>();
                         lastPlaneSender.networkUID = networkUID;
                     }
-                    if (actor.gameObject.GetComponentInChildren<ModuleTurret>() != null)
-                    {
-                        TurretNetworker_Sender tSender = actor.gameObject.AddComponent<TurretNetworker_Sender>();
-                        tSender.networkUID = networkUID;
-                    }
-                    if (actor.gameObject.GetComponentInChildren<GunTurretAI>())
-                    {
-                        AAANetworker_Sender gunTurret = actor.gameObject.AddComponent<AAANetworker_Sender>();
-                        gunTurret.networkUID = networkUID;
+                    if(((AIUnitSpawn)actor.unitSpawn).subUnits.Count() == 0) {//only run this code on units without subunits
+                        ulong turretCount = 0;
+                        foreach (ModuleTurret moduleTurret in actor.gameObject.GetComponentsInChildren<ModuleTurret>()) {
+                            TurretNetworker_Sender tSender = moduleTurret.gameObject.AddComponent<TurretNetworker_Sender>();
+                            tSender.networkUID = networkUID;
+                            tSender.turretID = turretCount;
+                            Debug.Log("Added turret " + turretCount + " to actor " + networkUID + " uid");
+                            turretCount++;
+                        }
+                        ulong gunCount = 0;
+                        foreach (GunTurretAI moduleTurret in actor.gameObject.GetComponentsInChildren<GunTurretAI>())
+                        {
+                            AAANetworker_Sender gSender = moduleTurret.gameObject.AddComponent<AAANetworker_Sender>();
+                            gSender.networkUID = networkUID;
+                            gSender.gunID = gunCount;
+                            Debug.Log("Added gun " + gunCount + " to actor " + networkUID + " uid");
+                            gunCount++;
+                        }
                     }
                     IRSamLauncher ml = actor.gameObject.GetComponentInChildren<IRSamLauncher>();
                     if (ml != null)
