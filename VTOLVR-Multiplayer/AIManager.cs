@@ -210,6 +210,12 @@ public static class AIManager
                 tiltReceiver.networkUID = message.networkID;
             }
 
+            if (actor.gameObject.GetComponentInChildren<ExteriorLightsController>() != null)
+            {
+                ExtLight_Receiver extLight = actor.gameObject.AddComponent<ExtLight_Receiver>();
+                extLight.networkUID = message.networkID;
+            }
+
             Rigidbody rb = newAI.GetComponent<Rigidbody>();
 
             foreach (Collider collider in newAI.GetComponentsInChildren<Collider>())

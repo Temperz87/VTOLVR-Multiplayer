@@ -199,7 +199,14 @@ public static class PlayerManager
                         lastPlaneSender = actor.gameObject.AddComponent<PlaneNetworker_Sender>();
                         lastPlaneSender.networkUID = networkUID;
                     }
-                    if(((AIUnitSpawn)actor.unitSpawn).subUnits.Count() == 0) {//only run this code on units without subunits
+
+                    if (actor.gameObject.GetComponentInChildren<ExteriorLightsController>() != null)
+                    {
+                        ExtNPCLight_Sender extLight = actor.gameObject.AddComponent<ExtNPCLight_Sender>();
+                        extLight.networkUID = networkUID;
+                    }
+
+                    if (((AIUnitSpawn)actor.unitSpawn).subUnits.Count() == 0) {//only run this code on units without subunits
                         ulong turretCount = 0;
                         foreach (ModuleTurret moduleTurret in actor.gameObject.GetComponentsInChildren<ModuleTurret>()) {
                             TurretNetworker_Sender tSender = moduleTurret.gameObject.AddComponent<TurretNetworker_Sender>();
@@ -545,7 +552,6 @@ public static class PlayerManager
         if (localVehicle.GetComponentInChildren<StrobeLightController>() != null)
         {
             ExtLight_Sender extLight = localVehicle.AddComponent<ExtLight_Sender>();
-            extLight.strobeLight = localVehicle.GetComponentInChildren<StrobeLightController>();
             extLight.networkUID = UID;
         }
 
