@@ -512,7 +512,7 @@ public static class AIManager
                     {
                         irIDS = irs.irIDs;
                     }
-                    if (steamID != (CSteamID)0)
+                    if (steamID != new CSteamID(0))
                     {
                         Debug.Log("Finally sending AI " + actor.name + " to client " + steamID);
                         if (canBreak)

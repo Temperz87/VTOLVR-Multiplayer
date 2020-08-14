@@ -15,6 +15,7 @@ class Patch8
     {
         if (Networker.isHost)
         {
+            Debug.Log("Sending newly spawned unit.");
             Actor actor = __instance.actor;
             if (actor == null)
             {
