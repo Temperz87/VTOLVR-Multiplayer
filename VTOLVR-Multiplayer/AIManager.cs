@@ -173,6 +173,7 @@ public static class AIManager
             AISeaUnitSpawn sAI = newAI.AddComponent<AISeaUnitSpawn>();
             for (int i = 0; i < sAI.subUnits.Count; i++)
             {
+                Debug.Log($"Doing subunit {i}");
                 ulong subUnitID = message.subActors[i];
                 if (sAI.subUnits[i].gameObject.GetComponentInChildren<ModuleTurret>() != null)
                 {
@@ -563,12 +564,21 @@ public static class AIManager
                     if (actor.role == Actor.Roles.Ship)
                     {
                         AISeaUnitSpawn seaUnitSpawn = actor.gameObject.GetComponent<AISeaUnitSpawn>();
+                        Debug.Log("Trying to do sub units.");
+                        UIDNetworker_Sender lastSender;
                         for (int i = 0; i < seaUnitSpawn.subUnits.Count; i++)
                         {
-                            subIDS.Add(seaUnitSpawn.subUnits[i].gameObject.GetComponent<UIDNetworker_Sender>().networkUID);
+                            Debug.Log("Doing subunit " + seaUnitSpawn.subUnits[i].name);
+                            lastSender = seaUnitSpawn.subUnits[i].gameObject.GetComponent<UIDNetworker_Sender>();
+                            if (lastSender == null)
+                            {
+                                Debug.LogError("UID Sender is null on sub unit " + seaUnitSpawn.subUnits[i].name);
+                            }
+                            subIDS.Add(lastSender.networkUID);
                             IRSAMNetworker_Sender irSender = seaUnitSpawn.subUnits[i].gameObject.GetComponent<IRSAMNetworker_Sender>();
                             if (irSender != null)
                             {
+                                Debug.Log("Trying add irIDS.");
                                 for (int j = 0; j < irSender.irIDs.Length; j++)
                                 {
                                     subIrIDS[i, j] = irSender.irIDs[j];
@@ -577,7 +587,7 @@ public static class AIManager
                         }
                     }
 
-                    if (steamID != (CSteamID)0)
+                    if (steamID != new CSteamID(0))
                     {
                         Debug.Log("Finally sending AI " + actor.name + " to client " + steamID);
                         if (canBreak)

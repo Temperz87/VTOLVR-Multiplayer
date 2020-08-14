@@ -194,6 +194,7 @@ public static class PlayerManager
                             if (subUnit.role != Actor.Roles.Air)
                             {
                                 ulong subUnitID = Networker.GenerateNetworkUID();
+                                Debug.Log(subUnit.name + $" now has an id of {subUnitID}");
                                 if (subUnit.gameObject.GetComponentInChildren<ModuleTurret>() != null)
                                 {
                                     TurretNetworker_Sender tSender = subUnit.gameObject.AddComponent<TurretNetworker_Sender>();
@@ -201,9 +202,11 @@ public static class PlayerManager
                                 }
                                 UIDNetworker_Sender sUidSender = subUnit.gameObject.AddComponent<UIDNetworker_Sender>();
                                 sUidSender.networkUID = subUnitID;
+                                Debug.Log("Did sUidSender");
                                 IRSamLauncher sml = subUnit.gameObject.GetComponentInChildren<IRSamLauncher>();
                                 if (sml != null)
                                 {
+                                    Debug.Log("Adding missile networkers to subunit " + subUnit.name);
                                     List<ulong> samIDS = new List<ulong>();
                                     MissileNetworker_Sender lastSender;
                                     for (int i = 0; i < sml.ml.missiles.Length; i++)
@@ -215,8 +218,10 @@ public static class PlayerManager
                                     subUnit.gameObject.AddComponent<IRSAMNetworker_Sender>().irIDs = samIDS.ToArray();
                                 }
                                 subUnit.gameObject.AddComponent<HealthNetworker_Sender>().networkUID = subUnitID;
+                                Debug.Log("Added health sender to " + subUnit.name);
                                 if (subUnit.gameObject.GetComponentInChildren<GunTurretAI>())
                                 {
+                                    Debug.Log("Adding AAA networker to subunit " + subUnit.name);
                                     AAANetworker_Sender gunTurret = subUnit.gameObject.AddComponent<AAANetworker_Sender>();
                                     gunTurret.networkUID = subUnitID;
                                 }
@@ -377,11 +382,11 @@ public static class PlayerManager
         while (spawnRequestQueue.Count > 0)
         {
             lastSpawn = FindFreeSpawn();
-            Debug.Log("The players spawn will be " + lastSpawn);
+            Debug.Log("The players spawn will be " + lastSpawn.ToString());
             NetworkSenderThread.Instance.SendPacketToSpecificPlayer(
                 spawnRequestQueue.Dequeue(),
                 new Message_RequestSpawn_Result(new Vector3D(lastSpawn.position), lastSpawn.rotation, Networker.GenerateNetworkUID(), players.Count),
-                EP2PSend.k_EP2PSendReliable);
+                EP2PSend.k_EP2PSendReliable);   
         }
     }
     /// <summary>
