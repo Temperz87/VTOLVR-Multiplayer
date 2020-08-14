@@ -58,23 +58,23 @@ public class MissileNetworker_Receiver : MonoBehaviour
             if (lastMessage.guidanceMode == Missile.GuidanceModes.Radar)
             {
                 // thisMissile.debugMissile = true;
-                HPEquipMissileLauncher radarLauncher = thisML.gameObject.GetComponent<HPEquipMissileLauncher>();
+                RadarMissileLauncher radarLauncher = thisML as RadarMissileLauncher;
                 if (radarLauncher != null)
                 {
                     Debug.Log("Guidance mode radar, firing it as a radar missile.");
-                    radarLauncher.OnStartFire();
+                    if (!radarLauncher.TryFireMissile())
+                    {
+                        Debug.LogError("Could not fire radar missile.");
+                    }
                 }
             }
             else
             {
                 if (lastMessage.guidanceMode == Missile.GuidanceModes.Optical)
                 {
-                    foreach (var collider in thisMissile.gameObject.GetComponentsInChildren<Collider>())
-                    {
-                        Debug.Log("Guidance mode Optical.");
-                        thisMissile.heatSeeker.transform.rotation = lastMessage.seekerRotation;
-                        thisMissile.heatSeeker.SetHardLock();
-                    }
+                    Debug.Log("Guidance mode Optical.");
+                    thisMissile.heatSeeker.transform.rotation = lastMessage.seekerRotation;
+                    thisMissile.heatSeeker.SetHardLock();
                 }
                 Debug.Log("Try fire missile clientside");
                 traverse.Field("missileIdx").SetValue(idx);

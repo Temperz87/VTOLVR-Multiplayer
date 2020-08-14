@@ -410,7 +410,7 @@ public static class PlayerManager
             }
             
             if (EnemyPoints.Count() > 0) {
-                rearmPoint = EnemyPoints[UnityEngine.Random.Range(0, EnemyPoints.Count)];
+                rearmPoint = EnemyPoints[UnityEngine.Random.Range(0, EnemyPoints.Count - 1)];
                 spawn = rearmPoint.transform;
             }
         }
