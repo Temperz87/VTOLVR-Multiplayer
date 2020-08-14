@@ -749,7 +749,8 @@ public static class PlayerManager
         }
         Player player = players[playerID];
 
-        GameObject.Destroy(player.vehicle);
+        if (player.vehicle != null)
+            GameObject.Destroy(player.vehicle);
 
         GameObject newVehicle = null;
         switch (player.vehicleType)
