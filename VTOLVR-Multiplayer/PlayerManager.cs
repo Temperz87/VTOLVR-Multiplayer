@@ -1057,6 +1057,8 @@ public static class PlayerManager
         {
             if (player.cSteamID == playerInList.cSteamID)
             {
+                if (playerInList.vehicle != null)
+                    GameObject.Destroy(playerInList.vehicle);
                 players.Remove(playerInList);
                 break;
             }

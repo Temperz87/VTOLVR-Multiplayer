@@ -10,10 +10,10 @@ public class PlaneNetworker_Sender : MonoBehaviour
     public ulong networkUID;
     //Classes we use to find the information out
     private bool isPlayer;
-    private AIPilot aIPilot;
+    //private AIPilot aIPilot;
     private WheelsController wheelsController;
     private AeroController aeroController;
-    private VRThrottle vRThrottle;
+    //private VRThrottle vRThrottle;
     private WeaponManager weaponManager;
     private CountermeasureManager cmManager;
     private FuelTank fuelTank;
@@ -28,7 +28,7 @@ public class PlaneNetworker_Sender : MonoBehaviour
     private Tailhook tailhook;
     private CatapultHook launchBar;
     private RefuelPort refuelPort;
-    private Traverse traverseThrottle;
+    //private Traverse traverseThrottle;
     private Actor actor;
     private InternalWeaponBay iwb = null;
     private ulong sequenceNumber;
