@@ -481,8 +481,14 @@ public static class PlayerManager
         VTOLVehicles currentVehicle = VTOLAPI.GetPlayersVehicleEnum();
         Actor actor = localVehicle.GetComponent<Actor>();
 
-        VTOLVR_Multiplayer.AIDictionaries.allActors[UID] = actor;
-        VTOLVR_Multiplayer.AIDictionaries.reverseAllActors[actor] = UID;
+        if (VTOLVR_Multiplayer.AIDictionaries.allActors.ContainsKey(UID))
+            VTOLVR_Multiplayer.AIDictionaries.allActors[UID] = actor;
+        else
+            VTOLVR_Multiplayer.AIDictionaries.allActors.Add(UID, actor);
+        if (VTOLVR_Multiplayer.AIDictionaries.allActors.ContainsKey(UID))
+            VTOLVR_Multiplayer.AIDictionaries.reverseAllActors[actor] = UID;
+        else
+            VTOLVR_Multiplayer.AIDictionaries.reverseAllActors.Add(actor, UID);
 
         RigidbodyNetworker_Sender rbSender = localVehicle.AddComponent<RigidbodyNetworker_Sender>();
         rbSender.networkUID = UID;
