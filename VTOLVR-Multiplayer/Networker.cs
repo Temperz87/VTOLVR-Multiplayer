@@ -696,6 +696,13 @@ public class Networker : MonoBehaviour
                         else
                         {
                             Debug.Log("Other client disconnected");
+                            foreach (var player in PlayerManager.players)
+                            {
+                                if (player.cSteamID == new CSteamID(messsage.UID))
+                                {
+                                    PlayerManager.players.Remove(player);
+                                }
+                            }
                         }
                         break;
                     }
