@@ -246,20 +246,24 @@ public class PlaneNetworker_Receiver : MonoBehaviour
         idx = (int)traverse.Field("weaponIdx").GetValue();
         int i = 0;
         Debug.Log("Entering for loop");
-        while (message.weaponIdx != idx && i < 60)
+        /*while (message.weaponIdx != idx && i < 60)
         {
             if (weaponManager.isMasterArmed == false)
             {
                 weaponManager.ToggleMasterArmed();
             }
-            weaponManager.SetWeapon(message.weaponIdx);
-            idx = (int)traverse.Field("weaponIdx").GetValue();
             // Debug.Log(idx + " " + message.weaponIdx);
             i++;
         }
         if (i > 59)
         {
             Debug.Log("couldn't change weapon idx to right weapon for aircraft " + gameObject.name);
+        }*/
+        weaponManager.SetWeapon(message.weaponIdx);
+        idx = (int)traverse.Field("weaponIdx").GetValue();
+        if (idx != message.weaponIdx)
+        {
+            Debug.LogWarning("Couldn't change weapon idx to the right weapon for aircraft " + gameObject.name);
         }
         if (message.isFiring != weaponManager.isFiring)
         {
@@ -273,7 +277,7 @@ public class PlaneNetworker_Receiver : MonoBehaviour
                 {
                     lastml = weaponManager.currentEquip as HPEquipMissileLauncher;
                     Traverse.Create(lastml.ml).Field("missileIdx").SetValue(lastMessage.missileIdx);
-                    Debug.Log("Single firing this missile.");
+                    Debug.Log("Single firing this missile " + weaponManager.currentEquip.shortName);
                     weaponManager.SingleFire();
                 }
                 else if (weaponManager.currentEquip is RocketLauncher)

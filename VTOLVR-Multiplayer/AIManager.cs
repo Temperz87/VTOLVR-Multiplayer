@@ -226,13 +226,14 @@ public static class AIManager
                 }
             }
 
-            //Debug.Log("Doing weapon manager shit on " + newAI.name + ".");
+            Debug.Log("Doing weapon manager shit on " + newAI.name + ".");
             WeaponManager weaponManager = newAI.GetComponent<WeaponManager>();
             if (weaponManager == null)
                 Debug.LogError(newAI.name + " does not seem to have a weapon maanger on it.");
             else
             {
-                string[] hpLoadoutNames = new string[30];
+                PlaneEquippableManager.SetLoadout(newAI, message.networkID, message.normalizedFuel, message.hpLoadout, message.cmLoadout);
+                /*string[] hpLoadoutNames = new string[30];
                 //Debug.Log("foreach var equip in message.hpLoadout");
                 int debugInteger = 0;
                 foreach (var equip in message.hpLoadout)
@@ -244,10 +245,10 @@ public static class AIManager
                 //Debug.Log("Setting Loadout on this new vehicle spawned");
                 for (int i = 0; i < hpLoadoutNames.Length; i++)
                 {
-                    //Debug.Log("HP " + i + " Name: " + hpLoadoutNames[i]);
+                    Debug.Log("HP " + i + " Name: " + hpLoadoutNames[i]);
                 }
                 //Debug.Log("Now doing loadout shit.");
-                Loadout loadout = new Loadout();
+                /*Loadout loadout = new Loadout();
                 loadout.normalizedFuel = message.normalizedFuel;
                 loadout.hpLoadout = hpLoadoutNames;
                 loadout.cmLoadout = message.cmLoadout;
@@ -297,7 +298,7 @@ public static class AIManager
                 if (fuelTank == null)
                     Debug.LogError("Failed to get fuel tank on " + newAI.name);
                 fuelTank.startingFuel = loadout.normalizedFuel * fuelTank.maxFuel;
-                fuelTank.SetNormFuel(loadout.normalizedFuel);
+                fuelTank.SetNormFuel(loadout.normalizedFuel);*/
             }
         }
         else if (actor.role == Actor.Roles.Ground || actor.role == Actor.Roles.GroundArmor)
@@ -447,7 +448,6 @@ public static class AIManager
         Debug.Log("Trying sending AI's to client " + steamID);
         foreach (var actor in TargetManager.instance.allActors)
         {
-            List<HPInfo> hPInfos = new List<HPInfo>();
             if (actor == null)
                 continue;
             if (!actor.isPlayer)
@@ -456,11 +456,13 @@ public static class AIManager
                 Debug.Log("Try sending ai " + actor.name + " to client.");
                 if (actor.gameObject.GetComponent<UIDNetworker_Sender>() != null)
                 {
+                    HPInfo[] hPInfos2 = null;
+                    int[] cmLoadout = null;
                     UIDNetworker_Sender uidSender = actor.gameObject.GetComponent<UIDNetworker_Sender>();
-
-                    HPInfo[] hPInfos2 = new HPInfo[0];
-                    int[] cmLoadout = new int[0];
-
+                    if (actor.role == Actor.Roles.Air)
+                    {
+                        hPInfos2 = PlaneEquippableManager.generateHpInfoListFromWeaponManager(actor.weaponManager, PlaneEquippableManager.HPInfoListGenerateNetworkType.sender, uidSender.networkUID).ToArray();
+                    }
                     AIUnitSpawn aIUnitSpawn = actor.gameObject.GetComponent<AIUnitSpawn>();
                     if (aIUnitSpawn == null)
                     {

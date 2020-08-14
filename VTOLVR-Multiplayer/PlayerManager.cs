@@ -196,6 +196,7 @@ public static class PlayerManager
                     }
                     if (!actor.isPlayer && actor.role == Actor.Roles.Air)
                     {
+                        PlaneEquippableManager.generateHpInfoListFromWeaponManager(actor.weaponManager, PlaneEquippableManager.HPInfoListGenerateNetworkType.generate, uidSender.networkUID);
                         lastPlaneSender = actor.gameObject.AddComponent<PlaneNetworker_Sender>();
                         lastPlaneSender.networkUID = networkUID;
                     }
