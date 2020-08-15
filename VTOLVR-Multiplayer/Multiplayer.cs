@@ -670,7 +670,7 @@ public class Multiplayer : VTOLMOD
         //rect.position = new Vector3(0, -99, 0);
         //Networker.loadingText = Text.GetComponent<TextMeshPro>();
         Networker.loadingText.enableAutoSizing = true;
-        Networker.loadingText.fontSizeMin = 300;
+        Networker.loadingText.fontSizeMin = 100;
         Networker.loadingText.fontSizeMax = 450;
         Networker.loadingText.color = Color.white;
         if (!Networker.isHost)
