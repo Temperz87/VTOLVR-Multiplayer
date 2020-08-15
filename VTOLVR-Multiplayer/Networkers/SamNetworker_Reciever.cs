@@ -84,7 +84,7 @@ class SamNetworker_Reciever : MonoBehaviour
                     Debug.Log("Beginning sam launch routine for reciever.");
                     int j = 0;
                     Missile[] missiles = (Missile[])Traverse.Create(samLauncher).Field("missiles").GetValue();
-                    for (int i = 0; i < missiles.Length; i = j + 1)
+                    for (int i = 0; i < missiles.Length; i++)
                     {
                         if (missiles[i] != null)
                         {

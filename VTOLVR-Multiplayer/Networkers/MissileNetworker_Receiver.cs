@@ -30,6 +30,8 @@ public class MissileNetworker_Receiver : MonoBehaviour
                 collider.gameObject.layer = 9;
             }
         }
+
+        thisMissile.explodeRadius *= 1.8f; thisMissile.explodeDamage *= 0.5f;
     }
 
     public void MissileUpdate(Packet packet)

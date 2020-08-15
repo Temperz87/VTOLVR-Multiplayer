@@ -17,7 +17,7 @@ public static class PlayerManager
 
     private static float spawnSpacing = 20;
     private static int spawnsCount = 20;
-    private static int spawnTicker = 0;
+    private static int spawnTicker = 15;
     /// <summary>
     /// This is the queue for people waiting to get a spawn point,
     /// incase the host hasn't loaded in, in time.
@@ -292,7 +292,10 @@ public static class PlayerManager
                 UIDNetworker_Sender hostSender = localVehicle.AddComponent<UIDNetworker_Sender>();
                 hostSender.networkUID = localUID;
                 Debug.Log($"The host's uID is {localUID}");
-                SpawnLocalVehicleAndInformOtherClients(localVehicle, localVehicle.transform.position, localVehicle.transform.rotation, localUID);
+
+                Transform hostTrans = FindFreeSpawn(false);
+                localVehicle.transform.position = hostTrans.position;
+                SpawnLocalVehicleAndInformOtherClients(localVehicle, hostTrans.transform.position, hostTrans.transform.rotation, localUID);
             }
             else
                 Debug.Log("Local vehicle for host was null");
@@ -424,7 +427,11 @@ public static class PlayerManager
         }
         localVehicle.transform.position = result.position.toVector3;
         localVehicle.transform.rotation = result.rotation;
-        SpawnLocalVehicleAndInformOtherClients(localVehicle, result.position.toVector3, result.rotation, result.vehicleUID);
+
+        PlayerVehicle currentVehiclet = PilotSaveManager.currentVehicle;
+        localVehicle.transform.TransformPoint(currentVehiclet.playerSpawnOffset);
+
+        SpawnLocalVehicleAndInformOtherClients(localVehicle, localVehicle.transform.position, localVehicle.transform.rotation, result.vehicleUID);
         localUID = result.vehicleUID;
     }
     /// <summary>
@@ -480,7 +487,7 @@ public static class PlayerManager
     {
         VTOLVehicles currentVehicle = VTOLAPI.GetPlayersVehicleEnum();
         Actor actor = localVehicle.GetComponent<Actor>();
-
+        
         if (VTOLVR_Multiplayer.AIDictionaries.allActors.ContainsKey(UID))
             VTOLVR_Multiplayer.AIDictionaries.allActors[UID] = actor;
         else
@@ -489,10 +496,14 @@ public static class PlayerManager
             VTOLVR_Multiplayer.AIDictionaries.reverseAllActors[actor] = UID;
         else
             VTOLVR_Multiplayer.AIDictionaries.reverseAllActors.Add(actor, UID);
-
+       
         RigidbodyNetworker_Sender rbSender = localVehicle.AddComponent<RigidbodyNetworker_Sender>();
+       
         rbSender.networkUID = UID;
+        
         rbSender.SetSpawn(pos, rot);
+
+      
 
         if (currentVehicle == VTOLVehicles.AV42C)
         {
@@ -943,8 +954,9 @@ public static class PlayerManager
 
             foreach (ReArmingPoint rep in rearmPoints)
             {
-                Debug.Log($"checking ground");
+               
                 if (rep.team == Teams.Allied)
+                if(spawnPoints.Count < spawnsCount)
                 {
                     lastSpawn = new GameObject("MP Spawn "+ rep.GetInstanceID());
                     lastSpawn.AddComponent<FloatingOriginTransform>();
@@ -958,7 +970,7 @@ public static class PlayerManager
             }
 
 
-        }
+        } 
 
         Debug.Log($"Creating remaining spawn points ({spawnsCount - spawnPoints.Count}) next to player.");
         int remainingSpawns = spawnsCount - spawnPoints.Count;

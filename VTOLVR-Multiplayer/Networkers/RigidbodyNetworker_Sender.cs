@@ -72,17 +72,22 @@ public class RigidbodyNetworker_Sender : MonoBehaviour
 
     public void SetSpawn(Vector3 spawnPos, Quaternion spawnRot)
     {
+        Debug.Log($"starting spawn repositioner");
+
         StartCoroutine(SetSpawnEnumerator(spawnPos, spawnRot));
     }
 
     private IEnumerator SetSpawnEnumerator(Vector3 spawnPos, Quaternion spawnRot)
     {
-
+         
         rb.velocity = new Vector3(0, 0, 0);
         rb.transform.position = spawnPos;
         rb.transform.rotation = spawnRot;
         rb.Sleep();
-        yield return new WaitForSeconds(0.5f);
         Debug.Log($"Our position is now {rb.position}");
+   
+        yield return new WaitForSeconds(0.5f);
+        rb.detectCollisions = true;
+
     }
 }
