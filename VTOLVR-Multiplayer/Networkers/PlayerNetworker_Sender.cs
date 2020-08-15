@@ -152,7 +152,7 @@ class PlayerNetworker_Sender : MonoBehaviour
         PilotSaveManager.currentScenario.totalBudget = 999999;
         PilotSaveManager.currentScenario.initialSpending = 0;
         PilotSaveManager.currentScenario.inFlightSpending = 0;
-
+        PilotSaveManager.currentScenario.equipConfigurable = true;
         rearmPoint.BeginReArm();
 
         PlayerManager.SetupLocalAircraft(newPlayer, newPlayer.transform.position, newPlayer.transform.rotation, networkUID);
