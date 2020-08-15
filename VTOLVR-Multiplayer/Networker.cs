@@ -200,7 +200,17 @@ public class Networker : MonoBehaviour
     // 2 = Loading
     // 3 = In Game
     // 4 = Disconnected
-    public static Dictionary<CSteamID, int> playerStatusDic { get; private set; } = new Dictionary<CSteamID, int>();
+    public enum PlayerStatus {
+        Loadout,
+        NotReady,
+        ReadyREDFOR,
+        ReadyBLUFOR,
+        Loading,
+        InGame,
+        Disconected
+    }
+
+    public static Dictionary<CSteamID, PlayerStatus> playerStatusDic { get; private set; } = new Dictionary<CSteamID, PlayerStatus>();
 
     public static bool allPlayersReadyHasBeenSentFirstTime;
     public static bool readySent;
@@ -364,7 +374,7 @@ public class Networker : MonoBehaviour
         TimeoutCounter = 0;
         HeartbeatTimerRunning = true;
         HeartbeatTimer.Start();
-        playerStatusDic.Add(hostID, 0);
+        playerStatusDic.Add(hostID, PlayerStatus.NotReady);
         _instance.StartCoroutine(_instance.FlyButton());
     }
 
@@ -372,11 +382,11 @@ public class Networker : MonoBehaviour
     {
         if (everyoneReady)
         {
-            playerStatusDic[hostID] = 2;
+            playerStatusDic[hostID] = PlayerStatus.Loading;
         }
         else
         {
-            playerStatusDic[hostID] = 1;
+            playerStatusDic[hostID] = PlayerStatus.ReadyBLUFOR;
         }
 
         hostReady = true;
@@ -575,6 +585,13 @@ public class Networker : MonoBehaviour
 
                     if (readyDic.ContainsKey(csteamID) && playerStatusDic.ContainsKey(csteamID))
                     {
+                        if (readyMessage.isLeft) {
+                            playerStatusDic[csteamID] = PlayerStatus.ReadyREDFOR;
+                        }
+                        else {
+                            playerStatusDic[csteamID] = PlayerStatus.ReadyBLUFOR;
+                        }
+
                         if (readyDic[csteamID])
                         {
                             Debug.Log("Received ready message from the same user twice");
@@ -583,7 +600,6 @@ public class Networker : MonoBehaviour
 
                         Debug.Log($"{csteamID.m_SteamID} has said they are ready!\nHost ready state {hostReady}");
                         readyDic[csteamID] = true;
-                        playerStatusDic[csteamID] = 1;
                         if (alreadyInGame)
                         {
                             //Someone is trying to join when we are already in game.
@@ -600,7 +616,7 @@ public class Networker : MonoBehaviour
                             if (!allPlayersReadyHasBeenSentFirstTime)
                             {
                                 allPlayersReadyHasBeenSentFirstTime = true;
-                                playerStatusDic[hostID] = 2;
+                                playerStatusDic[hostID] = PlayerStatus.Loading;
                                 UpdateLoadingText();
 
                                 NetworkSenderThread.Instance.SendPacketAsHostToAllClients(new Message(MessageType.AllPlayersReady), EP2PSend.k_EP2PSendReliable);
@@ -609,7 +625,7 @@ public class Networker : MonoBehaviour
                             {
                                 // Send only to this player
                                 NetworkSenderThread.Instance.SendPacketToSpecificPlayer(csteamID, new Message(MessageType.AllPlayersReady), EP2PSend.k_EP2PSendReliable);
-                                playerStatusDic[hostID] = 2;
+                                playerStatusDic[hostID] = PlayerStatus.Loading;
                                 UpdateLoadingText();
                             }
                             LoadingSceneController.instance.PlayerReady();
@@ -619,7 +635,7 @@ public class Networker : MonoBehaviour
                     break;
                 case MessageType.AllPlayersReady:
                     Debug.Log("The host said everyone is ready, waiting for the host to load.");
-                    playerStatusDic[hostID] = 2;
+                    playerStatusDic[hostID] = PlayerStatus.Loading;
                     UpdateLoadingText();
                     hostReady = true;
                     // LoadingSceneController.instance.PlayerReady();
@@ -671,7 +687,7 @@ public class Networker : MonoBehaviour
                         if (Multiplayer.SoloTesting)
                             break;
 
-                        playerStatusDic[csteamID] = 4;
+                        playerStatusDic[csteamID] = PlayerStatus.Disconected;
                         players.Remove(csteamID);
                         NetworkSenderThread.Instance.RemovePlayer(csteamID);
                         NetworkSenderThread.Instance.SendPacketAsHostToAllClients(packet, packet.sendType);
@@ -679,7 +695,7 @@ public class Networker : MonoBehaviour
                     else
                     {
                         Message_Disconnecting messsage = ((PacketSingle)packet).message as Message_Disconnecting;
-                        playerStatusDic[csteamID] = 4;
+                        playerStatusDic[csteamID] = PlayerStatus.Disconected;
                         if (messsage.isHost)
                         {
                             Debug.Log("Host disconnected");
@@ -800,12 +816,12 @@ public class Networker : MonoBehaviour
                         if (isHost)
                         {
                             Debug.Log("we shouldn't have gotten a host loaded....");
-                            playerStatusDic[hostID] = 3;
+                            playerStatusDic[hostID] = PlayerStatus.InGame;
                         }
                         else
                         {
                             hostLoaded = true;
-                            playerStatusDic[hostID] = 3;
+                            playerStatusDic[hostID] = PlayerStatus.InGame;
                             LoadingSceneController.instance.PlayerReady();
                         }
                     }
@@ -1041,34 +1057,61 @@ public class Networker : MonoBehaviour
             return;
         StringBuilder content = new StringBuilder("<color=#FCB722><b><align=\"center\"><size=120%>Multiplayer Lobby</size></align></b></color>\n");
 
-        if (playerStatusDic[hostID] == 2)
-        {
-            content.AppendLine("<b>" + SteamFriends.GetPersonaName() + "</b>" + ": " + "<color=\"blue\">Loading</color>" + "\n");
+        switch (playerStatusDic[hostID]) {
+            case PlayerStatus.Loadout:
+                content.AppendLine("<b>" + SteamFriends.GetPersonaName() + "</b>" + ": " + "<color=\"red\">Loadout</color>" + "\n");
+                break;
+            case PlayerStatus.NotReady:
+                content.AppendLine("<b>" + SteamFriends.GetPersonaName() + "</b>" + ": " + "<color=\"red\">Not Ready</color>" + "\n");
+                break;
+            case PlayerStatus.ReadyREDFOR:
+                content.AppendLine("<b>" + SteamFriends.GetPersonaName() + "</b>" + ": " + "<color=\"green\">Ready</color>" + " REDFOR" + "\n");
+                break;
+            case PlayerStatus.ReadyBLUFOR:
+                content.AppendLine("<b>" + SteamFriends.GetPersonaName() + "</b>" + ": " + "<color=\"green\">Ready</color>" + " BlUFOR" + "\n");
+                break;
+            case PlayerStatus.Loading:
+                content.AppendLine("<b>" + SteamFriends.GetPersonaName() + "</b>" + ": " + "<color=\"blue\">Loading</color>" + "\n");
+                break;
+            case PlayerStatus.InGame:
+                content.AppendLine("<b>" + SteamFriends.GetPersonaName() + "</b>" + ": " + "<color=\"green\">In Game</color>" + "\n");
+                break;
+            case PlayerStatus.Disconected:
+                content.AppendLine("<b>" + SteamFriends.GetPersonaName() + "</b>" + ": " + "<color=\"red\">Disconected</color>" + "\n");
+                break;
+            default:
+                content.AppendLine("<b>" + SteamFriends.GetPersonaName() + "</b>" + ": " + "<color=\"red\">Other</color>" + "\n");
+                break;
         }
-        else if (playerStatusDic[hostID] == 1)
-        {
-            content.AppendLine("<b>" + SteamFriends.GetPersonaName() + "</b>" + ": " + "<color=\"green\">Ready</color>" + "\n");
-        }
-        else
-        {
-            content.AppendLine("<b>" + SteamFriends.GetPersonaName() + "</b>" + ": " + "<color=\"red\">Not Ready</color>" + "\n");
-        }
-
 
         for (int i = 0; i < players.Count; i++)
         {
-            //content.Append("<b>" + SteamFriends.GetFriendPersonaName(players[i]) + "</b>" + ": " + (readyDic[players[i]]? "<color=\"green\">Ready</color>" : "<color=\"red\">Not Ready</color>") + "\n");
-            if (playerStatusDic[players[i]] == 2)
+            switch (playerStatusDic[players[i]])
             {
-                content.AppendLine("<b>" + SteamFriends.GetFriendPersonaName(players[i]) + "</b>" + ": " + "<color=\"blue\">Loading</color>" + "\n");
-            }
-            else if (playerStatusDic[players[i]] == 1)
-            {
-                content.AppendLine("<b>" + SteamFriends.GetFriendPersonaName(players[i]) + "</b>" + ": " + "<color=\"green\">Ready</color>" + "\n");
-            }
-            else if (playerStatusDic[players[i]] == 0)
-            {
-                content.AppendLine("<b>" + SteamFriends.GetFriendPersonaName(players[i]) + "</b>" + ": " + "<color=\"red\">Not Ready</color>" + "\n");
+                case PlayerStatus.Loadout:
+                    content.AppendLine("<b>" + SteamFriends.GetFriendPersonaName(players[i]) + "</b>" + ": " + "<color=\"red\">Loadout</color>" + "\n");
+                    break;
+                case PlayerStatus.NotReady:
+                    content.AppendLine("<b>" + SteamFriends.GetFriendPersonaName(players[i]) + "</b>" + ": " + "<color=\"red\">Not Ready</color>" + "\n");
+                    break;
+                case PlayerStatus.ReadyREDFOR:
+                    content.AppendLine("<b>" + SteamFriends.GetFriendPersonaName(players[i]) + "</b>" + ": " + "<color=\"green\">Ready</color>" + " REDFOR" + "\n");
+                    break;
+                case PlayerStatus.ReadyBLUFOR:
+                    content.AppendLine("<b>" + SteamFriends.GetFriendPersonaName(players[i]) + "</b>" + ": " + "<color=\"green\">Ready</color>" + " BLUFOR" + "\n");
+                    break;
+                case PlayerStatus.Loading:
+                    content.AppendLine("<b>" + SteamFriends.GetFriendPersonaName(players[i]) + "</b>" + ": " + "<color=\"blue\">Loading</color>" + "\n");
+                    break;
+                case PlayerStatus.InGame:
+                    content.AppendLine("<b>" + SteamFriends.GetFriendPersonaName(players[i]) + "</b>" + ": " + "<color=\"green\">In Game</color>" + "\n");
+                    break;
+                case PlayerStatus.Disconected:
+                    content.AppendLine("<b>" + SteamFriends.GetFriendPersonaName(players[i]) + "</b>" + ": " + "<color=\"red\">Disconected</color>" + "\n");
+                    break;
+                default:
+                    content.AppendLine("<b>" + SteamFriends.GetFriendPersonaName(players[i]) + "</b>" + ": " + "<color=\"red\">Other</color>" + "\n");
+                    break;
             }
         }
         if (loadingText != null)
@@ -1237,8 +1280,8 @@ public class Networker : MonoBehaviour
         Debug.Log($"Accepting {csteamID.m_SteamID}, adding to players list");
         players.Add(csteamID);
         readyDic.Add(csteamID, false);
-        Debug.Log($"Adding {csteamID} to status dict, with status of 0");
-        playerStatusDic.Add(csteamID, 0);
+        Debug.Log($"Adding {csteamID} to status dict, with status of not ready");
+        playerStatusDic.Add(csteamID, PlayerStatus.NotReady);//future people, please implement PlayerStatus.Loadout so we can see who is customising still
         Debug.Log("Done adding to status dict");
         NetworkSenderThread.Instance.AddPlayer(csteamID);
         NetworkSenderThread.Instance.SendPacketToSpecificPlayer(csteamID, new Message_JoinRequestAccepted_Result(), EP2PSend.k_EP2PSendReliable);

@@ -106,7 +106,7 @@ class Patch_LoadingSceneHelmet_Update
                         if (!Networker.readySent)
                         {
                             Networker.readySent = true;
-                            NetworkSenderThread.Instance.SendPacketToSpecificPlayer(Networker.hostID, new Message(MessageType.Ready), Steamworks.EP2PSend.k_EP2PSendReliable);
+                            NetworkSenderThread.Instance.SendPacketToSpecificPlayer(Networker.hostID, new Message_Ready(PlayerManager.localUID, Networker.isHost, PlayerManager.teamLeftie), Steamworks.EP2PSend.k_EP2PSendReliable);
                             Debug.Log("Waiting for the host to say everyone is ready");
                         }
                     }
