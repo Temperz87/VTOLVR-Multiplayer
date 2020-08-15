@@ -69,7 +69,7 @@ class PlayerNetworker_Sender : MonoBehaviour
         Debug.Log("Finished respawn timer.");
 
         ReArmingPoint[] rearmPoints = GameObject.FindObjectsOfType<ReArmingPoint>();
-        ReArmingPoint rearmPoint = rearmPoints[Random.Range(0, rearmPoints.Length)];
+        ReArmingPoint rearmPoint = rearmPoints[Random.Range(0, rearmPoints.Length - 1)];
         foreach (ReArmingPoint rep in rearmPoints)
         {
             if (rep.CheckIsClear(actor))
@@ -134,6 +134,7 @@ class PlayerNetworker_Sender : MonoBehaviour
                 {
                     actor.DetectActor(Teams.Allied);
                     actor.UpdateKnownPosition(actor.team);
+                 
                 }
 
                 //actor.DiscoverActor(); <----------------breaks and only works on every 2nd spawn

@@ -60,6 +60,8 @@ public class RigidbodyNetworker_Receiver : MonoBehaviour
 
     void FixedUpdate()
     {
+        ///stops baha touching our velocities
+        actor.fixedVelocityUpdate = false;
         if (rb == null)
         {
             Debug.LogError("Rigid body is null on object " + gameObject.name);
@@ -100,6 +102,7 @@ public class RigidbodyNetworker_Receiver : MonoBehaviour
         rb.velocity = targetVelocity + (localTargetPosition - transform.position) / smoothingTime;
         //actor.SetCustomVelocity(Vector3.Lerp(actor.velocity, targetVelocity + (localTargetPosition - transform.position) / smoothingTime, Time.fixedDeltaTime / velSmoothingTime));
         actor.SetCustomVelocity((localTargetPosition - transform.position) / smoothingTime);
+       
         rb.MovePosition(transform.position + targetVelocity * Time.fixedDeltaTime + ((localTargetPosition - transform.position) * Time.fixedDeltaTime) / smoothingTime);
         rb.MoveRotation(Quaternion.Lerp(currentRotation, targetRotation, Time.fixedDeltaTime / rotSmoothingTime));
     }
