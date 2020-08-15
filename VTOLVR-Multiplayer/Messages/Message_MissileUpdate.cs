@@ -6,8 +6,6 @@ using UnityEngine;
 public class Message_MissileUpdate : Message
 {
     public ulong networkUID;
-    public Vector3D position;
-    public SerializableQuaternion  rotation;
     public Vector3D targetPosition;
     public SerializableQuaternion seekerRotation;
     public bool hasExploded;

@@ -15,7 +15,6 @@ public class MissileNetworker_Receiver : MonoBehaviour
     private Traverse traverse;
     // private Rigidbody rigidbody; see missileSender for why i not using rigidbody
     private bool hasFired = false;
-    private float positionThreshold = 0.5f;
 
     private void Start()
     {
@@ -66,6 +65,11 @@ public class MissileNetworker_Receiver : MonoBehaviour
                     {
                         Debug.LogError("Could not fire radar missile.");
                     }
+                    else
+                    {
+                        RigidbodyNetworker_Receiver rbReceiver = gameObject.AddComponent<RigidbodyNetworker_Receiver>();
+                        rbReceiver.networkUID = networkUID;
+                    }
                 }
             }
             else
@@ -79,6 +83,8 @@ public class MissileNetworker_Receiver : MonoBehaviour
                 Debug.Log("Try fire missile clientside");
                 traverse.Field("missileIdx").SetValue(idx);
                 thisML.FireMissile();
+                RigidbodyNetworker_Receiver rbReceiver = gameObject.AddComponent<RigidbodyNetworker_Receiver>();
+                rbReceiver.networkUID = networkUID;
             }
             if (hasFired != thisMissile.fired)
             {
@@ -93,14 +99,6 @@ public class MissileNetworker_Receiver : MonoBehaviour
             if (thisMissile != null)
                 thisMissile.Detonate();
             return;
-        }
-
-        // gameObject.transform.velocity = lastMessage.velocity.toVector3;
-        gameObject.transform.rotation = lastMessage.rotation;
-        if (Vector3.Distance(gameObject.transform.position, VTMapManager.GlobalToWorldPoint(lastMessage.position)) > positionThreshold)
-        {
-            // Debug.LogWarning($"Missile ({gameObject.name}) is outside the threshold. Teleporting to position.");
-            gameObject.transform.position = VTMapManager.GlobalToWorldPoint(lastMessage.position);
         }
     }
 

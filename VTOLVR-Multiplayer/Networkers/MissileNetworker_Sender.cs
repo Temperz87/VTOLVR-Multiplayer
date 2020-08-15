@@ -6,7 +6,6 @@ using UnityEngine;
 public class MissileNetworker_Sender : MonoBehaviour
 {
     public ulong networkUID;
-    // private Rigidbody rigidbody; doesn't exist in some missiles so we're not fucking with that shit
     private Message_MissileUpdate lastMessage;
     private Missile thisMissile;
     private bool hasFired = false;
@@ -15,10 +14,9 @@ public class MissileNetworker_Sender : MonoBehaviour
         Networker.RequestNetworkUID += RequestUID;
         lastMessage = new Message_MissileUpdate(networkUID);
         thisMissile = GetComponent<Missile>();
-        // rigidbody = GetComponent<Rigidbody>();
     }
 
-    private void Update()
+    private void FixedUpdate()
     {
         if (thisMissile == null)
         {
@@ -28,6 +26,9 @@ public class MissileNetworker_Sender : MonoBehaviour
         {
             Debug.Log("Missile fired " + thisMissile.name);
             hasFired = true;
+
+            RigidbodyNetworker_Sender rbSender = gameObject.AddComponent<RigidbodyNetworker_Sender>();
+            rbSender.networkUID = networkUID;
         }
         if (thisMissile != null && thisMissile.fired)
         {
@@ -36,12 +37,6 @@ public class MissileNetworker_Sender : MonoBehaviour
                 Debug.LogError("lastMessage null");
             }
             lastMessage.networkUID = networkUID;
-            if (gameObject == null)
-            {
-                Debug.LogError("gameObject null in MissileNetworker_Sender");
-            }
-            lastMessage.position = VTMapManager.WorldToGlobalPoint(gameObject.transform.position);
-            lastMessage.rotation = gameObject.transform.rotation;
             lastMessage.guidanceMode = thisMissile.guidanceMode;
             if (thisMissile.guidanceMode == Missile.GuidanceModes.Radar)
             {
