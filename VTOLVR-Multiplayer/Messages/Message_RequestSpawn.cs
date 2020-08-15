@@ -12,7 +12,6 @@ public class Message_RequestSpawn_Result : Message
     public SerializableQuaternion rotation;
     public ulong vehicleUID;
     public int playerCount;
-
     public Message_RequestSpawn_Result(Vector3D position, Quaternion rotation, ulong vehicleUID, int playerCount)
     {
         this.position = position;
@@ -28,9 +27,11 @@ public class Message_RequestSpawn_Result : Message
 public class Message_RequestSpawn : Message
 {
     public bool teaml;
-
-    public Message_RequestSpawn(bool team) {
+    public ulong senderSteamID;
+    public Message_RequestSpawn(bool team, ulong senderSteamID) {
         type = MessageType.RequestSpawn;
         this.teaml = team;
+        this.senderSteamID = senderSteamID;
+
     }
 }

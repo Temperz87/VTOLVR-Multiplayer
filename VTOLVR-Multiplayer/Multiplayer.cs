@@ -70,7 +70,7 @@ public class Multiplayer : VTOLMOD
     public bool FreeForAllMode = false; // not implemented
     private UnityAction<bool> FreeForAllMode_changed;
 
-    public bool displayPing = false;
+    public bool displayPing = true;
     private UnityAction<bool> DisplayPing_changed;
 
     private void Start()
@@ -189,7 +189,7 @@ public class Multiplayer : VTOLMOD
         displayPing = newval;
     }
 
-    /*void OnGUI()//the 2d ping display, feel free to move elsewhere
+    void OnGUI()//the 2d ping display, feel free to move elsewhere
     {
         if (displayPing) {
             string temp = "";
@@ -197,9 +197,9 @@ public class Multiplayer : VTOLMOD
             {
                 temp += player.cSteamID + ": " + Mathf.Round(player.ping * 1000f) + "\n";
             }
-            //GUI.TextArea(new Rect(100, 100, 800, 800), temp);
+            GUI.TextArea(new Rect(100, 100, 800, 800), temp);
         }
-    }*/
+    }
 
     private void SceneLoaded(VTOLScenes scene)
     {

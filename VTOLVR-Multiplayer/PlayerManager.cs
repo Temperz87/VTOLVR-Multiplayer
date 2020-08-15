@@ -17,12 +17,12 @@ public static class PlayerManager
 
     private static float spawnSpacing = 20;
     private static int spawnsCount = 20;
-    private static int spawnTicker = 0;
+    private static int spawnTicker = 15;
     /// <summary>
     /// This is the queue for people waiting to get a spawn point,
     /// incase the host hasn't loaded in, in time.
     /// </summary>
-    private static Queue<CSteamID> spawnRequestQueue = new Queue<CSteamID>();
+    private static Queue<Message_RequestSpawn> spawnRequestQueue = new Queue<Message_RequestSpawn>();
     private static Queue<Packet> playersToSpawnQueue = new Queue<Packet>();
     private static Queue<CSteamID> playersToSpawnIdQueue = new Queue<CSteamID>();
     public static bool gameLoaded;
@@ -54,7 +54,6 @@ public static class PlayerManager
             this.leftie = leftTeam;
         }
     }
-
     public static List<Player> players = new List<Player>(); //This is the list of players
     /// <summary>
     /// This runs when the map has finished loading and hopefully 
@@ -93,29 +92,30 @@ public static class PlayerManager
             VTScenario.current.units.alliedUnits.Clear();
             VTScenario.current.units.enemyUnits.Clear();
             VTScenario.current.groups.DestroyAll();
-            
 
-            if(teamLeftie)
-            foreach (AirportManager airportManager in VTMapManager.fetch.airports)
-            {
-                   if (airportManager.team == Teams.Allied)
+
+            if (teamLeftie)
+                foreach (AirportManager airportManager in VTMapManager.fetch.airports)
+                {
+                    if (airportManager.team == Teams.Allied)
                     {
                         airportManager.team = Teams.Enemy;
 
-                    }else
-                    if (airportManager.team == Teams.Enemy)
+                    }
+                    else
+                     if (airportManager.team == Teams.Enemy)
                     {
                         airportManager.team = Teams.Allied;
                     }
                 }
 
-          
-                var rearmPoints = GameObject.FindObjectsOfType<ReArmingPoint>();
+
+            var rearmPoints = GameObject.FindObjectsOfType<ReArmingPoint>();
             //back up option below
-            
+
             if (teamLeftie)
                 foreach (ReArmingPoint rep in rearmPoints)
-              {
+                {
                     if (rep.team == Teams.Allied)
                     {
                         rep.team = Teams.Enemy;
@@ -127,7 +127,7 @@ public static class PlayerManager
                     if (rep.team == Teams.Enemy)
                     {
                         rep.team = Teams.Allied;
-                    
+
                         rep.canArm = true;
                         rep.canRefuel = true;
                     }
@@ -138,7 +138,7 @@ public static class PlayerManager
             {
                 VTScenario.current.units.AddSpawner(actor.unitSpawn.unitSpawner);
             }*/
-            Message_RequestSpawn msg = new Message_RequestSpawn(teamLeftie);
+            Message_RequestSpawn msg = new Message_RequestSpawn(teamLeftie, SteamUser.GetSteamID().m_SteamID);
             NetworkSenderThread.Instance.SendPacketToSpecificPlayer(Networker.hostID, msg, EP2PSend.k_EP2PSendReliable);
         }
         else
@@ -207,9 +207,11 @@ public static class PlayerManager
                         extLight.networkUID = networkUID;
                     }
 
-                    if (((AIUnitSpawn)actor.unitSpawn).subUnits.Count() == 0) {//only run this code on units without subunits
+                    if (((AIUnitSpawn)actor.unitSpawn).subUnits.Count() == 0)
+                    {//only run this code on units without subunits
                         ulong turretCount = 0;
-                        foreach (ModuleTurret moduleTurret in actor.gameObject.GetComponentsInChildren<ModuleTurret>()) {
+                        foreach (ModuleTurret moduleTurret in actor.gameObject.GetComponentsInChildren<ModuleTurret>())
+                        {
                             TurretNetworker_Sender tSender = moduleTurret.gameObject.AddComponent<TurretNetworker_Sender>();
                             tSender.networkUID = networkUID;
                             tSender.turretID = turretCount;
@@ -290,7 +292,10 @@ public static class PlayerManager
                 UIDNetworker_Sender hostSender = localVehicle.AddComponent<UIDNetworker_Sender>();
                 hostSender.networkUID = localUID;
                 Debug.Log($"The host's uID is {localUID}");
-                SpawnLocalVehicleAndInformOtherClients(localVehicle, localVehicle.transform.position, localVehicle.transform.rotation, localUID);
+
+                Transform hostTrans = FindFreeSpawn(false);
+                localVehicle.transform.position = hostTrans.position;
+                SpawnLocalVehicleAndInformOtherClients(localVehicle, hostTrans.transform.position, hostTrans.transform.rotation, localUID);
             }
             else
                 Debug.Log("Local vehicle for host was null");
@@ -322,12 +327,13 @@ public static class PlayerManager
         }
     }
 
-    public static void SpawnPlayersInPlayerSpawnQueue() {
-        if(gameLoaded)
-        while (playersToSpawnQueue.Count > 0)
-        {
-            SpawnPlayerVehicle(playersToSpawnQueue.Dequeue(), playersToSpawnIdQueue.Dequeue());
-        }
+    public static void SpawnPlayersInPlayerSpawnQueue()
+    {
+        if (gameLoaded)
+            while (playersToSpawnQueue.Count > 0)
+            {
+                SpawnPlayerVehicle(playersToSpawnQueue.Dequeue(), playersToSpawnIdQueue.Dequeue());
+            }
     }
 
     /// <summary>
@@ -349,11 +355,12 @@ public static class PlayerManager
         Transform lastSpawn;
         while (spawnRequestQueue.Count > 0)
         {
-            lastSpawn = FindFreeSpawn();
+            Message_RequestSpawn lastMessage = spawnRequestQueue.Dequeue();
+            lastSpawn = FindFreeSpawn(lastMessage.teaml);
             Debug.Log("The players spawn will be " + lastSpawn);
             NetworkSenderThread.Instance.SendPacketToSpecificPlayer(
-                spawnRequestQueue.Dequeue(),
-                new Message_RequestSpawn_Result(new Vector3D(lastSpawn.position), lastSpawn.rotation , Networker.GenerateNetworkUID(), players.Count),
+                new CSteamID(lastMessage.senderSteamID),
+                new Message_RequestSpawn_Result(new Vector3D(lastSpawn.position), lastSpawn.rotation, Networker.GenerateNetworkUID(), players.Count),
                 EP2PSend.k_EP2PSendReliable);
         }
     }
@@ -379,11 +386,12 @@ public static class PlayerManager
 
     public static void RequestSpawn(Packet packet, CSteamID sender) //Run by Host Only
     {
+        Message_RequestSpawn lastMessage = (Message_RequestSpawn)((PacketSingle)packet).message;
         Debug.Log("A player has requested for a spawn point");
         if (!Networker.hostLoaded)
         {
             Debug.Log("The host isn't ready yet, adding to queue");
-            spawnRequestQueue.Enqueue(sender);
+            spawnRequestQueue.Enqueue(lastMessage);
             return;
         }
         if (spawnPoints == null || spawnPoints.Count == 0)
@@ -391,32 +399,12 @@ public static class PlayerManager
             Debug.LogError("Spawn points was null, we won't be able to find any spawn point then");
             return;
         }
-        Transform spawn = FindFreeSpawn();
+        Transform spawn = FindFreeSpawn(lastMessage.teaml);
 
-        Message_RequestSpawn  result = (Message_RequestSpawn)((PacketSingle)packet).message;
-        if (result.teaml) //leftie
-        {
 
-            var rearmPoints = GameObject.FindObjectsOfType<ReArmingPoint>();
-
-            ReArmingPoint rearmPoint = GameObject.FindObjectOfType<ReArmingPoint>();
-            List<ReArmingPoint> EnemyPoints = new List<ReArmingPoint>();
-            foreach (ReArmingPoint rep in rearmPoints)
-            {
-                if (rep.team == Teams.Enemy)
-                {
-                    EnemyPoints.Add(rep);
-                }
-            }
-            
-            if (EnemyPoints.Count() > 0) {
-                rearmPoint = EnemyPoints[UnityEngine.Random.Range(0, EnemyPoints.Count - 1)];
-                spawn = rearmPoint.transform;
-            }
-        }
 
         Debug.Log("The players spawn will be " + spawn);
-        NetworkSenderThread.Instance.SendPacketToSpecificPlayer(sender, new Message_RequestSpawn_Result(new Vector3D(spawn.position), spawn.rotation , Networker.GenerateNetworkUID(), players.Count), EP2PSend.k_EP2PSendReliable);
+        NetworkSenderThread.Instance.SendPacketToSpecificPlayer(sender, new Message_RequestSpawn_Result(new Vector3D(spawn.position), spawn.rotation, Networker.GenerateNetworkUID(), players.Count), EP2PSend.k_EP2PSendReliable);
     }
     /// <summary>
     /// When the client receives a P2P message of their spawn point, 
@@ -438,8 +426,12 @@ public static class PlayerManager
             return;
         }
         localVehicle.transform.position = result.position.toVector3;
-        localVehicle.transform.rotation =  result.rotation;
-        SpawnLocalVehicleAndInformOtherClients(localVehicle, result.position.toVector3, result.rotation , result.vehicleUID);
+        localVehicle.transform.rotation = result.rotation;
+
+        PlayerVehicle currentVehiclet = PilotSaveManager.currentVehicle;
+        localVehicle.transform.TransformPoint(currentVehiclet.playerSpawnOffset);
+
+        SpawnLocalVehicleAndInformOtherClients(localVehicle, localVehicle.transform.position, localVehicle.transform.rotation, result.vehicleUID);
         localUID = result.vehicleUID;
     }
     /// <summary>
@@ -453,7 +445,7 @@ public static class PlayerManager
         VTOLVehicles currentVehicle = VTOLAPI.GetPlayersVehicleEnum();
         Actor actor = localVehicle.GetComponent<Actor>();
         Player localPlayer = new Player(SteamUser.GetSteamID(), localVehicle, currentVehicle, UID, PlayerManager.teamLeftie);
-        players.Add(localPlayer);
+        AddToPlayerList(localPlayer);
 
         SetupLocalAircraft(localVehicle, pos, rot, UID);
 
@@ -495,15 +487,26 @@ public static class PlayerManager
     {
         VTOLVehicles currentVehicle = VTOLAPI.GetPlayersVehicleEnum();
         Actor actor = localVehicle.GetComponent<Actor>();
-
-        VTOLVR_Multiplayer.AIDictionaries.allActors[UID] = actor;
-        VTOLVR_Multiplayer.AIDictionaries.reverseAllActors[actor] = UID;
-
-        RigidbodyNetworker_Sender rbSender = localVehicle.AddComponent<RigidbodyNetworker_Sender>();
-        rbSender.networkUID = UID;
-        rbSender.SetSpawn(pos, rot);
         
-        if (currentVehicle == VTOLVehicles.AV42C) {
+        if (VTOLVR_Multiplayer.AIDictionaries.allActors.ContainsKey(UID))
+            VTOLVR_Multiplayer.AIDictionaries.allActors[UID] = actor;
+        else
+            VTOLVR_Multiplayer.AIDictionaries.allActors.Add(UID, actor);
+        if (VTOLVR_Multiplayer.AIDictionaries.allActors.ContainsKey(UID))
+            VTOLVR_Multiplayer.AIDictionaries.reverseAllActors[actor] = UID;
+        else
+            VTOLVR_Multiplayer.AIDictionaries.reverseAllActors.Add(actor, UID);
+       
+        RigidbodyNetworker_Sender rbSender = localVehicle.AddComponent<RigidbodyNetworker_Sender>();
+       
+        rbSender.networkUID = UID;
+        
+        rbSender.SetSpawn(pos, rot);
+
+      
+
+        if (currentVehicle == VTOLVehicles.AV42C)
+        {
             rbSender.originOffset = av42Offset;
         }
 
@@ -618,7 +621,8 @@ public static class PlayerManager
         // which we're not doing right now.
         Message_SpawnPlayerVehicle message = (Message_SpawnPlayerVehicle)((PacketSingle)packet).message;
 
-        if (message.networkID == PlayerManager.localUID) {
+        if (message.networkID == PlayerManager.localUID)
+        {
             return;
         }
 
@@ -708,7 +712,7 @@ public static class PlayerManager
                         new Message_SpawnPlayerVehicle(
                             players[i].vehicleType,
                             VTMapManager.WorldToGlobalPoint(players[i].vehicle.transform.position),
-                             players[i].vehicle.transform.rotation ,
+                             players[i].vehicle.transform.rotation,
                             players[i].cSteamID.m_SteamID,
                             players[i].vehicleUID,
                             existingPlayersPR.GenerateHPInfo(),
@@ -735,9 +739,9 @@ public static class PlayerManager
             Debug.Log("Telling connected client about AI units");
             AIManager.TellClientAboutAI(spawnerSteamId);
         }
-        players.Add(new Player(spawnerSteamId, null, message.vehicle, message.networkID,message.leftie));
+        AddToPlayerList(new Player(spawnerSteamId, null, message.vehicle, message.networkID, message.leftie));
 
-        GameObject puppet = SpawnRepresentation(message.networkID, message.position, message.rotation,message.leftie);
+        GameObject puppet = SpawnRepresentation(message.networkID, message.position, message.rotation, message.leftie);
         if (puppet != null)
         {
             PlaneEquippableManager.SetLoadout(puppet, message.networkID, message.normalizedFuel, message.hpLoadout, message.cmLoadout);
@@ -756,7 +760,8 @@ public static class PlayerManager
         }
         Player player = players[playerID];
 
-        GameObject.Destroy(player.vehicle);
+        if (player.vehicle != null)
+            GameObject.Destroy(player.vehicle);
 
         GameObject newVehicle = null;
         switch (player.vehicleType)
@@ -769,21 +774,21 @@ public static class PlayerManager
                 {
                     SetPrefabs();
                 }
-                newVehicle = GameObject.Instantiate(av42cPrefab, VTMapManager.GlobalToWorldPoint(position),  rotation );
+                newVehicle = GameObject.Instantiate(av42cPrefab, VTMapManager.GlobalToWorldPoint(position), rotation);
                 break;
             case VTOLVehicles.FA26B:
                 if (null == fa26bPrefab)
                 {
                     SetPrefabs();
                 }
-                newVehicle = GameObject.Instantiate(fa26bPrefab, VTMapManager.GlobalToWorldPoint(position), rotation  );
+                newVehicle = GameObject.Instantiate(fa26bPrefab, VTMapManager.GlobalToWorldPoint(position), rotation);
                 break;
             case VTOLVehicles.F45A:
                 if (null == f45Prefab)
                 {
                     SetPrefabs();
                 }
-                newVehicle = GameObject.Instantiate(f45Prefab, VTMapManager.GlobalToWorldPoint(position), rotation );
+                newVehicle = GameObject.Instantiate(f45Prefab, VTMapManager.GlobalToWorldPoint(position), rotation);
                 break;
         }
         //Debug.Log("Setting vehicle name");
@@ -882,7 +887,8 @@ public static class PlayerManager
         {
             VTOLVR_Multiplayer.AIDictionaries.allActors[networkID] = aIPilot.actor;
             VTOLVR_Multiplayer.AIDictionaries.reverseAllActors[aIPilot.actor] = networkID;
-        }else
+        }
+        else
         {
             VTOLVR_Multiplayer.AIDictionaries.allActors.Remove(networkID);
             VTOLVR_Multiplayer.AIDictionaries.reverseAllActors.Remove(aIPilot.actor);
@@ -938,7 +944,7 @@ public static class PlayerManager
         Actor curPlayer = FlightSceneManager.instance.playerActor;
         GameObject lastSpawn;
         spawnPoints = new List<Transform>();
-        int spawnCounter = 0;
+        //int spawnCounter = 0;
         //If the player starts on the ground
         Debug.Log($"The player's velocity is {curPlayer.velocity.magnitude}");
         if (curPlayer.velocity.magnitude < .5f)
@@ -948,20 +954,23 @@ public static class PlayerManager
 
             foreach (ReArmingPoint rep in rearmPoints)
             {
+               
                 if (rep.team == Teams.Allied)
+                if(spawnPoints.Count < spawnsCount)
                 {
-                    lastSpawn = new GameObject("MP Spawn ");
+                    lastSpawn = new GameObject("MP Spawn "+ rep.GetInstanceID());
                     lastSpawn.AddComponent<FloatingOriginTransform>();
                     lastSpawn.transform.position = rep.transform.position;
                     lastSpawn.transform.rotation = rep.transform.rotation;
                     spawnPoints.Add(lastSpawn.transform);
+
+                    Debug.Log($"Created ground Spawn at {lastSpawn.transform.position}");
                 }
 
             }
 
 
-        }
-
+        } 
 
         Debug.Log($"Creating remaining spawn points ({spawnsCount - spawnPoints.Count}) next to player.");
         int remainingSpawns = spawnsCount - spawnPoints.Count;
@@ -970,7 +979,7 @@ public static class PlayerManager
             {
                 lastSpawn = new GameObject("MP Spawn " + i);
                 lastSpawn.AddComponent<FloatingOriginTransform>();
-                lastSpawn.transform.position = startPosition.position + startPosition.TransformVector(new Vector3(spawnSpacing * i, 0, 0));
+                lastSpawn.transform.position = startPosition.position + startPosition.TransformVector(new Vector3(spawnSpacing * (i+1), 0, 0));
                 lastSpawn.transform.rotation = startPosition.rotation;
                 spawnPoints.Add(lastSpawn.transform);
                 Debug.Log($"Created MP Spawn {i} at {lastSpawn.transform.position}");
@@ -986,19 +995,37 @@ public static class PlayerManager
     /// Returns a spawn point which isn't blocked by another player
     /// </summary>
     /// <returns>A free spawn point</returns>
-    public static Transform FindFreeSpawn()
+    public static Transform FindFreeSpawn(bool leftie)
     {
-        //Later on this will check the spawns if there is anyone sitting still at this spawn
-        if (spawnPoints == null)
+        if (leftie) //leftie
         {
-            Transform returnValue = new GameObject().transform;
-            Debug.LogError("Spawn Points was null, we can't find a spawn point.\nReturning a new transform at " + returnValue.position);
-            return returnValue;
-        }
-        spawnTicker += 1;
-        if (spawnTicker > spawnsCount - 1)
-            spawnTicker = 0;
+            Debug.Log($"Spawing a leftie");
+            var rearmPoints = GameObject.FindObjectsOfType<ReArmingPoint>();
 
+            ReArmingPoint rearmPoint = GameObject.FindObjectOfType<ReArmingPoint>();
+            List<ReArmingPoint> EnemyPoints = new List<ReArmingPoint>();
+            foreach (ReArmingPoint rep in rearmPoints)
+            {
+                if (rep.team == Teams.Enemy)
+                {
+                    EnemyPoints.Add(rep);
+                   
+                }
+            }
+        
+
+            if (EnemyPoints.Count() > 0)
+            {
+                Debug.Log($"found leftie spawn");
+                rearmPoint = EnemyPoints[UnityEngine.Random.Range(0, EnemyPoints.Count - 1)];
+                return rearmPoint.transform;
+            }
+        }
+        // Later on this will check the spawns if there is anyone sitting still at this spawn
+     
+        spawnTicker += 1;
+        if (spawnTicker > spawnsCount -1)
+            spawnTicker = 0;
         return spawnPoints[spawnTicker];
     }
 
@@ -1035,6 +1062,20 @@ public static class PlayerManager
             }
         }
         return -1;
+    }
+    public static void AddToPlayerList(Player player)
+    {
+        foreach (var playerInList in players)
+        {
+            if (player.cSteamID == playerInList.cSteamID)
+            {
+                if (playerInList.vehicle != null)
+                    GameObject.Destroy(playerInList.vehicle);
+                players.Remove(playerInList);
+                break;
+            }
+        }
+        players.Add(player);
     }
 
     public static void CleanUpPlayerManagerStaticVariables()

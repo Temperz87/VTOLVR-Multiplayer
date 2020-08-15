@@ -244,8 +244,6 @@ public class PlaneNetworker_Receiver : MonoBehaviour
         if (message.UID != networkUID)
             return;
         idx = (int)traverse.Field("weaponIdx").GetValue();
-        int i = 0;
-        Debug.Log("Entering for loop");
         /*while (message.weaponIdx != idx && i < 60)
         {
             if (weaponManager.isMasterArmed == false)
@@ -276,7 +274,7 @@ public class PlaneNetworker_Receiver : MonoBehaviour
                 if (weaponManager.currentEquip is HPEquipMissileLauncher)
                 {
                     lastml = weaponManager.currentEquip as HPEquipMissileLauncher;
-                    Traverse.Create(lastml.ml).Field("missileIdx").SetValue(lastMessage.missileIdx);
+                    Traverse.Create(lastml.ml).Field("missileIdx").SetValue(message.missileIdx);
                     Debug.Log("Single firing this missile " + weaponManager.currentEquip.shortName);
                     weaponManager.SingleFire();
                 }

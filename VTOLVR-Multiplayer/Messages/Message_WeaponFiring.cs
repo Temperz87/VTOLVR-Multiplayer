@@ -5,7 +5,7 @@ public class Message_WeaponFiring : Message
     public int weaponIdx;
     public bool isFiring;
     public ulong UID;
-
+    public int missileIdx;
     public Message_WeaponFiring(int weaponIdx, bool isFiring, ulong uID)
     {
         this.weaponIdx = weaponIdx;

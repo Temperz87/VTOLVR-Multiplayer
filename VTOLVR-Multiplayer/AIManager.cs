@@ -452,10 +452,12 @@ public static class AIManager
                 continue;
             if (!actor.isPlayer)
             {
+                if (actor.name.Contains("Client"))
+                    return;
                 bool Aggresion = false;
-                Debug.Log("Try sending ai " + actor.name + " to client.");
                 if (actor.gameObject.GetComponent<UIDNetworker_Sender>() != null)
                 {
+                    Debug.Log("Try sending ai " + actor.name + " to client.");
                     HPInfo[] hPInfos2 = null;
                     int[] cmLoadout = null;
                     UIDNetworker_Sender uidSender = actor.gameObject.GetComponent<UIDNetworker_Sender>();
