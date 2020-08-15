@@ -1068,7 +1068,7 @@ public class Networker : MonoBehaviour
                 content.AppendLine("<b>" + SteamFriends.GetPersonaName() + "</b>" + ": " + "<color=\"green\">Ready</color>" + " REDFOR" + "\n");
                 break;
             case PlayerStatus.ReadyBLUFOR:
-                content.AppendLine("<b>" + SteamFriends.GetPersonaName() + "</b>" + ": " + "<color=\"green\">Ready</color>" + " BlUFOR" + "\n");
+                content.AppendLine("<b>" + SteamFriends.GetPersonaName() + "</b>" + ": " + "<color=\"green\">Ready</color>" + " BLUFOR" + "\n");
                 break;
             case PlayerStatus.Loading:
                 content.AppendLine("<b>" + SteamFriends.GetPersonaName() + "</b>" + ": " + "<color=\"blue\">Loading</color>" + "\n");

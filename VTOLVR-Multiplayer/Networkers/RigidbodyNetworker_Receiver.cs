@@ -87,9 +87,14 @@ public class RigidbodyNetworker_Receiver : MonoBehaviour
             {//we are not a player, get the ping from the host
                 playerID = PlayerManager.FindPlayerIDFromNetworkUID(PlayerManager.GetPlayerUIDFromCSteamID(Networker.hostID));//getting the host
             }
-            playerWeRepresent = PlayerManager.players[playerID];
+            if (playerID != -1)//couldnt find host latency, that sucks
+            {
+                playerWeRepresent = PlayerManager.players[playerID];
+            }
         }
-        latency = playerWeRepresent.ping;
+        if (playerWeRepresent != null) {
+            latency = playerWeRepresent.ping;
+        }
 
         globalTargetPosition += new Vector3D(targetVelocity * Time.fixedDeltaTime);
         localTargetPosition = VTMapManager.GlobalToWorldPoint(globalTargetPosition);
