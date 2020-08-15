@@ -79,8 +79,8 @@ public class RigidbodyNetworker_Sender : MonoBehaviour
     {
 
         rb.velocity = new Vector3(0, 0, 0);
-        rb.position = spawnPos;
-        rb.rotation = spawnRot;
+        rb.transform.position = spawnPos;
+        rb.transform.rotation = spawnRot;
         rb.Sleep();
         yield return new WaitForSeconds(0.5f);
         Debug.Log($"Our position is now {rb.position}");
