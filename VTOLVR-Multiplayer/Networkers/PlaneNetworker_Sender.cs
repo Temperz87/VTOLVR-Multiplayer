@@ -36,7 +36,7 @@ public class PlaneNetworker_Sender : MonoBehaviour
     private void Awake()
     {
         actor = gameObject.GetComponent<Actor>();
-        lastFiringMessage = new Message_WeaponFiring(-1, false, networkUID);
+        lastFiringMessage = new Message_WeaponFiring(-1, false, false, networkUID);
         // lastStoppedFiringMessage = new Message_WeaponStoppedFiring(networkUID);
         lastCountermeasureMessage = new Message_FireCountermeasure(true, true, networkUID);
         lastDeathMessage = new Message_Death(networkUID,false);
@@ -97,6 +97,14 @@ public class PlaneNetworker_Sender : MonoBehaviour
                 lastFiringMessage.UID = networkUID;
                 // lastStoppedFiringMessage.UID = networkUID;
                 lastFiringMessage.isFiring = weaponManager.isFiring;
+                if (weaponManager.currentEquip is HPEquipGun || weaponManager.currentEquip is VTOLCannon)
+                {
+                    lastFiringMessage.noAmmo = weaponManager.currentEquip.GetCount() == 0;
+                }
+                else
+                {
+                    lastFiringMessage.noAmmo = false;
+                }
                 if ( weaponManager.isFiring && weaponManager.currentEquip is HPEquipMissileLauncher)
                 {
                     lastml = weaponManager.currentEquip as HPEquipMissileLauncher;

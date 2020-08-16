@@ -22,6 +22,7 @@ public class PlaneNetworker_Receiver : MonoBehaviour
     private Traverse traverse;
     private HPEquipMissileLauncher lastml;
     private int idx;
+    private bool noAmmo;
     // private RadarLockData radarLockData;
     private ulong mostCurrentUpdateNumber;
     private void Awake()
@@ -218,6 +219,7 @@ public class PlaneNetworker_Receiver : MonoBehaviour
         }
 
         PlaneEquippableManager.SetLoadout(gameObject, networkUID, message.normalizedFuel, message.hpLoadout, message.cmLoadout);
+        noAmmo = false;
         if (Networker.isHost)
         {
             NetworkSenderThread.Instance.SendPacketAsHostToAllButOneSpecificClient(PlayerManager.GetPlayerCSteamID(message.UID),
@@ -292,6 +294,33 @@ public class PlaneNetworker_Receiver : MonoBehaviour
                 else
                 {
                     Debug.Log("try start fire for vehicle" + gameObject.name + " on current equip " + weaponManager.currentEquip);
+                    if (message.noAmmo && noAmmo == false)
+                    {
+                        if (weaponManager.currentEquip is HPEquipGun)
+                        {
+                            ((HPEquipGun)weaponManager.currentEquip).gun.currentAmmo = 0;
+                            noAmmo = true;
+                        }
+                        else if (weaponManager.currentEquip is HPEquipGunTurret)
+                        {
+                            ((HPEquipGunTurret)weaponManager.currentEquip).gun.currentAmmo = 0;
+                            noAmmo = true;
+                        }
+                    }
+                    else
+                    {
+                        if (weaponManager.currentEquip is HPEquipGun)
+                        {
+                            ((HPEquipGun)weaponManager.currentEquip).gun.currentAmmo = ((HPEquipGun)weaponManager.currentEquip).gun.maxAmmo;
+                            noAmmo = false;
+                        }
+                        else if (weaponManager.currentEquip is HPEquipGunTurret)
+                        {
+                            ((HPEquipGun)weaponManager.currentEquip).gun.currentAmmo = ((HPEquipGun)weaponManager.currentEquip).gun.maxAmmo;
+                            noAmmo = false;
+                        }
+
+                    }
                     weaponManager.StartFire();
                 }
             }
