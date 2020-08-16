@@ -93,7 +93,8 @@ public class RigidbodyNetworker_Receiver : MonoBehaviour
             }
         }
         if (playerWeRepresent != null) {
-            latency = playerWeRepresent.ping;
+            //delta time needs to be added to latency as this runs after packet has arrived for a while
+            latency = playerWeRepresent.ping + Time.fixedDeltaTime;
         }
 
         globalTargetPosition += new Vector3D(targetVelocity * Time.fixedDeltaTime);

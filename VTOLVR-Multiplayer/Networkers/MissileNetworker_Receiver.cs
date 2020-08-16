@@ -95,15 +95,19 @@ public class MissileNetworker_Receiver : MonoBehaviour
             }
         }
 
+       
+    }
+    private void LateUpdate()
+    {
+        //explode missle after it has done its RB physics fixed timestep
         if (lastMessage.hasExploded)
         {
             Debug.Log("Missile exploded.");
             if (thisMissile != null)
                 thisMissile.Detonate();
-            return;
+          
         }
     }
-
     public void OnDestroy()
     {
         Networker.MissileUpdate -= MissileUpdate;
