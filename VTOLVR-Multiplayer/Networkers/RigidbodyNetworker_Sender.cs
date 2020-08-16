@@ -28,7 +28,7 @@ public class RigidbodyNetworker_Sender : MonoBehaviour
     public int first = 0;
     public bool player = false;
 
-    public Vector3D spawnPosf;
+    public Vector3 spawnPosf;
     public Quaternion spawnRotf;
     private void Awake()
     {
@@ -37,22 +37,17 @@ public class RigidbodyNetworker_Sender : MonoBehaviour
         tick = 0;
     }
 
+    private void LateUpdate()
+    {
+        
+
+            
+    }
     private void FixedUpdate()
     {
-         if(first < 200)if(player)
-        {
-            PlayerVehicle currentVehiclet = PilotSaveManager.currentVehicle;
-                    GameObject localVehicle = VTOLAPI.GetPlayersVehicleGameObject();
-                localVehicle.transform.position = VTMapManager.GlobalToWorldPoint(spawnPosf);
-            localVehicle.transform.position += currentVehiclet.playerSpawnOffset + new Vector3(0f, 0.5f, 0f);
-                localVehicle.transform.rotation = spawnRotf;
+         
 
-                //need to add airspeed for air spawn
-               rb.velocity = new Vector3(0, 0, 0); rb.Sleep();
-                Physics.SyncTransforms();
-                first++;
-                
-        }
+
         globalLastPosition += new Vector3D(lastVelocity * Time.fixedDeltaTime);
         localLastPosition = VTMapManager.GlobalToWorldPoint(globalLastPosition);
         Quaternion quatVel = Quaternion.Euler(lastAngularVelocity * Time.fixedDeltaTime);
@@ -90,7 +85,7 @@ public class RigidbodyNetworker_Sender : MonoBehaviour
             //Debug.Log($"{actor.name} is not outside of the threshold {Threshold}, the distance is {Vector3.Distance(lastPos, gameObject.transform.position)} not updating it.");
     }
 
-    public void SetSpawn(Vector3D spawnPos, Quaternion spawnRot)
+    public void SetSpawn(Vector3 spawnPos, Quaternion spawnRot)
     {
         Debug.Log($"starting spawn repositioner");
         spawnPosf = spawnPos;
@@ -98,20 +93,23 @@ public class RigidbodyNetworker_Sender : MonoBehaviour
         StartCoroutine(SetSpawnEnumerator(spawnPos, spawnRot));
     }
 
-    private IEnumerator SetSpawnEnumerator(Vector3D spawnPos, Quaternion spawnRot)
+    private IEnumerator SetSpawnEnumerator(Vector3 spawnPos, Quaternion spawnRot)
     {
-         
+        rb.interpolation = RigidbodyInterpolation.None;
+        rb.isKinematic=true;
         rb.velocity = new Vector3(0, 0, 0); rb.Sleep();
-
-        rb.transform.position = VTMapManager.GlobalToWorldPoint(spawnPos);
+        rb.position = spawnPos;
+        rb.transform.position = spawnPos;
         rb.transform.rotation = spawnRot;
         rb.Sleep();
 
+        player = true;
         Physics.SyncTransforms();
         Debug.Log($"Our position is now {rb.position}");
    
         yield return new WaitForSeconds(0.5f);
         rb.detectCollisions = true;
+
 
     }
 }
