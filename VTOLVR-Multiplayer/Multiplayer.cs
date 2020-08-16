@@ -73,6 +73,9 @@ public class Multiplayer : VTOLMOD
     public bool displayPing = false;
     private UnityAction<bool> DisplayPing_changed;
 
+    public float missileDamage = 0.5f;
+    public float missileRadius = 1.8f;
+
     private void Start()
     {
         if (_instance == null)

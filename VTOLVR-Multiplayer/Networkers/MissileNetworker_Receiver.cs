@@ -12,6 +12,8 @@ public class MissileNetworker_Receiver : MonoBehaviour
     public MissileLauncher thisML;
     public int idx;
     private Message_MissileUpdate lastMessage;
+    private Message_MissileLaunch lastLaunchMessage;
+    private Message_MissileDetonate lastDetonateMessage;
     private Traverse traverse;
     // private Rigidbody rigidbody; see missileSender for why i not using rigidbody
     private bool hasFired = false;
@@ -19,8 +21,7 @@ public class MissileNetworker_Receiver : MonoBehaviour
     private void Start()
     {
         thisMissile = GetComponent<Missile>();
-        // rigidbody = GetComponent<Rigidbody>();
-        Networker.MissileUpdate += MissileUpdate;
+        traverse = Traverse.Create(thisML);
         thisMissile.OnDetonate.AddListener(new UnityEngine.Events.UnityAction(() => { Debug.Log("Missile detonated: " + thisMissile.name); }));
         if (thisMissile.guidanceMode == Missile.GuidanceModes.Bomb)
         {
@@ -30,87 +31,89 @@ public class MissileNetworker_Receiver : MonoBehaviour
             }
         }
 
-        thisMissile.explodeRadius *= 1.8f; thisMissile.explodeDamage *= 0.5f;
+        thisMissile.explodeRadius *= Multiplayer._instance.missileRadius;
+        thisMissile.explodeDamage *= Multiplayer._instance.missileDamage;
+
+        Networker.MissileUpdate += MissileUpdate;
+        Networker.MissileLaunch += MissileLaunch;
+        Networker.MissileDetonate += MissileDestroyed;
+    }
+
+    public void MissileLaunch(Packet packet)
+    {
+        lastLaunchMessage = ((PacketSingle)packet).message as Message_MissileLaunch;
+        if (lastLaunchMessage.networkUID != networkUID)
+            return;
+
+        Debug.Log(thisMissile.gameObject.name + " missile fired on one end but not another, firing here.");
+        if (thisML == null)
+        {
+            Debug.LogError($"Missile launcher is null on missile {thisMissile.actor.name}, someone forgot to assign it.");
+        }
+        if (thisMissile.guidanceMode == Missile.GuidanceModes.Radar)
+        {
+            // thisMissile.debugMissile = true;
+            RadarMissileLauncher radarLauncher = thisML as RadarMissileLauncher;
+            if (radarLauncher != null)
+            {
+                Debug.Log("Guidance mode radar, firing it as a radar missile.");
+                if (!radarLauncher.TryFireMissile())
+                {
+                    Debug.LogError("Could not fire radar missile.");
+                }
+                else
+                {
+                    RigidbodyNetworker_Receiver rbReceiver = gameObject.AddComponent<RigidbodyNetworker_Receiver>();
+                    rbReceiver.networkUID = networkUID;
+                }
+            }
+        }
+        else
+        {
+            if (thisMissile.guidanceMode == Missile.GuidanceModes.Optical)
+            {
+                Debug.Log("Guidance mode Optical.");
+                thisMissile.heatSeeker.transform.rotation = lastLaunchMessage.seekerRotation;
+                thisMissile.heatSeeker.SetHardLock();
+            }
+            Debug.Log("Try fire missile clientside");
+            traverse.Field("missileIdx").SetValue(idx);
+            thisML.FireMissile();
+
+            RigidbodyNetworker_Receiver rbReceiver = gameObject.AddComponent<RigidbodyNetworker_Receiver>();
+            rbReceiver.networkUID = networkUID;
+        }
+        if (hasFired != thisMissile.fired)
+        {
+            Debug.Log("Missile fired " + thisMissile.name);
+            hasFired = true;
+        }
     }
 
     public void MissileUpdate(Packet packet)
     {
-        if (!thisMissile.gameObject.activeSelf)
-        {
-            Debug.LogError(thisMissile.gameObject.name + " isn't active in hiearchy, changing it to active.");
-            thisMissile.gameObject.SetActive(true);
-        }
-        if (traverse == null)
-        {
-            traverse = Traverse.Create(thisML);
-        }
-        lastMessage = ((PacketSingle)packet).message as Message_MissileUpdate;
         if (lastMessage.networkUID != networkUID)
-        {
             return;
-        }
-        if (!thisMissile.fired)
-        {
-            Debug.Log(thisMissile.gameObject.name + " missile fired on one end but not another, firing here.");
-            if (thisML == null)
-            {
-                Debug.LogError($"Missile launcher is null on missile {thisMissile.actor.name}, someone forgot to assign it.");
-            }
-            if (lastMessage.guidanceMode == Missile.GuidanceModes.Radar)
-            {
-                // thisMissile.debugMissile = true;
-                RadarMissileLauncher radarLauncher = thisML as RadarMissileLauncher;
-                if (radarLauncher != null)
-                {
-                    Debug.Log("Guidance mode radar, firing it as a radar missile.");
-                    if (!radarLauncher.TryFireMissile())
-                    {
-                        Debug.LogError("Could not fire radar missile.");
-                    }
-                    else
-                    {
-                        RigidbodyNetworker_Receiver rbReceiver = gameObject.AddComponent<RigidbodyNetworker_Receiver>();
-                        rbReceiver.networkUID = networkUID;
-                    }
-                }
-            }
-            else
-            {
-                if (lastMessage.guidanceMode == Missile.GuidanceModes.Optical)
-                {
-                    Debug.Log("Guidance mode Optical.");
-                    thisMissile.heatSeeker.transform.rotation = lastMessage.seekerRotation;
-                    thisMissile.heatSeeker.SetHardLock();
-                }
-                Debug.Log("Try fire missile clientside");
-                traverse.Field("missileIdx").SetValue(idx);
-                thisML.FireMissile();
-                RigidbodyNetworker_Receiver rbReceiver = gameObject.AddComponent<RigidbodyNetworker_Receiver>();
-                rbReceiver.networkUID = networkUID;
-            }
-            if (hasFired != thisMissile.fired)
-            {
-                Debug.Log("Missile fired " + thisMissile.name);
-                hasFired = true;
-            }
-        }
+    }
 
-        if (lastMessage.hasExploded)
-        {
-            Debug.Log("Missile exploded.");
-            if (thisMissile != null)
-                thisMissile.Detonate();
+    public void MissileDestroyed(Packet packet)
+    {
+        if (lastMessage.networkUID != networkUID)
             return;
-        }
+
+        Debug.Log("Missile exploded.");
+        thisMissile.Detonate();
     }
 
     public void OnDestroy()
     {
         Networker.MissileUpdate -= MissileUpdate;
+        Networker.MissileLaunch -= MissileLaunch;
+        Networker.MissileDetonate -= MissileDestroyed;
     }
 }
 
-/* Possiable Issue
+/* Possible Issue
  * 
  * A missile on a client may explode early because of the random chance it loses locking bceause of 
  * counter measures. 

@@ -7,21 +7,22 @@ public class MissileNetworker_Sender : MonoBehaviour
 {
     public ulong networkUID;
     private Message_MissileUpdate lastMessage;
+    private Message_MissileLaunch lastLaunchMessage;
+    private Message_MissileDetonate lastDetonateMessage;
     private Missile thisMissile;
     private bool hasFired = false;
+
     private void Awake()
     {
         Networker.RequestNetworkUID += RequestUID;
         lastMessage = new Message_MissileUpdate(networkUID);
+        lastLaunchMessage = new Message_MissileLaunch(networkUID, Quaternion.identity);
+        lastDetonateMessage = new Message_MissileDetonate(networkUID);
         thisMissile = GetComponent<Missile>();
     }
 
     private void FixedUpdate()
     {
-        if (thisMissile == null)
-        {
-            Debug.LogError("thisMissile null.");
-        }
         if (hasFired != thisMissile.fired)
         {
             Debug.Log("Missile fired " + thisMissile.name);
@@ -30,35 +31,22 @@ public class MissileNetworker_Sender : MonoBehaviour
             RigidbodyNetworker_Sender rbSender = gameObject.AddComponent<RigidbodyNetworker_Sender>();
             rbSender.networkUID = networkUID;
         }
-        if (thisMissile != null && thisMissile.fired)
+        if (thisMissile.fired)
         {
-            if (lastMessage == null)
+            lastLaunchMessage.networkUID = networkUID;
+            if (thisMissile.guidanceMode == Missile.GuidanceModes.Optical)
             {
-                Debug.LogError("lastMessage null");
+                lastLaunchMessage.targetPosition = VTMapManager.WorldToGlobalPoint(thisMissile.opticalTargetActor.transform.position);
+                lastLaunchMessage.seekerRotation = thisMissile.heatSeeker.transform.rotation;
             }
-            lastMessage.networkUID = networkUID;
-            lastMessage.guidanceMode = thisMissile.guidanceMode;
-            if (thisMissile.guidanceMode == Missile.GuidanceModes.Radar)
+            if (Networker.isHost)
             {
-                if (thisMissile.radarLock != null && thisMissile.radarLock.actor != null)
-                {
-                    lastMessage.targetPosition = VTMapManager.WorldToGlobalPoint(thisMissile.radarLock.actor.transform.position);
-                    foreach (var AI in AIManager.AIVehicles)
-                    {
-                        if (AI.actor == thisMissile.radarLock.actor)
-                        {
-                            lastMessage.radarLock = AI.vehicleUID;
-                            // Debug.Log($"Missile {gameObject.name} has found its lock {AI.actor.name} with an uID of {AI.vehicleUID} while trying to lock {thisMissile.radarLock.actor.name}");
-                        }
-                    }
-                }
+                NetworkSenderThread.Instance.SendPacketAsHostToAllClients(lastDetonateMessage, Steamworks.EP2PSend.k_EP2PSendReliable);
             }
-            else if (thisMissile.guidanceMode == Missile.GuidanceModes.Optical)
+            else
             {
-                lastMessage.targetPosition = VTMapManager.WorldToGlobalPoint(thisMissile.opticalTargetActor.transform.position);
-                lastMessage.seekerRotation = thisMissile.heatSeeker.transform.rotation;
+                NetworkSenderThread.Instance.SendPacketToSpecificPlayer(Networker.hostID, lastDetonateMessage, Steamworks.EP2PSend.k_EP2PSendReliable);
             }
-            SendMessage(false);
         }
         /*if (thisMissile.guidanceMode == Missile.GuidanceModes.Radar)
         {
@@ -82,8 +70,14 @@ public class MissileNetworker_Sender : MonoBehaviour
     /// </summary>
     public void OnDestroy()
     {
-        lastMessage.hasExploded = true;
-        SendMessage(true);
+        if (Networker.isHost)
+        {
+            NetworkSenderThread.Instance.SendPacketAsHostToAllClients(lastDetonateMessage, Steamworks.EP2PSend.k_EP2PSendReliable);
+        }
+        else
+        {
+            NetworkSenderThread.Instance.SendPacketToSpecificPlayer(Networker.hostID, lastDetonateMessage, Steamworks.EP2PSend.k_EP2PSendReliable);
+        }
     }
 
     private void SendMessage(bool isDestoryed)

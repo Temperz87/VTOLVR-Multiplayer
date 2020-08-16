@@ -254,6 +254,8 @@ public class Networker : MonoBehaviour
     public static event UnityAction<Packet> RadarUpdate;
     public static event UnityAction<Packet> TurretUpdate;
     public static event UnityAction<Packet> MissileUpdate;
+    public static event UnityAction<Packet> MissileLaunch;
+    public static event UnityAction<Packet> MissileDetonate;
     public static event UnityAction<Packet> WorldDataUpdate;
     public static event UnityAction<Packet> RequestNetworkUID;
     public static event UnityAction<Packet> LockingRadarUpdate;
@@ -798,6 +800,16 @@ public class Networker : MonoBehaviour
                     // Debug.Log("case missile update");
                     if (MissileUpdate != null)
                         MissileUpdate.Invoke(packet);
+                    break;
+                case MessageType.MissileLaunch:
+                    Debug.Log("case missile launch");
+                    if (MissileLaunch != null)
+                        MissileLaunch.Invoke(packet);
+                    break;
+                case MessageType.MissileDetonate:
+                    Debug.Log("case missile detonate");
+                    if (MissileDetonate != null)
+                        MissileDetonate.Invoke(packet);
                     break;
                 case MessageType.RequestNetworkUID:
                     Debug.Log("case request network UID");
