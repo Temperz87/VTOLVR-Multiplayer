@@ -14,10 +14,12 @@ using System.Text.RegularExpressions;
 public static class PlayerManager
 {
     public static List<Transform> spawnPoints { private set; get; }
-
+    public static List<ReArmingPoint> reaArms;
     private static float spawnSpacing = 20;
     private static int spawnsCount = 20;
-    private static int spawnTicker = 15;
+    private static int spawnTicker = 1;
+
+    public static bool firstSpawn = false;
     /// <summary>
     /// This is the queue for people waiting to get a spawn point,
     /// incase the host hasn't loaded in, in time.
@@ -72,6 +74,7 @@ public static class PlayerManager
         SetPrefabs();
         if (!Networker.isHost)
         {
+            ScreenFader.FadeOut(Color.black, 0.0f);
             Debug.Log($"Sending spawn request to host, host id: {Networker.hostID}, client id: {SteamUser.GetSteamID().m_SteamID}");
             Debug.Log("Killing all units currently on the map.");
             List<Actor> allActors = new List<Actor>();
@@ -140,6 +143,8 @@ public static class PlayerManager
             }*/
             Message_RequestSpawn msg = new Message_RequestSpawn(teamLeftie, SteamUser.GetSteamID().m_SteamID);
             NetworkSenderThread.Instance.SendPacketToSpecificPlayer(Networker.hostID, msg, EP2PSend.k_EP2PSendReliable);
+       
+            
         }
         else
         {
@@ -196,7 +201,10 @@ public static class PlayerManager
                     }
                     if (!actor.isPlayer && actor.role == Actor.Roles.Air)
                     {
-                        PlaneEquippableManager.generateHpInfoListFromWeaponManager(actor.weaponManager, PlaneEquippableManager.HPInfoListGenerateNetworkType.generate, uidSender.networkUID);
+                        if(actor.weaponManager != null)
+                        {
+                            PlaneEquippableManager.generateHpInfoListFromWeaponManager(actor.weaponManager, PlaneEquippableManager.HPInfoListGenerateNetworkType.generate, uidSender.networkUID);
+                        }
                         lastPlaneSender = actor.gameObject.AddComponent<PlaneNetworker_Sender>();
                         lastPlaneSender.networkUID = networkUID;
                     }
@@ -293,9 +301,12 @@ public static class PlayerManager
                 hostSender.networkUID = localUID;
                 Debug.Log($"The host's uID is {localUID}");
 
-                Transform hostTrans = FindFreeSpawn(false);
+
+                Transform hostTrans = localVehicle.transform;
+                ///uncomment to randomise host spawn//Transform hostTrans = FindFreeSpawn(false);
                 localVehicle.transform.position = hostTrans.position;
-                SpawnLocalVehicleAndInformOtherClients(localVehicle, hostTrans.transform.position, hostTrans.transform.rotation, localUID);
+                
+                SpawnLocalVehicleAndInformOtherClients(localVehicle, VTMapManager.WorldToGlobalPoint(hostTrans.transform.position), hostTrans.transform.rotation, localUID);
             }
             else
                 Debug.Log("Local vehicle for host was null");
@@ -431,15 +442,17 @@ public static class PlayerManager
         PlayerVehicle currentVehiclet = PilotSaveManager.currentVehicle;
         localVehicle.transform.TransformPoint(currentVehiclet.playerSpawnOffset);
 
-        SpawnLocalVehicleAndInformOtherClients(localVehicle, localVehicle.transform.position, localVehicle.transform.rotation, result.vehicleUID);
+        SpawnLocalVehicleAndInformOtherClients(localVehicle, VTMapManager.WorldToGlobalPoint(localVehicle.transform.position), localVehicle.transform.rotation, result.vehicleUID);
         localUID = result.vehicleUID;
+
+        Time.timeScale = 1.0f;
     }
     /// <summary>
     /// Spawns a local vehicle, and sends the message to other clients to 
     /// spawn their representation of this vehicle
     /// </summary>
     /// <param name="localVehicle">The local clients gameobject</param>
-    public static void SpawnLocalVehicleAndInformOtherClients(GameObject localVehicle, Vector3 pos, Quaternion rot, ulong UID) //Both
+    public static void SpawnLocalVehicleAndInformOtherClients(GameObject localVehicle, Vector3D pos, Quaternion rot, ulong UID) //Both
     {
         Debug.Log("Sending our location to spawn our vehicle");
         VTOLVehicles currentVehicle = VTOLAPI.GetPlayersVehicleEnum();
@@ -447,7 +460,19 @@ public static class PlayerManager
         Player localPlayer = new Player(SteamUser.GetSteamID(), localVehicle, currentVehicle, UID, PlayerManager.teamLeftie);
         AddToPlayerList(localPlayer);
 
+     
         SetupLocalAircraft(localVehicle, pos, rot, UID);
+
+        VTOLQuickStart componentInChildren = localVehicle.GetComponentInChildren<VTOLQuickStart>();
+
+        componentInChildren.QuickStart();
+        
+        /*if(!firstSpawn)
+        if (!Networker.isHost) {
+        actor.health.Kill();
+                localVehicle.transform.position = new Vector3(1000000, 10000, 10000);
+            }
+        firstSpawn = true;*/
 
         if (Multiplayer.SoloTesting)
             pos += new Vector3(20, 0, 0);
@@ -483,7 +508,7 @@ public static class PlayerManager
         }*/
     }
 
-    public static void SetupLocalAircraft(GameObject localVehicle, Vector3 pos, Quaternion rot, ulong UID)
+    public static void SetupLocalAircraft(GameObject localVehicle, Vector3D pos, Quaternion rot, ulong UID)
     {
         VTOLVehicles currentVehicle = VTOLAPI.GetPlayersVehicleEnum();
         Actor actor = localVehicle.GetComponent<Actor>();
@@ -498,13 +523,12 @@ public static class PlayerManager
             VTOLVR_Multiplayer.AIDictionaries.reverseAllActors.Add(actor, UID);
        
         RigidbodyNetworker_Sender rbSender = localVehicle.AddComponent<RigidbodyNetworker_Sender>();
-       
+        rbSender.player = true;
         rbSender.networkUID = UID;
         
         rbSender.SetSpawn(pos, rot);
 
-      
-
+       
         if (currentVehicle == VTOLVehicles.AV42C)
         {
             rbSender.originOffset = av42Offset;
@@ -537,6 +561,9 @@ public static class PlayerManager
         {
             HealthNetworker_Sender healthNetworker = localVehicle.AddComponent<HealthNetworker_Sender>();
             PlayerNetworker_Sender playerNetworker = localVehicle.AddComponent<PlayerNetworker_Sender>();
+
+            
+
             healthNetworker.networkUID = UID;
             playerNetworker.networkUID = UID;
             Debug.Log("added health sender to local player");
@@ -586,7 +613,7 @@ public static class PlayerManager
             Debug.Log($"Sending spawn vehicle message to: {Networker.hostID}");
             NetworkSenderThread.Instance.SendPacketToSpecificPlayer(Networker.hostID,
                 new Message_SpawnPlayerVehicle(currentVehicle,
-                    new Vector3D(pos),
+                    pos,
                     rot,
                     SteamUser.GetSteamID().m_SteamID,
                     UID,
@@ -599,7 +626,7 @@ public static class PlayerManager
         {
             //Debug.Log("I am host, no need to immediately forward my assembled vehicle");
             NetworkSenderThread.Instance.SendPacketAsHostToAllClients(new Message_SpawnPlayerVehicle(currentVehicle,
-                    new Vector3D(pos),
+                    pos,
                     rot,
                     SteamUser.GetSteamID().m_SteamID,
                     UID,
@@ -947,6 +974,9 @@ public static class PlayerManager
         //int spawnCounter = 0;
         //If the player starts on the ground
         Debug.Log($"The player's velocity is {curPlayer.velocity.magnitude}");
+
+        bool carrier  = curPlayer.unitSpawn.unitSpawner.linkedToCarrier;
+      
         if (curPlayer.velocity.magnitude < .5f)
         {
             var rearmPoints = GameObject.FindObjectsOfType<ReArmingPoint>();
@@ -963,15 +993,16 @@ public static class PlayerManager
                     lastSpawn.transform.position = rep.transform.position;
                     lastSpawn.transform.rotation = rep.transform.rotation;
                     spawnPoints.Add(lastSpawn.transform);
-
+                            reaArms.Add(rep);
                     Debug.Log($"Created ground Spawn at {lastSpawn.transform.position}");
                 }
 
             }
 
 
-        } 
-
+        }
+        float height = 0;
+     
         Debug.Log($"Creating remaining spawn points ({spawnsCount - spawnPoints.Count}) next to player.");
         int remainingSpawns = spawnsCount - spawnPoints.Count;
         if (remainingSpawns > 0)
@@ -979,7 +1010,7 @@ public static class PlayerManager
             {
                 lastSpawn = new GameObject("MP Spawn " + i);
                 lastSpawn.AddComponent<FloatingOriginTransform>();
-                lastSpawn.transform.position = startPosition.position + startPosition.TransformVector(new Vector3(spawnSpacing * (i+1), 0, 0));
+                lastSpawn.transform.position = startPosition.position + startPosition.TransformVector(new Vector3(spawnSpacing * (i+1), height, 0));
                 lastSpawn.transform.rotation = startPosition.rotation;
                 spawnPoints.Add(lastSpawn.transform);
                 Debug.Log($"Created MP Spawn {i} at {lastSpawn.transform.position}");
@@ -1092,6 +1123,7 @@ public static class PlayerManager
         ObjectiveNetworker_Reciever.scenarioActionsList?.Clear();
         ObjectiveNetworker_Reciever.scenarioActionsListCoolDown?.Clear();
         PlaneNetworker_Receiver.dontPrefixNextJettison = false;
+        firstSpawn = false;
     }
 
     public static void OnDisconnect()

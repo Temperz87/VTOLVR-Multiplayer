@@ -5,10 +5,10 @@ class HealthNetworker_Sender : MonoBehaviour
     public ulong networkUID;
     private Message_Death lastMessage;
     public Health health;
-
+    public bool immediateFlag;
     private void Awake()
     {
-        lastMessage = new Message_Death(networkUID);
+        lastMessage = new Message_Death(networkUID,false);
 
         health = GetComponent<Health>();
         if (health == null)
@@ -21,6 +21,7 @@ class HealthNetworker_Sender : MonoBehaviour
     void Death()
     {
         lastMessage.UID = networkUID;
+        lastMessage.immediate = immediateFlag;
         if (Networker.isHost)
             NetworkSenderThread.Instance.SendPacketAsHostToAllClients(lastMessage, Steamworks.EP2PSend.k_EP2PSendUnreliableNoDelay);
         else

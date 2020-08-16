@@ -30,6 +30,8 @@ class NetworkSenderThread
 
         networkThread.IsBackground = true;
         networkThread.Start();
+
+        networkThread.Priority = ThreadPriority.AboveNormal;
     }
 
     private class OutgoingNetworkPacketContainer

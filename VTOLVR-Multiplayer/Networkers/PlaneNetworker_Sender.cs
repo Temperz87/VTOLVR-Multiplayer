@@ -39,7 +39,7 @@ public class PlaneNetworker_Sender : MonoBehaviour
         lastFiringMessage = new Message_WeaponFiring(-1, false, networkUID);
         // lastStoppedFiringMessage = new Message_WeaponStoppedFiring(networkUID);
         lastCountermeasureMessage = new Message_FireCountermeasure(true, true, networkUID);
-        lastDeathMessage = new Message_Death(networkUID);
+        lastDeathMessage = new Message_Death(networkUID,false);
         wheelsController = GetComponent<WheelsController>();
         aeroController = GetComponent<AeroController>();
         isPlayer = actor.isPlayer;

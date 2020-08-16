@@ -155,8 +155,8 @@ class PlayerNetworker_Sender : MonoBehaviour
         PilotSaveManager.currentScenario.inFlightSpending = 0;
         PilotSaveManager.currentScenario.equipConfigurable = true;
         rearmPoint.BeginReArm();
-
-        PlayerManager.SetupLocalAircraft(newPlayer, newPlayer.transform.position, newPlayer.transform.rotation, networkUID);
+        
+        PlayerManager.SetupLocalAircraft(newPlayer, VTMapManager.WorldToGlobalPoint(rearmPoint.transform.position), newPlayer.transform.rotation, networkUID);
 
         lastMessage.UID = networkUID;
         lastMessage.isLeftie = PlayerManager.teamLeftie;
