@@ -196,7 +196,8 @@ public static class PlayerManager
                     }
                     if (!actor.isPlayer && actor.role == Actor.Roles.Air)
                     {
-                        PlaneEquippableManager.generateHpInfoListFromWeaponManager(actor.weaponManager, PlaneEquippableManager.HPInfoListGenerateNetworkType.generate, uidSender.networkUID);
+                        if (actor.weaponManager != null)
+                            PlaneEquippableManager.generateHpInfoListFromWeaponManager(actor.weaponManager, PlaneEquippableManager.HPInfoListGenerateNetworkType.generate, uidSender.networkUID);
                         lastPlaneSender = actor.gameObject.AddComponent<PlaneNetworker_Sender>();
                         lastPlaneSender.networkUID = networkUID;
                     }
@@ -487,7 +488,7 @@ public static class PlayerManager
     {
         VTOLVehicles currentVehicle = VTOLAPI.GetPlayersVehicleEnum();
         Actor actor = localVehicle.GetComponent<Actor>();
-        
+
         if (VTOLVR_Multiplayer.AIDictionaries.allActors.ContainsKey(UID))
             VTOLVR_Multiplayer.AIDictionaries.allActors[UID] = actor;
         else
@@ -496,14 +497,14 @@ public static class PlayerManager
             VTOLVR_Multiplayer.AIDictionaries.reverseAllActors[actor] = UID;
         else
             VTOLVR_Multiplayer.AIDictionaries.reverseAllActors.Add(actor, UID);
-       
+
         RigidbodyNetworker_Sender rbSender = localVehicle.AddComponent<RigidbodyNetworker_Sender>();
-       
+
         rbSender.networkUID = UID;
-        
+
         rbSender.SetSpawn(pos, rot);
 
-      
+
 
         if (currentVehicle == VTOLVehicles.AV42C)
         {
@@ -954,23 +955,23 @@ public static class PlayerManager
 
             foreach (ReArmingPoint rep in rearmPoints)
             {
-               
-                if (rep.team == Teams.Allied)
-                if(spawnPoints.Count < spawnsCount)
-                {
-                    lastSpawn = new GameObject("MP Spawn "+ rep.GetInstanceID());
-                    lastSpawn.AddComponent<FloatingOriginTransform>();
-                    lastSpawn.transform.position = rep.transform.position;
-                    lastSpawn.transform.rotation = rep.transform.rotation;
-                    spawnPoints.Add(lastSpawn.transform);
 
-                    Debug.Log($"Created ground Spawn at {lastSpawn.transform.position}");
-                }
+                if (rep.team == Teams.Allied)
+                    if (spawnPoints.Count < spawnsCount)
+                    {
+                        lastSpawn = new GameObject("MP Spawn " + rep.GetInstanceID());
+                        lastSpawn.AddComponent<FloatingOriginTransform>();
+                        lastSpawn.transform.position = rep.transform.position;
+                        lastSpawn.transform.rotation = rep.transform.rotation;
+                        spawnPoints.Add(lastSpawn.transform);
+
+                        Debug.Log($"Created ground Spawn at {lastSpawn.transform.position}");
+                    }
 
             }
 
 
-        } 
+        }
 
         Debug.Log($"Creating remaining spawn points ({spawnsCount - spawnPoints.Count}) next to player.");
         int remainingSpawns = spawnsCount - spawnPoints.Count;
@@ -979,7 +980,7 @@ public static class PlayerManager
             {
                 lastSpawn = new GameObject("MP Spawn " + i);
                 lastSpawn.AddComponent<FloatingOriginTransform>();
-                lastSpawn.transform.position = startPosition.position + startPosition.TransformVector(new Vector3(spawnSpacing * (i+1), 0, 0));
+                lastSpawn.transform.position = startPosition.position + startPosition.TransformVector(new Vector3(spawnSpacing * (i + 1), 0, 0));
                 lastSpawn.transform.rotation = startPosition.rotation;
                 spawnPoints.Add(lastSpawn.transform);
                 Debug.Log($"Created MP Spawn {i} at {lastSpawn.transform.position}");
@@ -1009,10 +1010,10 @@ public static class PlayerManager
                 if (rep.team == Teams.Enemy)
                 {
                     EnemyPoints.Add(rep);
-                   
+
                 }
             }
-        
+
 
             if (EnemyPoints.Count() > 0)
             {
@@ -1022,9 +1023,9 @@ public static class PlayerManager
             }
         }
         // Later on this will check the spawns if there is anyone sitting still at this spawn
-     
+
         spawnTicker += 1;
-        if (spawnTicker > spawnsCount -1)
+        if (spawnTicker > spawnsCount - 1)
             spawnTicker = 0;
         return spawnPoints[spawnTicker];
     }
