@@ -11,7 +11,7 @@ class HealthNetworker_ReceiverHostEnforced : MonoBehaviour
 
     private void Awake()
     {
-        lastMessage = new Message_Death(networkUID);
+        lastMessage = new Message_Death(networkUID,false);
         Networker.Death += Death;
 
         health = GetComponent<Health>();

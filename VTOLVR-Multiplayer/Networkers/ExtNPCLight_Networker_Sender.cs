@@ -23,9 +23,9 @@ class ExtNPCLight_Sender : MonoBehaviour
     private void Awake()
     {
         lastMessage = new Message_ExtLight(false, false, false, networkUID);
+       lightsController = GetComponentInChildren<ExteriorLightsController>();
         traverse = Traverse.Create(lightsController.navLights[0]);
         traverse2 = Traverse.Create(lightsController.landingLights[0]);
-        lightsController = GetComponentInChildren<ExteriorLightsController>();
     }
 
     void FixedUpdate()

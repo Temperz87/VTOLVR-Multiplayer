@@ -24,6 +24,8 @@ public class WorldDataNetworker_Receiver : MonoBehaviour
     public void FixedUpdate()
     {
         // If the client's time scale is different than the servers timescale, force the clients to match
+
+      
         if (Time.timeScale != serverTimescale)
         {
             Debug.Log($"Client timescale { Time.timeScale } mismatch with server { serverTimescale } - Forcing client update");
