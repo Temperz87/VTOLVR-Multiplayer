@@ -90,7 +90,7 @@ public class MissileNetworker_Receiver : MonoBehaviour
         }
     }
 
-    public void MissileUpdate(Packet packet)
+    public void MissileUpdate(Packet packet)//unused, maybe usefull later
     {
         lastMessage = ((PacketSingle)packet).message as Message_MissileUpdate;
         if (lastMessage.networkUID != networkUID)

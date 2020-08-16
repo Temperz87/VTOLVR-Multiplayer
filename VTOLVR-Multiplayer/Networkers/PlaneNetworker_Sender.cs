@@ -105,11 +105,8 @@ public class PlaneNetworker_Sender : MonoBehaviour
                 {
                     lastFiringMessage.noAmmo = false;
                 }
-                if ( weaponManager.isFiring && weaponManager.currentEquip is HPEquipMissileLauncher)
-                {
-                    lastml = weaponManager.currentEquip as HPEquipMissileLauncher;
-                    lastFiringMessage.missileIdx = (int)Traverse.Create(lastml.ml).Field("missileIdx").GetValue();
-                }
+                if (weaponManager.isFiring && weaponManager.currentEquip is HPEquipMissileLauncher)
+                    return;
                 if (Networker.isHost)
                     NetworkSenderThread.Instance.SendPacketAsHostToAllClients(lastFiringMessage, Steamworks.EP2PSend.k_EP2PSendUnreliableNoDelay);
                 else
