@@ -41,21 +41,15 @@ public class MissileNetworker_Sender : MonoBehaviour
             }
             if (Networker.isHost)
             {
-                NetworkSenderThread.Instance.SendPacketAsHostToAllClients(lastDetonateMessage, Steamworks.EP2PSend.k_EP2PSendReliable);
+                NetworkSenderThread.Instance.SendPacketAsHostToAllClients(lastLaunchMessage, Steamworks.EP2PSend.k_EP2PSendReliable);
             }
             else
             {
-                NetworkSenderThread.Instance.SendPacketToSpecificPlayer(Networker.hostID, lastDetonateMessage, Steamworks.EP2PSend.k_EP2PSendReliable);
+                NetworkSenderThread.Instance.SendPacketToSpecificPlayer(Networker.hostID, lastLaunchMessage, Steamworks.EP2PSend.k_EP2PSendReliable);
             }
         }
-        /*if (thisMissile.guidanceMode == Missile.GuidanceModes.Radar)
-        {
-            if (thisMissile.isPitbull)
-            {
-                Debug.Log(gameObject.name + " is now pitbull.");
-            }
-        }*/
     }
+
     public void RequestUID(Packet packet)
     {
         Message_RequestNetworkUID lastMessage = ((PacketSingle)packet).message as Message_RequestNetworkUID;
@@ -65,6 +59,7 @@ public class MissileNetworker_Sender : MonoBehaviour
         Debug.Log($"Missile ({gameObject.name}) has received their UID from the host. \n Missiles UID = {networkUID}");
         Networker.RequestNetworkUID -= RequestUID;
     }
+
     /// <summary>
     /// OnDestory will most likley be called when the missile blows up.
     /// </summary>
@@ -78,17 +73,7 @@ public class MissileNetworker_Sender : MonoBehaviour
         {
             NetworkSenderThread.Instance.SendPacketToSpecificPlayer(Networker.hostID, lastDetonateMessage, Steamworks.EP2PSend.k_EP2PSendReliable);
         }
-    }
 
-    private void SendMessage(bool isDestoryed)
-    {
-        if (Networker.isHost)
-        {
-            NetworkSenderThread.Instance.SendPacketAsHostToAllClients(lastMessage, isDestoryed ? Steamworks.EP2PSend.k_EP2PSendReliable : Steamworks.EP2PSend.k_EP2PSendUnreliable);
-        }
-        else
-        {
-            NetworkSenderThread.Instance.SendPacketToSpecificPlayer(Networker.hostID,lastMessage, isDestoryed ? Steamworks.EP2PSend.k_EP2PSendReliable : Steamworks.EP2PSend.k_EP2PSendUnreliable);
-        }
+        Networker.RequestNetworkUID -= RequestUID;
     }
 }

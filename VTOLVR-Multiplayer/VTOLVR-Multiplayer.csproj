@@ -102,6 +102,8 @@
     <Compile Include="AvatarManager.cs" />
     <Compile Include="HPInfo.cs" />
     <Compile Include="Messages\Message_AAAUpdate.cs" />
+    <Compile Include="Messages\Message_MissileDetonate.cs" />
+    <Compile Include="Messages\Message_MissileLaunch.cs" />
     <Compile Include="Messages\Quat.cs" />
     <Compile Include="Messages\Message.cs" />
     <Compile Include="Messages\MessageType.cs" />

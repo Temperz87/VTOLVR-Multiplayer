@@ -92,13 +92,15 @@ public class MissileNetworker_Receiver : MonoBehaviour
 
     public void MissileUpdate(Packet packet)
     {
+        lastMessage = ((PacketSingle)packet).message as Message_MissileUpdate;
         if (lastMessage.networkUID != networkUID)
             return;
     }
 
     public void MissileDestroyed(Packet packet)
     {
-        if (lastMessage.networkUID != networkUID)
+        lastDetonateMessage = ((PacketSingle)packet).message as Message_MissileDetonate;
+        if (lastDetonateMessage.networkUID != networkUID)
             return;
 
         Debug.Log("Missile exploded.");
