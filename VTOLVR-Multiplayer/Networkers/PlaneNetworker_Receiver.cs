@@ -54,6 +54,13 @@ public class PlaneNetworker_Receiver : MonoBehaviour
         fuelTank = GetComponent<FuelTank>();
         if (fuelTank == null)
             Debug.LogError("FuelTank was null on " + gameObject.name);
+
+        Actor ownerActor = this.GetComponentInParent<Actor>();
+
+        //?fix gun sight jitter
+        if (ownerActor != null)
+        ownerActor.flightInfo.PauseGCalculations();
+        //FlightSceneManager.instance.playerActor.flightInfo.OverrideRecordedAcceleration(Vector3.zero);
     }
     public void PlaneUpdate(Packet packet)
     {

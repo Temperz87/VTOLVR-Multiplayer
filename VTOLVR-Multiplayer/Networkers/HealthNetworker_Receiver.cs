@@ -11,7 +11,7 @@ class HealthNetworker_Receiver : MonoBehaviour
 
     private void Awake()
     {
-        lastMessage = new Message_Death(networkUID);
+        lastMessage = new Message_Death(networkUID,false);
         Networker.Death += Death;
 
         health = GetComponent<Health>();
@@ -24,8 +24,15 @@ class HealthNetworker_Receiver : MonoBehaviour
         if (lastMessage.UID != networkUID)
             return;
 
-        health.invincible = false;
-        health.Kill();
+        if (lastMessage.immediate)
+        {
+            Destroy(gameObject);
+        }
+        else
+        {
+            health.invincible = false;
+            health.Kill();
+        }
     }
 
     public void OnDestroy()

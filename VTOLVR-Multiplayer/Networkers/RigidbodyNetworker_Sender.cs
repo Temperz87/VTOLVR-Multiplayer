@@ -24,6 +24,12 @@ public class RigidbodyNetworker_Sender : MonoBehaviour
     private ulong updateNumber;
     private float tick;
     private float tickRate = 10;
+
+    public int first = 0;
+    public bool player = false;
+
+    public Vector3 spawnPosf;
+    public Quaternion spawnRotf;
     private void Awake()
     {
         rb = GetComponent<Rigidbody>();
@@ -31,8 +37,17 @@ public class RigidbodyNetworker_Sender : MonoBehaviour
         tick = 0;
     }
 
+    private void LateUpdate()
+    {
+        
+
+            
+    }
     private void FixedUpdate()
     {
+         
+
+
         globalLastPosition += new Vector3D(lastVelocity * Time.fixedDeltaTime);
         localLastPosition = VTMapManager.GlobalToWorldPoint(globalLastPosition);
         Quaternion quatVel = Quaternion.Euler(lastAngularVelocity * Time.fixedDeltaTime);
@@ -73,21 +88,28 @@ public class RigidbodyNetworker_Sender : MonoBehaviour
     public void SetSpawn(Vector3 spawnPos, Quaternion spawnRot)
     {
         Debug.Log($"starting spawn repositioner");
-
+        spawnPosf = spawnPos;
+        spawnRotf = spawnRot;
         StartCoroutine(SetSpawnEnumerator(spawnPos, spawnRot));
     }
 
     private IEnumerator SetSpawnEnumerator(Vector3 spawnPos, Quaternion spawnRot)
     {
-         
-        rb.velocity = new Vector3(0, 0, 0);
+        rb.interpolation = RigidbodyInterpolation.None;
+        rb.isKinematic=true;
+        rb.velocity = new Vector3(0, 0, 0); rb.Sleep();
+        rb.position = spawnPos;
         rb.transform.position = spawnPos;
         rb.transform.rotation = spawnRot;
         rb.Sleep();
+
+        player = true;
+        Physics.SyncTransforms();
         Debug.Log($"Our position is now {rb.position}");
    
         yield return new WaitForSeconds(0.5f);
         rb.detectCollisions = true;
+
 
     }
 }
