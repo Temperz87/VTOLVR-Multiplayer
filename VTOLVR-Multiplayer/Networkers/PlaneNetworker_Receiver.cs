@@ -300,6 +300,20 @@ public class PlaneNetworker_Receiver : MonoBehaviour
                             noAmmo = true;
                         }
                     }
+                    else
+                    {
+                        if (weaponManager.currentEquip is HPEquipGun)
+                        {
+                            ((HPEquipGun)weaponManager.currentEquip).gun.currentAmmo = ((HPEquipGun)weaponManager.currentEquip).gun.maxAmmo;
+                            noAmmo = false;
+                        }
+                        else if (weaponManager.currentEquip is HPEquipGunTurret)
+                        {
+                            ((HPEquipGun)weaponManager.currentEquip).gun.currentAmmo = ((HPEquipGun)weaponManager.currentEquip).gun.maxAmmo;
+                            noAmmo = false;
+                        }
+
+                    }
                     weaponManager.StartFire();
                 }
             }
