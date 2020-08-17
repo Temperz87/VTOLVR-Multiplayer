@@ -1030,7 +1030,7 @@ public class Networker : MonoBehaviour
         ControllerEventHandler.UnpauseEvents();
     }
 
-    IEnumerator ChangeMissileAuthority(ulong launcherUID, ulong missileUID, ulong targetUID) {
+    public static IEnumerator ChangeMissileAuthority(ulong launcherUID, ulong missileUID, ulong targetUID) {
         if (isClient)
         {
             Debug.Log("Client should not run code to change missile authority.");
