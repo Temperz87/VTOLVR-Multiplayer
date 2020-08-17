@@ -81,6 +81,10 @@ public class MissileNetworker_Receiver : MonoBehaviour
             if (thisMissile.guidanceMode == Missile.GuidanceModes.Heat)
             {
                 Debug.Log("Guidance mode heat.");
+                IRMissileLauncher IRLauncher = thisML as IRMissileLauncher;
+                IRLauncher.EnableWeapon();
+                traverse.Field("missileIdx").SetValue(idx);
+                Debug.Log("No out of range exceptions here officer.");
                 Actor actor;
                 if (AIDictionaries.allActors.TryGetValue(lastLaunchMessage.targetActorUID, out actor))
                 {
@@ -93,9 +97,9 @@ public class MissileNetworker_Receiver : MonoBehaviour
                     Debug.Log("Could not find actor " + lastLaunchMessage.targetActorUID + " to target with heatseeker.");
                 }
                 thisMissile.heatSeeker.SetHardLock();
+                traverse.Field("missileIdx").SetValue(idx);
             }
             Debug.Log("Try fire missile clientside");
-            traverse.Field("missileIdx").SetValue(idx);
             thisML.FireMissile();
 
             rbReceiver = gameObject.AddComponent<RigidbodyNetworker_Receiver>();
