@@ -96,7 +96,6 @@ public class MissileNetworker_Receiver : MonoBehaviour
                 else {
                     Debug.Log("Could not find actor " + lastLaunchMessage.targetActorUID + " to target with heatseeker.");
                 }
-                thisMissile.heatSeeker.DisableAudio();
                 thisMissile.heatSeeker.SetHardLock();
                 traverse.Field("missileIdx").SetValue(idx);
             }
