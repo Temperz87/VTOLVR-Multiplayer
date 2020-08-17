@@ -13,7 +13,7 @@ public class MissileNetworker_Sender : MonoBehaviour
     private Message_MissileChangeAuthority lastChangeMessage;
     private Missile thisMissile;
     public RigidbodyNetworker_Sender rbSender;
-    private bool hasFired = false;
+    public bool hasFired = false;
 
     private void Awake()
     {
@@ -42,22 +42,24 @@ public class MissileNetworker_Sender : MonoBehaviour
                 case Missile.GuidanceModes.Heat:
                     lastLaunchMessage.seekerRotation = thisMissile.heatSeeker.transform.rotation;
                     ulong uid;
-                    if (AIDictionaries.reverseAllActors.TryGetValue(thisMissile.heatSeeker.likelyTargetActor, out uid))
-                    {
-                        lastLaunchMessage.targetActorUID = AIDictionaries.reverseAllActors[thisMissile.heatSeeker.likelyTargetActor];
+                    if (thisMissile.heatSeeker.likelyTargetActor != null) {
+                        if (AIDictionaries.reverseAllActors.TryGetValue(thisMissile.heatSeeker.likelyTargetActor, out uid))
+                        {
+                            lastLaunchMessage.targetActorUID = uid;
+                            Debug.Log("IR MISSILE: Firing on " + uid);
+                        }
+                        else {
+                            lastLaunchMessage.targetActorUID = 0;
+                            Debug.Log("IR MISSILE: Couldn't find UID ");
+                        }
                     }
                     else {
-                        lastLaunchMessage.targetActorUID = 0;
-                        Debug.Log("IR MISSILE: Couldn't find UID ");
+                        Debug.Log("IR MISSILE: Target was null, could not find UID");
                     }
                     lastLaunchMessage.targetPosition = new Vector3D(thisMissile.heatSeeker.targetPosition);
                     break;
                 default:
                     break;
-            }
-            if (thisMissile.guidanceMode == Missile.GuidanceModes.Heat)
-            {
-                lastLaunchMessage.seekerRotation = thisMissile.heatSeeker.transform.rotation;
             }
             if (Networker.isHost)
             {
@@ -124,7 +126,11 @@ public class MissileNetworker_Sender : MonoBehaviour
             Destroy(this);
 
             MissileNetworker_Receiver mReceiver = gameObject.AddComponent<MissileNetworker_Receiver>();
+            mReceiver.networkUID = networkUID;
+            mReceiver.ownerUID = lastChangeMessage.newOwnerUID;
+            mReceiver.hasFired = true;
             mReceiver.rbReceiver = gameObject.AddComponent<RigidbodyNetworker_Receiver>();
+            mReceiver.rbReceiver.networkUID = networkUID;
             Debug.Log("Switched missile to others authority!");
         }
     }

@@ -48,9 +48,9 @@ class Patch9
         if (Networker.isHost)
         {
             Debug.Log("A sam has fired, attempting to send it to the client in postfix method.");
-            if (VTOLVR_Multiplayer.AIDictionaries.reverseAllActors.TryGetValue(__instance.actor, out ulong senderUID))
+            if (AIDictionaries.reverseAllActors.TryGetValue(__instance.actor, out ulong senderUID))
             {
-                if (VTOLVR_Multiplayer.AIDictionaries.reverseAllActors.TryGetValue(lockData.actor, out ulong actorUID))
+                if (AIDictionaries.reverseAllActors.TryGetValue(lockData.actor, out ulong actorUID))
                 {
                     Debug.Log($"Sending sam launch with a missile uID of {SAMHelper.SAMmissile}, sender uID will be {senderUID}, and the actorUID will be {actorUID}.");
                     NetworkSenderThread.Instance.SendPacketAsHostToAllClients(new Message_SamUpdate(actorUID, SAMHelper.SAMmissile, senderUID), Steamworks.EP2PSend.k_EP2PSendReliable);

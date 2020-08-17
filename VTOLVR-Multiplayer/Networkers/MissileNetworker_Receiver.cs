@@ -19,11 +19,15 @@ public class MissileNetworker_Receiver : MonoBehaviour
     private Message_MissileChangeAuthority lastChangeMessage;
     private Traverse traverse;
     // private Rigidbody rigidbody; see missileSender for why i not using rigidbody
-    private bool hasFired = false;
+    public bool hasFired = false;
+
+    float originalProxFuse;
 
     private void Start()
     {
         thisMissile = GetComponent<Missile>();
+        originalProxFuse = thisMissile.proxyDetonateRange;
+        thisMissile.proxyDetonateRange = 0;
         traverse = Traverse.Create(thisML);
         thisMissile.OnDetonate.AddListener(new UnityEngine.Events.UnityAction(() => { Debug.Log("Missile detonated: " + thisMissile.name); }));
         if (thisMissile.guidanceMode == Missile.GuidanceModes.Bomb)
@@ -77,7 +81,17 @@ public class MissileNetworker_Receiver : MonoBehaviour
             if (thisMissile.guidanceMode == Missile.GuidanceModes.Heat)
             {
                 Debug.Log("Guidance mode heat.");
-                thisMissile.heatSeeker.transform.rotation = lastLaunchMessage.seekerRotation;
+                Actor actor;
+                if (AIDictionaries.allActors.TryGetValue(lastLaunchMessage.targetActorUID, out actor))
+                {
+                    thisMissile.heatSeeker.transform.LookAt(actor.transform);
+                    Traverse traverse2 = Traverse.Create(thisMissile.heatSeeker);
+                    traverse2.Field("lastTargetPosition").SetValue(actor.transform.position);
+                    traverse2.Field("targetVelocity").SetValue(actor.velocity);
+                }
+                else {
+                    Debug.Log("Could not find actor " + lastLaunchMessage.targetActorUID + " to target with heatseeker.");
+                }
                 thisMissile.heatSeeker.SetHardLock();
             }
             Debug.Log("Try fire missile clientside");
@@ -156,14 +170,40 @@ public class MissileNetworker_Receiver : MonoBehaviour
 
             Rigidbody rb = GetComponent<Rigidbody>();
             rb.isKinematic = false;
+            thisMissile.proxyDetonateRange = originalProxFuse;
 
             MissileNetworker_Sender mSender = gameObject.AddComponent<MissileNetworker_Sender>();
+            mSender.networkUID = networkUID;
+            mSender.ownerUID = lastChangeMessage.newOwnerUID;
+            mSender.hasFired = true;
             mSender.rbSender = gameObject.AddComponent<RigidbodyNetworker_Sender>();
+            mSender.networkUID = networkUID;
             Debug.Log("Switched missile to our authority!");
         }
         else
         {
             Debug.Log("We are already not incharge of this missile, nothing needs to change.");
+        }
+    }
+
+    void FixedUpdate() {
+        if (hasFired) {
+            ulong uid;
+            if (thisMissile.heatSeeker.likelyTargetActor != null)
+            {
+                if (AIDictionaries.reverseAllActors.TryGetValue(thisMissile.heatSeeker.likelyTargetActor, out uid))
+                {
+                    Debug.Log("Puppet, tracking:  " + uid);
+                }
+                else
+                {
+                    Debug.Log("Puppet, couldn't get, UID");
+                }
+            }
+            else
+            {
+                Debug.Log("Puppet, no target...");
+            }
         }
     }
 
