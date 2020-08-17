@@ -60,6 +60,7 @@ public static class PlaneEquippableManager
                         case HPInfoListGenerateNetworkType.generate:
                             MissileNetworker_Sender mnSender = HPml.ml.missiles[j].gameObject.AddComponent<MissileNetworker_Sender>();
                             mnSender.networkUID = Networker.GenerateNetworkUID();
+                            mnSender.ownerUID = networkID;
                             missileUIDS.Add(mnSender.networkUID);
                             break;
                         case HPInfoListGenerateNetworkType.sender:
@@ -187,6 +188,7 @@ public static class PlaneEquippableManager
                             if (uIDidx < thingy.missileUIDS.Length)
                             {
                                 lastReciever.networkUID = thingy.missileUIDS[uIDidx];
+                                lastReciever.ownerUID = networkID;
                                 Debug.Log($"Missile ({lastReciever.gameObject.name}) has received their UID from the host. \n Missiles UID = {lastReciever.networkUID}");
                                 lastReciever.thisML = hpML.ml;
                                 lastReciever.idx = j;

@@ -163,13 +163,13 @@ public static class PlayerManager
                     ulong networkUID = Networker.GenerateNetworkUID();
                     Debug.Log("Adding UID senders to " + actor.name + $", their uID will be {networkUID}.");
                     AIManager.AIVehicles.Add(new AIManager.AI(actor.gameObject, actor.unitSpawn.unitName, actor, networkUID));
-                    if (!VTOLVR_Multiplayer.AIDictionaries.allActors.ContainsKey(networkUID))
+                    if (!AIDictionaries.allActors.ContainsKey(networkUID))
                     {
-                        VTOLVR_Multiplayer.AIDictionaries.allActors.Add(networkUID, actor);
+                        AIDictionaries.allActors.Add(networkUID, actor);
                     }
-                    if (!VTOLVR_Multiplayer.AIDictionaries.reverseAllActors.ContainsKey(actor))
+                    if (!AIDictionaries.reverseAllActors.ContainsKey(actor))
                     {
-                        VTOLVR_Multiplayer.AIDictionaries.reverseAllActors.Add(actor, networkUID);
+                        AIDictionaries.reverseAllActors.Add(actor, networkUID);
                     }
                     UIDNetworker_Sender uidSender = actor.gameObject.AddComponent<UIDNetworker_Sender>();
                     uidSender.networkUID = networkUID;
@@ -243,6 +243,7 @@ public static class PlayerManager
                         {
                             lastSender = ml.ml.missiles[i].gameObject.AddComponent<MissileNetworker_Sender>();
                             lastSender.networkUID = Networker.GenerateNetworkUID();
+                            lastSender.ownerUID = networkUID;
                             samIDS.Add(lastSender.networkUID);
                         }
                         actor.gameObject.AddComponent<IRSAMNetworker_Sender>().irIDs = samIDS.ToArray();
@@ -258,6 +259,7 @@ public static class PlayerManager
                             {
                                 lastSender = soldier.irMissileLauncher.missiles[i].gameObject.AddComponent<MissileNetworker_Sender>();
                                 lastSender.networkUID = Networker.GenerateNetworkUID();
+                                lastSender.ownerUID = networkUID;
                                 samIDS.Add(lastSender.networkUID);
                             }
                             actor.gameObject.AddComponent<IRSAMNetworker_Sender>().irIDs = samIDS.ToArray();
@@ -535,14 +537,14 @@ public static class PlayerManager
         VTOLVehicles currentVehicle = VTOLAPI.GetPlayersVehicleEnum();
         Actor actor = localVehicle.GetComponent<Actor>();
 
-        if (VTOLVR_Multiplayer.AIDictionaries.allActors.ContainsKey(UID))
-            VTOLVR_Multiplayer.AIDictionaries.allActors[UID] = actor;
+        if (AIDictionaries.allActors.ContainsKey(UID))
+            AIDictionaries.allActors[UID] = actor;
         else
-            VTOLVR_Multiplayer.AIDictionaries.allActors.Add(UID, actor);
-        if (VTOLVR_Multiplayer.AIDictionaries.allActors.ContainsKey(UID))
-            VTOLVR_Multiplayer.AIDictionaries.reverseAllActors[actor] = UID;
+            AIDictionaries.allActors.Add(UID, actor);
+        if (AIDictionaries.allActors.ContainsKey(UID))
+            AIDictionaries.reverseAllActors[actor] = UID;
         else
-            VTOLVR_Multiplayer.AIDictionaries.reverseAllActors.Add(actor, UID);
+            AIDictionaries.reverseAllActors.Add(actor, UID);
 
         RigidbodyNetworker_Sender rbSender = localVehicle.AddComponent<RigidbodyNetworker_Sender>();
         rbSender.networkUID = UID;
@@ -929,18 +931,18 @@ public static class PlayerManager
         player.leftie = isLeft;
         player.vehicle = newVehicle;
 
-        if (!VTOLVR_Multiplayer.AIDictionaries.allActors.ContainsKey(networkID))
+        if (!AIDictionaries.allActors.ContainsKey(networkID))
         {
-            VTOLVR_Multiplayer.AIDictionaries.allActors[networkID] = aIPilot.actor;
-            VTOLVR_Multiplayer.AIDictionaries.reverseAllActors[aIPilot.actor] = networkID;
+            AIDictionaries.allActors[networkID] = aIPilot.actor;
+            AIDictionaries.reverseAllActors[aIPilot.actor] = networkID;
         }
         else
         {
-            VTOLVR_Multiplayer.AIDictionaries.allActors.Remove(networkID);
-            VTOLVR_Multiplayer.AIDictionaries.reverseAllActors.Remove(aIPilot.actor);
+            AIDictionaries.allActors.Remove(networkID);
+            AIDictionaries.reverseAllActors.Remove(aIPilot.actor);
 
-            VTOLVR_Multiplayer.AIDictionaries.allActors[networkID] = aIPilot.actor;
-            VTOLVR_Multiplayer.AIDictionaries.reverseAllActors[aIPilot.actor] = networkID;
+            AIDictionaries.allActors[networkID] = aIPilot.actor;
+            AIDictionaries.reverseAllActors[aIPilot.actor] = networkID;
 
         }
 

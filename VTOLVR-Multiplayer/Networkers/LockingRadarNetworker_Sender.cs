@@ -124,7 +124,7 @@ class LockingRadarNetworker_Sender : MonoBehaviour
                     try
                     {
                         // ulong key = (from p in VTOLVR_Multiplayer.AIDictionaries.allActors where p.Value == lr.currentLock.actor select p.Key).FirstOrDefault();
-                        if (VTOLVR_Multiplayer.AIDictionaries.reverseAllActors.TryGetValue(lastRadarLockData.actor, out lastID))
+                        if (AIDictionaries.reverseAllActors.TryGetValue(lastRadarLockData.actor, out lastID))
                         {
                             lastWasNull = false;
                             Debug.Log(lastRadarLockData.actor.name + " radar data found its lock " + lr.currentLock.actor.name + " at id " + lastID + " with its own uID being " + networkUID);
@@ -178,7 +178,7 @@ class LockingRadarNetworker_Sender : MonoBehaviour
         try
         {
             // ulong key = (from p in VTOLVR_Multiplayer.AIDictionaries.allActors where p.Value == lr.currentLock.actor select p.Key).FirstOrDefault();
-            if (VTOLVR_Multiplayer.AIDictionaries.reverseAllActors.TryGetValue(radarLockData.actor, out lastID))
+            if (AIDictionaries.reverseAllActors.TryGetValue(radarLockData.actor, out lastID))
             {
                 Debug.Log(gameObject.name + " F45 radar data found its lock " + radarLockData.actor.name + " at id " + lastID + " with its own uID being " + networkUID);
                 lastLockingMessage.actorUID = lastID;

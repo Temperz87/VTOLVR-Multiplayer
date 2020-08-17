@@ -78,7 +78,7 @@ class LockingRadarNetworker_Receiver : MonoBehaviour
         {
             Debug.Log("Trying to lock radar.");
 
-            if (VTOLVR_Multiplayer.AIDictionaries.allActors.TryGetValue(lastLockingMessage.actorUID, out lastActor))
+            if (AIDictionaries.allActors.TryGetValue(lastLockingMessage.actorUID, out lastActor))
             {
                 if (gameObject.name == null)
                     Debug.Log($"Radar {networkUID} found its lock " + lastActor.name + $" with an id of {lastLock} while trying to lock id {lastLockingMessage.actorUID}. Trying to force a lock.");

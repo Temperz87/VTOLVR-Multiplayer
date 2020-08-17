@@ -32,6 +32,7 @@ class Patch9
                 Debug.Log("Found a suitable missile to attach a sender to.");
                 MissileNetworker_Sender missileSender = missiles[i].gameObject.AddComponent<MissileNetworker_Sender>();
                 missileSender.networkUID = Networker.GenerateNetworkUID();
+                missileSender.ownerUID = 0;
                 SAMHelper.SAMmissile = missileSender.networkUID;
                 return true;
             }

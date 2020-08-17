@@ -256,6 +256,7 @@ public class Networker : MonoBehaviour
     public static event UnityAction<Packet> MissileUpdate;
     public static event UnityAction<Packet> MissileLaunch;
     public static event UnityAction<Packet> MissileDetonate;
+    public static event UnityAction<Packet> MissileChangeAuthority;
     public static event UnityAction<Packet> WorldDataUpdate;
     public static event UnityAction<Packet> RequestNetworkUID;
     public static event UnityAction<Packet> LockingRadarUpdate;
@@ -805,11 +806,21 @@ public class Networker : MonoBehaviour
                     Debug.Log("case missile launch");
                     if (MissileLaunch != null)
                         MissileLaunch.Invoke(packet);
+                    if (isHost)
+                    {
+                        Message_MissileLaunch launchMessage = ((PacketSingle)packet).message as Message_MissileLaunch;
+                        StartCoroutine(ChangeMissileAuthority(launchMessage.ownerUID, launchMessage.networkUID, launchMessage.targetActorUID));
+                    }
                     break;
                 case MessageType.MissileDetonate:
                     Debug.Log("case missile detonate");
                     if (MissileDetonate != null)
                         MissileDetonate.Invoke(packet);
+                    break;
+                case MessageType.MissileChangeAuthority:
+                    Debug.Log("case missile change authority");
+                    if (MissileChangeAuthority != null)
+                        MissileChangeAuthority.Invoke(packet);
                     break;
                 case MessageType.RequestNetworkUID:
                     Debug.Log("case request network UID");
@@ -1018,6 +1029,33 @@ public class Networker : MonoBehaviour
         Debug.Log("Fly button successful, unpausing events.");
         ControllerEventHandler.UnpauseEvents();
     }
+
+    IEnumerator ChangeMissileAuthority(ulong launcherUID, ulong missileUID, ulong targetUID) {
+        if (isClient)
+        {
+            Debug.Log("Client should not run code to change missile authority.");
+            yield break;
+        }
+        
+        yield return new WaitForSeconds(0.5f);
+        switch (Multiplayer._instance.missileMode) {
+            case Multiplayer.MissileSimMode.Host:
+                Debug.Log("Switching the missiles to host side simulation!");
+                NetworkSenderThread.Instance.SendPacketAsHostToAllClients(new Message_MissileChangeAuthority(missileUID, 0), Steamworks.EP2PSend.k_EP2PSendReliable);
+                MissileChangeAuthority.Invoke(new PacketSingle(new Message_MissileChangeAuthority(missileUID, 0), Steamworks.EP2PSend.k_EP2PSendReliable));
+                break;
+            case Multiplayer.MissileSimMode.Target:
+                Debug.Log("Switching the missiles to target side simulation!");
+                NetworkSenderThread.Instance.SendPacketAsHostToAllClients(new Message_MissileChangeAuthority(missileUID, targetUID), Steamworks.EP2PSend.k_EP2PSendReliable);
+                MissileChangeAuthority.Invoke(new PacketSingle(new Message_MissileChangeAuthority(missileUID, targetUID), Steamworks.EP2PSend.k_EP2PSendReliable));
+                break;
+            case Multiplayer.MissileSimMode.Launcher://this is the default lmao, nothing needs to change
+            default:
+                Debug.Log("The missile is being simulated on the player who launched it");
+                break;
+        }
+    }
+
     //Checks if everyone had sent the Ready Message Type saying they are ready in the vehicle config room
     public static bool EveryoneElseReady()
     {

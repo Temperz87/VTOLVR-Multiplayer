@@ -8,12 +8,15 @@ using UnityEngine;
 public class MissileNetworker_Receiver : MonoBehaviour
 {
     public ulong networkUID;
+    public ulong ownerUID;//0 is host owns the missile
     private Missile thisMissile;
     public MissileLauncher thisML;
+    public RigidbodyNetworker_Receiver rbReceiver;
     public int idx;
     private Message_MissileUpdate lastMessage;
     private Message_MissileLaunch lastLaunchMessage;
     private Message_MissileDetonate lastDetonateMessage;
+    private Message_MissileChangeAuthority lastChangeMessage;
     private Traverse traverse;
     // private Rigidbody rigidbody; see missileSender for why i not using rigidbody
     private bool hasFired = false;
@@ -37,6 +40,7 @@ public class MissileNetworker_Receiver : MonoBehaviour
         Networker.MissileUpdate += MissileUpdate;
         Networker.MissileLaunch += MissileLaunch;
         Networker.MissileDetonate += MissileDestroyed;
+        Networker.MissileChangeAuthority += MissileChangeAuthority;
     }
 
     public void MissileLaunch(Packet packet)
@@ -63,16 +67,16 @@ public class MissileNetworker_Receiver : MonoBehaviour
                 }
                 else
                 {
-                    RigidbodyNetworker_Receiver rbReceiver = gameObject.AddComponent<RigidbodyNetworker_Receiver>();
+                    rbReceiver = gameObject.AddComponent<RigidbodyNetworker_Receiver>();
                     rbReceiver.networkUID = networkUID;
                 }
             }
         }
         else
         {
-            if (thisMissile.guidanceMode == Missile.GuidanceModes.Optical)
+            if (thisMissile.guidanceMode == Missile.GuidanceModes.Heat)
             {
-                Debug.Log("Guidance mode Optical.");
+                Debug.Log("Guidance mode heat.");
                 thisMissile.heatSeeker.transform.rotation = lastLaunchMessage.seekerRotation;
                 thisMissile.heatSeeker.SetHardLock();
             }
@@ -80,7 +84,7 @@ public class MissileNetworker_Receiver : MonoBehaviour
             traverse.Field("missileIdx").SetValue(idx);
             thisML.FireMissile();
 
-            RigidbodyNetworker_Receiver rbReceiver = gameObject.AddComponent<RigidbodyNetworker_Receiver>();
+            rbReceiver = gameObject.AddComponent<RigidbodyNetworker_Receiver>();
             rbReceiver.networkUID = networkUID;
         }
         if (hasFired != thisMissile.fired)
@@ -107,11 +111,68 @@ public class MissileNetworker_Receiver : MonoBehaviour
         thisMissile.Detonate();
     }
 
+    public void MissileChangeAuthority(Packet packet)
+    {
+        lastChangeMessage = ((PacketSingle)packet).message as Message_MissileChangeAuthority;
+        if (lastChangeMessage.networkUID != networkUID)
+            return;
+
+        Debug.Log("Missile changing authority!");
+        bool localAuthority;
+        if (lastChangeMessage.newOwnerUID == 0)
+        {
+            Debug.Log("The host is now incharge of this missile.");
+            if (Networker.isHost)
+            {
+                Debug.Log("We are the host! This is our missile!");
+                localAuthority = true;
+            }
+            else
+            {
+                Debug.Log("We are not the host. This is not our missile.");
+                localAuthority = false;
+            }
+        }
+        else
+        {
+            Debug.Log("A client is now incharge of this missile.");
+            if (PlayerManager.localUID == lastChangeMessage.newOwnerUID)
+            {
+                Debug.Log("We are that client! This is our missile!");
+                localAuthority = true;
+            }
+            else
+            {
+                Debug.Log("We are not that client. This is not our missile.");
+                localAuthority = false;
+            }
+        }
+
+        if (localAuthority)
+        {
+            Debug.Log("We should be incharge of this missile");
+            Destroy(rbReceiver);
+            Destroy(this);
+
+            Rigidbody rb = GetComponent<Rigidbody>();
+            rb.isKinematic = false;
+
+            MissileNetworker_Sender mSender = gameObject.AddComponent<MissileNetworker_Sender>();
+            mSender.rbSender = gameObject.AddComponent<RigidbodyNetworker_Sender>();
+            Debug.Log("Switched missile to our authority!");
+        }
+        else
+        {
+            Debug.Log("We are already not incharge of this missile, nothing needs to change.");
+        }
+    }
+
     public void OnDestroy()
     {
         Networker.MissileUpdate -= MissileUpdate;
         Networker.MissileLaunch -= MissileLaunch;
         Networker.MissileDetonate -= MissileDestroyed;
+        Networker.MissileChangeAuthority -= MissileChangeAuthority;
     }
 }
 

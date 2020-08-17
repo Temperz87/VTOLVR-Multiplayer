@@ -30,6 +30,7 @@ public enum MessageType
     MissileUpdate, //This is when a missile is updating its state across the network.
     MissileLaunch, //This is when a missile launches.
     MissileDetonate, //This is when a missile explodes.
+    MissileChangeAuthority, //This is when a missile changes which client is in charge of simulating it.
     FireCountermeasure, //This is when a player fires a countermeasure
     Death, //This is when a player dies
     Respawn, //This is when a player respawns

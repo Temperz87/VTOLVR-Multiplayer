@@ -240,7 +240,7 @@ public static class Patch1
         {
             return false;
         }
-        else if (VTOLVR_Multiplayer.AIDictionaries.reverseAllActors.TryGetValue(__instance.actor, out ulong networkUID))
+        else if (AIDictionaries.reverseAllActors.TryGetValue(__instance.actor, out ulong networkUID))
         {
             traverse = Traverse.Create(__instance);
             for (int i = 0; i < 30; i++)
