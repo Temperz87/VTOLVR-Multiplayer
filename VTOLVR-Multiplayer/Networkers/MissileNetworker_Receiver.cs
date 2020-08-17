@@ -197,16 +197,16 @@ public class MissileNetworker_Receiver : MonoBehaviour
             {
                 if (AIDictionaries.reverseAllActors.TryGetValue(thisMissile.heatSeeker.likelyTargetActor, out uid))
                 {
-                    Debug.Log("Puppet, tracking:  " + uid);
+                    Debug.Log("Puppet " + networkUID + ", tracking:  " + uid);
                 }
                 else
                 {
-                    Debug.Log("Puppet, couldn't get, UID");
+                    Debug.Log("Puppet " + networkUID + ", couldn't get UID");
                 }
             }
             else
             {
-                Debug.Log("Puppet, no target...");
+                Debug.Log("Puppet " + networkUID + ", no target...");
             }
         }
     }

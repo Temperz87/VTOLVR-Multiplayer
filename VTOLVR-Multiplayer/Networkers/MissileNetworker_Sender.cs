@@ -149,7 +149,9 @@ public class MissileNetworker_Sender : MonoBehaviour
         {
             NetworkSenderThread.Instance.SendPacketToSpecificPlayer(Networker.hostID, lastDetonateMessage, Steamworks.EP2PSend.k_EP2PSendReliable);
         }
+    }
 
+    void OnDestroy() {
         Networker.RequestNetworkUID -= RequestUID;
         Networker.MissileChangeAuthority -= MissileChangeAuthority;
         thisMissile.OnMissileDetonated -= OnDetonated;
