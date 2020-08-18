@@ -548,6 +548,7 @@ public static class PlayerManager
 
         RigidbodyNetworker_Sender rbSender = localVehicle.AddComponent<RigidbodyNetworker_Sender>();
         rbSender.networkUID = UID;
+        rbSender.ownerUID = UID;
 
         rbSender.SetSpawn(pos, rot);
         if (currentVehicle == VTOLVehicles.AV42C)
@@ -854,6 +855,7 @@ public static class PlayerManager
         }
         RigidbodyNetworker_Receiver rbNetworker = newVehicle.AddComponent<RigidbodyNetworker_Receiver>();
         rbNetworker.networkUID = networkID;
+        rbNetworker.ownerUID = networkID;
 
         PlaneNetworker_Receiver planeReceiver = newVehicle.AddComponent<PlaneNetworker_Receiver>();
         planeReceiver.networkUID = networkID;

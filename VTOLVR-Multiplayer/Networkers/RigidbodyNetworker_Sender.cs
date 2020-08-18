@@ -8,6 +8,7 @@ using UnityEngine;
 public class RigidbodyNetworker_Sender : MonoBehaviour
 {
     public ulong networkUID;
+    public ulong ownerUID;//0 is owned by host
     private Rigidbody rb;
     private Message_RigidbodyUpdate lastMessage;
     public Vector3 originOffset;
