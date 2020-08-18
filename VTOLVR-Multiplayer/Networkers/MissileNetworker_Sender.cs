@@ -133,6 +133,7 @@ public class MissileNetworker_Sender : MonoBehaviour
             mReceiver.rbReceiver = gameObject.AddComponent<RigidbodyNetworker_Receiver>();
             mReceiver.rbReceiver.networkUID = networkUID;
             Debug.Log("Switched missile to others authority!");
+            Debug.Log("Missile is owned by " + mReceiver.ownerUID + " and has UID " + mReceiver.rbReceiver.networkUID);
         }
     }
 

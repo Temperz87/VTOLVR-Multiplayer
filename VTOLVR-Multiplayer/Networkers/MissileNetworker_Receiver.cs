@@ -181,8 +181,9 @@ public class MissileNetworker_Receiver : MonoBehaviour
             mSender.ownerUID = lastChangeMessage.newOwnerUID;
             mSender.hasFired = true;
             mSender.rbSender = gameObject.AddComponent<RigidbodyNetworker_Sender>();
-            mSender.networkUID = networkUID;
+            mSender.rbSender.networkUID = networkUID;
             Debug.Log("Switched missile to our authority!");
+            Debug.Log("Missile is owned by " + mSender.ownerUID + " and has UID " + mSender.rbSender.networkUID);
         }
         else
         {
@@ -190,7 +191,7 @@ public class MissileNetworker_Receiver : MonoBehaviour
         }
     }
 
-    void FixedUpdate() {
+    /*void FixedUpdate() {
         if (hasFired) {
             ulong uid;
             if (thisMissile.heatSeeker.likelyTargetActor != null)
@@ -209,7 +210,7 @@ public class MissileNetworker_Receiver : MonoBehaviour
                 Debug.Log("Puppet " + networkUID + ", no target...");
             }
         }
-    }
+    }*/
 
     public void OnDestroy()
     {

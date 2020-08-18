@@ -37,17 +37,8 @@ public class RigidbodyNetworker_Sender : MonoBehaviour
         tick = 0;
     }
 
-    private void LateUpdate()
-    {
-        
-
-            
-    }
     private void FixedUpdate()
     {
-         
-
-
         globalLastPosition += new Vector3D(lastVelocity * Time.fixedDeltaTime);
         localLastPosition = VTMapManager.GlobalToWorldPoint(globalLastPosition);
         Quaternion quatVel = Quaternion.Euler(lastAngularVelocity * Time.fixedDeltaTime);
@@ -96,7 +87,7 @@ public class RigidbodyNetworker_Sender : MonoBehaviour
     private IEnumerator SetSpawnEnumerator(Vector3 spawnPos, Quaternion spawnRot)
     {
         rb.interpolation = RigidbodyInterpolation.None;
-        rb.isKinematic=true;
+        rb.isKinematic = true;
         rb.velocity = new Vector3(0, 0, 0); rb.Sleep();
         rb.position = spawnPos;
         rb.transform.position = spawnPos;
@@ -109,7 +100,5 @@ public class RigidbodyNetworker_Sender : MonoBehaviour
    
         yield return new WaitForSeconds(0.5f);
         rb.detectCollisions = true;
-
-
     }
 }

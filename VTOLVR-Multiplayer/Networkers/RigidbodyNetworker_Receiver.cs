@@ -47,6 +47,11 @@ public class RigidbodyNetworker_Receiver : MonoBehaviour
         }
 
         rb = GetComponent<Rigidbody>();
+        localTargetPosition = rb.transform.position;
+        globalTargetPosition = VTMapManager.WorldToGlobalPoint(localTargetPosition);
+        targetVelocity = rb.velocity;
+        targetRotation = rb.transform.rotation;
+
         rb.isKinematic = true;
 
         FloatingOriginTransform originTransform = GetComponent<FloatingOriginTransform>();
@@ -93,8 +98,7 @@ public class RigidbodyNetworker_Receiver : MonoBehaviour
             }
         }
         if (playerWeRepresent != null) {
-            //delta time needs to be added to latency as this runs after packet has arrived for a while
-            latency = playerWeRepresent.ping + Time.fixedDeltaTime;
+            latency = playerWeRepresent.ping;
         }
 
         globalTargetPosition += new Vector3D(targetVelocity * Time.fixedDeltaTime);
