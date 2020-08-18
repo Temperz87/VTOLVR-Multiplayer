@@ -37,8 +37,6 @@ public class MissileNetworker_Receiver : MonoBehaviour
                 collider.gameObject.layer = 9;
             }
         }
-
-        thisMissile.explodeRadius *= Multiplayer._instance.missileRadius;
         thisMissile.explodeDamage *= Multiplayer._instance.missileDamage;
 
         Networker.MissileUpdate += MissileUpdate;
