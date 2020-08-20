@@ -39,6 +39,7 @@ public static class PlayerManager
 
     public static Vector3 av42Offset = new Vector3(0, 0.972f, -5.126f);//the difference between the origin of the ai and player AV-42s
 
+    public static Hitbox lastBulletHit;
     public class Player
     {
         public CSteamID cSteamID;
@@ -467,22 +468,39 @@ public static class PlayerManager
         ReArmingPoint rearmPoint = rearmPoints[UnityEngine.Random.Range(0, rearmPoints.Length - 1)];
         int rand = UnityEngine.Random.Range(0, rearmPoints.Length - 1);
         int counter = 0;
+
+        float lastRadius = 0.0f;
         foreach (ReArmingPoint rep in rearmPoints)
         {
             if (rep.team == Teams.Allied && rep.CheckIsClear(actor))
             {
-                counter += 1;
-                rearmPoint = rep;
 
-                if (counter > playercount)
-                    break;
+                if (rep.radius > lastRadius)
+                {
+                    rearmPoint = rep;
+                    lastRadius = rep.radius;
+                }
             }
         }
 
 
+<<<<<<< HEAD
         rearmPoint.BeginReArm();
         pos = localVehicle.transform.position;
         rot = localVehicle.transform.rotation;
+=======
+        }else
+        {
+            if(teamLeftie)
+            rearmPoint.BeginReArm();
+            else
+            {
+                if(actor.unitSpawn.heightFromSurface<100.0f && firstSpawn ==false)
+                    rearmPoint.BeginReArm();
+            }
+        }
+         
+>>>>>>> c16cbcb... air spawn for blue for bullet dmg
         SetupLocalAircraft(localVehicle, pos, rot, UID);
 
         VTOLQuickStart componentInChildren = localVehicle.GetComponentInChildren<VTOLQuickStart>();

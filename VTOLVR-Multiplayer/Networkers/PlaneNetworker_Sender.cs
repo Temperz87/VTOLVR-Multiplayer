@@ -208,7 +208,7 @@ public class PlaneNetworker_Sender : MonoBehaviour
         GameObject vehicle = VTOLAPI.GetPlayersVehicleGameObject();
         WeaponManager wm = vehicle.GetComponentInChildren<WeaponManager>();
         CountermeasureManager cm = vehicle.GetComponentInChildren<CountermeasureManager>();
-
+       
         Message_WeaponSet_Result rearm = new Message_WeaponSet_Result(
             PlaneEquippableManager.generateHpInfoListFromWeaponManager(wm, PlaneEquippableManager.HPInfoListGenerateNetworkType.generate, PlayerManager.localUID).ToArray(),
             PlaneEquippableManager.generateCounterMeasuresFromCmManager(cm).ToArray(),

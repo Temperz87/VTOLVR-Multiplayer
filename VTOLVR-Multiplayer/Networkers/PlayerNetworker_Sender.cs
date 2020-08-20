@@ -77,11 +77,16 @@ class PlayerNetworker_Sender : MonoBehaviour
                 rearmPoint = rep;
             }
         }
+        float lastRadius=0.0f;
         foreach (ReArmingPoint rep in rearmPoints)
         {
             if(rep.team == Teams.Allied && rep.CheckIsClear(actor))
             {
-                rearmPoint = rep;
+                if (rep.radius > lastRadius)
+                {
+                    rearmPoint = rep;
+                    lastRadius = rep.radius;
+                }
             }
         }
         
@@ -306,10 +311,10 @@ class PlayerNetworker_Sender : MonoBehaviour
 
     void Eject()
     {
-
+        FlightSceneManager.instance.playerActor.health.invincible = false;
         FlightSceneManager.instance.playerActor.health.Kill();
-        health.invincible = false;
-        health.Kill();
+       // health.invincible = false;
+        //health.Kill();
 
     }
 

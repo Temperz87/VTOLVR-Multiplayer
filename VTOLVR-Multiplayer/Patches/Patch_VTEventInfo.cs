@@ -8,6 +8,44 @@ using Harmony;
 using UnityEngine;
 
 
+// patch to grab all the events being loaded on creation this replaces original method
+[HarmonyPatch(typeof(Bullet), "KillBullet")]
+class PatchBullet
+{
+    static bool Prefix(Bullet __instance)
+    {
+        RaycastHit hitInfo;
+        Vector3 pos = Traverse.Create(__instance).Field("position").GetValue<Vector3>();
+        Vector3 vel = Traverse.Create(__instance).Field("velocity").GetValue<Vector3>();
+        Vector3 a = pos;
+        a += vel * 0.2f;
+        float damage = Traverse.Create(__instance).Field("damage").GetValue<float>();
+        bool flag = Physics.Linecast(pos, a, out hitInfo, 1025);
+        Hitbox hitbox = null;
+        if (flag)
+        {
+            hitbox = hitInfo.collider.GetComponent<Hitbox>();
+            if ((bool)hitbox && (bool)hitbox.actor)
+            {
+                PlayerManager.lastBulletHit = hitbox;
+
+                ulong lastID;
+                if (AIDictionaries.reverseAllActors.TryGetValue(hitbox.actor, out lastID))
+                {
+
+                    Debug.Log("hit player sending bullet packet");
+                    Message_BulletHit hitmsg = new Message_BulletHit(PlayerManager.localUID, PlayerManager.localUID, new Vector3D(pos), new Vector3D(vel), damage);
+                    NetworkSenderThread.Instance.SendPacketToSpecificPlayer(PlayerManager.GetPlayerCSteamID(PlayerManager.localUID), hitmsg, Steamworks.EP2PSend.k_EP2PSendReliableWithBuffering);
+                }
+
+            }
+        }
+
+        return true;//dont run bahas code
+    }
+}
+
+
 [HarmonyPatch(typeof(VTEventTarget), "Invoke")]
 class Patch2
 {

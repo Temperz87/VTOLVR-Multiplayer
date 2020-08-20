@@ -260,6 +260,7 @@ public class Networker : MonoBehaviour
     public static event UnityAction<Packet> JettisonUpdate;
     public static event UnityAction<Packet> SAMUpdate;
     public static event UnityAction<Packet> AAAUpdate;
+    public static event UnityAction<Packet> BulletHit;
     #endregion
     #region Host Forwarding Suppress By Message Type List
     private List<MessageType> hostMessageForwardingSuppressList = new List<MessageType> {
@@ -921,7 +922,9 @@ public class Networker : MonoBehaviour
                     }
 
                     break;
-
+                case MessageType.BulletHit:
+                    BulletHit.Invoke(packet);
+                    break;
                 case MessageType.ObjectiveSync:
                     Debug.Log("case Objective");
 
