@@ -1063,30 +1063,31 @@ public class Networker : MonoBehaviour
             return;
         StringBuilder content = new StringBuilder("<color=#FCB722><b><align=\"center\"><size=120%>Multiplayer Lobby</size></align></b></color>\n");
 
-        switch (playerStatusDic[hostID]) {
+        switch (playerStatusDic[hostID])
+        {
             case PlayerStatus.Loadout:
-                content.AppendLine("<b>" + SteamFriends.GetPersonaName() + "</b>" + ": " + "<color=\"red\">Loadout</color>" + "\n");
+                content.AppendLine("<color=\"blue\">[BLUFOR] </color>" + "<b>" + SteamFriends.GetPersonaName() + "</b>" + ": " + "<color=\"red\">loadout</color>");
                 break;
             case PlayerStatus.NotReady:
-                content.AppendLine("<b>" + SteamFriends.GetPersonaName() + "</b>" + ": " + "<color=\"red\">Not Ready</color>" + "\n");
+                content.AppendLine("<b>" + SteamFriends.GetPersonaName() + "</b>" + ": " + "<color=\"red\">Not Ready</color>");
                 break;
             case PlayerStatus.ReadyREDFOR:
-                content.AppendLine("<b>" + SteamFriends.GetPersonaName() + "</b>" + ": " + "<color=\"green\">Ready</color>" + " REDFOR" + "\n");
+                content.AppendLine("<color=\"red\">[REDFOR] </color>" + "<b>" + SteamFriends.GetPersonaName() + "</b>" + ": " + "<color=\"green\">Ready</color>");
                 break;
             case PlayerStatus.ReadyBLUFOR:
-                content.AppendLine("<b>" + SteamFriends.GetPersonaName() + "</b>" + ": " + "<color=\"green\">Ready</color>" + " BLUFOR" + "\n");
+                content.AppendLine("<color=\"blue\">[BLUFOR] </color>" + "<b>" + SteamFriends.GetPersonaName() + "</b>" + ": " + "<color=\"green\">Ready</color>");
                 break;
             case PlayerStatus.Loading:
-                content.AppendLine("<b>" + SteamFriends.GetPersonaName() + "</b>" + ": " + "<color=\"blue\">Loading</color>" + "\n");
+                content.AppendLine("<color=\"blue\">[BLUFOR] </color>" + "<b>" + SteamFriends.GetPersonaName() + "</b>" + ": " + "<color=\"blue\">Loading</color>");
                 break;
             case PlayerStatus.InGame:
-                content.AppendLine("<b>" + SteamFriends.GetPersonaName() + "</b>" + ": " + "<color=\"green\">In Game</color>" + "\n");
+                content.AppendLine("<color=\"blue\">[BLUFOR] </color>" + "<b>" + SteamFriends.GetPersonaName() + "</b>" + ": " + "<color=\"green\">In game</color>");
                 break;
             case PlayerStatus.Disconected:
-                content.AppendLine("<b>" + SteamFriends.GetPersonaName() + "</b>" + ": " + "<color=\"red\">Disconected</color>" + "\n");
+                content.AppendLine("<b>" + SteamFriends.GetPersonaName() + "</b>" + ": " + "<color=\"red\">Disconected</color>");
                 break;
             default:
-                content.AppendLine("<b>" + SteamFriends.GetPersonaName() + "</b>" + ": " + "<color=\"red\">Other</color>" + "\n");
+                content.AppendLine("<b>" + SteamFriends.GetPersonaName() + "</b>" + ": " + "<color=\"red\">Other</color>");
                 break;
         }
 
@@ -1095,28 +1096,28 @@ public class Networker : MonoBehaviour
             switch (playerStatusDic[players[i]])
             {
                 case PlayerStatus.Loadout:
-                    content.AppendLine("<b>" + SteamFriends.GetFriendPersonaName(players[i]) + "</b>" + ": " + "<color=\"red\">Loadout</color>" + "\n");
+                    content.AppendLine("<b>" + SteamFriends.GetFriendPersonaName(players[i]) + "</b>" + ": " + "<color=\"red\">Loadout</color>");
                     break;
                 case PlayerStatus.NotReady:
-                    content.AppendLine("<b>" + SteamFriends.GetFriendPersonaName(players[i]) + "</b>" + ": " + "<color=\"red\">Not Ready</color>" + "\n");
+                    content.AppendLine("<b>" + SteamFriends.GetFriendPersonaName(players[i]) + "</b>" + ": " + "<color=\"red\">Not Ready</color>");
                     break;
                 case PlayerStatus.ReadyREDFOR:
-                    content.AppendLine("<b>" + SteamFriends.GetFriendPersonaName(players[i]) + "</b>" + ": " + "<color=\"green\">Ready</color>" + " REDFOR" + "\n");
+                    content.AppendLine("<color=\"red\">[REDFOR] </color>" + "<b>" + SteamFriends.GetFriendPersonaName(players[i]) + "</b>" + ": " + "<color=\"green\">Ready</color>");
                     break;
                 case PlayerStatus.ReadyBLUFOR:
-                    content.AppendLine("<b>" + SteamFriends.GetFriendPersonaName(players[i]) + "</b>" + ": " + "<color=\"green\">Ready</color>" + " BLUFOR" + "\n");
+                    content.AppendLine("<color=\"blue\">[BLUFOR] </color>" + "<b>" + SteamFriends.GetFriendPersonaName(players[i]) + "</b>" + ": " + "<color=\"green\">Ready</color>");
                     break;
                 case PlayerStatus.Loading:
-                    content.AppendLine("<b>" + SteamFriends.GetFriendPersonaName(players[i]) + "</b>" + ": " + "<color=\"blue\">Loading</color>" + "\n");
+                    content.AppendLine("<b>" + SteamFriends.GetFriendPersonaName(players[i]) + "</b>" + ": " + "<color=\"blue\">Loading</color>");
                     break;
                 case PlayerStatus.InGame:
-                    content.AppendLine("<b>" + SteamFriends.GetFriendPersonaName(players[i]) + "</b>" + ": " + "<color=\"green\">In Game</color>" + "\n");
+                    content.AppendLine("<b>" + SteamFriends.GetFriendPersonaName(players[i]) + "</b>" + ": " + "<color=\"green\">In Game</color>");
                     break;
                 case PlayerStatus.Disconected:
-                    content.AppendLine("<b>" + SteamFriends.GetFriendPersonaName(players[i]) + "</b>" + ": " + "<color=\"red\">Disconected</color>" + "\n");
+                    content.AppendLine("<b>" + SteamFriends.GetFriendPersonaName(players[i]) + "</b>" + ": " + "<color=\"red\">Disconected</color>");
                     break;
                 default:
-                    content.AppendLine("<b>" + SteamFriends.GetFriendPersonaName(players[i]) + "</b>" + ": " + "<color=\"red\">Other</color>" + "\n");
+                    content.AppendLine("<b>" + SteamFriends.GetFriendPersonaName(players[i]) + "</b>" + ": " + "<color=\"red\">Other</color>");
                     break;
             }
         }
