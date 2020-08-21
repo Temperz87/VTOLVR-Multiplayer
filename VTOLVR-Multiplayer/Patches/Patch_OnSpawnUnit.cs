@@ -31,11 +31,12 @@ class Patch8
                 }
                 UIDNetworker_Sender uidSender = actor.gameObject.AddComponent<UIDNetworker_Sender>();
                 uidSender.networkUID = networkUID;
-                if (actor.hasRadar)
+
+                if (actor.gameObject.GetComponentInChildren<LockingRadar>() != null)
                 {
-                    Debug.Log($"Adding radar sender to object {actor.name}.");
-                    LockingRadarNetworker_Sender lastLockingSender = actor.gameObject.AddComponent<LockingRadarNetworker_Sender>();
-                    lastLockingSender.networkUID = networkUID;
+                    Debug.Log($"Adding LockingRadarSender to AI}");
+                    LockingRadarNetworker_Sender radarSender = actor.gameObject.AddComponent<LockingRadarNetworker_Sender>();
+                    radarSender.networkUID = networkUID;
                 }
                 if (actor.gameObject.GetComponent<Health>() != null)
                 {
