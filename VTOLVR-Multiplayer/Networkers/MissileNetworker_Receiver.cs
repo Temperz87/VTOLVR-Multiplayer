@@ -30,6 +30,14 @@ public class MissileNetworker_Receiver : MonoBehaviour
             }
         }
 
+        if (thisMissile.guidanceMode == Missile.GuidanceModes.Optical)
+        {
+            foreach (var collider in thisMissile.GetComponentsInChildren<Collider>())
+            {
+                collider.gameObject.layer = 9;
+            }
+        }
+
         thisMissile.explodeRadius *= 1.8f; thisMissile.explodeDamage *= 0.75f;
     }
 
