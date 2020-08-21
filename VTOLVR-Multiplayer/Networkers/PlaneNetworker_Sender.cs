@@ -39,7 +39,7 @@ public class PlaneNetworker_Sender : MonoBehaviour
         lastFiringMessage = new Message_WeaponFiring(-1, false, false, networkUID);
         // lastStoppedFiringMessage = new Message_WeaponStoppedFiring(networkUID);
         lastCountermeasureMessage = new Message_FireCountermeasure(true, true, networkUID);
-        lastDeathMessage = new Message_Death(networkUID,false);
+        lastDeathMessage = new Message_Death(networkUID, false);
         wheelsController = GetComponent<WheelsController>();
         aeroController = GetComponent<AeroController>();
         isPlayer = actor.isPlayer;
@@ -61,7 +61,7 @@ public class PlaneNetworker_Sender : MonoBehaviour
             Networker.WeaponSet += WeaponSet;
             weaponManager.OnWeaponEquipped += Rearm;
             weaponManager.OnWeaponUnequippedHPIdx += Rearm;
-            if (actor.isPlayer &&  weaponManager.GetIWBForEquip(3) != null)
+            if (actor.isPlayer && weaponManager.GetIWBForEquip(3) != null)
             {
                 iwb = weaponManager.GetIWBForEquip(3);
             }
@@ -105,7 +105,7 @@ public class PlaneNetworker_Sender : MonoBehaviour
                 {
                     lastFiringMessage.noAmmo = false;
                 }
-                if ( weaponManager.isFiring && weaponManager.currentEquip is HPEquipMissileLauncher)
+                if (weaponManager.isFiring && weaponManager.currentEquip is HPEquipMissileLauncher)
                 {
                     lastml = weaponManager.currentEquip as HPEquipMissileLauncher;
                     lastFiringMessage.missileIdx = (int)Traverse.Create(lastml.ml).Field("missileIdx").GetValue();
@@ -169,6 +169,8 @@ public class PlaneNetworker_Sender : MonoBehaviour
 
     public void WeaponSet(Packet packet)
     {
+        if (weaponManager == null)
+            return;
         //This message has only been sent to us so no need to check UID
         List<HPInfo> hpInfos = PlaneEquippableManager.generateHpInfoListFromWeaponManager(weaponManager,
             PlaneEquippableManager.HPInfoListGenerateNetworkType.sender);
@@ -208,7 +210,7 @@ public class PlaneNetworker_Sender : MonoBehaviour
         GameObject vehicle = VTOLAPI.GetPlayersVehicleGameObject();
         WeaponManager wm = vehicle.GetComponentInChildren<WeaponManager>();
         CountermeasureManager cm = vehicle.GetComponentInChildren<CountermeasureManager>();
-       
+
         Message_WeaponSet_Result rearm = new Message_WeaponSet_Result(
             PlaneEquippableManager.generateHpInfoListFromWeaponManager(wm, PlaneEquippableManager.HPInfoListGenerateNetworkType.generate, PlayerManager.localUID).ToArray(),
             PlaneEquippableManager.generateCounterMeasuresFromCmManager(cm).ToArray(),

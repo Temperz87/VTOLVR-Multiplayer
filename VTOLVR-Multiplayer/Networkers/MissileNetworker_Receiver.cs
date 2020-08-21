@@ -13,6 +13,7 @@ public class MissileNetworker_Receiver : MonoBehaviour
     public int idx;
     private Message_MissileUpdate lastMessage;
     private Traverse traverse;
+    private RadarLockData lockData;
     // private Rigidbody rigidbody; see missileSender for why i not using rigidbody
     private bool hasFired = false;
 
@@ -68,12 +69,23 @@ public class MissileNetworker_Receiver : MonoBehaviour
             {
                 // thisMissile.debugMissile = true;
                 RadarMissileLauncher radarLauncher = thisML as RadarMissileLauncher;
+                if (!VTOLVR_Multiplayer.AIDictionaries.allActors.TryGetValue(lastMessage.radarLock, out Actor actor))
+                {
+                    Debug.LogWarning($"Could not resolve missile launcher radar lock from uID {lastMessage.radarLock}.");
+                }
+                else
+                {
+                    if (radarLauncher.lockingRadar != null)
+                        radarLauncher.lockingRadar.ForceLock(actor, out lockData);
+                    else
+                        Debug.LogWarning("Locking Radar null on object " + thisMissile.name);
+                }
                 if (radarLauncher != null)
                 {
                     Debug.Log("Guidance mode radar, firing it as a radar missile.");
                     if (!radarLauncher.TryFireMissile())
                     {
-                        Debug.LogError("Could not fire radar missile.");
+                        Debug.LogError($"Could not fire radar missile, lock data is as follows: Locked: {lockData.locked}, Actor: {lockData.actor}");
                     }
                     else
                     {
@@ -98,7 +110,7 @@ public class MissileNetworker_Receiver : MonoBehaviour
                     GameObject emptyGO = new GameObject();
                     Transform newTransform = emptyGO.transform;
 
-                    newTransform.position=VTMapManager.GlobalToWorldPoint(lastMessage.targetPosition);
+                    newTransform.position = VTMapManager.GlobalToWorldPoint(lastMessage.targetPosition);
                     thisMissile.SetOpticalTarget(newTransform);
                     //thisMissile.heatSeeker.SetHardLock();
                 }
@@ -126,7 +138,7 @@ public class MissileNetworker_Receiver : MonoBehaviour
     }
     private void LateUpdate()
     {
-        
+
     }
     public void OnDestroy()
     {

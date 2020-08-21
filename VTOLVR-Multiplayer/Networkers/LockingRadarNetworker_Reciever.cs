@@ -49,7 +49,7 @@ class LockingRadarNetworker_Receiver : MonoBehaviour
     public void LockingRadarUpdate(Packet packet)
     {
         lastLockingMessage = (Message_LockingRadarUpdate)((PacketSingle)packet).message;
-        Debug.Log("Got a new locking radar update intended for id " + lastLockingMessage.senderUID);
+        // Debug.Log("Got a new locking radar update intended for id " + lastLockingMessage.senderUID);
         if (lastLockingMessage.senderUID != networkUID)
             return;
 
