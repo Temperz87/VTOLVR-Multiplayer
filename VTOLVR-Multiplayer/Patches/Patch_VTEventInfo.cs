@@ -50,8 +50,8 @@ class Patch22
 {
     static bool Prefix(VTEventTarget __instance)
     {
-      
-        
+
+
         if (Networker.isHost)
         {
             return true;
@@ -64,6 +64,7 @@ class Patch22
         }
         return false;
     }
+}
     [HarmonyPatch(typeof(VTEventTarget), "Invoke")]
 class Patch2
 {
