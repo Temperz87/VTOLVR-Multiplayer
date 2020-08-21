@@ -461,7 +461,7 @@ public static class AIManager
                     HPInfo[] hPInfos2 = null;
                     int[] cmLoadout = null;
                     UIDNetworker_Sender uidSender = actor.gameObject.GetComponent<UIDNetworker_Sender>();
-                    if (actor.role == Actor.Roles.Air)
+                    if (actor.role == Actor.Roles.Air && actor.weaponManager != null)
                     {
                         hPInfos2 = PlaneEquippableManager.generateHpInfoListFromWeaponManager(actor.weaponManager, PlaneEquippableManager.HPInfoListGenerateNetworkType.sender, uidSender.networkUID).ToArray();
                     }
