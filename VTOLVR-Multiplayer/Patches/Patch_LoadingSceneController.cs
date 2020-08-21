@@ -7,8 +7,9 @@ using System.Threading.Tasks;
 using Harmony;
 using Oculus.Platform;
 using UnityEngine;
+using UnityEngine.UI;
 
-/*
+/* This code is like a museum... HISTRORY!!!!!!!!!!!!!!!!
 [HarmonyPatch(typeof(LoadingSceneController),"PlayerReady")]
 public class Patch_LoadingSceneController_PlayerReady
 {
@@ -53,11 +54,53 @@ class Patch_LoadingSceneHelmet_Update
     [HarmonyPrefix]
     static bool Prefix(LoadingSceneHelmet __instance)
     {
+        if (!Multiplayer._instance.playingMP)
+            return true;
         Traverse t = Traverse.Create(__instance);
         bool grabbed = (bool)t.Field("grabbed").GetValue();
         VRHandController c = (VRHandController)t.Field("c").GetValue();
-
-
+        if (!PlayerManager.buttonMade)
+        {
+            GameObject button = GameObject.Instantiate(GameObject.Find("RecenterCanvas"));
+            foreach (var controller in GameObject.FindObjectsOfType<VRHandController>())
+            {
+                if (!controller.isLeft)
+                {
+                    button.transform.SetParent(controller.transform);
+                    button.transform.localPosition = new Vector3(0.101411f, 0.02100047f, -0.128024f);
+                    button.transform.localRotation = Quaternion.Euler(-5.834f, 283.583f, 328.957f);
+                    button.transform.localScale = new Vector3(button.transform.localScale.x * -1, button.transform.localScale.y * -1, button.transform.localScale.z);
+                    VRInteractable bInteractable = button.GetComponentInChildren<VRInteractable>();
+                    Text text = button.GetComponentInChildren<Text>();
+                    text.transform.localScale = text.transform.localScale * 0.75f;
+                    PlayerManager.text = text;
+                    text.text = "Current Team: " + (PlayerManager.teamLeftie == true ? "REDFOR" : "BLUFOR");
+                    if (!Networker.isHost)
+                    {
+                        bInteractable.interactableName = "Swap Teams.";
+                        bInteractable.OnInteract = new UnityEngine.Events.UnityEvent();
+                        bInteractable.OnInteract.AddListener(new UnityEngine.Events.UnityAction(() =>
+                        {
+                            PlayerManager.teamLeftie = !PlayerManager.teamLeftie;
+                            PlayerManager.text.text = "Current Team: " + (PlayerManager.teamLeftie == true ? "REDFOR" : "BLUFOR");
+                            if (Networker.readySent)
+                            {
+                                NetworkSenderThread.Instance.SendPacketToSpecificPlayer(Networker.hostID, new Message_Ready(PlayerManager.localUID, Networker.isHost, PlayerManager.teamLeftie), Steamworks.EP2PSend.k_EP2PSendReliable);
+                            }
+                        }));
+                    }
+                    else
+                    {
+                        GameObject.Destroy(bInteractable.gameObject);
+                        GameObject.Destroy(button.transform.GetChild(1).gameObject);
+                        bInteractable.OnInteract = new UnityEngine.Events.UnityEvent();
+                    }
+                    PlayerManager.buttonMade = true;
+                    break;
+                }
+            }
+            PlayerManager.buttonMade = true;
+        }
         if (grabbed || __instance.GetComponent<Rigidbody>().velocity.sqrMagnitude > 0.1f)
         {
             if (Vector3.Distance(__instance.transform.position, __instance.headTransform.position) < __instance.radius)
@@ -73,10 +116,6 @@ class Patch_LoadingSceneHelmet_Update
                 {
                     if (Networker.isHost)
                     {
-                        if (c.isLeft)
-                        {
-                            Debug.Log("host used left hand cant be a leftie, made righty");
-                        }
                         PlayerManager.teamLeftie = false; //host cant be team leftie so ai doesnt break;
                         if (Networker.EveryoneElseReady())
                         {
@@ -84,6 +123,7 @@ class Patch_LoadingSceneHelmet_Update
                             NetworkSenderThread.Instance.SendPacketAsHostToAllClients(new Message(MessageType.AllPlayersReady), Steamworks.EP2PSend.k_EP2PSendReliable);
                             Networker.SetHostReady(true);
                             LoadingSceneController.instance.PlayerReady();
+                            PlayerManager.buttonMade = false;
                         }
                         else
                         {
@@ -93,16 +133,6 @@ class Patch_LoadingSceneHelmet_Update
                     }
                     else
                     {
-                        if (c.isLeft)
-                        {
-                            PlayerManager.teamLeftie = true;
-                            Debug.Log("client is a leftie");
-                        }
-                        else
-                        {
-                            Debug.Log("client is a rightie");
-                            PlayerManager.teamLeftie = false;
-                        }
                         if (!Networker.readySent)
                         {
                             Networker.readySent = true;
@@ -114,7 +144,6 @@ class Patch_LoadingSceneHelmet_Update
                     {
                         Debug.Log("Waiting for host to load");
                     }
-
                     __instance.equipAudioSource.Play();
                     return false;
                 }
@@ -122,9 +151,8 @@ class Patch_LoadingSceneHelmet_Update
                 {
                     Debug.Log("Player is not a MP host or client.");
                     LoadingSceneController.instance.PlayerReady();
+                    PlayerManager.buttonMade = false;
                 }
-
-
             }
         }
         return true;

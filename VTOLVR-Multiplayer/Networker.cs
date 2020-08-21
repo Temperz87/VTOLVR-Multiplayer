@@ -586,16 +586,19 @@ public class Networker : MonoBehaviour
 
                     if (readyDic.ContainsKey(csteamID) && playerStatusDic.ContainsKey(csteamID))
                     {
-                        if (readyMessage.isLeft) {
+                        if (readyMessage.isLeft)
+                        {
                             playerStatusDic[csteamID] = PlayerStatus.ReadyREDFOR;
                         }
-                        else {
+                        else
+                        {
                             playerStatusDic[csteamID] = PlayerStatus.ReadyBLUFOR;
                         }
 
                         if (readyDic[csteamID])
                         {
                             Debug.Log("Received ready message from the same user twice");
+                            UpdateLoadingText();
                             break;
                         }
 
