@@ -61,6 +61,11 @@ public class RigidbodyNetworker_Receiver : MonoBehaviour
         originTransform.SetRigidbody(rb);
 
         Networker.RigidbodyUpdate += RigidbodyUpdate;
+
+        if (GetComponent<RigidbodyNetworker_Sender>() != null)
+        {
+            Destroy(GetComponent<RigidbodyNetworker_Sender>());
+        }
     }
 
     void FixedUpdate()
@@ -100,6 +105,11 @@ public class RigidbodyNetworker_Receiver : MonoBehaviour
        
         rb.MovePosition(transform.position + targetVelocity * Time.fixedDeltaTime + ((localTargetPosition - transform.position) * Time.fixedDeltaTime) / smoothingTime);
         rb.MoveRotation(Quaternion.Lerp(currentRotation, targetRotation, Time.fixedDeltaTime / rotSmoothingTime));
+
+        if (GetComponent<RigidbodyNetworker_Sender>() != null)
+        {
+            Debug.Log("fml, there are both rigidbody senders and recievers");
+        }
     }
 
     public void RigidbodyUpdate(Packet packet)

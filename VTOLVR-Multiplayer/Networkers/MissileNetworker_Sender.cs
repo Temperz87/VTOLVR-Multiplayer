@@ -19,11 +19,16 @@ public class MissileNetworker_Sender : MonoBehaviour
     {
         Networker.RequestNetworkUID += RequestUID;
         Networker.MissileChangeAuthority += MissileChangeAuthority;
-        lastMessage = new Message_MissileUpdate(networkUID);
+        lastMessage = new Message_MissileUpdate(networkUID, Quaternion.identity);
         lastLaunchMessage = new Message_MissileLaunch(networkUID, Quaternion.identity);
         lastDetonateMessage = new Message_MissileDetonate(networkUID);
         thisMissile = GetComponent<Missile>();
         thisMissile.OnMissileDetonated += OnDetonated;
+
+        if (GetComponent<MissileNetworker_Receiver>() != null)
+        {
+            Destroy(GetComponent<MissileNetworker_Receiver>());
+        }
     }
 
     private void FixedUpdate()
@@ -59,6 +64,19 @@ public class MissileNetworker_Sender : MonoBehaviour
                     }
                     lastLaunchMessage.targetPosition = new Vector3D(thisMissile.heatSeeker.targetPosition);
                     break;
+                case Missile.GuidanceModes.Radar:
+                    ulong uid2;
+                    if (AIDictionaries.reverseAllActors.TryGetValue(thisMissile.lockingRadar.currentLock.actor, out uid2))
+                    {
+                        lastLaunchMessage.targetActorUID = uid2;
+                        Debug.Log("RADAR MISSILE: Firing on " + uid2);
+                    }
+                    else
+                    {
+                        lastLaunchMessage.targetActorUID = 0;
+                        Debug.Log("RADAR MISSILE: Couldn't find UID ");
+                    }
+                    break;
                 default:
                     break;
             }
@@ -70,6 +88,22 @@ public class MissileNetworker_Sender : MonoBehaviour
             {
                 NetworkSenderThread.Instance.SendPacketToSpecificPlayer(Networker.hostID, lastLaunchMessage, Steamworks.EP2PSend.k_EP2PSendReliable);
             }
+        }
+        if (hasFired && thisMissile.guidanceMode == Missile.GuidanceModes.Heat) {
+            lastMessage.seekerRotation = thisMissile.heatSeeker.transform.rotation;
+            if (Networker.isHost)
+            {
+                NetworkSenderThread.Instance.SendPacketAsHostToAllClients(lastMessage, Steamworks.EP2PSend.k_EP2PSendReliable);
+            }
+            else
+            {
+                NetworkSenderThread.Instance.SendPacketToSpecificPlayer(Networker.hostID, lastMessage, Steamworks.EP2PSend.k_EP2PSendReliable);
+            }
+        }
+
+        if (GetComponent<MissileNetworker_Receiver>() != null)
+        {
+            Debug.Log("fml, there are both missile senders and recievers");
         }
     }
 

@@ -36,6 +36,11 @@ public class RigidbodyNetworker_Sender : MonoBehaviour
         rb = GetComponent<Rigidbody>();
         lastMessage = new Message_RigidbodyUpdate(new Vector3D(), new Vector3D(), new Vector3D(), Quaternion.identity, 0, networkUID);
         tick = 0;
+
+        if (GetComponent<RigidbodyNetworker_Receiver>() != null)
+        {
+            Destroy(GetComponent<RigidbodyNetworker_Receiver>());
+        }
     }
 
     private void FixedUpdate()
@@ -73,8 +78,12 @@ public class RigidbodyNetworker_Sender : MonoBehaviour
             else
                 NetworkSenderThread.Instance.SendPacketToSpecificPlayer(Networker.hostID, lastMessage, Steamworks.EP2PSend.k_EP2PSendUnreliableNoDelay);
         }
-            // Temperz STOP KILLING PERFORMANCE AND HARD DRIVES!
-            //Debug.Log($"{actor.name} is not outside of the threshold {Threshold}, the distance is {Vector3.Distance(lastPos, gameObject.transform.position)} not updating it.");
+        // Temperz STOP KILLING PERFORMANCE AND HARD DRIVES!
+        //Debug.Log($"{actor.name} is not outside of the threshold {Threshold}, the distance is {Vector3.Distance(lastPos, gameObject.transform.position)} not updating it.");
+
+        if (GetComponent<RigidbodyNetworker_Receiver>() != null) {
+            Debug.Log("fml, there are both rigidbody senders and recievers");
+        }
     }
 
     public void SetSpawn(Vector3 spawnPos, Quaternion spawnRot)

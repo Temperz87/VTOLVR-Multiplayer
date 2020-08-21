@@ -24,6 +24,13 @@ public class MissileNetworker_Receiver : MonoBehaviour
 
     float originalProxFuse;
 
+    void Awake() {
+        if (GetComponent<MissileNetworker_Sender>() != null)
+        {
+            Destroy(GetComponent<MissileNetworker_Sender>());
+        }
+    }
+
     private void Start()
     {
         thisMissile = GetComponent<Missile>();
@@ -122,6 +129,8 @@ public class MissileNetworker_Receiver : MonoBehaviour
         lastMessage = ((PacketSingle)packet).message as Message_MissileUpdate;
         if (lastMessage.networkUID != networkUID)
             return;
+
+        thisMissile.heatSeeker.transform.rotation = lastMessage.seekerRotation;
     }
 
     public void MissileDestroyed(Packet packet)
@@ -197,26 +206,12 @@ public class MissileNetworker_Receiver : MonoBehaviour
         }
     }
 
-    /*void FixedUpdate() {
-        if (hasFired) {
-            ulong uid;
-            if (thisMissile.heatSeeker.likelyTargetActor != null)
-            {
-                if (AIDictionaries.reverseAllActors.TryGetValue(thisMissile.heatSeeker.likelyTargetActor, out uid))
-                {
-                    Debug.Log("Puppet " + networkUID + ", tracking:  " + uid);
-                }
-                else
-                {
-                    Debug.Log("Puppet " + networkUID + ", couldn't get UID");
-                }
-            }
-            else
-            {
-                Debug.Log("Puppet " + networkUID + ", no target...");
-            }
+    void FixedUpdate() {
+        if (GetComponent<MissileNetworker_Sender>() != null)
+        {
+            Debug.Log("fml, there are both missile senders and recievers");
         }
-    }*/
+    }
 
     public void OnDestroy()
     {
