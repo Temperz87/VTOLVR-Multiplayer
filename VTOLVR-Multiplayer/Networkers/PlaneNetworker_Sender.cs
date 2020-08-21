@@ -39,7 +39,7 @@ public class PlaneNetworker_Sender : MonoBehaviour
         lastFiringMessage = new Message_WeaponFiring(-1, false, false, networkUID);
         // lastStoppedFiringMessage = new Message_WeaponStoppedFiring(networkUID);
         lastCountermeasureMessage = new Message_FireCountermeasure(true, true, networkUID);
-        lastDeathMessage = new Message_Death(networkUID,false);
+        lastDeathMessage = new Message_Death(networkUID, false);
         wheelsController = GetComponent<WheelsController>();
         aeroController = GetComponent<AeroController>();
         isPlayer = actor.isPlayer;
@@ -61,7 +61,7 @@ public class PlaneNetworker_Sender : MonoBehaviour
             Networker.WeaponSet += WeaponSet;
             weaponManager.OnWeaponEquipped += Rearm;
             weaponManager.OnWeaponUnequippedHPIdx += Rearm;
-            if (actor.isPlayer &&  weaponManager.GetIWBForEquip(3) != null)
+            if (actor.isPlayer && weaponManager.GetIWBForEquip(3) != null)
             {
                 iwb = weaponManager.GetIWBForEquip(3);
             }
@@ -106,7 +106,10 @@ public class PlaneNetworker_Sender : MonoBehaviour
                     lastFiringMessage.noAmmo = false;
                 }
                 if (weaponManager.isFiring && weaponManager.currentEquip is HPEquipMissileLauncher)
-                    return;
+                {
+                    lastml = weaponManager.currentEquip as HPEquipMissileLauncher;
+                    lastFiringMessage.missileIdx = (int)Traverse.Create(lastml.ml).Field("missileIdx").GetValue();
+                }
                 if (Networker.isHost)
                     NetworkSenderThread.Instance.SendPacketAsHostToAllClients(lastFiringMessage, Steamworks.EP2PSend.k_EP2PSendUnreliableNoDelay);
                 else
@@ -166,6 +169,8 @@ public class PlaneNetworker_Sender : MonoBehaviour
 
     public void WeaponSet(Packet packet)
     {
+        if (weaponManager == null)
+            return;
         //This message has only been sent to us so no need to check UID
         List<HPInfo> hpInfos = PlaneEquippableManager.generateHpInfoListFromWeaponManager(weaponManager,
             PlaneEquippableManager.HPInfoListGenerateNetworkType.sender);

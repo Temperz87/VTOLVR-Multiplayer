@@ -65,7 +65,6 @@ public class MissileNetworker_Sender : MonoBehaviour
             if (Networker.isHost)
             {
                 NetworkSenderThread.Instance.SendPacketAsHostToAllClients(lastLaunchMessage, Steamworks.EP2PSend.k_EP2PSendReliable);
-                StartCoroutine(Networker.ChangeMissileAuthority(ownerUID, networkUID, lastLaunchMessage.targetActorUID));
             }
             else
             {

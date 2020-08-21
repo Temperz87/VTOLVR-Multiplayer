@@ -18,6 +18,7 @@ public class MissileNetworker_Receiver : MonoBehaviour
     private Message_MissileDetonate lastDetonateMessage;
     private Message_MissileChangeAuthority lastChangeMessage;
     private Traverse traverse;
+    private RadarLockData lockData;
     // private Rigidbody rigidbody; see missileSender for why i not using rigidbody
     public bool hasFired = false;
 
@@ -38,11 +39,20 @@ public class MissileNetworker_Receiver : MonoBehaviour
             }
         }
         thisMissile.explodeDamage *= Multiplayer._instance.missileDamage;
-
+        
         Networker.MissileUpdate += MissileUpdate;
         Networker.MissileLaunch += MissileLaunch;
         Networker.MissileDetonate += MissileDestroyed;
         Networker.MissileChangeAuthority += MissileChangeAuthority;
+        if (thisMissile.guidanceMode == Missile.GuidanceModes.Optical)
+        {
+            foreach (var collider in thisMissile.GetComponentsInChildren<Collider>())
+            {
+                collider.gameObject.layer = 9;
+            }
+        }
+
+        thisMissile.explodeRadius *= Multiplayer._instance.missileRadius; thisMissile.explodeDamage *= Multiplayer._instance.missileDamage;
     }
 
     public void MissileLaunch(Packet packet)
@@ -78,29 +88,26 @@ public class MissileNetworker_Receiver : MonoBehaviour
         {
             if (thisMissile.guidanceMode == Missile.GuidanceModes.Heat)
             {
-                Debug.Log("Guidance mode heat.");
-                IRMissileLauncher IRLauncher = thisML as IRMissileLauncher;
-                IRLauncher.EnableWeapon();
-                traverse.Field("missileIdx").SetValue(idx);
-                Debug.Log("No out of range exceptions here officer.");
-                Actor actor;
-                if (AIDictionaries.allActors.TryGetValue(lastLaunchMessage.targetActorUID, out actor))
-                {
-                    thisMissile.heatSeeker.transform.LookAt(actor.transform);
-                    Traverse traverse2 = Traverse.Create(thisMissile.heatSeeker);
-                    traverse2.Field("lastTargetPosition").SetValue(actor.transform.position);
-                    traverse2.Field("targetVelocity").SetValue(actor.velocity);
-                }
-                else {
-                    Debug.Log("Could not find actor " + lastLaunchMessage.targetActorUID + " to target with heatseeker.");
-                }
+                Debug.Log("Guidance mode Heat.");
+                thisMissile.heatSeeker.transform.rotation = lastLaunchMessage.seekerRotation;
                 thisMissile.heatSeeker.SetHardLock();
-                traverse.Field("missileIdx").SetValue(idx);
+            }
+
+            if (thisMissile.guidanceMode == Missile.GuidanceModes.Optical)
+            {
+                Debug.Log("Guidance mode Optical.");
+
+                GameObject emptyGO = new GameObject();
+                Transform newTransform = emptyGO.transform;
+
+                newTransform.position = VTMapManager.GlobalToWorldPoint(lastLaunchMessage.targetPosition);
+                thisMissile.SetOpticalTarget(newTransform);
+                //thisMissile.heatSeeker.SetHardLock();
             }
             Debug.Log("Try fire missile clientside");
+            traverse.Field("missileIdx").SetValue(idx);
             thisML.FireMissile();
-
-            rbReceiver = gameObject.AddComponent<RigidbodyNetworker_Receiver>();
+            RigidbodyNetworker_Receiver rbReceiver = gameObject.AddComponent<RigidbodyNetworker_Receiver>();
             rbReceiver.networkUID = networkUID;
         }
         if (hasFired != thisMissile.fired)
@@ -163,7 +170,7 @@ public class MissileNetworker_Receiver : MonoBehaviour
                 localAuthority = false;
             }
         }
-
+        
         if (localAuthority)
         {
             Debug.Log("We should be incharge of this missile");

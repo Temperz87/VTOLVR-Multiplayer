@@ -56,11 +56,7 @@ class ExtNPCLight_Sender : MonoBehaviour
         if (lightsController.strobeLights != null && lightsController.strobeLights.onByDefault != lastStrobe)
         {
             lastMessage.strobe = lightsController.strobeLights.onByDefault;
-            hasChanged = true;
-            lastStrobe = lightsController.strobeLights.onByDefault;
-        }
-        if (traverse2 != null && (bool)traverse2.Field("connected").GetValue() != lastLand)
-        {
+            if (traverse2 != null)
             lastMessage.strobe = (bool)traverse2.Field("connected").GetValue();
             hasChanged = true;
             lastLand = (bool)traverse2.Field("connected").GetValue();

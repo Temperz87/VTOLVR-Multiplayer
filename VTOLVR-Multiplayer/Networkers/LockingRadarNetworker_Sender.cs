@@ -35,7 +35,7 @@ class LockingRadarNetworker_Sender : MonoBehaviour
         }
         else
         {
-           // Debug.Log($"Radar sender successfully attached to object {gameObject.name}.");
+            // Debug.Log($"Radar sender successfully attached to object {gameObject.name}.");
         }
         controller = gameObject.GetComponentInChildren<TacticalSituationController>();
         if (controller != null)
@@ -49,16 +49,18 @@ class LockingRadarNetworker_Sender : MonoBehaviour
     }
     private void FixedUpdate()
     {
-            if (lr == null)
-            {
-                Debug.LogError($"LockingRadar is null for object {gameObject.name} with an uid of {networkUID}.");
-                lr = gameObject.GetComponentInChildren<LockingRadar>();
-            }
-            if (lr.radar == null)
-            {
-                Debug.LogError("This radar.radar shouldn't be null. If this error pops up a second time then be worried.");
-                lr.radar = gameObject.GetComponentInChildren<Radar>();
-            }
+        if (lr == null)
+        {
+            Debug.LogError($"LockingRadar is null for object {gameObject.name} with an uid of {networkUID}.");
+            lr = gameObject.GetComponentInChildren<LockingRadar>();
+        }
+        if (lr.radar == null)
+        {
+            //Debug.LogError("This radar.radar shouldn't be null. If this error pops up a second time then be worried. Null on " + gameObject.name);
+            lr.radar = gameObject.GetComponentInChildren<Radar>();
+        }
+        if (lr.radar != null)
+        {
             if (lr.radar.radarEnabled != lastOn || lr.radar.sweepFov != lastFov)
             {
                 // Debug.Log("radar.radar is not equal to last on");
@@ -78,7 +80,7 @@ class LockingRadarNetworker_Sender : MonoBehaviour
                 Debug.Log("last one");
                 lastFov = lr.radar.sweepFov;
             }
-
+        }
         if (controller == null)
         {
             // if (lr.currentLock != lastRadarLockData) { stateChanged = true; }

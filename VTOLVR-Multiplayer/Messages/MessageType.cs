@@ -51,5 +51,6 @@ public enum MessageType
     ObjectiveSync, // To sync objectives
     ScenarioAction, // To sync scenario actions which have their hand in objectives
     SamUpdate, // To sync sams
-    AAAUpdate // To sync A's x 3
+    AAAUpdate, // To sync A's x 3
+     BulletHit
 }

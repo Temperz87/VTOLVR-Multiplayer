@@ -252,6 +252,11 @@ public class PlaneNetworker_Receiver : MonoBehaviour
         Message_WeaponFiring message = ((PacketSingle)packet).message as Message_WeaponFiring;
         if (message.UID != networkUID)
             return;
+
+        if (weaponManager.isMasterArmed == false)
+        {
+            weaponManager.ToggleMasterArmed();
+        }
         idx = (int)traverse.Field("weaponIdx").GetValue();
         /*while (message.weaponIdx != idx && i < 60)
         {
@@ -276,10 +281,7 @@ public class PlaneNetworker_Receiver : MonoBehaviour
         {
             if (message.isFiring)
             {
-                if (weaponManager.isMasterArmed == false)
-                {
-                    weaponManager.ToggleMasterArmed();
-                }
+               
                 if (weaponManager.currentEquip is HPEquipMissileLauncher)
                 {
                     lastml = weaponManager.currentEquip as HPEquipMissileLauncher;
@@ -319,7 +321,6 @@ public class PlaneNetworker_Receiver : MonoBehaviour
                             ((HPEquipGun)weaponManager.currentEquip).gun.currentAmmo = ((HPEquipGun)weaponManager.currentEquip).gun.maxAmmo;
                             noAmmo = false;
                         }
-
                     }
                     weaponManager.StartFire();
                 }

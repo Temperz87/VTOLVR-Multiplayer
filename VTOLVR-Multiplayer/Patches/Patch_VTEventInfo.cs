@@ -8,30 +8,71 @@ using Harmony;
 using UnityEngine;
 
 
+// patch to grab all the events being loaded on creation this replaces original method
+[HarmonyPatch(typeof(Bullet), "KillBullet")]
+class PatchBullet
+{
+    static bool Prefix(Bullet __instance)
+    {
+        RaycastHit hitInfo;
+        Vector3 pos = Traverse.Create(__instance).Field("position").GetValue<Vector3>();
+        Vector3 vel = Traverse.Create(__instance).Field("velocity").GetValue<Vector3>();
+        Vector3 a = pos;
+        a += vel * 0.2f;
+        float damage = Traverse.Create(__instance).Field("damage").GetValue<float>();
+        bool flag = Physics.Linecast(pos, a, out hitInfo, 1025);
+        Hitbox hitbox = null;
+        if (flag)
+        {
+            hitbox = hitInfo.collider.GetComponent<Hitbox>();
+            if ((bool)hitbox && (bool)hitbox.actor)
+            {
+                PlayerManager.lastBulletHit = hitbox;
+
+                ulong lastID;
+                if (VTOLVR_Multiplayer.AIDictionaries.reverseAllActors.TryGetValue(hitbox.actor, out lastID))
+                {
+
+                    Debug.Log("hit player sending bullet packet");
+                    Message_BulletHit hitmsg = new Message_BulletHit(PlayerManager.localUID, PlayerManager.localUID, new Vector3D(pos), new Vector3D(vel), damage);
+                    NetworkSenderThread.Instance.SendPacketToSpecificPlayer(PlayerManager.GetPlayerCSteamID(PlayerManager.localUID), hitmsg, Steamworks.EP2PSend.k_EP2PSendReliableWithBuffering);
+                }
+
+            }
+        }
+
+        return true;//dont run bahas code
+    }
+}
+
+
 [HarmonyPatch(typeof(VTEventTarget), "Invoke")]
 class Patch2
 {
     static void Postfix(VTEventTarget __instance)
     {
         String actionIdentifier = __instance.eventName + __instance.methodName + __instance.targetID + __instance.targetType.ToString();
-        foreach (VTEventTarget.ActionParamInfo aparam in __instance.parameterInfos)
+        /*foreach (VTEventTarget.ActionParamInfo aparam in __instance.parameterInfos)
         {
             actionIdentifier += aparam.name;
-        }
+        }*/
         int hash = actionIdentifier.GetHashCode();
-
+        if (!__instance.TargetExists())
+        {
+            Debug.Log("Target doesn't exist in invoke");
+        }
         Message_ScenarioAction ScanarioActionOutMessage = new Message_ScenarioAction(PlayerManager.localUID, hash);
         if (Networker.isHost)
         {
             Debug.Log("Host sent Event action" + __instance.eventName + " of type " + __instance.methodName + " for target " + __instance.targetID);
 
-            NetworkSenderThread.Instance.SendPacketAsHostToAllClients(ScanarioActionOutMessage, Steamworks.EP2PSend.k_EP2PSendUnreliableNoDelay);
+            NetworkSenderThread.Instance.SendPacketAsHostToAllClients(ScanarioActionOutMessage, Steamworks.EP2PSend.k_EP2PSendUnreliable);
         }
         else
         {
 
-            Debug.Log("Client sent  Event action" + __instance.eventName + " of type " + __instance.methodName + " for target " + __instance.targetID);
-            NetworkSenderThread.Instance.SendPacketToSpecificPlayer(Networker.hostID, ScanarioActionOutMessage, Steamworks.EP2PSend.k_EP2PSendUnreliableNoDelay);
+            Debug.Log("Client sent Event action" + __instance.eventName + " of type " + __instance.methodName + " for target " + __instance.targetID);
+            NetworkSenderThread.Instance.SendPacketToSpecificPlayer(Networker.hostID, ScanarioActionOutMessage, Steamworks.EP2PSend.k_EP2PSendUnreliable);
         }
     }
 }
@@ -53,13 +94,13 @@ class Patch3
             __instance.actions.Add(vTEventTarget);
             Debug.Log("Compiling scenario dictonary my codd2");
             String actionIdentifier = vTEventTarget.eventName + vTEventTarget.methodName + vTEventTarget.targetID + vTEventTarget.targetType.ToString();
-            foreach(VTEventTarget.ActionParamInfo aparam in vTEventTarget.parameterInfos)
+            /*foreach(VTEventTarget.ActionParamInfo aparam in vTEventTarget.parameterInfos)
             {
                 actionIdentifier+= aparam.name;
-            }
+            }*/
             Debug.Log(actionIdentifier);
             int hash = actionIdentifier.GetHashCode();
-            Debug.Log("Compiling scenario dictonary  adding to my dictionary");
+            Debug.Log("Compiling scenario dictonary adding to my dictionary");
 
             if (!ObjectiveNetworker_Reciever.scenarioActionsList.ContainsKey(hash))
                 ObjectiveNetworker_Reciever.scenarioActionsList.Add(hash, vTEventTarget);
@@ -101,7 +142,7 @@ class Patch4
         {
             Debug.Log("Host sent objective complete " + __instance.objectiveID);
             ObjectiveNetworker_Reciever.completeNext = false;
-            NetworkSenderThread.Instance.SendPacketAsHostToAllClients(objOutMessage, Steamworks.EP2PSend.k_EP2PSendUnreliableNoDelay);
+            NetworkSenderThread.Instance.SendPacketAsHostToAllClients(objOutMessage, Steamworks.EP2PSend.k_EP2PSendUnreliable);
         }
         else
         {
@@ -109,12 +150,13 @@ class Patch4
             {
                 Debug.Log("Making client not send kill objective packet.");
                 bool shouldComplete = ObjectiveNetworker_Reciever.completeNext;
+                Debug.Log($"Should complete is {shouldComplete}.");
                 ObjectiveNetworker_Reciever.completeNext = false;
                 return shouldComplete;// clients should not send kill obj packets or have them complete
             }
             ObjectiveNetworker_Reciever.completeNext = false;
             Debug.Log("Client sent objective complete " + __instance.objectiveID);
-            NetworkSenderThread.Instance.SendPacketToSpecificPlayer(Networker.hostID, objOutMessage, Steamworks.EP2PSend.k_EP2PSendUnreliableNoDelay);
+            NetworkSenderThread.Instance.SendPacketToSpecificPlayer(Networker.hostID, objOutMessage, Steamworks.EP2PSend.k_EP2PSendUnreliable);
         }
         return true;
     }
@@ -144,7 +186,7 @@ class Patch5
         if (Networker.isHost && objOutMessage.objID != -1)
         {
             Debug.Log("Host sent objective fail " + __instance.objectiveID);
-            NetworkSenderThread.Instance.SendPacketAsHostToAllClients(objOutMessage, Steamworks.EP2PSend.k_EP2PSendUnreliableNoDelay);
+            NetworkSenderThread.Instance.SendPacketAsHostToAllClients(objOutMessage, Steamworks.EP2PSend.k_EP2PSendUnreliable);
         }
         else
         {
@@ -153,7 +195,7 @@ class Patch5
                 Debug.Log("Making client not send kill objective packet.");
                 return true;// clients should not send kill obj packets
             }
-            NetworkSenderThread.Instance.SendPacketToSpecificPlayer(Networker.hostID, objOutMessage, Steamworks.EP2PSend.k_EP2PSendUnreliableNoDelay);
+            NetworkSenderThread.Instance.SendPacketToSpecificPlayer(Networker.hostID, objOutMessage, Steamworks.EP2PSend.k_EP2PSendUnreliable);
         }
         return true;
     }
@@ -223,7 +265,7 @@ class Patch7
         {
 
             Debug.Log("Host sent objective CancelObjective " + __instance.objectiveID);
-            NetworkSenderThread.Instance.SendPacketAsHostToAllClients(objOutMessage, Steamworks.EP2PSend.k_EP2PSendUnreliableNoDelay);
+            NetworkSenderThread.Instance.SendPacketAsHostToAllClients(objOutMessage, Steamworks.EP2PSend.k_EP2PSendUnreliable);
         }
         else
         {
@@ -233,7 +275,7 @@ class Patch7
                 return true;// clients should not send kill obj packets
             }
             Debug.Log("Client sent objective CancelObjective " + __instance.objectiveID);
-            NetworkSenderThread.Instance.SendPacketToSpecificPlayer(Networker.hostID, objOutMessage, Steamworks.EP2PSend.k_EP2PSendUnreliableNoDelay);
+            NetworkSenderThread.Instance.SendPacketToSpecificPlayer(Networker.hostID, objOutMessage, Steamworks.EP2PSend.k_EP2PSendUnreliable);
         }
         return true;
     }
