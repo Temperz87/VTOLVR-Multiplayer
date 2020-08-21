@@ -45,8 +45,26 @@ class PatchBullet
     }
 }
 
-
 [HarmonyPatch(typeof(VTEventTarget), "Invoke")]
+class Patch22
+{
+    static bool Prefix(VTEventTarget __instance)
+    {
+      
+        
+        if (Networker.isHost)
+        {
+            return true;
+        }
+        else
+        {
+
+            if (__instance.targetType == VTEventTarget.TargetTypes.Objective || __instance.targetType == VTEventTarget.TargetTypes.System)
+                return true;
+        }
+        return false;
+    }
+    [HarmonyPatch(typeof(VTEventTarget), "Invoke")]
 class Patch2
 {
     static void Postfix(VTEventTarget __instance)
