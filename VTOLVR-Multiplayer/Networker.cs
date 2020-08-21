@@ -930,7 +930,7 @@ public class Networker : MonoBehaviour
 
                     Message_ObjectiveSync lastMessageobbj = (Message_ObjectiveSync)((PacketSingle)packet).message;
 
-                    Debug.Log("recieved action from other");
+                    Debug.Log("received objective action from other");
                     // do not run scenarios on self
                     if (lastMessageobbj.UID == PlayerManager.localUID)
                     {

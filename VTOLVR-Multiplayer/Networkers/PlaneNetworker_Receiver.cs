@@ -321,7 +321,6 @@ public class PlaneNetworker_Receiver : MonoBehaviour
                             ((HPEquipGun)weaponManager.currentEquip).gun.currentAmmo = ((HPEquipGun)weaponManager.currentEquip).gun.maxAmmo;
                             noAmmo = false;
                         }
-
                     }
                     weaponManager.StartFire();
                 }
