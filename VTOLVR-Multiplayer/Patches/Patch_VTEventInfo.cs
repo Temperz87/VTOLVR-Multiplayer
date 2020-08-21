@@ -30,7 +30,7 @@ class PatchBullet
                 PlayerManager.lastBulletHit = hitbox;
 
                 ulong lastID;
-                if (VTOLVR_Multiplayer.AIDictionaries.reverseAllActors.TryGetValue(hitbox.actor, out lastID))
+                if (AIDictionaries.reverseAllActors.TryGetValue(hitbox.actor, out lastID))
                 {
 
                     Debug.Log("hit player sending bullet packet");

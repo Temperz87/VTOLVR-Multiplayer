@@ -775,13 +775,13 @@ public static class PlayerManager
             extLightReceiver.networkUID = networkID;
         }
 
-        /*foreach (Collider collider in newVehicle.GetComponentsInChildren<Collider>())
+        foreach (Collider collider in newVehicle.GetComponentsInChildren<Collider>())
         {
             if (collider)
             {
                 collider.gameObject.layer = 9;
             }
-        }*/
+        }
         aIPilot.enabled = false;
         Debug.Log($"Changing {newVehicle.name}'s position and rotation\nPos:{rb.position} Rotation:{rb.rotation.eulerAngles}");
         aIPilot.kPlane.SetToKinematic();

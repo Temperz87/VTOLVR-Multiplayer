@@ -510,13 +510,13 @@ public static class AIManager
             ulong networkUID = Networker.GenerateNetworkUID();
             Debug.Log("Adding UID senders to " + actor.name + $", their uID will be {networkUID}.");
             AIManager.AIVehicles.Add(new AIManager.AI(actor.gameObject, actor.unitSpawn.unitName, actor, networkUID));
-            if (!VTOLVR_Multiplayer.AIDictionaries.allActors.ContainsKey(networkUID))
+            if (!AIDictionaries.allActors.ContainsKey(networkUID))
             {
-                VTOLVR_Multiplayer.AIDictionaries.allActors.Add(networkUID, actor);
+                AIDictionaries.allActors.Add(networkUID, actor);
             }
-            if (!VTOLVR_Multiplayer.AIDictionaries.reverseAllActors.ContainsKey(actor))
+            if (!AIDictionaries.reverseAllActors.ContainsKey(actor))
             {
-                VTOLVR_Multiplayer.AIDictionaries.reverseAllActors.Add(actor, networkUID);
+                AIDictionaries.reverseAllActors.Add(actor, networkUID);
             }
             UIDNetworker_Sender uidSender = actor.gameObject.AddComponent<UIDNetworker_Sender>();
             uidSender.networkUID = networkUID;
