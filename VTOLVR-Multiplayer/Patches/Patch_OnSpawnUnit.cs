@@ -34,7 +34,7 @@ class Patch8
 
                 if (actor.gameObject.GetComponentInChildren<LockingRadar>() != null)
                 {
-                    Debug.Log($"Adding LockingRadarSender to AI}");
+                    Debug.Log($"Adding LockingRadarSender to AI");
                     LockingRadarNetworker_Sender radarSender = actor.gameObject.AddComponent<LockingRadarNetworker_Sender>();
                     radarSender.networkUID = networkUID;
                 }

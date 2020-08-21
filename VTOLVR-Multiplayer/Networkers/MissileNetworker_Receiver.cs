@@ -30,7 +30,7 @@ public class MissileNetworker_Receiver : MonoBehaviour
             }
         }
 
-        thisMissile.explodeRadius *= 1.8f; thisMissile.explodeDamage *= 0.5f;
+        thisMissile.explodeRadius *= 1.8f; thisMissile.explodeDamage *= 0.75f;
     }
 
     public void MissileUpdate(Packet packet)
@@ -76,11 +76,23 @@ public class MissileNetworker_Receiver : MonoBehaviour
             }
             else
             {
+                if (lastMessage.guidanceMode == Missile.GuidanceModes.Heat)
+                {
+                    Debug.Log("Guidance mode Heat.");
+                    thisMissile.heatSeeker.transform.rotation = lastMessage.seekerRotation;
+                    thisMissile.heatSeeker.SetHardLock();
+                }
+
                 if (lastMessage.guidanceMode == Missile.GuidanceModes.Optical)
                 {
                     Debug.Log("Guidance mode Optical.");
-                    thisMissile.heatSeeker.transform.rotation = lastMessage.seekerRotation;
-                    thisMissile.heatSeeker.SetHardLock();
+
+                    GameObject emptyGO = new GameObject();
+                    Transform newTransform = emptyGO.transform;
+
+                    newTransform.position=VTMapManager.GlobalToWorldPoint(lastMessage.targetPosition);
+                    thisMissile.SetOpticalTarget(newTransform);
+                    //thisMissile.heatSeeker.SetHardLock();
                 }
                 Debug.Log("Try fire missile clientside");
                 traverse.Field("missileIdx").SetValue(idx);
@@ -95,18 +107,18 @@ public class MissileNetworker_Receiver : MonoBehaviour
             }
         }
 
-       
-    }
-    private void LateUpdate()
-    {
         //explode missle after it has done its RB physics fixed timestep
         if (lastMessage.hasExploded)
         {
             Debug.Log("Missile exploded.");
             if (thisMissile != null)
                 thisMissile.Detonate();
-          
+
         }
+    }
+    private void LateUpdate()
+    {
+        
     }
     public void OnDestroy()
     {

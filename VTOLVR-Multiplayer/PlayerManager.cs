@@ -19,7 +19,8 @@ public static class PlayerManager
     private static int spawnsCount = 20;
     private static int spawnTicker = 1;
 
-    public static bool firstSpawn = false;
+    public static bool firstSpawnDone = false;
+    public static bool airSpawn = false;
     /// <summary>
     /// This is the queue for people waiting to get a spawn point,
     /// incase the host hasn't loaded in, in time.
@@ -304,7 +305,7 @@ public static class PlayerManager
                 Transform hostTrans = localVehicle.transform;
                 ///uncomment to randomise host spawn//
                 ///
-                 hostTrans = FindFreeSpawn(true);
+                
                 localVehicle.transform.position = hostTrans.position;
                 
                 SpawnLocalVehicleAndInformOtherClients(localVehicle, hostTrans.transform.position, hostTrans.transform.rotation, localUID,0);
@@ -482,37 +483,35 @@ public static class PlayerManager
                 }
             }
         }
+ 
+        if(Networker.isHost && firstSpawnDone == false)
+        {
 
-
-<<<<<<< HEAD
-        rearmPoint.BeginReArm();
-        pos = localVehicle.transform.position;
-        rot = localVehicle.transform.rotation;
-=======
         }else
         {
             if(teamLeftie)
             rearmPoint.BeginReArm();
             else
             {
-                if(actor.unitSpawn.heightFromSurface<100.0f && firstSpawn ==false)
-                    rearmPoint.BeginReArm();
+                if(firstSpawnDone == false)
+                {
+                    PlayerSpawn ps =  GameObject.FindObjectOfType<PlayerSpawn>();
+                    if(ps.initialSpeed < 5.0f)
+                        rearmPoint.BeginReArm();
+                }
+                    
             }
-        }
-         
->>>>>>> c16cbcb... air spawn for blue for bullet dmg
+        } 
         SetupLocalAircraft(localVehicle, pos, rot, UID);
 
-        VTOLQuickStart componentInChildren = localVehicle.GetComponentInChildren<VTOLQuickStart>();
-        if (componentInChildren != null)
-            componentInChildren.QuickStart();
-        
+     
+        firstSpawnDone = true;
         /*if(!firstSpawn)
         if (!Networker.isHost) {
         actor.health.Kill();
                 localVehicle.transform.position = new Vector3(1000000, 10000, 10000);
             }
-        firstSpawn = true;*/
+      */
 
         if (Multiplayer.SoloTesting)
             pos += new Vector3(20, 0, 0);
@@ -565,7 +564,7 @@ public static class PlayerManager
         RigidbodyNetworker_Sender rbSender = localVehicle.AddComponent<RigidbodyNetworker_Sender>();
         rbSender.networkUID = UID;
 
-        rbSender.SetSpawn(pos, rot);
+        //rbSender.SetSpawn(pos, rot);
         if (currentVehicle == VTOLVehicles.AV42C)
         {
             rbSender.originOffset = av42Offset;
@@ -1159,7 +1158,7 @@ public static class PlayerManager
         ObjectiveNetworker_Reciever.scenarioActionsList?.Clear();
         ObjectiveNetworker_Reciever.scenarioActionsListCoolDown?.Clear();
         PlaneNetworker_Receiver.dontPrefixNextJettison = false;
-        firstSpawn = false;
+        firstSpawnDone = false;
     }
 
     public static void OnDisconnect()

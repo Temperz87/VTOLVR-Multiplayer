@@ -56,6 +56,11 @@ public class MissileNetworker_Sender : MonoBehaviour
             else if (thisMissile.guidanceMode == Missile.GuidanceModes.Optical)
             {
                 lastMessage.targetPosition = VTMapManager.WorldToGlobalPoint(thisMissile.opticalTargetActor.transform.position);
+                //lastMessage.seekerRotation = thisMissile.heatSeeker.transform.rotation;
+            }
+            else if (thisMissile.guidanceMode == Missile.GuidanceModes.Heat)
+            {
+                //lastMessage.targetPosition = VTMapManager.WorldToGlobalPoint(thisMissile.opticalTargetActor.transform.position);
                 lastMessage.seekerRotation = thisMissile.heatSeeker.transform.rotation;
             }
             SendMessage(false);

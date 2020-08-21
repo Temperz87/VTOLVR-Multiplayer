@@ -45,7 +45,7 @@ class PlayerNetworker_Sender : MonoBehaviour
         //shifter = GetComponentInChildren<FloatingOriginShifter>();
         ejection = GetComponentInChildren<EjectionSeat>();
         ejection.OnEject.AddListener(Eject);
-
+        detacher.OnDetachPilot.AddListener(Eject);
         //ejectorSeatPos = ejection.transform.localPosition;
         //ejectorSeatRot = ejection.transform.localRotation;
 
@@ -311,6 +311,8 @@ class PlayerNetworker_Sender : MonoBehaviour
 
     void Eject()
     {
+        if (FlightSceneManager.instance.playerActor == null)
+            return;
         FlightSceneManager.instance.playerActor.health.invincible = false;
         FlightSceneManager.instance.playerActor.health.Kill();
        // health.invincible = false;
