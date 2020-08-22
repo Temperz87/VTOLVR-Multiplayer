@@ -85,13 +85,13 @@ class Patch2
         {
             Debug.Log("Host sent Event action" + __instance.eventName + " of type " + __instance.methodName + " for target " + __instance.targetID);
 
-            NetworkSenderThread.Instance.SendPacketAsHostToAllClients(ScanarioActionOutMessage, Steamworks.EP2PSend.k_EP2PSendUnreliable);
+            NetworkSenderThread.Instance.SendPacketAsHostToAllClients(ScanarioActionOutMessage, Steamworks.EP2PSend.k_EP2PSendReliable);
         }
         else
         {
 
             Debug.Log("Client sent Event action" + __instance.eventName + " of type " + __instance.methodName + " for target " + __instance.targetID);
-            NetworkSenderThread.Instance.SendPacketToSpecificPlayer(Networker.hostID, ScanarioActionOutMessage, Steamworks.EP2PSend.k_EP2PSendUnreliable);
+            NetworkSenderThread.Instance.SendPacketToSpecificPlayer(Networker.hostID, ScanarioActionOutMessage, Steamworks.EP2PSend.k_EP2PSendReliable);
         }
     }
 }
@@ -161,7 +161,7 @@ class Patch4
         {
             Debug.Log("Host sent objective complete " + __instance.objectiveID);
             ObjectiveNetworker_Reciever.completeNext = false;
-            NetworkSenderThread.Instance.SendPacketAsHostToAllClients(objOutMessage, Steamworks.EP2PSend.k_EP2PSendUnreliable);
+            NetworkSenderThread.Instance.SendPacketAsHostToAllClients(objOutMessage, Steamworks.EP2PSend.k_EP2PSendReliable);
         }
         else
         {
@@ -175,7 +175,7 @@ class Patch4
             }
             ObjectiveNetworker_Reciever.completeNext = false;
             Debug.Log("Client sent objective complete " + __instance.objectiveID);
-            NetworkSenderThread.Instance.SendPacketToSpecificPlayer(Networker.hostID, objOutMessage, Steamworks.EP2PSend.k_EP2PSendUnreliable);
+            NetworkSenderThread.Instance.SendPacketToSpecificPlayer(Networker.hostID, objOutMessage, Steamworks.EP2PSend.k_EP2PSendReliable);
         }
         return true;
     }
@@ -205,7 +205,7 @@ class Patch5
         if (Networker.isHost && objOutMessage.objID != -1)
         {
             Debug.Log("Host sent objective fail " + __instance.objectiveID);
-            NetworkSenderThread.Instance.SendPacketAsHostToAllClients(objOutMessage, Steamworks.EP2PSend.k_EP2PSendUnreliable);
+            NetworkSenderThread.Instance.SendPacketAsHostToAllClients(objOutMessage, Steamworks.EP2PSend.k_EP2PSendReliable);
         }
         else
         {
@@ -214,7 +214,7 @@ class Patch5
                 Debug.Log("Making client not send kill objective packet.");
                 return true;// clients should not send kill obj packets
             }
-            NetworkSenderThread.Instance.SendPacketToSpecificPlayer(Networker.hostID, objOutMessage, Steamworks.EP2PSend.k_EP2PSendUnreliable);
+            NetworkSenderThread.Instance.SendPacketToSpecificPlayer(Networker.hostID, objOutMessage, Steamworks.EP2PSend.k_EP2PSendReliable);
         }
         return true;
     }
@@ -284,7 +284,7 @@ class Patch7
         {
 
             Debug.Log("Host sent objective CancelObjective " + __instance.objectiveID);
-            NetworkSenderThread.Instance.SendPacketAsHostToAllClients(objOutMessage, Steamworks.EP2PSend.k_EP2PSendUnreliable);
+            NetworkSenderThread.Instance.SendPacketAsHostToAllClients(objOutMessage, Steamworks.EP2PSend.k_EP2PSendReliable);
         }
         else
         {
@@ -294,7 +294,7 @@ class Patch7
                 return true;// clients should not send kill obj packets
             }
             Debug.Log("Client sent objective CancelObjective " + __instance.objectiveID);
-            NetworkSenderThread.Instance.SendPacketToSpecificPlayer(Networker.hostID, objOutMessage, Steamworks.EP2PSend.k_EP2PSendUnreliable);
+            NetworkSenderThread.Instance.SendPacketToSpecificPlayer(Networker.hostID, objOutMessage, Steamworks.EP2PSend.k_EP2PSendReliable);
         }
         return true;
     }
