@@ -138,9 +138,9 @@ public class MissileNetworker_Receiver : MonoBehaviour
         lastMessage = ((PacketSingle)packet).message as Message_MissileUpdate;
         if (lastMessage.networkUID != networkUID)
             return;
-        traverse2.Field("visibilityCheckFrame").SetValue(0);
-        traverse2.Field("targetPosition").SetValue(VTMapManager.GlobalToWorldPoint(lastMessage.targetPosition));
-        traverse2.Field("lastTargetPosition").SetValue(VTMapManager.GlobalToWorldPoint(lastMessage.lastTargetPosition));
+        //traverse2.Field("visibilityCheckFrame").SetValue(0);
+        //traverse2.Field("targetPosition").SetValue(VTMapManager.GlobalToWorldPoint(lastMessage.targetPosition));
+        //traverse2.Field("lastTargetPosition").SetValue(VTMapManager.GlobalToWorldPoint(lastMessage.lastTargetPosition));
     }
 
     public void MissileDestroyed(Packet packet)
@@ -220,7 +220,7 @@ public class MissileNetworker_Receiver : MonoBehaviour
     {
         if (GetComponent<MissileNetworker_Sender>() != null)
         {
-            Debug.Log("fml, there are both missile senders and recievers");
+            Destroy(GetComponent<MissileNetworker_Sender>());
         }
     }
 
