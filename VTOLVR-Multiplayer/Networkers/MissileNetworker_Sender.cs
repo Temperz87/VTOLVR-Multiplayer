@@ -82,11 +82,11 @@ public class MissileNetworker_Sender : MonoBehaviour
             }
             if (Networker.isHost)
             {
-                NetworkSenderThread.Instance.SendPacketAsHostToAllClients(lastLaunchMessage, Steamworks.EP2PSend.k_EP2PSendReliable);
+                NetworkSenderThread.Instance.SendPacketAsHostToAllClients(lastLaunchMessage, Steamworks.EP2PSend.k_EP2PSendUnreliable);
             }
             else
             {
-                NetworkSenderThread.Instance.SendPacketToSpecificPlayer(Networker.hostID, lastLaunchMessage, Steamworks.EP2PSend.k_EP2PSendReliable);
+                NetworkSenderThread.Instance.SendPacketToSpecificPlayer(Networker.hostID, lastLaunchMessage, Steamworks.EP2PSend.k_EP2PSendUnreliable);
             }
         }
         if (hasFired && thisMissile.guidanceMode == Missile.GuidanceModes.Heat) {
