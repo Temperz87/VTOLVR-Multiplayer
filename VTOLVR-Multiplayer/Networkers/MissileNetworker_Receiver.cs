@@ -77,16 +77,27 @@ public class MissileNetworker_Receiver : MonoBehaviour
         {
             // thisMissile.debugMissile = true;
             RadarMissileLauncher radarLauncher = thisML as RadarMissileLauncher;
+            if (!AIDictionaries.allActors.TryGetValue(lastLaunchMessage.targetActorUID, out Actor actor))
+            {
+                Debug.LogWarning($"Could not resolve missile launcher radar lock from uID {lastLaunchMessage.targetActorUID}.");
+            }
+            else
+            {
+                if (radarLauncher.lockingRadar != null)
+                    radarLauncher.lockingRadar.ForceLock(actor, out lockData);
+                else
+                    Debug.LogWarning("Locking Radar null on object " + thisMissile.name);
+            }
             if (radarLauncher != null)
             {
                 Debug.Log("Guidance mode radar, firing it as a radar missile.");
                 if (!radarLauncher.TryFireMissile())
                 {
-                    Debug.LogError("Could not fire radar missile.");
+                    Debug.LogError($"Could not fire radar missile, lock data is as follows: Locked: {lockData.locked}, Actor: {lockData.actor}");
                 }
                 else
                 {
-                    rbReceiver = gameObject.AddComponent<RigidbodyNetworker_Receiver>();
+                    RigidbodyNetworker_Receiver rbReceiver = gameObject.AddComponent<RigidbodyNetworker_Receiver>();
                     rbReceiver.networkUID = networkUID;
                 }
             }
