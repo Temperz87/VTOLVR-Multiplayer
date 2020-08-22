@@ -1040,7 +1040,7 @@ public class Networker : MonoBehaviour
             yield break;
         }
         
-        yield return new WaitForSeconds(1f);
+        yield return new WaitForSeconds(0.5f);
         switch (Multiplayer._instance.missileMode) {
             case Multiplayer.MissileSimMode.Host:
                 Debug.Log("Switching the missiles to host side simulation!");

@@ -18,6 +18,7 @@ public class MissileNetworker_Receiver : MonoBehaviour
     private Message_MissileDetonate lastDetonateMessage;
     private Message_MissileChangeAuthority lastChangeMessage;
     private Traverse traverse;
+    private Traverse traverse2;
     private RadarLockData lockData;
     // private Rigidbody rigidbody; see missileSender for why i not using rigidbody
     public bool hasFired = false;
@@ -37,6 +38,10 @@ public class MissileNetworker_Receiver : MonoBehaviour
         originalProxFuse = thisMissile.proxyDetonateRange;
         thisMissile.proxyDetonateRange = 0;
         traverse = Traverse.Create(thisML);
+        if (thisMissile.guidanceMode == Missile.GuidanceModes.Heat)
+        {
+            traverse2 = Traverse.Create(thisMissile.heatSeeker);
+        }
         thisMissile.OnDetonate.AddListener(new UnityEngine.Events.UnityAction(() => { Debug.Log("Missile detonated: " + thisMissile.name); }));
         if (thisMissile.guidanceMode == Missile.GuidanceModes.Bomb || thisMissile.guidanceMode == Missile.GuidanceModes.Optical)
         {
@@ -121,8 +126,9 @@ public class MissileNetworker_Receiver : MonoBehaviour
         lastMessage = ((PacketSingle)packet).message as Message_MissileUpdate;
         if (lastMessage.networkUID != networkUID)
             return;
-
-        thisMissile.heatSeeker.transform.rotation = lastMessage.seekerRotation;
+        traverse2.Field("visibilityCheckFrame").SetValue(0);
+        traverse.Field("targetPosition").SetValue(VTMapManager.GlobalToWorldPoint(lastMessage.targetPosition));
+        traverse.Field("lastTargetPosition").SetValue(VTMapManager.GlobalToWorldPoint(lastMessage.lastTargetPosition));
     }
 
     public void MissileDestroyed(Packet packet)

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Harmony;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -12,6 +13,7 @@ public class MissileNetworker_Sender : MonoBehaviour
     private Message_MissileDetonate lastDetonateMessage;
     private Message_MissileChangeAuthority lastChangeMessage;
     private Missile thisMissile;
+    private Traverse traverse;
     public RigidbodyNetworker_Sender rbSender;
     public bool hasFired = false;
 
@@ -19,11 +21,13 @@ public class MissileNetworker_Sender : MonoBehaviour
     {
         Networker.RequestNetworkUID += RequestUID;
         Networker.MissileChangeAuthority += MissileChangeAuthority;
-        lastMessage = new Message_MissileUpdate(networkUID, Quaternion.identity);
+        lastMessage = new Message_MissileUpdate(networkUID, new Vector3D(), new Vector3D());
         lastLaunchMessage = new Message_MissileLaunch(networkUID, Quaternion.identity);
         lastDetonateMessage = new Message_MissileDetonate(networkUID);
         thisMissile = GetComponent<Missile>();
         thisMissile.OnMissileDetonated += OnDetonated;
+
+        traverse = Traverse.Create(thisMissile.heatSeeker);
 
         if (GetComponent<MissileNetworker_Receiver>() != null)
         {
@@ -90,7 +94,8 @@ public class MissileNetworker_Sender : MonoBehaviour
             }
         }
         if (hasFired && thisMissile.guidanceMode == Missile.GuidanceModes.Heat) {
-            lastMessage.seekerRotation = thisMissile.heatSeeker.transform.rotation;
+            lastMessage.targetPosition = VTMapManager.WorldToGlobalPoint((Vector3)traverse.Field("targetPosition").GetValue());
+            lastMessage.lastTargetPosition = VTMapManager.WorldToGlobalPoint((Vector3)traverse.Field("lastTargetPosition").GetValue());
             if (Networker.isHost)
             {
                 NetworkSenderThread.Instance.SendPacketAsHostToAllClients(lastMessage, Steamworks.EP2PSend.k_EP2PSendUnreliable);

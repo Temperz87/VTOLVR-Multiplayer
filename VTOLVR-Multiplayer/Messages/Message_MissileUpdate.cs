@@ -6,12 +6,14 @@ using UnityEngine;
 public class Message_MissileUpdate : Message
 {
     public ulong networkUID;
-    public SerializableQuaternion seekerRotation;
+    public Vector3D targetPosition;
+    public Vector3D lastTargetPosition;
 
-    public Message_MissileUpdate(ulong uid, Quaternion seekerRotation)//unused, maybe usefull in the future
+    public Message_MissileUpdate(ulong uid, Vector3D targetPosition, Vector3D lastTargetPosition)//unused, maybe usefull in the future
     {
         networkUID = uid;
-        this.seekerRotation = seekerRotation;
+        this.targetPosition = targetPosition;
+        this.lastTargetPosition = lastTargetPosition;
         type = MessageType.MissileUpdate;
     }
 }
