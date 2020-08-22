@@ -78,7 +78,11 @@ public class MissileNetworker_Sender : MonoBehaviour
                     break;
                 case Missile.GuidanceModes.Radar:
                     ulong uid2;
-                    if (AIDictionaries.reverseAllActors.TryGetValue(thisMissile.lockingRadar.currentLock.actor, out uid2))
+                    if (thisMissile.radarLock == null)
+                    {
+                        Debug.LogError("RadarLock null");
+                    }
+                    else if (AIDictionaries.reverseAllActors.TryGetValue(thisMissile.radarLock.actor, out uid2))
                     {
                         lastLaunchMessage.targetActorUID = uid2;
                         Debug.Log("RADAR MISSILE: Firing on " + uid2);
