@@ -1034,6 +1034,8 @@ public static class PlayerManager
         localUID = 0;
         worldData = null;
         players?.Clear();
+        buttonMade = false;
+        text = null;
         ObjectiveNetworker_Reciever.scenarioActionsList?.Clear();
         ObjectiveNetworker_Reciever.scenarioActionsListCoolDown?.Clear();
         PlaneNetworker_Receiver.dontPrefixNextJettison = false;
