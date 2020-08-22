@@ -73,7 +73,7 @@ class Patch8
                             {
                                 Debug.LogError("Locking radar on one of the SAM's is literally null.");
                             }
-                            if (VTOLVR_Multiplayer.AIDictionaries.reverseAllActors.TryGetValue(radar.myActor, out lastID))
+                            if (AIDictionaries.reverseAllActors.TryGetValue(radar.myActor, out lastID))
                             {
                                 ids.Add(lastID);
                                 // Debug.Log("Aded a radar ID");

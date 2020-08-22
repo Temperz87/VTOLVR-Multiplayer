@@ -617,6 +617,7 @@ public class Networker : MonoBehaviour
                         if (readyDic[csteamID])
                         {
                             Debug.Log("Received ready message from the same user twice");
+                            UpdateLoadingText();
                             break;
                         }
 
