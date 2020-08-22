@@ -27,7 +27,10 @@ public class MissileNetworker_Sender : MonoBehaviour
         thisMissile = GetComponent<Missile>();
         thisMissile.OnMissileDetonated += OnDetonated;
 
-        traverse = Traverse.Create(thisMissile.heatSeeker);
+        if (thisMissile.guidanceMode == Missile.GuidanceModes.Heat)
+        {
+            traverse = Traverse.Create(thisMissile.heatSeeker);
+        }
 
         if (GetComponent<MissileNetworker_Receiver>() != null)
         {
@@ -94,15 +97,20 @@ public class MissileNetworker_Sender : MonoBehaviour
             }
         }
         if (hasFired && thisMissile.guidanceMode == Missile.GuidanceModes.Heat) {
-            lastMessage.targetPosition = VTMapManager.WorldToGlobalPoint((Vector3)traverse.Field("targetPosition").GetValue());
-            lastMessage.lastTargetPosition = VTMapManager.WorldToGlobalPoint((Vector3)traverse.Field("lastTargetPosition").GetValue());
-            if (Networker.isHost)
-            {
-                NetworkSenderThread.Instance.SendPacketAsHostToAllClients(lastMessage, Steamworks.EP2PSend.k_EP2PSendUnreliable);
+            if (traverse != null) {
+                lastMessage.targetPosition = VTMapManager.WorldToGlobalPoint((Vector3)traverse.Field("targetPosition").GetValue());
+                lastMessage.lastTargetPosition = VTMapManager.WorldToGlobalPoint((Vector3)traverse.Field("lastTargetPosition").GetValue());
+                if (Networker.isHost)
+                {
+                    NetworkSenderThread.Instance.SendPacketAsHostToAllClients(lastMessage, Steamworks.EP2PSend.k_EP2PSendUnreliable);
+                }
+                else
+                {
+                    NetworkSenderThread.Instance.SendPacketToSpecificPlayer(Networker.hostID, lastMessage, Steamworks.EP2PSend.k_EP2PSendUnreliable);
+                }
             }
-            else
-            {
-                NetworkSenderThread.Instance.SendPacketToSpecificPlayer(Networker.hostID, lastMessage, Steamworks.EP2PSend.k_EP2PSendUnreliable);
+            else {
+                Debug.Log("traverse was null lmao");
             }
         }
 
