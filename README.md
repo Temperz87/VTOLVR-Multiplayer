@@ -16,7 +16,7 @@ Because the mod is currently in pre-alpha testing phase, the dll is not provided
 
 [Ketkev](https://github.com/ketkev "Ketkev's Github") for their code which creates a name tag above the player's heads with their steam name.
 
-[MarshMellow0](https://github.com/MarshMello0 "MarshMello0's Github") for making the foundation of the multiplayer mod, so others can finish the fight.
+[MarshMello0](https://github.com/MarshMello0 "MarshMello0's Github") for making the foundation of the multiplayer mod, so others can finish the fight.
 
 [Dib](https://github.com/Nisenogen "Dib's Github") for being someone we can ask general C# questions about, and casually threading the networker class.
 
