@@ -779,7 +779,9 @@ public static class PlayerManager
 
         foreach (Collider collider in newVehicle.GetComponentsInChildren<Collider>())
         {
-            if (collider)
+           Hitbox hitbox = collider.GetComponent<Hitbox>();
+            if (hitbox == null)
+            if (collider )
             {
                 collider.gameObject.layer = 9;
             }
