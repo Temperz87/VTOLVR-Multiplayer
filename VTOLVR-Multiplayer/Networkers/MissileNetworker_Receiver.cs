@@ -38,26 +38,18 @@ public class MissileNetworker_Receiver : MonoBehaviour
         thisMissile.proxyDetonateRange = 0;
         traverse = Traverse.Create(thisML);
         thisMissile.OnDetonate.AddListener(new UnityEngine.Events.UnityAction(() => { Debug.Log("Missile detonated: " + thisMissile.name); }));
-        if (thisMissile.guidanceMode == Missile.GuidanceModes.Bomb)
+        if (thisMissile.guidanceMode == Missile.GuidanceModes.Bomb || thisMissile.guidanceMode == Missile.GuidanceModes.Optical)
         {
             foreach (var collider in thisMissile.GetComponentsInChildren<Collider>())
             {
                 collider.gameObject.layer = 9;
             }
         }
-        thisMissile.explodeDamage *= Multiplayer._instance.missileDamage;
         
         Networker.MissileUpdate += MissileUpdate;
         Networker.MissileLaunch += MissileLaunch;
         Networker.MissileDetonate += MissileDestroyed;
         Networker.MissileChangeAuthority += MissileChangeAuthority;
-        if (thisMissile.guidanceMode == Missile.GuidanceModes.Optical)
-        {
-            foreach (var collider in thisMissile.GetComponentsInChildren<Collider>())
-            {
-                collider.gameObject.layer = 9;
-            }
-        }
 
         thisMissile.explodeRadius *= Multiplayer._instance.missileRadius; thisMissile.explodeDamage *= Multiplayer._instance.missileDamage;
     }
@@ -124,7 +116,7 @@ public class MissileNetworker_Receiver : MonoBehaviour
         }
     }
 
-    public void MissileUpdate(Packet packet)//unused, maybe usefull later
+    public void MissileUpdate(Packet packet)
     {
         lastMessage = ((PacketSingle)packet).message as Message_MissileUpdate;
         if (lastMessage.networkUID != networkUID)

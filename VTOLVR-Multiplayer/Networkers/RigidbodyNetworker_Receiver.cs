@@ -49,7 +49,7 @@ public class RigidbodyNetworker_Receiver : MonoBehaviour
         rb = GetComponent<Rigidbody>();
         localTargetPosition = rb.transform.position;
         globalTargetPosition = VTMapManager.WorldToGlobalPoint(localTargetPosition);
-        targetVelocity = rb.velocity;
+        //targetVelocity = rb.velocity;
         targetRotation = rb.transform.rotation;
 
         rb.isKinematic = true;
