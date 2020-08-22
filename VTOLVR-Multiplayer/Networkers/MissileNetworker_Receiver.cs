@@ -27,7 +27,8 @@ public class MissileNetworker_Receiver : MonoBehaviour
 
     float originalProxFuse;
 
-    void Awake() {
+    void Awake()
+    {
         if (GetComponent<MissileNetworker_Sender>() != null)
         {
             Destroy(GetComponent<MissileNetworker_Sender>());
@@ -52,7 +53,7 @@ public class MissileNetworker_Receiver : MonoBehaviour
                 collider.gameObject.layer = 9;
             }
         }
-        
+
         Networker.MissileUpdate += MissileUpdate;
         Networker.MissileLaunch += MissileLaunch;
         Networker.MissileDetonate += MissileDestroyed;
@@ -177,7 +178,7 @@ public class MissileNetworker_Receiver : MonoBehaviour
                 localAuthority = false;
             }
         }
-        
+
         if (localAuthority)
         {
             Debug.Log("We should be incharge of this missile");
@@ -204,7 +205,8 @@ public class MissileNetworker_Receiver : MonoBehaviour
         }
     }
 
-    void FixedUpdate() {
+    void FixedUpdate()
+    {
         if (GetComponent<MissileNetworker_Sender>() != null)
         {
             Debug.Log("fml, there are both missile senders and recievers");

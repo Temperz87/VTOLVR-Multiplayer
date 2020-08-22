@@ -52,22 +52,26 @@ public class MissileNetworker_Sender : MonoBehaviour
             lastLaunchMessage.ownerUID = ownerUID;
             lastLaunchMessage.networkUID = networkUID;
             lastLaunchMessage.guidanceType = thisMissile.guidanceMode;
-            switch (thisMissile.guidanceMode) {
+            switch (thisMissile.guidanceMode)
+            {
                 case Missile.GuidanceModes.Heat:
                     lastLaunchMessage.seekerRotation = thisMissile.heatSeeker.transform.rotation;
                     ulong uid;
-                    if (thisMissile.heatSeeker.likelyTargetActor != null) {
+                    if (thisMissile.heatSeeker.likelyTargetActor != null)
+                    {
                         if (AIDictionaries.reverseAllActors.TryGetValue(thisMissile.heatSeeker.likelyTargetActor, out uid))
                         {
                             lastLaunchMessage.targetActorUID = uid;
                             Debug.Log("IR MISSILE: Firing on " + uid);
                         }
-                        else {
+                        else
+                        {
                             lastLaunchMessage.targetActorUID = 0;
                             Debug.Log("IR MISSILE: Couldn't find UID ");
                         }
                     }
-                    else {
+                    else
+                    {
                         Debug.Log("IR MISSILE: Target was null, could not find UID");
                     }
                     lastLaunchMessage.targetPosition = new Vector3D(thisMissile.heatSeeker.targetPosition);
@@ -100,8 +104,10 @@ public class MissileNetworker_Sender : MonoBehaviour
                 NetworkSenderThread.Instance.SendPacketToSpecificPlayer(Networker.hostID, lastLaunchMessage, Steamworks.EP2PSend.k_EP2PSendReliable);
             }
         }
-        if (hasFired && thisMissile.guidanceMode == Missile.GuidanceModes.Heat) {
-            if (traverse != null) {
+        if (hasFired && thisMissile.guidanceMode == Missile.GuidanceModes.Heat)
+        {
+            if (traverse != null)
+            {
                 lastMessage.targetPosition = VTMapManager.WorldToGlobalPoint(thisMissile.heatSeeker.targetPosition);
                 lastMessage.lastTargetPosition = VTMapManager.WorldToGlobalPoint(thisMissile.heatSeeker.targetPosition);
                 if (Networker.isHost)
@@ -113,7 +119,8 @@ public class MissileNetworker_Sender : MonoBehaviour
                     NetworkSenderThread.Instance.SendPacketToSpecificPlayer(Networker.hostID, lastMessage, Steamworks.EP2PSend.k_EP2PSendUnreliable);
                 }
             }
-            else {
+            else
+            {
                 Debug.Log("traverse was null lmao");
             }
         }
@@ -142,19 +149,22 @@ public class MissileNetworker_Sender : MonoBehaviour
 
         Debug.Log("Missile changing authority!");
         bool localAuthority;
-        if (lastChangeMessage.newOwnerUID == 0) {
+        if (lastChangeMessage.newOwnerUID == 0)
+        {
             Debug.Log("The host is now incharge of this missile.");
             if (Networker.isHost)
             {
                 Debug.Log("We are the host! This is our missile!");
                 localAuthority = true;
             }
-            else {
+            else
+            {
                 Debug.Log("We are not the host. This is not our missile.");
                 localAuthority = false;
             }
         }
-        else {
+        else
+        {
             Debug.Log("A client is now incharge of this missile.");
             if (PlayerManager.localUID == lastChangeMessage.newOwnerUID)
             {
@@ -172,7 +182,8 @@ public class MissileNetworker_Sender : MonoBehaviour
         {
             Debug.Log("We are already incharge of this missile, nothing needs to change.");
         }
-        else {
+        else
+        {
             Debug.Log("We should not be incharge of this missile");
             Destroy(rbSender);
             Destroy(this);
@@ -204,7 +215,8 @@ public class MissileNetworker_Sender : MonoBehaviour
         }
     }
 
-    void OnDestroy() {
+    void OnDestroy()
+    {
         Networker.RequestNetworkUID -= RequestUID;
         Networker.MissileChangeAuthority -= MissileChangeAuthority;
         thisMissile.OnMissileDetonated -= OnDetonated;

@@ -1035,15 +1035,17 @@ public class Networker : MonoBehaviour
         ControllerEventHandler.UnpauseEvents();
     }
 
-    public static IEnumerator ChangeMissileAuthority(ulong launcherUID, ulong missileUID, ulong targetUID) {
+    public static IEnumerator ChangeMissileAuthority(ulong launcherUID, ulong missileUID, ulong targetUID)
+    {
         if (isClient)
         {
             Debug.Log("Client should not run code to change missile authority.");
             yield break;
         }
-        
+
         yield return new WaitForSeconds(0.5f);
-        switch (Multiplayer._instance.missileMode) {
+        switch (Multiplayer._instance.missileMode)
+        {
             case Multiplayer.MissileSimMode.Host:
                 Debug.Log("Switching the missiles to host side simulation!");
                 NetworkSenderThread.Instance.SendPacketAsHostToAllClients(new Message_MissileChangeAuthority(missileUID, 0), Steamworks.EP2PSend.k_EP2PSendReliable);

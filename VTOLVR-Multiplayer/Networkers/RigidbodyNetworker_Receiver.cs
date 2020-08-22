@@ -102,7 +102,7 @@ public class RigidbodyNetworker_Receiver : MonoBehaviour
         rb.velocity = targetVelocity + (localTargetPosition - transform.position) / smoothingTime;
         //actor.SetCustomVelocity(Vector3.Lerp(actor.velocity, targetVelocity + (localTargetPosition - transform.position) / smoothingTime, Time.fixedDeltaTime / velSmoothingTime));
         actor.SetCustomVelocity(rb.velocity);
-       
+
         rb.MovePosition(transform.position + targetVelocity * Time.fixedDeltaTime + ((localTargetPosition - transform.position) * Time.fixedDeltaTime) / smoothingTime);
         rb.MoveRotation(Quaternion.Lerp(currentRotation, targetRotation, Time.fixedDeltaTime / rotSmoothingTime));
 
@@ -121,7 +121,7 @@ public class RigidbodyNetworker_Receiver : MonoBehaviour
 
         if (rigidbodyUpdate.sequenceNumber <= mostCurrentUpdateNumber)
             return;
-        
+
         mostCurrentUpdateNumber = rigidbodyUpdate.sequenceNumber;
         UpdateLatency();
 
@@ -140,7 +140,8 @@ public class RigidbodyNetworker_Receiver : MonoBehaviour
         }
     }
 
-    void UpdateLatency() {
+    void UpdateLatency()
+    {
         if (ownerUID == 0)//if we are owned by host, just get ping to host
         {
             latency = Networker.pingToHost;
