@@ -84,6 +84,7 @@ public class RigidbodyNetworker_Sender : MonoBehaviour
         if (GetComponent<RigidbodyNetworker_Receiver>() != null)
         {
             Debug.Log("fml, there are both rigidbody senders and recievers");
+            Destroy(GetComponent<RigidbodyNetworker_Receiver>());
         }
     }
 

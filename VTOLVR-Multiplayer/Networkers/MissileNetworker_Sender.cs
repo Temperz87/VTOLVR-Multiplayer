@@ -132,6 +132,7 @@ public class MissileNetworker_Sender : MonoBehaviour
         if (GetComponent<MissileNetworker_Receiver>() != null)
         {
             Debug.Log("fml, there are both missile senders and recievers");
+            Destroy(GetComponent<MissileNetworker_Receiver>());
         }
     }
 
