@@ -98,8 +98,10 @@ public class MissileNetworker_Sender : MonoBehaviour
         }
         if (hasFired && thisMissile.guidanceMode == Missile.GuidanceModes.Heat) {
             if (traverse != null) {
+                Debug.Log("we are starting the traverse");
                 lastMessage.targetPosition = VTMapManager.WorldToGlobalPoint((Vector3)traverse.Field("targetPosition").GetValue());
                 lastMessage.lastTargetPosition = VTMapManager.WorldToGlobalPoint((Vector3)traverse.Field("lastTargetPosition").GetValue());
+                Debug.Log("traverse completed");
                 if (Networker.isHost)
                 {
                     NetworkSenderThread.Instance.SendPacketAsHostToAllClients(lastMessage, Steamworks.EP2PSend.k_EP2PSendUnreliable);
