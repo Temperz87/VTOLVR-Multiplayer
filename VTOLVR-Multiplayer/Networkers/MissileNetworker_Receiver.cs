@@ -127,8 +127,8 @@ public class MissileNetworker_Receiver : MonoBehaviour
         if (lastMessage.networkUID != networkUID)
             return;
         traverse2.Field("visibilityCheckFrame").SetValue(0);
-        traverse.Field("targetPosition").SetValue(VTMapManager.GlobalToWorldPoint(lastMessage.targetPosition));
-        traverse.Field("lastTargetPosition").SetValue(VTMapManager.GlobalToWorldPoint(lastMessage.lastTargetPosition));
+        traverse2.Field("targetPosition").SetValue(VTMapManager.GlobalToWorldPoint(lastMessage.targetPosition));
+        traverse2.Field("lastTargetPosition").SetValue(VTMapManager.GlobalToWorldPoint(lastMessage.lastTargetPosition));
     }
 
     public void MissileDestroyed(Packet packet)
