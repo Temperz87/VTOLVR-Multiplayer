@@ -84,6 +84,9 @@ public class MissileNetworker_Sender : MonoBehaviour
                         Debug.Log("RADAR MISSILE: Couldn't find UID ");
                     }
                     break;
+                case Missile.GuidanceModes.Optical:
+                    lastLaunchMessage.targetPosition = VTMapManager.WorldToGlobalPoint(thisMissile.opticalTargetActor.transform.position);
+                    break;
                 default:
                     break;
             }
@@ -98,10 +101,8 @@ public class MissileNetworker_Sender : MonoBehaviour
         }
         if (hasFired && thisMissile.guidanceMode == Missile.GuidanceModes.Heat) {
             if (traverse != null) {
-                Debug.Log("we are starting the traverse");
-                lastMessage.targetPosition = VTMapManager.WorldToGlobalPoint((Vector3)traverse.Field("targetPosition").GetValue());
-                lastMessage.lastTargetPosition = VTMapManager.WorldToGlobalPoint((Vector3)traverse.Field("lastTargetPosition").GetValue());
-                Debug.Log("traverse completed");
+                lastMessage.targetPosition = VTMapManager.WorldToGlobalPoint(thisMissile.heatSeeker.targetPosition);
+                lastMessage.lastTargetPosition = VTMapManager.WorldToGlobalPoint(thisMissile.heatSeeker.targetPosition);
                 if (Networker.isHost)
                 {
                     NetworkSenderThread.Instance.SendPacketAsHostToAllClients(lastMessage, Steamworks.EP2PSend.k_EP2PSendUnreliable);

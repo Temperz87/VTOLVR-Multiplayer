@@ -23,6 +23,8 @@ public class MissileNetworker_Receiver : MonoBehaviour
     // private Rigidbody rigidbody; see missileSender for why i not using rigidbody
     public bool hasFired = false;
 
+    Transform opticalTarget;
+
     float originalProxFuse;
 
     void Awake() {
@@ -96,17 +98,15 @@ public class MissileNetworker_Receiver : MonoBehaviour
                 thisMissile.heatSeeker.transform.rotation = lastLaunchMessage.seekerRotation;
                 thisMissile.heatSeeker.SetHardLock();
             }
-
             if (thisMissile.guidanceMode == Missile.GuidanceModes.Optical)
             {
                 Debug.Log("Guidance mode Optical.");
 
                 GameObject emptyGO = new GameObject();
-                Transform newTransform = emptyGO.transform;
+                Transform opticalTarget = emptyGO.transform;
 
-                newTransform.position = VTMapManager.GlobalToWorldPoint(lastLaunchMessage.targetPosition);
-                thisMissile.SetOpticalTarget(newTransform);
-                //thisMissile.heatSeeker.SetHardLock();
+                opticalTarget.position = VTMapManager.GlobalToWorldPoint(lastLaunchMessage.targetPosition);
+                thisMissile.SetOpticalTarget(opticalTarget);
             }
             Debug.Log("Try fire missile clientside");
             traverse.Field("missileIdx").SetValue(idx);
@@ -217,6 +217,8 @@ public class MissileNetworker_Receiver : MonoBehaviour
         Networker.MissileLaunch -= MissileLaunch;
         Networker.MissileDetonate -= MissileDestroyed;
         Networker.MissileChangeAuthority -= MissileChangeAuthority;
+
+        Destroy(opticalTarget);
     }
 }
 
