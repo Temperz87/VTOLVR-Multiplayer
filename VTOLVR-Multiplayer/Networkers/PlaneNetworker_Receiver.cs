@@ -258,7 +258,8 @@ public class PlaneNetworker_Receiver : MonoBehaviour
             weaponManager.ToggleMasterArmed();
         }
         idx = (int)traverse.Field("weaponIdx").GetValue();
-        /*while (message.weaponIdx != idx && i < 60)
+        int i = 0;
+        while (message.weaponIdx != idx && i < 60)
         {
             if (weaponManager.isMasterArmed == false)
             {
@@ -270,7 +271,7 @@ public class PlaneNetworker_Receiver : MonoBehaviour
         if (i > 59)
         {
             Debug.Log("couldn't change weapon idx to right weapon for aircraft " + gameObject.name);
-        }*/
+        }
         weaponManager.SetWeapon(message.weaponIdx);
         idx = (int)traverse.Field("weaponIdx").GetValue();
         if (idx != message.weaponIdx)
