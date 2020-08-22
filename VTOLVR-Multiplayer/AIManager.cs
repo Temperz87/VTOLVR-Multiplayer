@@ -55,7 +55,7 @@ public static class AIManager
         {
             if (id == message.networkID)
             {
-                Debug.Log("Got a spawnAI message for a vehicle we have already added! Returning....");
+                Debug.Log("Got a spawnAI message for a vehicle we have already added! Name == " + message.unitName + " Returning...");
                 return;
             }
         }

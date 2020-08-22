@@ -148,6 +148,14 @@ static class MapAndScenarioVersionChecker
     }
 }
 
+public class CSteamIDNotFoundException : Exception
+{
+    public CSteamIDNotFoundException()
+    {
+        Debug.LogError("A CSteamID was not found.");
+    }
+}
+
 public class Networker : MonoBehaviour
 {
     private Campaign pilotSaveManagerControllerCampaign;
@@ -200,7 +208,8 @@ public class Networker : MonoBehaviour
     // 2 = Loading
     // 3 = In Game
     // 4 = Disconnected
-    public enum PlayerStatus {
+    public enum PlayerStatus
+    {
         Loadout,
         NotReady,
         ReadyREDFOR,
@@ -448,11 +457,20 @@ public class Networker : MonoBehaviour
 
     private void ReadP2PPacket(byte[] array, uint num, uint num2, CSteamID csteamID)
     {
+        if (csteamID == null)
+        {
+            Debug.LogError("Csteam ID is null in read p2p, how is this even possible.");
+            throw new CSteamIDNotFoundException();
+        }
         MemoryStream serializationStream = new MemoryStream(array);
         Packet packet = new BinaryFormatter().Deserialize(serializationStream) as Packet;
         if (packet.packetType == PacketType.Single)
         {
             PacketSingle packetS = packet as PacketSingle;
+            if (packetS == null)
+                Debug.LogError("packetS null.");
+            if (packetS.message == null)
+                Debug.LogError("packetS.message null.");
             switch (packetS.message.type)
             {
                 case MessageType.None:
@@ -766,7 +784,7 @@ public class Networker : MonoBehaviour
                 case MessageType.Respawn:
                     Debug.Log("case respawn");
                     Message_Respawn respawnMessage = ((PacketSingle)packet).message as Message_Respawn;
-                    PlayerManager.SpawnRepresentation(respawnMessage.UID, respawnMessage.position, respawnMessage.rotation,respawnMessage.isLeftie);
+                    PlayerManager.SpawnRepresentation(respawnMessage.UID, respawnMessage.position, respawnMessage.rotation, respawnMessage.isLeftie);
                     break;
                 case MessageType.WingFold:
                     Debug.Log("case wingfold");
@@ -851,11 +869,12 @@ public class Networker : MonoBehaviour
                         float pingTime = Time.unscaledTime - heartbeatResult.TimeOnServerGame;
 
                         int playerID = PlayerManager.FindPlayerIDFromNetworkUID(heartbeatResult.from);
-                        if (playerID != -1) {
+                        if (playerID != -1)
+                        {
                             PlayerManager.players[playerID].ping = pingTime / 2.0f;
                         }
 
-                        NetworkSenderThread.Instance.SendPacketAsHostToAllClients(new Message_ReportPingTime(pingTime/2.0f, heartbeatResult.from), EP2PSend.k_EP2PSendUnreliableNoDelay);
+                        NetworkSenderThread.Instance.SendPacketAsHostToAllClients(new Message_ReportPingTime(pingTime / 2.0f, heartbeatResult.from), EP2PSend.k_EP2PSendUnreliableNoDelay);
                     }
                     break;
                 case MessageType.ServerReportingPingTime:
@@ -872,7 +891,8 @@ public class Networker : MonoBehaviour
                                 PlayerManager.players[playerID].ping = pingTimeMessage.PingTime;
                             }
                         }
-                        else {
+                        else
+                        {
                             int playerID = PlayerManager.FindPlayerIDFromNetworkUID(pingTimeMessage.from);
                             if (playerID != -1)
                             {
