@@ -22,7 +22,7 @@ public class MissileNetworker_Sender : MonoBehaviour
         Networker.RequestNetworkUID += RequestUID;
         Networker.MissileChangeAuthority += MissileChangeAuthority;
         lastMessage = new Message_MissileUpdate(networkUID, new Vector3D(), new Vector3D());
-        lastLaunchMessage = new Message_MissileLaunch(networkUID, Quaternion.identity);
+        lastLaunchMessage = new Message_MissileLaunch(networkUID);
         lastDetonateMessage = new Message_MissileDetonate(networkUID);
         thisMissile = GetComponent<Missile>();
         thisMissile.OnMissileDetonated += OnDetonated;
@@ -51,6 +51,7 @@ public class MissileNetworker_Sender : MonoBehaviour
 
             lastLaunchMessage.ownerUID = ownerUID;
             lastLaunchMessage.networkUID = networkUID;
+            lastLaunchMessage.guidanceType = thisMissile.guidanceMode;
             switch (thisMissile.guidanceMode) {
                 case Missile.GuidanceModes.Heat:
                     lastLaunchMessage.seekerRotation = thisMissile.heatSeeker.transform.rotation;

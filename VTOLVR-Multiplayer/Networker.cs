@@ -807,9 +807,11 @@ public class Networker : MonoBehaviour
                     Debug.Log("case missile launch");
                     if (MissileLaunch != null)
                         MissileLaunch.Invoke(packet);
-                    if (isHost)
+
+                    Message_MissileLaunch launchMessage = ((PacketSingle)packet).message as Message_MissileLaunch;
+
+                    if (isHost && launchMessage.guidanceType != Missile.GuidanceModes.Heat)
                     {
-                        Message_MissileLaunch launchMessage = ((PacketSingle)packet).message as Message_MissileLaunch;
                         StartCoroutine(ChangeMissileAuthority(launchMessage.ownerUID, launchMessage.networkUID, launchMessage.targetActorUID));
                     }
                     break;

@@ -10,11 +10,11 @@ public class Message_MissileLaunch : Message
     public ulong targetActorUID;
     public Vector3D targetPosition;
     public SerializableQuaternion seekerRotation;
+    public Missile.GuidanceModes guidanceType;
 
-    public Message_MissileLaunch(ulong uid, Quaternion seekerRotation)
+    public Message_MissileLaunch(ulong uid)
     {
         networkUID = uid;
-        this.seekerRotation = seekerRotation;
         type = MessageType.MissileLaunch;
     }
 }
