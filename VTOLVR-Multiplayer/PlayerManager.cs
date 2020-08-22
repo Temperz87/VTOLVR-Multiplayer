@@ -10,6 +10,7 @@ using System.Collections;
 using System.Reflection;
 using UnityEngine.SceneManagement;
 using System.Text.RegularExpressions;
+using UnityEngine.UI;
 
 public static class PlayerManager
 {
@@ -18,7 +19,8 @@ public static class PlayerManager
     private static float spawnSpacing = 20;
     private static int spawnsCount = 20;
     private static int spawnTicker = 1;
-
+    public static bool buttonMade = false;
+    public static Text text;
     public static bool firstSpawnDone = false;
     public static bool airSpawn = false;
     /// <summary>

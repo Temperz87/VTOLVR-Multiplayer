@@ -279,7 +279,6 @@ public class Multiplayer : VTOLMOD
         {
             contentJoinLog.text = "";
             contentJoinLog.color = new Color32(255, 255, 255, 255);
-
         }
         catch (Exception err)
         {
@@ -339,7 +338,6 @@ public class Multiplayer : VTOLMOD
 
         //Creating the MP button
         Transform mpButton = Instantiate(ScenarioDisplay.GetChild(10).gameObject, ScenarioDisplay).transform;
-
 
         Log("Multiplayer Button" + mpButton.name);
         mpButton.gameObject.SetActive(true);
