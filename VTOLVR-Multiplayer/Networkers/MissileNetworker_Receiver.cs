@@ -152,13 +152,15 @@ public class MissileNetworker_Receiver : MonoBehaviour
             return;
 
         ulong actorTodamage = lastMissileDamageMessage.actorTobeDamaged;
-
+        Debug.Log("applying missile damage");
        if(AIDictionaries.allActors.ContainsKey(actorTodamage))
         {
 
             Actor act = AIDictionaries.allActors[actorTodamage];
             if(act != null)
             act.health.Damage(lastMissileDamageMessage.damage, thisMissile.rb.position, Health.DamageTypes.Impact, thisMissile.actor);
+
+            Debug.Log("applied");
         }
     }
 

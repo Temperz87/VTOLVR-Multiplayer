@@ -213,22 +213,26 @@ public class MissileNetworker_Sender : MonoBehaviour
 
         foreach( Actor act in TargetManager.instance.allActors)
         {
-            Vector3D apos = VTMapManager.WorldToGlobalPoint(act.transform.position);
-            Vector3D misslepos = VTMapManager.WorldToGlobalPoint(missile.transform.position);
-
-            Vector3D line = apos - misslepos;
-            float dist = (float)line.magnitude;
-
-            if(dist<missile.explodeRadius)
+            if(act != missile.actor)
             {
 
-                if(AIDictionaries.reverseAllActors.ContainsKey(act))
+          
+            Vector3 apos =  act.transform.position;
+            Vector3 misslepos = missile.transform.position;
+
+            Vector3 line = apos - misslepos;
+            float dist = (float)line.magnitude;
+            Debug.Log("Actor Dist is "+ dist);
+            if (dist<missile.explodeRadius)
+            {
+                    Debug.Log("APassed damage radius checkS");
+                    if (AIDictionaries.reverseAllActors.ContainsKey(act))
                 {
                     Message_MissileDamage dmgMessage = new Message_MissileDamage(networkUID);
                     dmgMessage.actorTobeDamaged = AIDictionaries.reverseAllActors[act];
                     dmgMessage.damage = missile.explodeDamage;
 
-
+                    Debug.Log("sending missile damage");
                     if (Networker.isHost)
                     {
                         NetworkSenderThread.Instance.SendPacketAsHostToAllClients(dmgMessage, Steamworks.EP2PSend.k_EP2PSendReliable);
@@ -241,6 +245,7 @@ public class MissileNetworker_Sender : MonoBehaviour
                 }
                 
 
+            }
             }
 
         }

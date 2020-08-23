@@ -832,7 +832,7 @@ public class Networker : MonoBehaviour
 
                     if (isHost && launchMessage.guidanceType == Missile.GuidanceModes.Radar)
                     {
-                        StartCoroutine(ChangeMissileAuthority(launchMessage.ownerUID, launchMessage.networkUID, launchMessage.targetActorUID));
+                       // StartCoroutine(ChangeMissileAuthority(launchMessage.ownerUID, launchMessage.networkUID, launchMessage.targetActorUID));
                     }
                     break;
                 case MessageType.MissileDetonate:
