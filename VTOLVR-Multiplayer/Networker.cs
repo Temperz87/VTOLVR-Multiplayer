@@ -1073,6 +1073,10 @@ public class Networker : MonoBehaviour
                 MissileChangeAuthority.Invoke(new PacketSingle(new Message_MissileChangeAuthority(missileUID, 0), Steamworks.EP2PSend.k_EP2PSendReliable));
                 break;
             case Multiplayer.MissileSimMode.Target:
+                if (AIManager.spawnedAI.Contains(targetUID))
+                {
+                    targetUID = 0;
+                }
                 Debug.Log("Switching the missiles to target side simulation!");
                 NetworkSenderThread.Instance.SendPacketAsHostToAllClients(new Message_MissileChangeAuthority(missileUID, targetUID), Steamworks.EP2PSend.k_EP2PSendReliable);
                 MissileChangeAuthority.Invoke(new PacketSingle(new Message_MissileChangeAuthority(missileUID, targetUID), Steamworks.EP2PSend.k_EP2PSendReliable));

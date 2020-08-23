@@ -13,7 +13,7 @@ using UnityEngine.SceneManagement;
 public static class AIManager
 {
     public static Queue<Packet> AIsToSpawnQueue = new Queue<Packet>();
-    private static List<ulong> spawnedAI = new List<ulong>();
+    public static List<ulong> spawnedAI = new List<ulong>();
     public static List<AI> AIVehicles = new List<AI>(); //This is the list of all AI, and an easy way to access AI variables
     public struct AI
     {
