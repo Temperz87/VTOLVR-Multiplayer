@@ -81,7 +81,7 @@ public class Multiplayer : VTOLMOD
 
     public float missileDamage = 1.0f;
     public float missileRadius = 1.8f;
-    public MissileSimMode missileMode = MissileSimMode.Target;
+    public MissileSimMode missileMode = MissileSimMode.Launcher;
 
     private void Start()
     {
