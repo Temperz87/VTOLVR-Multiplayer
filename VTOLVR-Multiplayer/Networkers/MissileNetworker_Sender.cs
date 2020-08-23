@@ -95,11 +95,11 @@ public class MissileNetworker_Sender : MonoBehaviour
     {
         if (Networker.isHost)
         {
-            NetworkSenderThread.Instance.SendPacketAsHostToAllClients(lastMessage, isDestoryed ? Steamworks.EP2PSend.k_EP2PSendReliable : Steamworks.EP2PSend.k_EP2PSendUnreliable);
+            NetworkSenderThread.Instance.SendPacketAsHostToAllClients(lastMessage, Steamworks.EP2PSend.k_EP2PSendReliable);
         }
         else
         {
-            NetworkSenderThread.Instance.SendPacketToSpecificPlayer(Networker.hostID,lastMessage, isDestoryed ? Steamworks.EP2PSend.k_EP2PSendReliable : Steamworks.EP2PSend.k_EP2PSendUnreliable);
+            NetworkSenderThread.Instance.SendPacketToSpecificPlayer(Networker.hostID,lastMessage, Steamworks.EP2PSend.k_EP2PSendReliable);
         }
     }
 }
