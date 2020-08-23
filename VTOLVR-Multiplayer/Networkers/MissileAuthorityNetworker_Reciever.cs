@@ -123,7 +123,7 @@ class MissileAuthorityNetworker_Reciever : MonoBehaviour
                 rbSender.networkUID = networkUID;
                 rbSender.ownerUID = lastChangeMessage.newOwnerUID;
                 Debug.Log("Switched missile to our authority!");
-                Debug.Log("Missile is owned by " + missileSender.ownerUID + " and has UID " + missileSender.rbReceiver.networkUID);
+                Debug.Log("Missile is owned by " + missileSender.ownerUID + " and has UID " + missileSender.networkUID);
             }
             else {
                 Debug.Log("We should not be incharge of this missile");
@@ -165,6 +165,15 @@ class MissileAuthorityNetworker_Reciever : MonoBehaviour
         }
         else {
             Debug.Log("Whoops, this missile has no senders or recievers. help!");
+        }
+
+        if (rbSender != null)
+        {
+            rbSender = GetComponent<RigidbodyNetworker_Sender>();//i hate this, but i couldn't think of a better way to find them
+        }
+        if (rbReceiver != null)
+        {
+            rbReceiver = GetComponent<RigidbodyNetworker_Receiver>();
         }
     }
 
