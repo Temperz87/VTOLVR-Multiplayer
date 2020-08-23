@@ -9,17 +9,17 @@ using Steamworks;
 using UnityEngine;
 
 
-[HarmonyPatch(typeof(UnitSpawner), "SpawnUnit")]
+[HarmonyPatch(typeof(AIUnitSpawn), "SpawnUnit")]
 class Patch8
 {
-    static void Postfix(UnitSpawner __instance)
+    static void Postfix(AIUnitSpawn __instance)
     {
         if (Networker.isHost)
         {
             Debug.Log("Setting up new AI.");
-            AIManager.setupAIAircraft(__instance.spawnedUnit.actor);
+            AIManager.setupAIAircraft(__instance.actor);
             Debug.Log("Telling client about newly spawned AI.");
-            Actor actor = __instance.spawnedUnit.actor;
+            Actor actor = __instance.actor;
             if (!actor.isPlayer)
             {
                 if (actor.name.Contains("Client"))
@@ -110,6 +110,7 @@ class Patch8
                     Debug.Log("Could not find the UIDNetworker_Sender");
                 }
             }
+            AIManager.TellClientAboutAI(new Steamworks.CSteamID(0));
         }
     }
 }
