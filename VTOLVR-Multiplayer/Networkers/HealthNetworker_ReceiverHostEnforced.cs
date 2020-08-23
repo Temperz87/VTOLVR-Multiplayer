@@ -12,7 +12,7 @@ class HealthNetworker_ReceiverHostEnforced : MonoBehaviour
     private Message_BulletHit bulletMessage;
     private void Awake()
     {
-        lastMessage = new Message_Death(networkUID,false);
+        lastMessage = new Message_Death(networkUID, false);
         Networker.Death += Death;
 
         Networker.BulletHit += this.BulletHit;

@@ -7,15 +7,12 @@ public class Message_MissileUpdate : Message
 {
     public ulong networkUID;
     public Vector3D targetPosition;
-    public SerializableQuaternion seekerRotation;
-    public bool hasExploded;
-    public Missile.GuidanceModes guidanceMode;
-    public ulong MissileLauncher;
-    public int idx;
-    public ulong radarLock;
-    public Message_MissileUpdate(ulong uid)
+    public Vector3D lastTargetPosition;
+    public Message_MissileUpdate(ulong uid, Vector3D targetPosition, Vector3D lastTargetPosition)//unused, maybe usefull in the future
     {
         networkUID = uid;
+        this.targetPosition = targetPosition;
+        this.lastTargetPosition = lastTargetPosition;
         type = MessageType.MissileUpdate;
     }
 }

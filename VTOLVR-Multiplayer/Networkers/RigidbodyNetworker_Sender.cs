@@ -8,6 +8,7 @@ using UnityEngine;
 public class RigidbodyNetworker_Sender : MonoBehaviour
 {
     public ulong networkUID;
+    public ulong ownerUID;//0 is owned by host
     private Rigidbody rb;
     private Message_RigidbodyUpdate lastMessage;
     public Vector3 originOffset;
@@ -20,7 +21,7 @@ public class RigidbodyNetworker_Sender : MonoBehaviour
     private Vector3 lastAngularVelocity;
     private float threshold = 0.5f;
     private float angleThreshold = 1f;
-    
+
     private ulong updateNumber;
     private float tick;
     private float tickRate = 10;
@@ -35,19 +36,15 @@ public class RigidbodyNetworker_Sender : MonoBehaviour
         rb = GetComponent<Rigidbody>();
         lastMessage = new Message_RigidbodyUpdate(new Vector3D(), new Vector3D(), new Vector3D(), Quaternion.identity, 0, networkUID);
         tick = 0;
+
+        if (GetComponent<RigidbodyNetworker_Receiver>() != null)
+        {
+            Destroy(GetComponent<RigidbodyNetworker_Receiver>());
+        }
     }
 
-    private void LateUpdate()
-    {
-        
-
-            
-    }
     private void FixedUpdate()
     {
-         
-
-
         globalLastPosition += new Vector3D(lastVelocity * Time.fixedDeltaTime);
         localLastPosition = VTMapManager.GlobalToWorldPoint(globalLastPosition);
         Quaternion quatVel = Quaternion.Euler(lastAngularVelocity * Time.fixedDeltaTime);
@@ -56,7 +53,7 @@ public class RigidbodyNetworker_Sender : MonoBehaviour
         lastUp = lastRotation * Vector3.up;
         lastForward = lastRotation * Vector3.forward;
         tick += Time.fixedDeltaTime;
-        if (tick > 1/tickRate || Vector3.Distance(localLastPosition, transform.TransformPoint(originOffset)) > threshold || Vector3.Angle(lastUp, transform.up) > angleThreshold || Vector3.Angle(lastForward, transform.forward) > angleThreshold)
+        if (tick > 1 / tickRate || Vector3.Distance(localLastPosition, transform.TransformPoint(originOffset)) > threshold || Vector3.Angle(lastUp, transform.up) > angleThreshold || Vector3.Angle(lastForward, transform.forward) > angleThreshold)
         {
             tick = 0;
             lastUp = transform.up;
@@ -81,8 +78,14 @@ public class RigidbodyNetworker_Sender : MonoBehaviour
             else
                 NetworkSenderThread.Instance.SendPacketToSpecificPlayer(Networker.hostID, lastMessage, Steamworks.EP2PSend.k_EP2PSendUnreliableNoDelay);
         }
-            // Temperz STOP KILLING PERFORMANCE AND HARD DRIVES!
-            //Debug.Log($"{actor.name} is not outside of the threshold {Threshold}, the distance is {Vector3.Distance(lastPos, gameObject.transform.position)} not updating it.");
+        // Temperz STOP KILLING PERFORMANCE AND HARD DRIVES!
+        //Debug.Log($"{actor.name} is not outside of the threshold {Threshold}, the distance is {Vector3.Distance(lastPos, gameObject.transform.position)} not updating it.");
+
+        if (GetComponent<RigidbodyNetworker_Receiver>() != null)
+        {
+            Debug.Log("fml, there are both rigidbody senders and recievers");
+            Destroy(GetComponent<RigidbodyNetworker_Receiver>());
+        }
     }
 
     public void SetSpawn(Vector3 spawnPos, Quaternion spawnRot)
@@ -96,7 +99,7 @@ public class RigidbodyNetworker_Sender : MonoBehaviour
     private IEnumerator SetSpawnEnumerator(Vector3 spawnPos, Quaternion spawnRot)
     {
         rb.interpolation = RigidbodyInterpolation.None;
-        rb.isKinematic=true;
+        rb.isKinematic = true;
         rb.velocity = new Vector3(0, 0, 0); rb.Sleep();
         rb.position = spawnPos;
         rb.transform.position = spawnPos;
@@ -106,10 +109,8 @@ public class RigidbodyNetworker_Sender : MonoBehaviour
         player = true;
         Physics.SyncTransforms();
         Debug.Log($"Our position is now {rb.position}");
-   
+
         yield return new WaitForSeconds(0.5f);
         rb.detectCollisions = true;
-
-
     }
 }

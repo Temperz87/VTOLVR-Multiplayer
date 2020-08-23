@@ -15,7 +15,6 @@ using UnityEngine.Events;
 
 public class Multiplayer : VTOLMOD
 {
-    private static string TesterURL = "http://marsh.vtolvr-mods.com/?id=";
     public static bool SoloTesting = true;
     public static Multiplayer _instance = null;
 
@@ -30,6 +29,13 @@ public class Multiplayer : VTOLMOD
             this.transform = transform;
         }
     }
+
+    public enum MissileSimMode {
+        Launcher,
+        Host,
+        Target
+    }
+
     //Friends
     private GameObject friendsTemplate, content, lableVTOL, JoinButton;
     private ScrollRect scrollRect;
@@ -72,6 +78,10 @@ public class Multiplayer : VTOLMOD
 
     public bool displayPing = false;
     private UnityAction<bool> DisplayPing_changed;
+
+    public float missileDamage = 1.0f;
+    public float missileRadius = 1.8f;
+    public MissileSimMode missileMode = MissileSimMode.Target;
 
     private void Start()
     {

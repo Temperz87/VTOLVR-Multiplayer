@@ -12,7 +12,7 @@ using Steamworks;
 public class RigidbodyNetworker_Receiver : MonoBehaviour
 {
     public ulong networkUID;
-
+    public ulong ownerUID;//0 is owned by host
     private Vector3D globalTargetPosition;
     private Vector3 localTargetPosition;
     private Vector3 targetVelocity;
@@ -47,6 +47,11 @@ public class RigidbodyNetworker_Receiver : MonoBehaviour
         }
 
         rb = GetComponent<Rigidbody>();
+        localTargetPosition = rb.transform.position;
+        globalTargetPosition = VTMapManager.WorldToGlobalPoint(localTargetPosition);
+        //targetVelocity = rb.velocity;
+        targetRotation = rb.transform.rotation;
+
         rb.isKinematic = true;
 
         FloatingOriginTransform originTransform = GetComponent<FloatingOriginTransform>();
@@ -56,6 +61,11 @@ public class RigidbodyNetworker_Receiver : MonoBehaviour
         originTransform.SetRigidbody(rb);
 
         Networker.RigidbodyUpdate += RigidbodyUpdate;
+
+        if (GetComponent<RigidbodyNetworker_Sender>() != null)
+        {
+            Destroy(GetComponent<RigidbodyNetworker_Sender>());
+        }
     }
 
     void FixedUpdate()
@@ -80,22 +90,6 @@ public class RigidbodyNetworker_Receiver : MonoBehaviour
                 Debug.Log("Disabled kplane again on " + gameObject.name);
             }
         }
-        if (playerWeRepresent == null)
-        {
-            int playerID = PlayerManager.FindPlayerIDFromNetworkUID(networkUID);//get the ping of the player we represent
-            if (playerID == -1)
-            {//we are not a player, get the ping from the host
-                playerID = PlayerManager.FindPlayerIDFromNetworkUID(PlayerManager.GetPlayerUIDFromCSteamID(Networker.hostID));//getting the host
-            }
-            if (playerID != -1)//couldnt find host latency, that sucks
-            {
-                playerWeRepresent = PlayerManager.players[playerID];
-            }
-        }
-        if (playerWeRepresent != null) {
-            //delta time needs to be added to latency as this runs after packet has arrived for a while
-            latency = playerWeRepresent.ping + Time.fixedDeltaTime;
-        }
 
         globalTargetPosition += new Vector3D(targetVelocity * Time.fixedDeltaTime);
         localTargetPosition = VTMapManager.GlobalToWorldPoint(globalTargetPosition);
@@ -108,9 +102,15 @@ public class RigidbodyNetworker_Receiver : MonoBehaviour
         rb.velocity = targetVelocity + (localTargetPosition - transform.position) / smoothingTime;
         //actor.SetCustomVelocity(Vector3.Lerp(actor.velocity, targetVelocity + (localTargetPosition - transform.position) / smoothingTime, Time.fixedDeltaTime / velSmoothingTime));
         actor.SetCustomVelocity(rb.velocity);
-       
+
         rb.MovePosition(transform.position + targetVelocity * Time.fixedDeltaTime + ((localTargetPosition - transform.position) * Time.fixedDeltaTime) / smoothingTime);
         rb.MoveRotation(Quaternion.Lerp(currentRotation, targetRotation, Time.fixedDeltaTime / rotSmoothingTime));
+
+        if (GetComponent<RigidbodyNetworker_Sender>() != null)
+        {
+            Debug.Log("fml, there are both rigidbody senders and recievers");
+             Destroy(GetComponent<RigidbodyNetworker_Sender>());
+        }
     }
 
     public void RigidbodyUpdate(Packet packet)
@@ -122,7 +122,9 @@ public class RigidbodyNetworker_Receiver : MonoBehaviour
 
         if (rigidbodyUpdate.sequenceNumber <= mostCurrentUpdateNumber)
             return;
+
         mostCurrentUpdateNumber = rigidbodyUpdate.sequenceNumber;
+        UpdateLatency();
 
         globalTargetPosition = rigidbodyUpdate.position + rigidbodyUpdate.velocity * latency;
         localTargetPosition = VTMapManager.GlobalToWorldPoint(globalTargetPosition);
@@ -136,6 +138,29 @@ public class RigidbodyNetworker_Receiver : MonoBehaviour
             transform.position = localTargetPosition;
 
             transform.rotation = rigidbodyUpdate.rotation;
+        }
+    }
+
+    void UpdateLatency()
+    {
+        if (ownerUID == 0)//if we are owned by host, just get ping to host
+        {
+            latency = Networker.pingToHost;
+        }
+        else
+        {
+            if (playerWeRepresent == null)
+            {
+                int playerID = PlayerManager.FindPlayerIDFromNetworkUID(ownerUID);//get the ping of the player we are owned by
+                if (playerID != -1)//make sure we found the player
+                {
+                    playerWeRepresent = PlayerManager.players[playerID];
+                }
+            }
+            if (playerWeRepresent != null)
+            {
+                latency = playerWeRepresent.ping;
+            }
         }
     }
 

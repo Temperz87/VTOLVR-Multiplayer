@@ -361,13 +361,13 @@ public static class AIManager
         AIVehicles.Add(new AI(newAI, message.aiVehicleName, actor, message.networkID));
         Debug.Log("Spawned in AI " + newAI.name);
 
-        if (!VTOLVR_Multiplayer.AIDictionaries.allActors.ContainsKey(message.networkID))
+        if (!AIDictionaries.allActors.ContainsKey(message.networkID))
         {
-            VTOLVR_Multiplayer.AIDictionaries.allActors.Add(message.networkID, actor);
+            AIDictionaries.allActors.Add(message.networkID, actor);
         }
-        if (!VTOLVR_Multiplayer.AIDictionaries.reverseAllActors.ContainsKey(actor))
+        if (!AIDictionaries.reverseAllActors.ContainsKey(actor))
         {
-            VTOLVR_Multiplayer.AIDictionaries.reverseAllActors.Add(actor, message.networkID);
+            AIDictionaries.reverseAllActors.Add(actor, message.networkID);
         }
     }
     /// <summary>
@@ -439,7 +439,7 @@ public static class AIManager
                             {
                                 Debug.LogError("Locking radar on one of the SAM's is literally null.");
                             }
-                            if (VTOLVR_Multiplayer.AIDictionaries.reverseAllActors.TryGetValue(radar.myActor, out lastID))
+                            if (AIDictionaries.reverseAllActors.TryGetValue(radar.myActor, out lastID))
                             {
                                 ids.Add(lastID);
                                 // Debug.Log("Aded a radar ID");
@@ -510,13 +510,13 @@ public static class AIManager
             ulong networkUID = Networker.GenerateNetworkUID();
             Debug.Log("Adding UID senders to " + actor.name + $", their uID will be {networkUID}.");
             AIManager.AIVehicles.Add(new AIManager.AI(actor.gameObject, actor.unitSpawn.unitName, actor, networkUID));
-            if (!VTOLVR_Multiplayer.AIDictionaries.allActors.ContainsKey(networkUID))
+            if (!AIDictionaries.allActors.ContainsKey(networkUID))
             {
-                VTOLVR_Multiplayer.AIDictionaries.allActors.Add(networkUID, actor);
+                AIDictionaries.allActors.Add(networkUID, actor);
             }
-            if (!VTOLVR_Multiplayer.AIDictionaries.reverseAllActors.ContainsKey(actor))
+            if (!AIDictionaries.reverseAllActors.ContainsKey(actor))
             {
-                VTOLVR_Multiplayer.AIDictionaries.reverseAllActors.Add(actor, networkUID);
+                AIDictionaries.reverseAllActors.Add(actor, networkUID);
             }
             UIDNetworker_Sender uidSender = actor.gameObject.AddComponent<UIDNetworker_Sender>();
             uidSender.networkUID = networkUID;
@@ -779,8 +779,8 @@ public static class AIManager
 
     public static void CleanUpOnDisconnect()
     {
-        VTOLVR_Multiplayer.AIDictionaries.allActors?.Clear();
-        VTOLVR_Multiplayer.AIDictionaries.reverseAllActors?.Clear();
+        AIDictionaries.allActors?.Clear();
+        AIDictionaries.reverseAllActors?.Clear();
         AIsToSpawnQueue?.Clear();
         spawnedAI?.Clear();
         AIVehicles?.Clear();

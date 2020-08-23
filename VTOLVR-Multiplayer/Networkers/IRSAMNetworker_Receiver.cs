@@ -26,7 +26,7 @@ class IRSAMNetworker_Reciever : MonoBehaviour
             foreach (var uID in radarUIDS)
             {
                 Debug.Log($"Try adding uID {uID} to SAM's radars.");
-                if (VTOLVR_Multiplayer.AIDictionaries.allActors.TryGetValue(uID, out lastActor))
+                if (AIDictionaries.allActors.TryGetValue(uID, out lastActor))
                 {
                     Debug.Log("Got the actor.");
                     foreach (var radar in lastActor.gameObject.GetComponentsInChildren<LockingRadar>())
@@ -53,7 +53,7 @@ class IRSAMNetworker_Reciever : MonoBehaviour
             foreach (var uID in radarUIDS)
             {
                 Debug.Log($"Try adding uID {uID} to SAM's radars.");
-                if (VTOLVR_Multiplayer.AIDictionaries.allActors.TryGetValue(uID, out lastActor))
+                if (AIDictionaries.allActors.TryGetValue(uID, out lastActor))
                 {
                     Debug.Log("Got the actor.");
                     foreach (var radar in lastActor.gameObject.GetComponentsInChildren<LockingRadar>())
@@ -73,7 +73,7 @@ class IRSAMNetworker_Reciever : MonoBehaviour
         if (lastMessage.senderUID != networkUID)
             return;
         Debug.Log("Got a sam update message.");
-        if (VTOLVR_Multiplayer.AIDictionaries.allActors.TryGetValue(lastMessage.actorUID, out lastActor))
+        if (AIDictionaries.allActors.TryGetValue(lastMessage.actorUID, out lastActor))
         {
             foreach (var radar in samLauncher.lockingRadars)
             {

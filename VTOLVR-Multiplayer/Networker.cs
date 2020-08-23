@@ -263,6 +263,9 @@ public class Networker : MonoBehaviour
     public static event UnityAction<Packet> RadarUpdate;
     public static event UnityAction<Packet> TurretUpdate;
     public static event UnityAction<Packet> MissileUpdate;
+    public static event UnityAction<Packet> MissileLaunch;
+    public static event UnityAction<Packet> MissileDetonate;
+    public static event UnityAction<Packet> MissileChangeAuthority;
     public static event UnityAction<Packet> WorldDataUpdate;
     public static event UnityAction<Packet> RequestNetworkUID;
     public static event UnityAction<Packet> LockingRadarUpdate;
@@ -566,7 +569,7 @@ public class Networker : MonoBehaviour
                     {
                         Debug.LogError("Multiplayer _instance lobbyinfotext is null");
                     }
-                    Multiplayer._instance.lobbyInfoText.text = result.username + "'s Game\n" + result.vehicle + "\n" + result.campaign + " " + result.scenario + "\n" + (result.playercount == "1" ? result.playercount + " Player" : result.playercount + " Players");
+                    Multiplayer._instance.lobbyInfoText.text = result.username + "'s Game\n" + result.vehicle + result.campaign + " " + result.scenario + (result.playercount == "1" ? result.playercount + " Player" : result.playercount + " Players");
                     Debug.Log("Breaking case set lobby info request result");
                     break;
                 case MessageType.JoinRequest:
@@ -604,12 +607,10 @@ public class Networker : MonoBehaviour
 
                     if (readyDic.ContainsKey(csteamID) && playerStatusDic.ContainsKey(csteamID))
                     {
-                        if (readyMessage.isLeft)
-                        {
+                        if (readyMessage.isLeft) {
                             playerStatusDic[csteamID] = PlayerStatus.ReadyREDFOR;
                         }
-                        else
-                        {
+                        else {
                             playerStatusDic[csteamID] = PlayerStatus.ReadyBLUFOR;
                         }
 
@@ -820,6 +821,28 @@ public class Networker : MonoBehaviour
                     // Debug.Log("case missile update");
                     if (MissileUpdate != null)
                         MissileUpdate.Invoke(packet);
+                    break;
+                case MessageType.MissileLaunch:
+                    Debug.Log("case missile launch");
+                    if (MissileLaunch != null)
+                        MissileLaunch.Invoke(packet);
+
+                    Message_MissileLaunch launchMessage = ((PacketSingle)packet).message as Message_MissileLaunch;
+
+                    if (isHost && launchMessage.guidanceType == Missile.GuidanceModes.Radar)
+                    {
+                        StartCoroutine(ChangeMissileAuthority(launchMessage.ownerUID, launchMessage.networkUID, launchMessage.targetActorUID));
+                    }
+                    break;
+                case MessageType.MissileDetonate:
+                    Debug.Log("case missile detonate");
+                    if (MissileDetonate != null)
+                        MissileDetonate.Invoke(packet);
+                    break;
+                case MessageType.MissileChangeAuthority:
+                    Debug.Log("case missile change authority");
+                    if (MissileChangeAuthority != null)
+                        MissileChangeAuthority.Invoke(packet);
                     break;
                 case MessageType.RequestNetworkUID:
                     Debug.Log("case request network UID");
@@ -1032,6 +1055,35 @@ public class Networker : MonoBehaviour
         Debug.Log("Fly button successful, unpausing events.");
         ControllerEventHandler.UnpauseEvents();
     }
+
+    public static IEnumerator ChangeMissileAuthority(ulong launcherUID, ulong missileUID, ulong targetUID)
+    {
+        if (isClient)
+        {
+            Debug.Log("Client should not run code to change missile authority.");
+            yield break;
+        }
+
+        yield return new WaitForSeconds(0.5f);
+        switch (Multiplayer._instance.missileMode)
+        {
+            case Multiplayer.MissileSimMode.Host:
+                Debug.Log("Switching the missiles to host side simulation!");
+                NetworkSenderThread.Instance.SendPacketAsHostToAllClients(new Message_MissileChangeAuthority(missileUID, 0), Steamworks.EP2PSend.k_EP2PSendReliable);
+                MissileChangeAuthority.Invoke(new PacketSingle(new Message_MissileChangeAuthority(missileUID, 0), Steamworks.EP2PSend.k_EP2PSendReliable));
+                break;
+            case Multiplayer.MissileSimMode.Target:
+                Debug.Log("Switching the missiles to target side simulation!");
+                NetworkSenderThread.Instance.SendPacketAsHostToAllClients(new Message_MissileChangeAuthority(missileUID, targetUID), Steamworks.EP2PSend.k_EP2PSendReliable);
+                MissileChangeAuthority.Invoke(new PacketSingle(new Message_MissileChangeAuthority(missileUID, targetUID), Steamworks.EP2PSend.k_EP2PSendReliable));
+                break;
+            case Multiplayer.MissileSimMode.Launcher://this is the default lmao, nothing needs to change
+            default:
+                Debug.Log("The missile is being simulated on the player who launched it");
+                break;
+        }
+    }
+
     //Checks if everyone had sent the Ready Message Type saying they are ready in the vehicle config room
     public static bool EveryoneElseReady()
     {
@@ -1083,10 +1135,9 @@ public class Networker : MonoBehaviour
             return;
         StringBuilder content = new StringBuilder("<color=#FCB722><b><align=\"center\"><size=120%>Multiplayer Lobby</size></align></b></color>\n");
 
-        switch (playerStatusDic[hostID])
-        {
+        switch (playerStatusDic[hostID]) {
             case PlayerStatus.Loadout:
-                content.AppendLine("<color=\"blue\">[BLUFOR] </color>" + "<b>" + SteamFriends.GetPersonaName() + "</b>" + ": " + "<color=\"red\">loadout</color>");
+                content.AppendLine("<b>" + SteamFriends.GetPersonaName() + "</b>" + ": " + "<color=\"red\">Loadout</color>");
                 break;
             case PlayerStatus.NotReady:
                 content.AppendLine("<b>" + SteamFriends.GetPersonaName() + "</b>" + ": " + "<color=\"red\">Not Ready</color>");
@@ -1098,10 +1149,10 @@ public class Networker : MonoBehaviour
                 content.AppendLine("<color=\"blue\">[BLUFOR] </color>" + "<b>" + SteamFriends.GetPersonaName() + "</b>" + ": " + "<color=\"green\">Ready</color>");
                 break;
             case PlayerStatus.Loading:
-                content.AppendLine("<color=\"blue\">[BLUFOR] </color>" + "<b>" + SteamFriends.GetPersonaName() + "</b>" + ": " + "<color=\"blue\">Loading</color>");
+                content.AppendLine("<b>" + SteamFriends.GetPersonaName() + "</b>" + ": " + "<color=\"blue\">Loading</color>");
                 break;
             case PlayerStatus.InGame:
-                content.AppendLine("<color=\"blue\">[BLUFOR] </color>" + "<b>" + SteamFriends.GetPersonaName() + "</b>" + ": " + "<color=\"green\">In game</color>");
+                content.AppendLine("<b>" + SteamFriends.GetPersonaName() + "</b>" + ": " + "<color=\"green\">In Game</color>");
                 break;
             case PlayerStatus.Disconected:
                 content.AppendLine("<b>" + SteamFriends.GetPersonaName() + "</b>" + ": " + "<color=\"red\">Disconected</color>");

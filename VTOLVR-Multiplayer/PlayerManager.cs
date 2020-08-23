@@ -420,17 +420,18 @@ public static class PlayerManager
         VTOLVehicles currentVehicle = VTOLAPI.GetPlayersVehicleEnum();
         Actor actor = localVehicle.GetComponent<Actor>();
 
-        if (VTOLVR_Multiplayer.AIDictionaries.allActors.ContainsKey(UID))
-            VTOLVR_Multiplayer.AIDictionaries.allActors[UID] = actor;
+        if (AIDictionaries.allActors.ContainsKey(UID))
+            AIDictionaries.allActors[UID] = actor;
         else
-            VTOLVR_Multiplayer.AIDictionaries.allActors.Add(UID, actor);
-        if (VTOLVR_Multiplayer.AIDictionaries.allActors.ContainsKey(UID))
-            VTOLVR_Multiplayer.AIDictionaries.reverseAllActors[actor] = UID;
+            AIDictionaries.allActors.Add(UID, actor);
+        if (AIDictionaries.allActors.ContainsKey(UID))
+            AIDictionaries.reverseAllActors[actor] = UID;
         else
-            VTOLVR_Multiplayer.AIDictionaries.reverseAllActors.Add(actor, UID);
+            AIDictionaries.reverseAllActors.Add(actor, UID);
 
         RigidbodyNetworker_Sender rbSender = localVehicle.AddComponent<RigidbodyNetworker_Sender>();
         rbSender.networkUID = UID;
+        rbSender.ownerUID = UID;
 
         //rbSender.SetSpawn(pos, rot);
         if (currentVehicle == VTOLVehicles.AV42C)
@@ -737,6 +738,7 @@ public static class PlayerManager
         }
         RigidbodyNetworker_Receiver rbNetworker = newVehicle.AddComponent<RigidbodyNetworker_Receiver>();
         rbNetworker.networkUID = networkID;
+        rbNetworker.ownerUID = networkID;
 
         PlaneNetworker_Receiver planeReceiver = newVehicle.AddComponent<PlaneNetworker_Receiver>();
         planeReceiver.networkUID = networkID;
@@ -777,9 +779,18 @@ public static class PlayerManager
 
         foreach (Collider collider in newVehicle.GetComponentsInChildren<Collider>())
         {
-            if (collider)
+            Hitbox hitbox = collider.GetComponent<Hitbox>();
+            if (hitbox == null)
             {
-                collider.gameObject.layer = 9;
+                if (collider)
+                {
+                    collider.gameObject.layer = 9;
+                }
+            }
+
+            if (hitbox != null)
+            {
+                hitbox.health.invincible = true;
             }
         }
         aIPilot.enabled = false;
@@ -814,18 +825,18 @@ public static class PlayerManager
         player.leftie = isLeft;
         player.vehicle = newVehicle;
 
-        if (!VTOLVR_Multiplayer.AIDictionaries.allActors.ContainsKey(networkID))
+        if (!AIDictionaries.allActors.ContainsKey(networkID))
         {
-            VTOLVR_Multiplayer.AIDictionaries.allActors[networkID] = aIPilot.actor;
-            VTOLVR_Multiplayer.AIDictionaries.reverseAllActors[aIPilot.actor] = networkID;
+            AIDictionaries.allActors[networkID] = aIPilot.actor;
+            AIDictionaries.reverseAllActors[aIPilot.actor] = networkID;
         }
         else
         {
-            VTOLVR_Multiplayer.AIDictionaries.allActors.Remove(networkID);
-            VTOLVR_Multiplayer.AIDictionaries.reverseAllActors.Remove(aIPilot.actor);
+            AIDictionaries.allActors.Remove(networkID);
+            AIDictionaries.reverseAllActors.Remove(aIPilot.actor);
 
-            VTOLVR_Multiplayer.AIDictionaries.allActors[networkID] = aIPilot.actor;
-            VTOLVR_Multiplayer.AIDictionaries.reverseAllActors[aIPilot.actor] = networkID;
+            AIDictionaries.allActors[networkID] = aIPilot.actor;
+            AIDictionaries.reverseAllActors[aIPilot.actor] = networkID;
 
         }
 
@@ -1023,6 +1034,8 @@ public static class PlayerManager
         localUID = 0;
         worldData = null;
         players?.Clear();
+        buttonMade = false;
+        text = null;
         ObjectiveNetworker_Reciever.scenarioActionsList?.Clear();
         ObjectiveNetworker_Reciever.scenarioActionsListCoolDown?.Clear();
         PlaneNetworker_Receiver.dontPrefixNextJettison = false;

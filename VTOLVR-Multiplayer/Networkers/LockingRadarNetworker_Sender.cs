@@ -69,15 +69,15 @@ class LockingRadarNetworker_Sender : MonoBehaviour
                 lastRadarMessage.on = lr.radar.radarEnabled;
                 // Debug.Log("on enabled");
                 lastRadarMessage.fov = lr.radar.sweepFov;
-                Debug.Log("Sending sweepFOV");
+                // Debug.Log("Sending sweepFOV");
 
                 if (Networker.isHost)
                     NetworkSenderThread.Instance.SendPacketAsHostToAllClients(lastRadarMessage, Steamworks.EP2PSend.k_EP2PSendReliable);
                 else
                     NetworkSenderThread.Instance.SendPacketToSpecificPlayer(Networker.hostID, lastRadarMessage, Steamworks.EP2PSend.k_EP2PSendReliable);
-                Debug.Log("last 2");
+                // Debug.Log("last 2");
                 lastOn = lr.radar.radarEnabled;
-                Debug.Log("last one");
+                // Debug.Log("last one");
                 lastFov = lr.radar.sweepFov;
             }
         }
@@ -105,16 +105,16 @@ class LockingRadarNetworker_Sender : MonoBehaviour
             // if (lr.IsLocked() != lastLockingMessage.isLocked || lr.currentLock != null && (lr.currentLock != lastRadarLockData || lr.currentLock.actor != lastRadarLockData.actor))
             if (stateChanged)
             {
-                Debug.Log("is lock not equal to last message is locked for network uID " + networkUID);
+                // Debug.Log("is lock not equal to last message is locked for network uID " + networkUID);
                 if (lr.currentLock == null)
                 {
-                    Debug.Log("lr lock data null");
+                    // Debug.Log("lr lock data null");
                     lastWasNull = true;
 
                     lastLockingMessage.actorUID = 0;
                     lastLockingMessage.isLocked = false;
                     lastLockingMessage.senderUID = networkUID;
-                    Debug.Log($"Sending a locking radar message from uID {networkUID}");
+                    // Debug.Log($"Sending a locking radar message from uID {networkUID}");
                     if (Networker.isHost)
                         NetworkSenderThread.Instance.SendPacketAsHostToAllClients(lastLockingMessage, EP2PSend.k_EP2PSendReliable);
                     else
@@ -126,7 +126,7 @@ class LockingRadarNetworker_Sender : MonoBehaviour
                     try
                     {
                         // ulong key = (from p in VTOLVR_Multiplayer.AIDictionaries.allActors where p.Value == lr.currentLock.actor select p.Key).FirstOrDefault();
-                        if (VTOLVR_Multiplayer.AIDictionaries.reverseAllActors.TryGetValue(lastRadarLockData.actor, out lastID))
+                        if (AIDictionaries.reverseAllActors.TryGetValue(lastRadarLockData.actor, out lastID))
                         {
                             lastWasNull = false;
                             Debug.Log(lastRadarLockData.actor.name + " radar data found its lock " + lr.currentLock.actor.name + " at id " + lastID + " with its own uID being " + networkUID);
@@ -180,7 +180,7 @@ class LockingRadarNetworker_Sender : MonoBehaviour
         try
         {
             // ulong key = (from p in VTOLVR_Multiplayer.AIDictionaries.allActors where p.Value == lr.currentLock.actor select p.Key).FirstOrDefault();
-            if (VTOLVR_Multiplayer.AIDictionaries.reverseAllActors.TryGetValue(radarLockData.actor, out lastID))
+            if (AIDictionaries.reverseAllActors.TryGetValue(radarLockData.actor, out lastID))
             {
                 Debug.Log(gameObject.name + " F45 radar data found its lock " + radarLockData.actor.name + " at id " + lastID + " with its own uID being " + networkUID);
                 lastLockingMessage.actorUID = lastID;

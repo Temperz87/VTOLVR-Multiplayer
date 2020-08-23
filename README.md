@@ -10,13 +10,13 @@ Once you have cloned the repository, you will need to head over to your VTOL VR 
 
 You also need to have .Net 4.5 installed to build the mod.
 
-Because the mod is currently in pre-alpha testing phase, the dll is not provided directly. To get past the super basic tester check and try it out, you just need to build the mod in debug mode, this should go past the check I put in place just to stop people sharing the dll with their friends and then complaining that things are buggy or keep asking how to use it. 
+You can also directly download the mod [here](https://vtolvr-mods.com/mod/qs6jxkt2/) at the vtolvr-mods website. 
 
 ## Contributors
 
 [Ketkev](https://github.com/ketkev "Ketkev's Github") for their code which creates a name tag above the player's heads with their steam name.
 
-[MarshMellow0](https://github.com/MarshMello0 "MarshMello0's Github") for making the foundation of the multiplayer mod, so others can finish the fight.
+[MarshMello0](https://github.com/MarshMello0 "MarshMello0's Github") for making the foundation of the multiplayer mod, so others can finish the fight.
 
 [Dib](https://github.com/Nisenogen "Dib's Github") for being someone we can ask general C# questions about, and casually threading the networker class.
 
