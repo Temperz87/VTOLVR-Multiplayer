@@ -13,7 +13,7 @@ class MissileAuthorityNetworker_Reciever : MonoBehaviour
     public bool currentLocalAuthority;
 
     private Missile thisMissile;
-    float originalProxFuse;
+    private Traverse missileTraverse;
     private Traverse traverse2;
 
     public MissileNetworker_Sender missileSender;
@@ -26,7 +26,7 @@ class MissileAuthorityNetworker_Reciever : MonoBehaviour
     private void Start()
     {
         thisMissile = GetComponent<Missile>();
-        originalProxFuse = thisMissile.proxyDetonateRange;
+        missileTraverse = Traverse.Create(thisMissile);
 
         missileSender = GetComponent<MissileNetworker_Sender>();
         missileReceiver = GetComponent<MissileNetworker_Receiver>();
@@ -94,7 +94,7 @@ class MissileAuthorityNetworker_Reciever : MonoBehaviour
 
                 Rigidbody rb = GetComponent<Rigidbody>();
                 rb.isKinematic = false;
-                thisMissile.proxyDetonateRange = originalProxFuse;
+                missileTraverse.Field("detonated").SetValue(false);//allows missile to explode again
 
                 missileSender = gameObject.AddComponent<MissileNetworker_Sender>();
                 if (!thisMissile.hasTarget)
@@ -132,7 +132,7 @@ class MissileAuthorityNetworker_Reciever : MonoBehaviour
 
                 Rigidbody rb = GetComponent<Rigidbody>();
                 rb.isKinematic = true;
-                thisMissile.proxyDetonateRange = 0;
+                missileTraverse.Field("detonated").SetValue(true);//stops missile from exploding early
 
                 missileReceiver = gameObject.AddComponent<MissileNetworker_Receiver>();
                 missileReceiver.networkUID = networkUID;

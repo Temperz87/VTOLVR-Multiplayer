@@ -17,6 +17,7 @@ public class MissileNetworker_Receiver : MonoBehaviour
     private Message_MissileLaunch lastLaunchMessage;
     private Message_MissileDetonate lastDetonateMessage;
     private Traverse traverse;
+    private Traverse missileTraverse;
     private Traverse traverse2;
     private RadarLockData lockData;
     ulong uid;
@@ -38,9 +39,9 @@ public class MissileNetworker_Receiver : MonoBehaviour
     private void Start()
     {
         thisMissile = GetComponent<Missile>();
-        originalProxFuse = thisMissile.proxyDetonateRange;
-        thisMissile.proxyDetonateRange = 0;
         traverse = Traverse.Create(thisML);
+        missileTraverse = Traverse.Create(thisMissile);
+        missileTraverse.Field("detonated").SetValue(true);//stops the missile from exploding early
         if (thisMissile.guidanceMode == Missile.GuidanceModes.Heat)
         {
             traverse2 = Traverse.Create(thisMissile.heatSeeker);
@@ -166,6 +167,7 @@ public class MissileNetworker_Receiver : MonoBehaviour
         {
             thisMissile.rb.velocity = thisMissile.transform.forward * 100.0f;//idk but surgeon said do the thing
         }
+        missileTraverse.Field("detonated").SetValue(false);
         thisMissile.Detonate();
     }
 
