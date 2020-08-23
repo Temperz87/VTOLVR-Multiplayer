@@ -17,6 +17,7 @@ public class MissileNetworker_Receiver : MonoBehaviour
     private Message_MissileLaunch lastLaunchMessage;
     private Message_MissileDetonate lastDetonateMessage;
     private Message_MissileChangeAuthority lastChangeMessage;
+    private Message_MissileDamage lastMissileDamageMessage;
     private Traverse traverse;
     private Traverse traverse2;
     private RadarLockData lockData;
@@ -58,7 +59,8 @@ public class MissileNetworker_Receiver : MonoBehaviour
         Networker.MissileLaunch += MissileLaunch;
         Networker.MissileDetonate += MissileDestroyed;
         Networker.MissileChangeAuthority += MissileChangeAuthority;
-
+        Networker.MissileDamage += MissileDamage;
+    
         thisMissile.explodeRadius *= Multiplayer._instance.missileRadius; thisMissile.explodeDamage *= Multiplayer._instance.missileDamage;
     }
 
@@ -142,6 +144,24 @@ public class MissileNetworker_Receiver : MonoBehaviour
         //traverse2.Field("targetPosition").SetValue(VTMapManager.GlobalToWorldPoint(lastMessage.targetPosition));
         //traverse2.Field("lastTargetPosition").SetValue(VTMapManager.GlobalToWorldPoint(lastMessage.lastTargetPosition));
     }
+
+    public void MissileDamage(Packet packet)
+    {
+        lastMissileDamageMessage = ((PacketSingle)packet).message as Message_MissileDamage;
+        if (lastMissileDamageMessage.networkUID != networkUID)
+            return;
+
+        ulong actorTodamage = lastMissileDamageMessage.actorTobeDamaged;
+
+       if(AIDictionaries.allActors.ContainsKey(actorTodamage))
+        {
+
+            Actor act = AIDictionaries.allActors[actorTodamage];
+            if(act != null)
+            act.health.Damage(lastMissileDamageMessage.damage, thisMissile.rb.position, Health.DamageTypes.Impact, thisMissile.actor);
+        }
+    }
+
 
     public void MissileDestroyed(Packet packet)
     {

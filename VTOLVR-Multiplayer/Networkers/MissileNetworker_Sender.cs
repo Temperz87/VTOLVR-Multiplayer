@@ -210,6 +210,40 @@ public class MissileNetworker_Sender : MonoBehaviour
     /// </summary>
     public void OnDetonated(Missile missile)
     {
+
+        foreach( Actor act in TargetManager.instance.allActors)
+        {
+            Vector3D apos = VTMapManager.WorldToGlobalPoint(act.transform.position);
+            Vector3D misslepos = VTMapManager.WorldToGlobalPoint(missile.transform.position);
+
+            Vector3D line = apos - misslepos;
+            float dist = (float)line.magnitude;
+
+            if(dist<missile.explodeRadius)
+            {
+
+                if(AIDictionaries.reverseAllActors.ContainsKey(act))
+                {
+                    Message_MissileDamage dmgMessage = new Message_MissileDamage(networkUID);
+                    dmgMessage.actorTobeDamaged = AIDictionaries.reverseAllActors[act];
+                    dmgMessage.damage = missile.explodeDamage;
+
+
+                    if (Networker.isHost)
+                    {
+                        NetworkSenderThread.Instance.SendPacketAsHostToAllClients(dmgMessage, Steamworks.EP2PSend.k_EP2PSendReliable);
+                    }
+                    else
+                    {
+                        NetworkSenderThread.Instance.SendPacketToSpecificPlayer(Networker.hostID, dmgMessage, Steamworks.EP2PSend.k_EP2PSendReliable);
+                    }
+
+                }
+                
+
+            }
+
+        }
         if (Networker.isHost)
         {
             NetworkSenderThread.Instance.SendPacketAsHostToAllClients(lastDetonateMessage, Steamworks.EP2PSend.k_EP2PSendReliable);

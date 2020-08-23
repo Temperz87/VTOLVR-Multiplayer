@@ -265,6 +265,7 @@ public class Networker : MonoBehaviour
     public static event UnityAction<Packet> MissileUpdate;
     public static event UnityAction<Packet> MissileLaunch;
     public static event UnityAction<Packet> MissileDetonate;
+    public static event UnityAction<Packet> MissileDamage;
     public static event UnityAction<Packet> MissileChangeAuthority;
     public static event UnityAction<Packet> WorldDataUpdate;
     public static event UnityAction<Packet> RequestNetworkUID;
@@ -838,6 +839,11 @@ public class Networker : MonoBehaviour
                     Debug.Log("case missile detonate");
                     if (MissileDetonate != null)
                         MissileDetonate.Invoke(packet);
+                    break;
+                case MessageType.MissileDamage:
+                    Debug.Log("case missile MissileDamage");
+                    if (MissileDamage != null)
+                        MissileDamage.Invoke(packet);
                     break;
                 case MessageType.MissileChangeAuthority:
                     Debug.Log("case missile change authority");
