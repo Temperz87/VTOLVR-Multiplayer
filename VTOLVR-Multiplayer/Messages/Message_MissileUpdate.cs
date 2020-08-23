@@ -20,7 +20,7 @@ public class Message_MissileUpdate : Message
     }
 }
 
-
+[Serializable]
 public class Message_MissileDamage : Message
 {
     public ulong networkUID;

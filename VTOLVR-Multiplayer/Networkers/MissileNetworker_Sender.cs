@@ -126,7 +126,7 @@ public class MissileNetworker_Sender : MonoBehaviour
                     Debug.Log("APassed damage radius checkS");
                     if (AIDictionaries.reverseAllActors.ContainsKey(act))
                     {
-                        Message_MissileDamage dmgMessage = new Message_MissileDamage(networkUID);
+                        Message_MissileDamage dmgMessage = new Message_MissileDamage(PlayerManager.localUID);
                         dmgMessage.actorTobeDamaged = AIDictionaries.reverseAllActors[act];
                         dmgMessage.damage = missile.explodeDamage;
 
