@@ -16,6 +16,7 @@ public class MissileNetworker_Sender : MonoBehaviour
     private Traverse traverse;
     public RigidbodyNetworker_Sender rbSender;
     public bool hasFired = false;
+    public ulong targetUID;
     private void Awake()
     {
         Networker.RequestNetworkUID += RequestUID;
@@ -29,6 +30,24 @@ public class MissileNetworker_Sender : MonoBehaviour
         if (thisMissile.guidanceMode == Missile.GuidanceModes.Heat)
         {
             traverse = Traverse.Create(thisMissile.heatSeeker);
+            if (targetUID != 0)
+            {
+                if (AIDictionaries.allActors.TryGetValue(targetUID, out Actor actor))
+                {
+                    Debug.Log("IR CLIENT MISSILE: Firing on " + actor);
+                    thisMissile.heatSeeker.transform.rotation = lastLaunchMessage.seekerRotation;
+                    traverse.Method("TrackHeat").GetValue();
+                    thisMissile.heatSeeker.SetHardLock();
+                }
+                else
+                {
+                    Debug.LogWarning("IR client missile did not find its heat target.");
+                }
+                if (!thisMissile.hasTarget)
+                {
+                    Debug.LogError("This IR missile does not have a target.");
+                }
+            }
         }
 
         if (GetComponent<MissileNetworker_Receiver>() != null)

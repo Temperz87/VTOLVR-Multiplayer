@@ -20,6 +20,7 @@ public class MissileNetworker_Receiver : MonoBehaviour
     private Traverse traverse;
     private Traverse traverse2;
     private RadarLockData lockData;
+    ulong uid;
     // private Rigidbody rigidbody; see missileSender for why i not using rigidbody
     public bool hasFired = false;
 
@@ -109,7 +110,7 @@ public class MissileNetworker_Receiver : MonoBehaviour
                 Debug.Log("Guidance mode Heat.");
                 thisMissile.heatSeeker.transform.rotation = lastLaunchMessage.seekerRotation;
                 traverse2.Method("TrackHeat").GetValue();
-                if (AIDictionaries.reverseAllActors.TryGetValue(thisMissile.heatSeeker.likelyTargetActor, out ulong uid))
+                if (AIDictionaries.reverseAllActors.TryGetValue(thisMissile.heatSeeker.likelyTargetActor, out uid))
                 {
                     Debug.Log("IR CLIENT MISSILE: Firing on " + uid);
                 }
@@ -117,6 +118,11 @@ public class MissileNetworker_Receiver : MonoBehaviour
                 {
                     Debug.LogWarning("IR client missile did not find its heat target.");
                 }
+                if (thisMissile.hasTarget)
+                {
+                    Debug.LogError("This IR missile does not have a target.");
+                }
+
             }
             if (thisMissile.guidanceMode == Missile.GuidanceModes.Optical)
             {
@@ -208,6 +214,23 @@ public class MissileNetworker_Receiver : MonoBehaviour
             thisMissile.proxyDetonateRange = originalProxFuse;
 
             MissileNetworker_Sender mSender = gameObject.AddComponent<MissileNetworker_Sender>();
+            if (!thisMissile.hasTarget)
+            {
+                Debug.LogError("This missile doesn't have a target.");
+            }
+            if (thisMissile.guidanceMode == Missile.GuidanceModes.Heat)
+            {
+                traverse2.Method("TrackHeat").GetValue();
+                if (AIDictionaries.reverseAllActors.TryGetValue(thisMissile.heatSeeker.likelyTargetActor, out uid))
+                {
+                    Debug.Log("IR CLIENT MISSILE: Fired on " + uid);
+                }
+                else
+                {
+                    Debug.LogWarning("IR client missile does not have a target.");
+                    mSender.targetUID = uid;
+                }
+            }
             mSender.networkUID = networkUID;
             mSender.ownerUID = lastChangeMessage.newOwnerUID;
             mSender.hasFired = true;
