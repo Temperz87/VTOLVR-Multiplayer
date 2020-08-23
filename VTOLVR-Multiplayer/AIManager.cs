@@ -13,7 +13,7 @@ using UnityEngine.SceneManagement;
 public static class AIManager
 {
     public static Queue<Packet> AIsToSpawnQueue = new Queue<Packet>();
-    private static List<ulong> spawnedAI = new List<ulong>();
+    public static List<ulong> spawnedAI = new List<ulong>();
     public static List<AI> AIVehicles = new List<AI>(); //This is the list of all AI, and an easy way to access AI variables
     public struct AI
     {
@@ -289,6 +289,7 @@ public static class AIManager
                 iLauncher.ml.LoadAllMissiles();
                 iLauncher.SetEngageEnemies(false);
                 MissileNetworker_Receiver mlr;
+                MissileAuthorityNetworker_Reciever missileAuthorityReciever;
                 //iLauncher.ml.LoadCount(message.IRSamMissiles.Length);
                 Debug.Log($"Adding IR id's on IR SAM, len = {message.IRSamMissiles.Length}.");
                 for (int i = 0; i < message.IRSamMissiles.Length; i++)
@@ -296,6 +297,8 @@ public static class AIManager
                     mlr = iLauncher.ml.missiles[i]?.gameObject.AddComponent<MissileNetworker_Receiver>();
                     mlr.thisML = iLauncher.ml;
                     mlr.networkUID = message.IRSamMissiles[i];
+                    missileAuthorityReciever = iLauncher.ml.missiles[i]?.gameObject.AddComponent<MissileAuthorityNetworker_Reciever>();
+                    missileAuthorityReciever.networkUID = message.IRSamMissiles[i];
                 }
                 Debug.Log("Added IR id's.");
             }
@@ -312,6 +315,7 @@ public static class AIManager
                         //ir.RemoveAllMissiles();
                         ir.LoadAllMissiles();
                         MissileNetworker_Receiver mlr;
+                        MissileAuthorityNetworker_Reciever mlanr;
                         //ir.LoadCount(message.IRSamMissiles.Length);
                         Debug.Log($"Adding IR id's on manpads, len = {message.IRSamMissiles.Length}.");
                         for (int i = 0; i < message.IRSamMissiles.Length; i++)
@@ -319,6 +323,8 @@ public static class AIManager
                             mlr = ir.missiles[i]?.gameObject.AddComponent<MissileNetworker_Receiver>();
                             mlr.thisML = ir;
                             mlr.networkUID = message.IRSamMissiles[i];
+                            mlanr = ir.missiles[i]?.gameObject.AddComponent<MissileAuthorityNetworker_Reciever>();
+                            mlanr.networkUID = message.IRSamMissiles[i];
                         }
                         Debug.Log("Added IR id's on manpads.");
                     }
@@ -344,11 +350,14 @@ public static class AIManager
             {
                 ml.SetEngageEnemies(false);
                 MissileNetworker_Receiver lastRec;
+                MissileAuthorityNetworker_Reciever lastAuthRec;
                 for (int i = 0; i < ml.ml.missiles.Length; i++)
                 {
                     lastRec = ml.ml.missiles[i].gameObject.AddComponent<MissileNetworker_Receiver>();
                     lastRec.networkUID = message.IRSamMissiles[i];
                     lastRec.thisML = ml.ml;
+                    lastAuthRec = ml.ml.missiles[i].gameObject.AddComponent<MissileAuthorityNetworker_Reciever>();
+                    lastAuthRec.networkUID = message.IRSamMissiles[i];
                 }
             }
         }
@@ -586,10 +595,13 @@ public static class AIManager
             {
                 List<ulong> samIDS = new List<ulong>();
                 MissileNetworker_Sender lastSender;
+                MissileAuthorityNetworker_Reciever lastAuthoritySender;
                 for (int i = 0; i < ml.ml.missiles.Length; i++)
                 {
                     lastSender = ml.ml.missiles[i].gameObject.AddComponent<MissileNetworker_Sender>();
                     lastSender.networkUID = Networker.GenerateNetworkUID();
+                    lastAuthoritySender = ml.ml.missiles[i].gameObject.AddComponent<MissileAuthorityNetworker_Reciever>();
+                    lastAuthoritySender.networkUID = lastSender.networkUID;
                     samIDS.Add(lastSender.networkUID);
                 }
                 actor.gameObject.AddComponent<IRSAMNetworker_Sender>().irIDs = samIDS.ToArray();
@@ -601,10 +613,13 @@ public static class AIManager
                 {
                     List<ulong> samIDS = new List<ulong>();
                     MissileNetworker_Sender lastSender;
+                    MissileAuthorityNetworker_Reciever lastAuthSender;
                     for (int i = 0; i < soldier.irMissileLauncher.missiles.Length; i++)
                     {
                         lastSender = soldier.irMissileLauncher.missiles[i].gameObject.AddComponent<MissileNetworker_Sender>();
                         lastSender.networkUID = Networker.GenerateNetworkUID();
+                        lastAuthSender = soldier.irMissileLauncher.missiles[i].gameObject.AddComponent<MissileAuthorityNetworker_Reciever>();
+                        lastAuthSender.networkUID = lastSender.networkUID;
                         samIDS.Add(lastSender.networkUID);
                     }
                     actor.gameObject.AddComponent<IRSAMNetworker_Sender>().irIDs = samIDS.ToArray();

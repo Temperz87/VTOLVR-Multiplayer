@@ -91,6 +91,8 @@ class IRSAMNetworker_Reciever : MonoBehaviour
                             Debug.Log("Found a suitable missile to attach a reciever to.");
                             MissileNetworker_Receiver missileReciever = missiles[i].gameObject.AddComponent<MissileNetworker_Receiver>();
                             missileReciever.networkUID = lastMessage.missileUID;
+                            MissileAuthorityNetworker_Reciever missileAuthorityReciever = missiles[i].gameObject.AddComponent<MissileAuthorityNetworker_Reciever>();
+                            missileAuthorityReciever.networkUID = lastMessage.missileUID;
                             Debug.Log($"Made new missile receiver with uID {missileReciever.networkUID}");
                             break;
                         }

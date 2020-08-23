@@ -61,6 +61,9 @@ public static class PlaneEquippableManager
                             MissileNetworker_Sender mnSender = HPml.ml.missiles[j].gameObject.AddComponent<MissileNetworker_Sender>();
                             mnSender.networkUID = Networker.GenerateNetworkUID();
                             mnSender.ownerUID = networkID;
+                            MissileAuthorityNetworker_Reciever authoritySender = HPml.ml.missiles[j].gameObject.AddComponent<MissileAuthorityNetworker_Reciever>();
+                            authoritySender.networkUID = mnSender.networkUID;
+                            mnSender.ownerUID = networkID;
                             missileUIDS.Add(mnSender.networkUID);
                             break;
                         case HPInfoListGenerateNetworkType.sender:
@@ -167,6 +170,7 @@ public static class PlaneEquippableManager
         weaponManager.RefreshWeapon();
         //Debug.Log("Refreshed this weapon manager's weapons.");
         MissileNetworker_Receiver lastReciever;
+        MissileAuthorityNetworker_Reciever lastAuthorityReciever;
         for (int i = 0; i < 30; i++)
         {
             int uIDidx = 0;
@@ -180,6 +184,7 @@ public static class PlaneEquippableManager
                 {
                     //Debug.Log("Adding missile reciever");
                     lastReciever = hpML.ml.missiles[j].gameObject.AddComponent<MissileNetworker_Receiver>();
+                    lastAuthorityReciever = hpML.ml.missiles[j].gameObject.AddComponent<MissileAuthorityNetworker_Reciever>();
                     foreach (var thingy in hpLoadout) // it's a loop... because fuck you!
                     {
                         //Debug.Log("Try adding missile reciever uID");
@@ -189,6 +194,8 @@ public static class PlaneEquippableManager
                             {
                                 lastReciever.networkUID = thingy.missileUIDS[uIDidx];
                                 lastReciever.ownerUID = networkID;
+                                lastAuthorityReciever.networkUID = thingy.missileUIDS[uIDidx];
+                                lastAuthorityReciever.ownerUID = networkID;
                                 Debug.Log($"Missile ({lastReciever.gameObject.name}) has received their UID from the host. \n Missiles UID = {lastReciever.networkUID}");
                                 lastReciever.thisML = hpML.ml;
                                 lastReciever.idx = j;

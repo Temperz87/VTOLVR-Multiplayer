@@ -11,7 +11,6 @@ public class MissileNetworker_Sender : MonoBehaviour
     private Message_MissileUpdate lastMessage;
     private Message_MissileLaunch lastLaunchMessage;
     private Message_MissileDetonate lastDetonateMessage;
-    private Message_MissileChangeAuthority lastChangeMessage;
     private Missile thisMissile;
     private Traverse traverse;
     public RigidbodyNetworker_Sender rbSender;
@@ -20,7 +19,6 @@ public class MissileNetworker_Sender : MonoBehaviour
     private void Awake()
     {
         Networker.RequestNetworkUID += RequestUID;
-        Networker.MissileChangeAuthority += MissileChangeAuthority;
         lastMessage = new Message_MissileUpdate(networkUID, new Vector3D(), new Vector3D());
         lastLaunchMessage = new Message_MissileLaunch(networkUID);
         lastDetonateMessage = new Message_MissileDetonate(networkUID);
@@ -164,65 +162,6 @@ public class MissileNetworker_Sender : MonoBehaviour
         Networker.RequestNetworkUID -= RequestUID;
     }
 
-    public void MissileChangeAuthority(Packet packet)
-    {
-        lastChangeMessage = ((PacketSingle)packet).message as Message_MissileChangeAuthority;
-        if (lastChangeMessage.networkUID != networkUID)
-            return;
-
-        Debug.Log("Missile changing authority!");
-        bool localAuthority;
-        if (lastChangeMessage.newOwnerUID == 0)
-        {
-            Debug.Log("The host is now incharge of this missile.");
-            if (Networker.isHost)
-            {
-                Debug.Log("We are the host! This is our missile!");
-                localAuthority = true;
-            }
-            else
-            {
-                Debug.Log("We are not the host. This is not our missile.");
-                localAuthority = false;
-            }
-        }
-        else
-        {
-            Debug.Log("A client is now incharge of this missile.");
-            if (PlayerManager.localUID == lastChangeMessage.newOwnerUID)
-            {
-                Debug.Log("We are that client! This is our missile!");
-                localAuthority = true;
-            }
-            else
-            {
-                Debug.Log("We are not that client. This is not our missile.");
-                localAuthority = false;
-            }
-        }
-
-        if (localAuthority)
-        {
-            Debug.Log("We are already incharge of this missile, nothing needs to change.");
-        }
-        else
-        {
-            Debug.Log("We should not be incharge of this missile");
-            Destroy(rbSender);
-            Destroy(this);
-
-            MissileNetworker_Receiver mReceiver = gameObject.AddComponent<MissileNetworker_Receiver>();
-            mReceiver.networkUID = networkUID;
-            mReceiver.ownerUID = lastChangeMessage.newOwnerUID;
-            mReceiver.hasFired = true;
-            mReceiver.rbReceiver = gameObject.AddComponent<RigidbodyNetworker_Receiver>();
-            mReceiver.rbReceiver.networkUID = networkUID;
-            mReceiver.rbReceiver.ownerUID = lastChangeMessage.newOwnerUID;
-            Debug.Log("Switched missile to others authority!");
-            Debug.Log("Missile is owned by " + mReceiver.ownerUID + " and has UID " + mReceiver.rbReceiver.networkUID);
-        }
-    }
-
     /// <summary>
     /// OnDestory will most likley be called when the missile blows up.
     /// </summary>
@@ -241,7 +180,6 @@ public class MissileNetworker_Sender : MonoBehaviour
     void OnDestroy()
     {
         Networker.RequestNetworkUID -= RequestUID;
-        Networker.MissileChangeAuthority -= MissileChangeAuthority;
         thisMissile.OnMissileDetonated -= OnDetonated;
     }
 }

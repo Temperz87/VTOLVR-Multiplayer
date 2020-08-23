@@ -155,6 +155,7 @@
     <Compile Include="Networkers\IRSAMNetworker_Sender.cs" />
     <Compile Include="Networkers\LockingRadarNetworker_Reciever.cs" />
     <Compile Include="Networkers\LockingRadarNetworker_Sender.cs" />
+    <Compile Include="Networkers\MissileAuthorityNetworker_Reciever.cs" />
     <Compile Include="Networkers\NetworkSenderThread.cs" />
     <Compile Include="Networkers\ObjectiveNetworker_Reciever.cs" />
     <Compile Include="Networkers\PlayerNetworker_Sender.cs" />

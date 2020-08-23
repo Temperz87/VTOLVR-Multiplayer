@@ -16,7 +16,6 @@ public class MissileNetworker_Receiver : MonoBehaviour
     private Message_MissileUpdate lastMessage;
     private Message_MissileLaunch lastLaunchMessage;
     private Message_MissileDetonate lastDetonateMessage;
-    private Message_MissileChangeAuthority lastChangeMessage;
     private Traverse traverse;
     private Traverse traverse2;
     private RadarLockData lockData;
@@ -58,9 +57,6 @@ public class MissileNetworker_Receiver : MonoBehaviour
         Networker.MissileUpdate += MissileUpdate;
         Networker.MissileLaunch += MissileLaunch;
         Networker.MissileDetonate += MissileDestroyed;
-        Networker.MissileChangeAuthority += MissileChangeAuthority;
-
-        thisMissile.explodeRadius *= Multiplayer._instance.missileRadius; thisMissile.explodeDamage *= Multiplayer._instance.missileDamage;
     }
 
     public void MissileLaunch(Packet packet)
@@ -166,85 +162,6 @@ public class MissileNetworker_Receiver : MonoBehaviour
         Debug.Log("Missile exploded.");
         thisMissile.Detonate();
     }
-    public void MissileChangeAuthority(Packet packet)
-    {
-        lastChangeMessage = ((PacketSingle)packet).message as Message_MissileChangeAuthority;
-        if (lastChangeMessage.networkUID != networkUID)
-            return;
-
-        Debug.Log("Missile changing authority!");
-        bool localAuthority;
-        if (lastChangeMessage.newOwnerUID == 0)
-        {
-            Debug.Log("The host is now incharge of this missile.");
-            if (Networker.isHost)
-            {
-                Debug.Log("We are the host! This is our missile!");
-                localAuthority = true;
-            }
-            else
-            {
-                Debug.Log("We are not the host. This is not our missile.");
-                localAuthority = false;
-            }
-        }
-        else
-        {
-            Debug.Log("A client is now incharge of this missile.");
-            if (PlayerManager.localUID == lastChangeMessage.newOwnerUID)
-            {
-                Debug.Log("We are that client! This is our missile!");
-                localAuthority = true;
-            }
-            else
-            {
-                Debug.Log("We are not that client. This is not our missile.");
-                localAuthority = false;
-            }
-        }
-
-        if (localAuthority)
-        {
-            Debug.Log("We should be incharge of this missile");
-            Destroy(rbReceiver);
-            Destroy(this);
-
-            Rigidbody rb = GetComponent<Rigidbody>();
-            rb.isKinematic = false;
-            thisMissile.proxyDetonateRange = originalProxFuse;
-
-            MissileNetworker_Sender mSender = gameObject.AddComponent<MissileNetworker_Sender>();
-            if (!thisMissile.hasTarget)
-            {
-                Debug.LogError("This missile doesn't have a target.");
-            }
-            if (thisMissile.guidanceMode == Missile.GuidanceModes.Heat)
-            {
-                traverse2.Method("TrackHeat").GetValue();
-                if (AIDictionaries.reverseAllActors.TryGetValue(thisMissile.heatSeeker.likelyTargetActor, out uid))
-                {
-                    Debug.Log("IR CLIENT MISSILE: Fired on " + uid);
-                }
-                else
-                {
-                    Debug.LogWarning("IR client missile does not have a target.");
-                    mSender.targetUID = uid;
-                }
-            }
-            mSender.networkUID = networkUID;
-            mSender.ownerUID = lastChangeMessage.newOwnerUID;
-            mSender.hasFired = true;
-            mSender.rbSender = gameObject.AddComponent<RigidbodyNetworker_Sender>();
-            mSender.rbSender.networkUID = networkUID;
-            mSender.rbSender.ownerUID = lastChangeMessage.newOwnerUID;
-            Debug.Log("Switched missile to our authority!");
-            Debug.Log("Missile is owned by " + mSender.ownerUID + " and has UID " + mSender.rbSender.networkUID);
-        }
-        else
-        {
-            Debug.Log("We are already not incharge of this missile, nothing needs to change.");
-        }
-    }
 
     void FixedUpdate()
     {
@@ -259,7 +176,6 @@ public class MissileNetworker_Receiver : MonoBehaviour
         Networker.MissileUpdate -= MissileUpdate;
         Networker.MissileLaunch -= MissileLaunch;
         Networker.MissileDetonate -= MissileDestroyed;
-        Networker.MissileChangeAuthority -= MissileChangeAuthority;
 
         Destroy(opticalTarget);
     }
