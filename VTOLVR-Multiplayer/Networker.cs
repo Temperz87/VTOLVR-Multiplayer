@@ -158,8 +158,8 @@ public class CSteamIDNotFoundException : Exception
 
 public class Networker : MonoBehaviour
 {
-    private Campaign pilotSaveManagerControllerCampaign;
-    private CampaignScenario pilotSaveManagerControllerCampaignScenario;
+    public Campaign pilotSaveManagerControllerCampaign;
+    public CampaignScenario pilotSaveManagerControllerCampaignScenario;
     public static Networker _instance { get; private set; }
     private static readonly object isHostLock = new object();
     private static bool isHostInternal = false;

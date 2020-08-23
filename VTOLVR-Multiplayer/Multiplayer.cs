@@ -385,8 +385,8 @@ public class Multiplayer : VTOLMOD
 
 
         Log("Getting the headers from the campaign display for the join log"); //Getting the headers from the campaign display
-        GameObject lableTemplateIntro = ScenarioDisplay.Find("Title").gameObject;
-        lableVTOLMPIntro = Instantiate(lableTemplateIntro, MPMenu.transform);
+        GameObject labelTemplateIntro = ScenarioDisplay.Find("Title").gameObject;
+        lableVTOLMPIntro = Instantiate(labelTemplateIntro, MPMenu.transform);
 
         lableVTOLMPIntro.GetComponent<RectTransform>().localPosition = new Vector3(-200, 200);
         lableVTOLMPIntro.GetComponent<RectTransform>().sizeDelta = new Vector2(850, 500.3f);
@@ -395,6 +395,13 @@ public class Multiplayer : VTOLMOD
         lableVTOLMPIntro.GetComponentInChildren<Text>().color = new Color32(255, 255, 255, 255);
         lableVTOLMPIntro.GetComponentInChildren<Text>().fontSize = 20;
         lableVTOLMPIntro.SetActive(true);
+
+        GameObject scenarioInfo = Instantiate(labelTemplateIntro, MPMenu.transform);
+        scenarioInfo.GetComponent<RectTransform>().localPosition = new Vector3(-400, 400);
+        scenarioInfo.GetComponent<RectTransform>().sizeDelta = new Vector2(850, 500.3f);
+        scenarioInfo.GetComponentInChildren<Text>().text = "Current Scenario: " + (Networker._instance.pilotSaveManagerControllerCampaignScenario == null ? " none selected." : Networker._instance.pilotSaveManagerControllerCampaignScenario.scenarioName);
+        scenarioInfo.GetComponentInChildren<Text>().color = new Color32(255, 255, 255, 255);
+        scenarioInfo.SetActive(true);
 
         Log("Getting the headers from the campaign display for the join log"); //Getting the headers from the campaign display
         GameObject lableTemplateLog = ScenarioDisplay.Find("Title").gameObject;
