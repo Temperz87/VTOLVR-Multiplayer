@@ -25,10 +25,13 @@ class MissileAuthorityNetworker_Reciever : MonoBehaviour
 
     private void Start()
     {
-        Networker.RequestNetworkUID += RequestUID;
-
         thisMissile = GetComponent<Missile>();
         originalProxFuse = thisMissile.proxyDetonateRange;
+
+        missileSender = GetComponent<MissileNetworker_Sender>();
+        missileReceiver = GetComponent<MissileNetworker_Receiver>();
+        rbSender = GetComponent<RigidbodyNetworker_Sender>();
+        rbReceiver = GetComponent<RigidbodyNetworker_Receiver>();
 
         if (thisMissile.guidanceMode == Missile.GuidanceModes.Heat)
         {
@@ -150,14 +153,19 @@ class MissileAuthorityNetworker_Reciever : MonoBehaviour
         }
     }
 
-    public void RequestUID(Packet packet)
+    public void FixedUpdate()
     {
-        Message_RequestNetworkUID lastMessage = ((PacketSingle)packet).message as Message_RequestNetworkUID;
-        if (lastMessage.clientsUID != networkUID)
-            return;
-        networkUID = lastMessage.resultUID;
-        Debug.Log($"Missile authority ({gameObject.name}) has received their UID from the host. \n Missiles UID = {networkUID}");
-        Networker.RequestNetworkUID -= RequestUID;
+        if (missileSender != null)
+        {
+            networkUID = missileSender.networkUID;
+        }
+        else if (missileReceiver != null)
+        {
+            networkUID = missileReceiver.networkUID;
+        }
+        else {
+            Debug.Log("Whoops, this missile has no senders or recievers. help!");
+        }
     }
 
     public void OnDestroy()

@@ -162,6 +162,7 @@ public class MissileNetworker_Receiver : MonoBehaviour
             return;
 
         Debug.Log("Missile exploded.");
+        thisMissile.rb.velocity = thisMissile.transform.forward * 100.0f;//idk but surgeon said do the thing
         thisMissile.Detonate();
     }
 
