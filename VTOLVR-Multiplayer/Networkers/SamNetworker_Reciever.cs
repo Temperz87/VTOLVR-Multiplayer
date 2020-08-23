@@ -93,6 +93,7 @@ class SamNetworker_Reciever : MonoBehaviour
                             missileReciever.networkUID = lastMessage.missileUID;
                             MissileAuthorityNetworker_Reciever missileAuthorityReciever = missiles[i].gameObject.AddComponent<MissileAuthorityNetworker_Reciever>();
                             missileAuthorityReciever.networkUID = lastMessage.missileUID;
+                            missileAuthorityReciever.currentLocalAuthority = false;
                             Debug.Log($"Made new missile receiver with uID {missileReciever.networkUID}");
                             break;
                         }

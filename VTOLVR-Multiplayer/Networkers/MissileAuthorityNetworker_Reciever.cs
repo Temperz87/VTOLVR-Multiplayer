@@ -98,8 +98,8 @@ class MissileAuthorityNetworker_Reciever : MonoBehaviour
                 {
                     Debug.LogError("This missile doesn't have a target.");
                 }
-                if (thisMissile.guidanceMode == Missile.GuidanceModes.Heat)
-                {
+                /*if (thisMissile.guidanceMode == Missile.GuidanceModes.Heat)//this code looks like absolute garbage, what was it even meant to do
+                {//uwu
                     traverse2.Method("TrackHeat").GetValue();
                     ulong uid;
                     if (AIDictionaries.reverseAllActors.TryGetValue(thisMissile.heatSeeker.likelyTargetActor, out uid))
@@ -111,7 +111,7 @@ class MissileAuthorityNetworker_Reciever : MonoBehaviour
                         Debug.LogWarning("IR client missile does not have a target.");
                         missileSender.targetUID = uid;
                     }
-                }
+                }*/
                 missileSender.networkUID = networkUID;
                 missileSender.ownerUID = lastChangeMessage.newOwnerUID;
                 missileSender.hasFired = true;

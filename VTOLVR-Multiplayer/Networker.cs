@@ -829,7 +829,7 @@ public class Networker : MonoBehaviour
 
                     Message_MissileLaunch launchMessage = ((PacketSingle)packet).message as Message_MissileLaunch;
 
-                    if (isHost && (launchMessage.guidanceType == Missile.GuidanceModes.Radar || launchMessage.guidanceType == Missile.GuidanceModes.Heat))
+                    if (isHost && (launchMessage.guidanceType == Missile.GuidanceModes.Radar))
                     {
                         StartCoroutine(ChangeMissileAuthority(launchMessage.ownerUID, launchMessage.networkUID, launchMessage.targetActorUID));
                     }

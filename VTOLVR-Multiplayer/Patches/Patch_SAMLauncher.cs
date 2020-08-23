@@ -34,6 +34,7 @@ class Patch9
                 missileSender.networkUID = Networker.GenerateNetworkUID();
                 MissileAuthorityNetworker_Reciever mar = missiles[i].gameObject.AddComponent<MissileAuthorityNetworker_Reciever>();
                 mar.networkUID = missileSender.networkUID;
+                mar.currentLocalAuthority = true;
 
                 SAMHelper.SAMmissile = missileSender.networkUID;
                 return true;

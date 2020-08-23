@@ -90,7 +90,7 @@ public class MissileNetworker_Sender : MonoBehaviour
                     {
                         Debug.Log("IR MISSILE: Target was null, could not find UID");
                     }
-                    lastLaunchMessage.targetPosition = new Vector3D(thisMissile.heatSeeker.targetPosition);
+                    lastLaunchMessage.targetPosition = VTMapManager.WorldToGlobalPoint(thisMissile.heatSeeker.targetPosition);
                     break;
                 case Missile.GuidanceModes.Radar:
                     ulong uid2;

@@ -106,15 +106,17 @@ public class MissileNetworker_Receiver : MonoBehaviour
                 Debug.Log("Guidance mode Heat.");
                 thisMissile.heatSeeker.transform.rotation = lastLaunchMessage.seekerRotation;
                 traverse2.Method("TrackHeat").GetValue();
-                if (AIDictionaries.reverseAllActors.TryGetValue(thisMissile.heatSeeker.likelyTargetActor, out uid))
-                {
-                    Debug.Log("IR CLIENT MISSILE: Firing on " + uid);
+                if (thisMissile.heatSeeker.likelyTargetActor) {
+                    if (AIDictionaries.reverseAllActors.TryGetValue(thisMissile.heatSeeker.likelyTargetActor, out uid))
+                    {
+                        Debug.Log("IR CLIENT MISSILE: Firing on " + uid);
+                    }
+                    else
+                    {
+                        Debug.LogWarning("IR client missile did not find its heat target.");
+                    }
                 }
                 else
-                {
-                    Debug.LogWarning("IR client missile did not find its heat target.");
-                }
-                if (thisMissile.hasTarget)
                 {
                     Debug.LogError("This IR missile does not have a target.");
                 }
@@ -125,7 +127,7 @@ public class MissileNetworker_Receiver : MonoBehaviour
                 Debug.Log("Guidance mode Optical.");
 
                 GameObject emptyGO = new GameObject();
-                Transform opticalTarget = emptyGO.transform;
+                opticalTarget = emptyGO.transform;
 
                 opticalTarget.position = VTMapManager.GlobalToWorldPoint(lastLaunchMessage.targetPosition);
                 thisMissile.SetOpticalTarget(opticalTarget);

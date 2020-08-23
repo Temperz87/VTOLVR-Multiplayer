@@ -299,6 +299,7 @@ public static class AIManager
                     mlr.networkUID = message.IRSamMissiles[i];
                     missileAuthorityReciever = iLauncher.ml.missiles[i]?.gameObject.AddComponent<MissileAuthorityNetworker_Reciever>();
                     missileAuthorityReciever.networkUID = message.IRSamMissiles[i];
+                    missileAuthorityReciever.currentLocalAuthority = false;
                 }
                 Debug.Log("Added IR id's.");
             }
@@ -325,6 +326,7 @@ public static class AIManager
                             mlr.networkUID = message.IRSamMissiles[i];
                             mlanr = ir.missiles[i]?.gameObject.AddComponent<MissileAuthorityNetworker_Reciever>();
                             mlanr.networkUID = message.IRSamMissiles[i];
+                            mlanr.currentLocalAuthority = false;
                         }
                         Debug.Log("Added IR id's on manpads.");
                     }
@@ -358,6 +360,7 @@ public static class AIManager
                     lastRec.thisML = ml.ml;
                     lastAuthRec = ml.ml.missiles[i].gameObject.AddComponent<MissileAuthorityNetworker_Reciever>();
                     lastAuthRec.networkUID = message.IRSamMissiles[i];
+                    lastAuthRec.currentLocalAuthority = false;
                 }
             }
         }
@@ -602,6 +605,7 @@ public static class AIManager
                     lastSender.networkUID = Networker.GenerateNetworkUID();
                     lastAuthoritySender = ml.ml.missiles[i].gameObject.AddComponent<MissileAuthorityNetworker_Reciever>();
                     lastAuthoritySender.networkUID = lastSender.networkUID;
+                    lastAuthoritySender.currentLocalAuthority = true;
                     samIDS.Add(lastSender.networkUID);
                 }
                 actor.gameObject.AddComponent<IRSAMNetworker_Sender>().irIDs = samIDS.ToArray();
@@ -620,6 +624,7 @@ public static class AIManager
                         lastSender.networkUID = Networker.GenerateNetworkUID();
                         lastAuthSender = soldier.irMissileLauncher.missiles[i].gameObject.AddComponent<MissileAuthorityNetworker_Reciever>();
                         lastAuthSender.networkUID = lastSender.networkUID;
+                        lastAuthSender.currentLocalAuthority = true;
                         samIDS.Add(lastSender.networkUID);
                     }
                     actor.gameObject.AddComponent<IRSAMNetworker_Sender>().irIDs = samIDS.ToArray();
