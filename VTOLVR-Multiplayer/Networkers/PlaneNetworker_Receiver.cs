@@ -285,9 +285,9 @@ public class PlaneNetworker_Receiver : MonoBehaviour
                 if (weaponManager.currentEquip is HPEquipMissileLauncher)
                 {
                     lastml = weaponManager.currentEquip as HPEquipMissileLauncher;
-                    //Traverse.Create(lastml.ml).Field("missileIdx").SetValue(message.missileIdx);
+                    Traverse.Create(lastml.ml).Field("missileIdx").SetValue(message.missileIdx);
                     Debug.Log("Single firing this missile " + weaponManager.currentEquip.shortName);
-                   //weaponManager.SingleFire();
+                    weaponManager.SingleFire();
                 }
                 else if (weaponManager.currentEquip is RocketLauncher)
                 {
