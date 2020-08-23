@@ -40,6 +40,8 @@ public class MissileNetworker_Receiver : MonoBehaviour
         }
 
         thisMissile.explodeRadius *= 1.8f; thisMissile.explodeDamage *= 0.75f;
+        traverse = Traverse.Create(thisML);
+        traverse.Field("detonated").SetValue(true);
     }
 
     public void MissileUpdate(Packet packet)
@@ -130,9 +132,16 @@ public class MissileNetworker_Receiver : MonoBehaviour
         //explode missle after it has done its RB physics fixed timestep
         if (lastMessage.hasExploded)
         {
+
             Debug.Log("Missile exploded.");
             if (thisMissile != null)
+            {
+                traverse.Field("detonated").SetValue(true);
+
+                ///thisMissile.rb.velocity = thisMissile.transform.forward * 10.0f;
                 thisMissile.Detonate();
+            }
+               
 
         }
     }
@@ -140,6 +149,10 @@ public class MissileNetworker_Receiver : MonoBehaviour
     {
 
     }
+
+ 
+
+
     public void OnDestroy()
     {
         Networker.MissileUpdate -= MissileUpdate;

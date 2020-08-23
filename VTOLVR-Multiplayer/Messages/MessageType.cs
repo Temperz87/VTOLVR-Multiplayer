@@ -49,5 +49,6 @@ public enum MessageType
     ScenarioAction, // To sync scenario actions which have their hand in objectives
     SamUpdate, // To sync sams
     AAAUpdate, // To sync A's x 3
-     BulletHit
+    BulletHit,
+    MissileDamage
 }

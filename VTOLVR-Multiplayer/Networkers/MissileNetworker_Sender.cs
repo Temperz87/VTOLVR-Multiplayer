@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using VTOLVR_Multiplayer;
 
 public class MissileNetworker_Sender : MonoBehaviour
 {
@@ -14,6 +15,8 @@ public class MissileNetworker_Sender : MonoBehaviour
         Networker.RequestNetworkUID += RequestUID;
         lastMessage = new Message_MissileUpdate(networkUID);
         thisMissile = GetComponent<Missile>();
+
+        thisMissile.OnMissileDetonated += OnDetonated;
     }
 
     private void FixedUpdate()
@@ -101,5 +104,49 @@ public class MissileNetworker_Sender : MonoBehaviour
         {
             NetworkSenderThread.Instance.SendPacketToSpecificPlayer(Networker.hostID,lastMessage, isDestoryed ? Steamworks.EP2PSend.k_EP2PSendReliable : Steamworks.EP2PSend.k_EP2PSendUnreliable);
         }
+    }
+
+    public void OnDetonated(Missile missile)
+    {
+
+        foreach (Actor act in TargetManager.instance.allActors)
+        {
+            if (act != missile.actor)
+            {
+
+
+                Vector3 apos = act.transform.position;
+                Vector3 misslepos = missile.transform.position;
+
+                Vector3 line = apos - misslepos;
+                float dist = (float)line.magnitude;
+                Debug.Log("Actor Dist is " + dist);
+                if (dist < missile.explodeRadius)
+                {
+                    Debug.Log("APassed damage radius checkS");
+                    if (AIDictionaries.reverseAllActors.ContainsKey(act))
+                    {
+                        Message_MissileDamage dmgMessage = new Message_MissileDamage(networkUID);
+                        dmgMessage.actorTobeDamaged = AIDictionaries.reverseAllActors[act];
+                        dmgMessage.damage = missile.explodeDamage;
+
+                        Debug.Log("sending missile damage");
+                        if (Networker.isHost)
+                        {
+                            NetworkSenderThread.Instance.SendPacketAsHostToAllClients(dmgMessage, Steamworks.EP2PSend.k_EP2PSendReliable);
+                        }
+                        else
+                        {
+                            NetworkSenderThread.Instance.SendPacketToSpecificPlayer(Networker.hostID, dmgMessage, Steamworks.EP2PSend.k_EP2PSendReliable);
+                        }
+
+                    }
+
+
+                }
+            }
+
+        }
+
     }
 }

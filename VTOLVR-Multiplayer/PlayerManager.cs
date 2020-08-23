@@ -415,6 +415,28 @@ public static class PlayerManager
         }*/
     }
 
+    public static void MissileDamage(Packet packet)
+    {
+        Message_MissileDamage lastMissileDamageMessage = ((PacketSingle)packet).message as Message_MissileDamage;
+
+        //ignore damage message from same player
+        if (lastMissileDamageMessage.networkUID == PlayerManager.localUID)
+            return;
+
+        ulong actorTodamage = lastMissileDamageMessage.actorTobeDamaged;
+        Debug.Log("applying missile damage");
+        if (VTOLVR_Multiplayer.AIDictionaries.allActors.ContainsKey(actorTodamage))
+        {
+
+            Actor act = VTOLVR_Multiplayer.AIDictionaries.allActors[actorTodamage];
+            if (act != null)
+                act.health.Damage(lastMissileDamageMessage.damage, act.position, Health.DamageTypes.Impact, null);
+
+            Debug.Log("applied");
+        }
+    }
+
+
     public static void SetupLocalAircraft(GameObject localVehicle, Vector3 pos, Quaternion rot, ulong UID)
     {
         VTOLVehicles currentVehicle = VTOLAPI.GetPlayersVehicleEnum();

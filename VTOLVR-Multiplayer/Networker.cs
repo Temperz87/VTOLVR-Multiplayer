@@ -948,6 +948,10 @@ public class Networker : MonoBehaviour
                 case MessageType.BulletHit:
                     BulletHit.Invoke(packet);
                     break;
+                case MessageType.MissileDamage:
+                    Debug.Log("case missiledmage");
+                    PlayerManager.MissileDamage(packet);
+                    break;
                 case MessageType.ObjectiveSync:
                     Debug.Log("case Objective");
 

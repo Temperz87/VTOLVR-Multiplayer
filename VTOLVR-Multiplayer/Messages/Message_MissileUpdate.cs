@@ -19,3 +19,18 @@ public class Message_MissileUpdate : Message
         type = MessageType.MissileUpdate;
     }
 }
+
+
+public class Message_MissileDamage : Message
+{
+    public ulong networkUID;
+    public Vector3D targetPosition;
+    public ulong actorTobeDamaged;
+    public float damage;
+
+    public Message_MissileDamage(ulong uid)
+    {
+        networkUID = uid;
+        type = MessageType.MissileDamage;
+    }
+}
