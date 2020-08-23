@@ -10,7 +10,7 @@ Once you have cloned the repository, you will need to head over to your VTOL VR 
 
 You also need to have .Net 4.5 installed to build the mod.
 
-You can also directly download the mod [here](https://vtolvr-mods.com/mod/qs6jxkt2/). 
+You can also directly download the mod [here](https://vtolvr-mods.com/mod/qs6jxkt2/) at the vtolvr-mods website. 
 
 ## Contributors
 
