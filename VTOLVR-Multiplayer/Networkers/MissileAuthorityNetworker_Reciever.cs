@@ -120,6 +120,7 @@ class MissileAuthorityNetworker_Reciever : MonoBehaviour
                 rbSender.networkUID = networkUID;
                 rbSender.ownerUID = lastChangeMessage.newOwnerUID;
                 Debug.Log("Switched missile to our authority!");
+                Debug.Log("Missile is owned by " + missileSender.ownerUID + " and has UID " + missileSender.rbReceiver.networkUID);
             }
             else {
                 Debug.Log("We should not be incharge of this missile");
@@ -139,8 +140,8 @@ class MissileAuthorityNetworker_Reciever : MonoBehaviour
                 rbReceiver.networkUID = networkUID;
                 rbReceiver.ownerUID = lastChangeMessage.newOwnerUID;
                 Debug.Log("Switched missile to others authority!");
+                Debug.Log("Missile is owned by " + missileReceiver.ownerUID + " and has UID " + missileReceiver.rbReceiver.networkUID);
             }
-            Debug.Log("Missile is owned by " + missileReceiver.ownerUID + " and has UID " + missileReceiver.rbReceiver.networkUID);
             currentLocalAuthority = targetLocalAuthority;
         }
         else
