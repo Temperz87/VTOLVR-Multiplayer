@@ -111,7 +111,6 @@ public class MissileNetworker_Receiver : MonoBehaviour
                 traverse2.Method("TrackHeat").GetValue();
                 if (AIDictionaries.reverseAllActors.TryGetValue(thisMissile.heatSeeker.likelyTargetActor, out ulong uid))
                 {
-                    lastLaunchMessage.targetActorUID = uid;
                     Debug.Log("IR CLIENT MISSILE: Firing on " + uid);
                 }
                 else

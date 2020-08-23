@@ -34,7 +34,7 @@ public class MissileNetworker_Sender : MonoBehaviour
         if (GetComponent<MissileNetworker_Receiver>() != null)
         {
             Destroy(GetComponent<MissileNetworker_Receiver>());
-        }
+        }       
     }
 
     private void FixedUpdate()
