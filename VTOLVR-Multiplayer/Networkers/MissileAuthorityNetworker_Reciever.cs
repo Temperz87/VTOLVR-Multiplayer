@@ -115,6 +115,7 @@ class MissileAuthorityNetworker_Reciever : MonoBehaviour
                         missileSender.targetUID = uid;
                     }
                 }*/
+                missileSender.hasSwapped = true;
                 missileSender.networkUID = networkUID;
                 missileSender.ownerUID = lastChangeMessage.newOwnerUID;
                 missileSender.hasFired = true;

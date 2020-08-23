@@ -26,8 +26,6 @@ public class MissileNetworker_Receiver : MonoBehaviour
 
     Transform opticalTarget;
 
-    float originalProxFuse;
-
     void Awake()
     {
         if (GetComponent<MissileNetworker_Sender>() != null)

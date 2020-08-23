@@ -15,10 +15,12 @@ public class MissileNetworker_Sender : MonoBehaviour
     private Traverse traverse;
     public RigidbodyNetworker_Sender rbSender;
     public bool hasFired = false;
+
+    public bool hasSwapped = false;
+
     public ulong targetUID;
     private void Awake()
     {
-        Networker.RequestNetworkUID += RequestUID;
         lastMessage = new Message_MissileUpdate(networkUID, new Vector3D(), new Vector3D());
         lastLaunchMessage = new Message_MissileLaunch(networkUID);
         lastDetonateMessage = new Message_MissileDetonate(networkUID);
@@ -52,6 +54,12 @@ public class MissileNetworker_Sender : MonoBehaviour
         {
             Destroy(GetComponent<MissileNetworker_Receiver>());
         }       
+    }
+
+    void Start() {
+        if (hasSwapped == false) {
+            Networker.RequestNetworkUID += RequestUID;
+        }
     }
 
     private void FixedUpdate()
