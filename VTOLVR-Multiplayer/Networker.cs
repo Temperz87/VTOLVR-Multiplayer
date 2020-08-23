@@ -1048,6 +1048,10 @@ public class Networker : MonoBehaviour
         ulong result = networkUID + 1;
         networkUID = result;
         //Debug.Log($"Generated New UID ({result})");
+        if (isClient)
+        {
+            Debug.Log("why is client generating uids? this is fubar...");
+        }
         return result;
     }
     public static void ResetNetworkUID()
