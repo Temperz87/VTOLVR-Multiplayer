@@ -10,7 +10,7 @@ Once you have cloned the repository, you will need to head over to your VTOL VR 
 
 You also need to have .Net 4.5 installed to build the mod.
 
-Because the mod is currently in pre-alpha testing phase, the dll is not provided directly. To get past the super basic tester check and try it out, you just need to build the mod in debug mode, this should go past the check I put in place just to stop people sharing the dll with their friends and then complaining that things are buggy or keep asking how to use it. 
+You can also directly download the mod [here](https://vtolvr-mods.com/mod/qs6jxkt2/). 
 
 ## Contributors
 
