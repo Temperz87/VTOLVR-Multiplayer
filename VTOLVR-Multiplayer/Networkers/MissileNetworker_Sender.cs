@@ -16,7 +16,6 @@ public class MissileNetworker_Sender : MonoBehaviour
     private Traverse traverse;
     public RigidbodyNetworker_Sender rbSender;
     public bool hasFired = false;
-
     private void Awake()
     {
         Networker.RequestNetworkUID += RequestUID;

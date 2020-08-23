@@ -108,7 +108,16 @@ public class MissileNetworker_Receiver : MonoBehaviour
             {
                 Debug.Log("Guidance mode Heat.");
                 thisMissile.heatSeeker.transform.rotation = lastLaunchMessage.seekerRotation;
-                thisMissile.heatSeeker.SetHardLock();
+                traverse2.Method("TrackHeat").GetValue();
+                if (AIDictionaries.reverseAllActors.TryGetValue(thisMissile.heatSeeker.likelyTargetActor, out ulong uid))
+                {
+                    lastLaunchMessage.targetActorUID = uid;
+                    Debug.Log("IR CLIENT MISSILE: Firing on " + uid);
+                }
+                else
+                {
+                    Debug.LogWarning("IR client missile did not find its heat target.");
+                }
             }
             if (thisMissile.guidanceMode == Missile.GuidanceModes.Optical)
             {
@@ -152,7 +161,6 @@ public class MissileNetworker_Receiver : MonoBehaviour
         Debug.Log("Missile exploded.");
         thisMissile.Detonate();
     }
-
     public void MissileChangeAuthority(Packet packet)
     {
         lastChangeMessage = ((PacketSingle)packet).message as Message_MissileChangeAuthority;
