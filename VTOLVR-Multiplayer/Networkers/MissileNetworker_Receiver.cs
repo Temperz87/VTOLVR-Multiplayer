@@ -53,7 +53,7 @@ public class MissileNetworker_Receiver : MonoBehaviour
                 collider.gameObject.layer = 9;
             }
         }
-
+        traverse.Field("detonated").SetValue(true);
         Networker.MissileUpdate += MissileUpdate;
         Networker.MissileLaunch += MissileLaunch;
         Networker.MissileDetonate += MissileDestroyed;
@@ -152,6 +152,7 @@ public class MissileNetworker_Receiver : MonoBehaviour
         Debug.Log("Missile exploded.");
         
         thisMissile.rb.velocity = thisMissile.transform.forward* 100.0f;
+        traverse.Field("detonated").SetValue(false);
         thisMissile.Detonate();
     }
 
