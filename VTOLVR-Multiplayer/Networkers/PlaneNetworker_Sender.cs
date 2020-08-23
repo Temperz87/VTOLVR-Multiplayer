@@ -59,8 +59,11 @@ public class PlaneNetworker_Sender : MonoBehaviour
         {
             traverse = Traverse.Create(weaponManager);
             Networker.WeaponSet += WeaponSet;
-            weaponManager.OnWeaponEquipped += Rearm;
-            weaponManager.OnWeaponUnequippedHPIdx += Rearm;
+            //weaponManager.OnWeaponEquipped += Rearm;
+            //weaponManager.OnWeaponUnequippedHPIdx +=Rearm;
+            PlayerVehicleSetup pv =  gameObject.GetComponent<PlayerVehicleSetup>();
+            pv.OnEndRearming.AddListener(Rearm);
+         
             if (actor.isPlayer && weaponManager.GetIWBForEquip(3) != null)
             {
                 iwb = weaponManager.GetIWBForEquip(3);

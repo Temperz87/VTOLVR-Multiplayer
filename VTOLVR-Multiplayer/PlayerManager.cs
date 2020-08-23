@@ -420,8 +420,8 @@ public static class PlayerManager
         Message_MissileDamage lastMissileDamageMessage = ((PacketSingle)packet).message as Message_MissileDamage;
 
         //ignore damage message from same player
-        if (lastMissileDamageMessage.networkUID == PlayerManager.localUID)
-            return;
+        //if (lastMissileDamageMessage.networkUID == PlayerManager.localUID)
+            //return;
 
         ulong actorTodamage = lastMissileDamageMessage.actorTobeDamaged;
         Debug.Log("applying missile damage");
