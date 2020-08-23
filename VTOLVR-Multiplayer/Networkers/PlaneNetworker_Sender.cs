@@ -111,9 +111,9 @@ public class PlaneNetworker_Sender : MonoBehaviour
                     lastFiringMessage.missileIdx = (int)Traverse.Create(lastml.ml).Field("missileIdx").GetValue();
                 }
                 if (Networker.isHost)
-                    NetworkSenderThread.Instance.SendPacketAsHostToAllClients(lastFiringMessage, Steamworks.EP2PSend.k_EP2PSendUnreliableNoDelay);
+                    NetworkSenderThread.Instance.SendPacketAsHostToAllClients(lastFiringMessage, Steamworks.EP2PSend.k_EP2PSendReliable);
                 else
-                    NetworkSenderThread.Instance.SendPacketToSpecificPlayer(Networker.hostID, lastFiringMessage, Steamworks.EP2PSend.k_EP2PSendUnreliableNoDelay);
+                    NetworkSenderThread.Instance.SendPacketToSpecificPlayer(Networker.hostID, lastFiringMessage, Steamworks.EP2PSend.k_EP2PSendReliable);
             }
         }
     }
