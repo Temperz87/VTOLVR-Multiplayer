@@ -964,7 +964,7 @@ public class Networker : MonoBehaviour
                     else
                     {
                         Debug.Log("running event from another person");
-                        ObjectiveNetworker_Reciever.runScenarioAction(lastMessage.scenarioActionHash);
+                        ObjectiveNetworker_Receiver.runScenarioAction(lastMessage.scenarioActionHash);
                     }
 
                     break;
@@ -986,7 +986,7 @@ public class Networker : MonoBehaviour
                     else
                     {
                         Debug.Log("running obj event from another person");
-                        ObjectiveNetworker_Reciever.objectiveUpdate(lastMessageobbj.objID, lastMessageobbj.status);
+                        ObjectiveNetworker_Receiver.objectiveUpdate(lastMessageobbj.objID, lastMessageobbj.status);
                     }
 
                     break;
