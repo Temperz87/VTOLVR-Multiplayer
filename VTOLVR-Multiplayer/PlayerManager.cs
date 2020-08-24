@@ -764,7 +764,7 @@ public static class PlayerManager
         LockingRadar lockingRadar = newVehicle.GetComponentInChildren<LockingRadar>();
         if (lockingRadar != null)
         {
-            Debug.Log($"Adding LockingRadarReciever to vehicle {newVehicle.name}");
+            Debug.Log($"Adding LockingRadarReceiver to vehicle {newVehicle.name}");
             LockingRadarNetworker_Receiver lockingRadarReceiver = newVehicle.AddComponent<LockingRadarNetworker_Receiver>();
             lockingRadarReceiver.networkUID = networkID;
         }
@@ -1036,8 +1036,8 @@ public static class PlayerManager
         players?.Clear();
         buttonMade = false;
         text = null;
-        ObjectiveNetworker_Reciever.scenarioActionsList?.Clear();
-        ObjectiveNetworker_Reciever.scenarioActionsListCoolDown?.Clear();
+        ObjectiveNetworker_Receiver.scenarioActionsList?.Clear();
+        ObjectiveNetworker_Receiver.scenarioActionsListCoolDown?.Clear();
         PlaneNetworker_Receiver.dontPrefixNextJettison = false;
         firstSpawnDone = false;
     }
