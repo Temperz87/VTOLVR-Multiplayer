@@ -382,7 +382,10 @@ public class Multiplayer : VTOLMOD
         mpButton.GetComponent<RectTransform>().localPosition = new Vector3(601, -325);
         mpButton.GetComponent<RectTransform>().sizeDelta = new Vector2(70, 206.7f);
         mpButton.GetComponentInChildren<Text>().text = "MP";
-        mpButton.GetComponent<Image>().color = Color.cyan;
+        if (UpToDate)
+            mpButton.GetComponent<Image>().color = Color.cyan;
+        else
+            mpButton.GetComponent<Image>().color = Color.red;
         mpButton.GetComponent<Button>().onClick = new Button.ButtonClickedEvent();
         VRInteractable mpInteractable = mpButton.GetComponent<VRInteractable>();
         mpInteractable.interactableName = "Multiplayer";
