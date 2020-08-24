@@ -382,15 +382,19 @@ public class Multiplayer : VTOLMOD
         mpButton.GetComponent<RectTransform>().localPosition = new Vector3(601, -325);
         mpButton.GetComponent<RectTransform>().sizeDelta = new Vector2(70, 206.7f);
         mpButton.GetComponentInChildren<Text>().text = "MP";
-        if (UpToDate)
-            mpButton.GetComponent<Image>().color = Color.cyan;
-        else
-            mpButton.GetComponent<Image>().color = Color.red;
         mpButton.GetComponent<Button>().onClick = new Button.ButtonClickedEvent();
         VRInteractable mpInteractable = mpButton.GetComponent<VRInteractable>();
-        mpInteractable.interactableName = "Multiplayer";
         mpInteractable.OnInteract = new UnityEngine.Events.UnityEvent();
-
+        if (UpToDate)
+        {
+            mpButton.GetComponent<Image>().color = Color.cyan;
+            mpInteractable.interactableName = "Multiplayer";
+        }
+        else
+        {
+            mpButton.GetComponent<Image>().color = Color.red;
+            mpInteractable.interactableName = "Outdated";
+        }
 
         Log("Creating Mp Menu");//Creating Mp Menu
         GameObject MPMenu = Instantiate(ScenarioDisplay.gameObject, ScenarioDisplay.parent);
