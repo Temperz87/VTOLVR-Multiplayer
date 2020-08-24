@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using UnityEngine;
 
-class SamNetworker_Reciever : MonoBehaviour
+class SamNetworker_Receiver : MonoBehaviour
 {
     public ulong networkUID;
     public ulong[] radarUIDS;
