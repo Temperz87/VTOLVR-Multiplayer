@@ -121,8 +121,8 @@ class Patch3
             int hash = actionIdentifier.GetHashCode();
             Debug.Log("Compiling scenario dictonary adding to my dictionary");
 
-            if (!ObjectiveNetworker_Reciever.scenarioActionsList.ContainsKey(hash))
-                ObjectiveNetworker_Reciever.scenarioActionsList.Add(hash, vTEventTarget);
+            if (!ObjectiveNetworker_Receiver.scenarioActionsList.ContainsKey(hash))
+                ObjectiveNetworker_Receiver.scenarioActionsList.Add(hash, vTEventTarget);
             else
                 Debug.Log("Duplicate VT scenario actions found, we should probably rewrite the dictionary code");
 
@@ -160,7 +160,7 @@ class Patch4
         if (Networker.isHost && objOutMessage.objID != -1)
         {
             Debug.Log("Host sent objective complete " + __instance.objectiveID);
-            ObjectiveNetworker_Reciever.completeNext = false;
+            ObjectiveNetworker_Receiver.completeNext = false;
             NetworkSenderThread.Instance.SendPacketAsHostToAllClients(objOutMessage, Steamworks.EP2PSend.k_EP2PSendReliable);
         }
         else
@@ -168,12 +168,12 @@ class Patch4
             if (VTScenario.current.objectives.GetObjective(__instance.objectiveID).objectiveType == VTObjective.ObjectiveTypes.Destroy)
             {
                 Debug.Log("Making client not send kill objective packet.");
-                bool shouldComplete = ObjectiveNetworker_Reciever.completeNext;
+                bool shouldComplete = ObjectiveNetworker_Receiver.completeNext;
                 Debug.Log($"Should complete is {shouldComplete}.");
-                ObjectiveNetworker_Reciever.completeNext = false;
+                ObjectiveNetworker_Receiver.completeNext = false;
                 return shouldComplete;// clients should not send kill obj packets or have them complete
             }
-            ObjectiveNetworker_Reciever.completeNext = false;
+            ObjectiveNetworker_Receiver.completeNext = false;
             Debug.Log("Client sent objective complete " + __instance.objectiveID);
             NetworkSenderThread.Instance.SendPacketToSpecificPlayer(Networker.hostID, objOutMessage, Steamworks.EP2PSend.k_EP2PSendReliable);
         }
