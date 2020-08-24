@@ -276,6 +276,7 @@ public class Networker : MonoBehaviour
     #region Host Forwarding Suppress By Message Type List
     private List<MessageType> hostMessageForwardingSuppressList = new List<MessageType> {
         MessageType.None,
+        MessageType.Ack,
         MessageType.JoinRequest,
         MessageType.JoinRequestAccepted_Result,
         MessageType.JoinRequestRejected_Result,
