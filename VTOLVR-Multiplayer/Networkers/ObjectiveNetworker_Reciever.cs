@@ -69,7 +69,7 @@ class ObjectiveNetworker_Reciever
         if (scenarioActionsListCoolDown.ContainsKey(hash))
         {
             float currentTime = Time.unscaledTime;
-            if (currentTime - scenarioActionsListCoolDown[hash] > 1.0f)
+            if (currentTime - scenarioActionsListCoolDown[hash] > 5.0f)
             {
                 if (scenarioActionsList.ContainsKey(hash))
                 {

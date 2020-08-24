@@ -52,7 +52,11 @@ class LockingRadarNetworker_Receiver : MonoBehaviour
         // Debug.Log("Got a new locking radar update intended for id " + lastLockingMessage.senderUID);
         if (lastLockingMessage.senderUID != networkUID)
             return;
-
+        if (lockingRadar == null)
+        {
+            Debug.Log($"Locking radar on networkUID {networkUID} is null.");
+            return;
+        }
         if (lockingRadar.radar == null)
         {
             lockingRadar.radar = gameObject.GetComponentInChildren<Radar>();
