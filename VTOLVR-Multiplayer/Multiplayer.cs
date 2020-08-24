@@ -12,13 +12,16 @@ using Steamworks;
 using System.Collections;
 using TMPro;
 using UnityEngine.Events;
+using System.Net;
+using System.IO;
 
 public class Multiplayer : VTOLMOD
 {
     private static string TesterURL = "http://marsh.vtolvr-mods.com/?id=";
     public static bool SoloTesting = true;
     public static Multiplayer _instance = null;
-
+    public bool UpToDate = true;
+    private bool checkedToDate = false;
     private struct FriendItem
     {
         public CSteamID steamID;
@@ -109,7 +112,37 @@ public class Multiplayer : VTOLMOD
         CreateUI();
         gameObject.AddComponent<Networker>();
     }
+    public void CheckUpToDate()
+    {
+        if (checkedToDate)
+            return;
+        checkedToDate = false;
+        HttpWebRequest request = (HttpWebRequest)WebRequest.Create("https://vtolvr-mods.com/api/mods/qs6jxkt2/?format=json");
+        request.AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate;
 
+        HttpWebResponse response = (HttpWebResponse)request.GetResponse();
+        Stream stream = response.GetResponseStream();
+        StreamReader reader = new StreamReader(stream);
+        string json = reader.ReadToEnd();
+        string result = "";
+        if (json.Contains("version"))
+        {
+            int idx = json.IndexOf("version");
+            idx = idx + 10;
+            Console.WriteLine(json[idx]);
+            while (int.TryParse(json[idx].ToString(), out _) || json[idx].ToString() == ".")
+            {
+                result += json[idx].ToString();
+                idx++;
+            }
+        }
+        Debug.Log(result + " , " + ModVersionString.ModVersionNumber);
+        if (result != ModVersionString.ModVersionNumber && ModVersionString.ReleaseBranch == "Release")
+        {
+            Debug.Log("Not up to date.");
+            UpToDate = false;
+        }
+    }
 
     private void CreateSettingsPage()
     {
@@ -204,7 +237,6 @@ public class Multiplayer : VTOLMOD
     private void SceneLoaded(VTOLScenes scene)
     {
         UnityEngine.CrashReportHandler.CrashReportHandler.enableCaptureExceptions = false;
-
         Debug.Log($"Scene Switch! { scene.ToString() }");
 
         switch (scene)
@@ -286,9 +318,9 @@ public class Multiplayer : VTOLMOD
         while (!SceneManager.GetActiveScene().isLoaded){
             Debug.Log("Waiting for scene to be loaded");
         }
-
         Log("Creating Multiplayer UI");
-        
+        CheckUpToDate();
+
         Transform ScenarioDisplay = null;
         bool foundDisplay = false;
         bool foundCampaginDisplay = false;
@@ -337,8 +369,17 @@ public class Multiplayer : VTOLMOD
         mpButton.GetComponentInChildren<Text>().text = "MP";
         mpButton.GetComponent<Image>().color = Color.cyan;
         mpButton.GetComponent<Button>().onClick = new Button.ButtonClickedEvent();
-        VRInteractable mpInteractable = mpButton.GetComponent<VRInteractable>();
-        mpInteractable.interactableName = "Multiplayer";
+        VRInteractable mpInteractable = mpButton.GetComponent<VRInteractable>(); 
+        if (UpToDate)
+        {
+            mpButton.GetComponent<Image>().color = Color.cyan;
+            mpInteractable.interactableName = "Multiplayer";
+        }
+        else
+        {
+            mpButton.GetComponent<Image>().color = Color.red;
+            mpInteractable.interactableName = "Outdated";
+        }
         mpInteractable.OnInteract = new UnityEngine.Events.UnityEvent();
 
 
@@ -380,7 +421,10 @@ public class Multiplayer : VTOLMOD
 
         lableVTOLMPIntro.GetComponent<RectTransform>().localPosition = new Vector3(-200, 200);
         lableVTOLMPIntro.GetComponent<RectTransform>().sizeDelta = new Vector2(850, 500.3f);
-        lableVTOLMPIntro.GetComponentInChildren<Text>().text = $"Hello and welcome to multiplayer version {ModVersionString.ModVersionNumber}!\n\nThis is an alpha release and very much so a work in progress. Expect bugs!\n\nPlease report any issues at https://vtolvr-mods.com or on the modding discord here: https://discord.gg/pW4rkYf";
+        if (UpToDate)
+            lableVTOLMPIntro.GetComponentInChildren<Text>().text = $"Hello and welcome to multiplayer version {ModVersionString.ModVersionNumber}!\n\nThis is an alpha release and very much so a work in progress. Expect bugs!\n\nPlease report any issues at https://vtolvr-mods.com or on the modding discord here: https://discord.gg/pW4rkYf";
+        else
+            lableVTOLMPIntro.GetComponentInChildren<Text>().text = $"Hello and welcome to multiplayer version {ModVersionString.ModVersionNumber}!\n\nThis is an outdated version, please update the mod to be able to play with other players who have higher versions, and while you're at it, expect bugs!\n\nPlease report any issues at https://vtolvr-mods.com or on the modding discord here: https://discord.gg/pW4rkYf";
         //lableVTOLJoinLog.GetComponentInChildren<Text>().resizeTextForBestFit = true;
         lableVTOLMPIntro.GetComponentInChildren<Text>().color = new Color32(255, 255, 255, 255);
         lableVTOLMPIntro.GetComponentInChildren<Text>().fontSize = 20;
