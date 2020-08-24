@@ -152,8 +152,8 @@ public static class AIManager
 
         newAI.AddComponent<FloatingOriginTransform>();
 
-        UIDNetworker_Receiver uidReciever = newAI.AddComponent<UIDNetworker_Receiver>();
-        uidReciever.networkUID = message.networkID;
+        UIDNetworker_Receiver uidReceiver = newAI.AddComponent<UIDNetworker_Receiver>();
+        uidReceiver.networkUID = message.networkID;
 
         if (newAI.GetComponent<Health>() != null)
         {
@@ -162,7 +162,7 @@ public static class AIManager
             //HealthNetworker_Sender healthNetworkerS = newAI.AddComponent<HealthNetworker_Sender>();
             //healthNetworkerS.networkUID = message.networkID;
             // Debug.Log("added health Sender to ai");
-            // Debug.Log("added health reciever to ai");
+            // Debug.Log("added health receiver to ai");
         }
         else
         {
@@ -275,7 +275,7 @@ public static class AIManager
                 foreach (GunTurretAI turretAI in newAI.GetComponentsInChildren<GunTurretAI>())
                 {
                     turretAI.SetEngageEnemies(false);
-                    AAANetworker_Reciever aaaRec = newAI.AddComponent<AAANetworker_Reciever>();
+                    AAANetworker_Receiver aaaRec = newAI.AddComponent<AAANetworker_Receiver>();
                     aaaRec.networkUID = message.networkID;
                     aaaRec.gunID = gunCount;
                     Debug.Log("Added gun " + gunCount + " to actor " + message.networkID + " uid");
@@ -331,7 +331,7 @@ public static class AIManager
             SAMLauncher launcher = newAI.GetComponent<SAMLauncher>();
             if (launcher != null)
             {
-                SamNetworker_Reciever samNetworker = launcher.gameObject.AddComponent<SamNetworker_Reciever>();
+                SamNetworker_Receiver samNetworker = launcher.gameObject.AddComponent<SamNetworker_Receiver>();
                 samNetworker.networkUID = message.networkID;
                 samNetworker.radarUIDS = message.radarIDs;
                 //Debug.Log($"Added samNetworker to uID {message.networkID}.");
@@ -354,7 +354,7 @@ public static class AIManager
         }
         if (actor.gameObject.GetComponentInChildren<LockingRadar>() != null)
         {
-            // Debug.Log($"Adding radar reciever to object {actor.name}.");
+            // Debug.Log($"Adding radar receiver to object {actor.name}.");
             LockingRadarNetworker_Receiver lr = actor.gameObject.AddComponent<LockingRadarNetworker_Receiver>();
             lr.networkUID = message.networkID;
         }
