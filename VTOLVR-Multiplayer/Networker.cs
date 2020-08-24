@@ -270,6 +270,8 @@ public class Networker : MonoBehaviour
     public static event UnityAction<Packet> SAMUpdate;
     public static event UnityAction<Packet> AAAUpdate;
     public static event UnityAction<Packet> BulletHit;
+
+    public static event UnityAction<ulong> AckUpdate;
     #endregion
     #region Host Forwarding Suppress By Message Type List
     private List<MessageType> hostMessageForwardingSuppressList = new List<MessageType> {
@@ -969,17 +971,25 @@ public class Networker : MonoBehaviour
                         Debug.Log("running obj event from another person");
                         ObjectiveNetworker_Reciever.objectiveUpdate(lastMessageobbj.objID, lastMessageobbj.status);
                     }
-
+                    break;
+                case MessageType.Ack:
+                    Debug.Log("Case ack");
+                    Message_Ack ack = (Message_Ack)((PacketSingle)packet).message;
+                    AckUpdate.Invoke(ack.id);
                     break;
                 default:
                     Debug.Log("default case");
                     break;
             }
+            if (packetS.message.id != 0)
+            {
+                NetworkSenderThread.Instance.SendPacketToSpecificPlayer((CSteamID)packet.networkUID, new Message_Ack(packetS.networkUID), EP2PSend.k_EP2PSendUnreliable);
+            }
             if (isHost)
             {
                 if (MessageTypeShouldBeForwarded(packetS.message.type))
                 {
-                    NetworkSenderThread.Instance.SendPacketAsHostToAllButOneSpecificClient((CSteamID)packetS.networkUID, packetS.message, EP2PSend.k_EP2PSendUnreliableNoDelay);
+                    NetworkSenderThread.Instance.SendPacketAsHostToAllButOneSpecificClient((CSteamID)packetS.networkUID, packetS.message, EP2PSend.k_EP2PSendUnreliable);
                 }
             }
         }

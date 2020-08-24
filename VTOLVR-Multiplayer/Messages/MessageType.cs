@@ -5,6 +5,7 @@
 public enum MessageType
 {
     None,
+    Ack, // To acknowledge a unreliable reliable packet has been sent
     LobbyInfoRequest, //When a client wants to know the info about a lobby to display
     LobbyInfoRequest_Result,//The information about the lobby
     JoinRequest, //When the client asks if they can join
