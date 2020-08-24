@@ -54,6 +54,7 @@ class LockingRadarNetworker_Sender : MonoBehaviour
             Debug.LogError($"LockingRadar is null for object {gameObject.name} with an uid of {networkUID}.");
             lr = gameObject.GetComponentInChildren<LockingRadar>();
         }
+        if (lr == null) return;
         if (lr.radar == null)
         {
             //Debug.LogError("This radar.radar shouldn't be null. If this error pops up a second time then be worried. Null on " + gameObject.name);
