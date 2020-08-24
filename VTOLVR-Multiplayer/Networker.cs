@@ -985,7 +985,7 @@ public class Networker : MonoBehaviour
             if (packetS.message.id != 0)
             {
                 Debug.Log("Sending Ack.");
-                NetworkSenderThread.Instance.SendPacketToSpecificPlayer((CSteamID)packet.networkUID, new Message_Ack(packetS.message.id), EP2PSend.k_EP2PSendUnreliable);
+                NetworkSenderThread.Instance.SendPacketToSpecificPlayer((CSteamID)packetS.networkUID, new Message_Ack(packetS.message.id), EP2PSend.k_EP2PSendUnreliable);
             }
             if (isHost)
             {
