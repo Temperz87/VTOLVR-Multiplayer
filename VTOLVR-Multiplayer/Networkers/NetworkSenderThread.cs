@@ -44,21 +44,22 @@ class NetworkSenderThread
             memoryStream = null;
             packetID = 0;
         }
-        public UnreliablePacket(CSteamID remoteID , byte[] memoryStream, uint length)
+        public UnreliablePacket(CSteamID remoteID , byte[] memoryStream, uint length, ulong packetID)
         {
             PlayerManager.logger("Awaiting unreliable packet.");
             this.remoteID = remoteID;
             this.memoryStream = memoryStream;
             this.length = length;
-            this.packetID = Instance.packetID++;
+            this.packetID = packetID;
             Task ticcker = TickRate();
         }
         private async Task TickRate()
         {
             await Task.Delay(500);
+            PlayerManager.logger("Resending packet as we didn't get an ACK");
             if (notCleared && max != 5)
             {
-                Instance.SendP2P(remoteID, memoryStream, EP2PSend.k_EP2PSendUnreliable, length, false);
+                Instance.SendP2P(remoteID, memoryStream, EP2PSend.k_EP2PSendUnreliable, length, packetID);
                 max++;
                 Task tickker = TickRate();
             }
@@ -67,6 +68,7 @@ class NetworkSenderThread
         {
             if (id == packetID)
             {
+                PlayerManager.logger("Got an ack.");
                 notCleared = false;
             }
         }
@@ -132,31 +134,55 @@ class NetworkSenderThread
         waitHandle.Set();
     }
 
-    public void SendPacketAsHostToAllClients(Packet existingPacket, EP2PSend packetType, bool flag = false) {
+    public void SendPacketAsHostToAllClients(Packet existingPacket, EP2PSend packetType, bool flag = false)
+    {
+        if (packetType == EP2PSend.k_EP2PSendUnreliable && flag)
+        {
+            ((PacketSingle)(existingPacket)).message.id = packetID++;
+        }
         OutgoingNetworkPacketContainer packet = new OutgoingNetworkPacketContainer(existingPacket, packetType, flag);
         messageQueue.Enqueue(packet);
         waitHandle.Set();
     }
 
     public void SendPacketAsHostToAllButOneSpecificClient(CSteamID nonReceiver, Message message, EP2PSend packetType, bool flag = false) {
+        if (packetType == EP2PSend.k_EP2PSendUnreliable && flag)
+        {
+            message.id = packetID++;
+        }
         OutgoingNetworkPacketContainer packet = new OutgoingNetworkPacketContainer(nonReceiver, message, packetType, OutgoingNetworkPacketContainer.OutgoingReceivers.HostToAllButOneSpecificClient, flag);
         messageQueue.Enqueue(packet);
         waitHandle.Set();
     }
 
-    public void SendPacketAsHostToAllButOneSpecificClient(CSteamID nonReceiver, Packet existingPacket, EP2PSend packetType, bool flag = false) {
+    public void SendPacketAsHostToAllButOneSpecificClient(CSteamID nonReceiver, Packet existingPacket, EP2PSend packetType, bool flag = false)
+    {
+        if (packetType == EP2PSend.k_EP2PSendUnreliable && flag)
+        {
+            ((PacketSingle)(existingPacket)).message.id = packetID++;
+        }
         OutgoingNetworkPacketContainer packet = new OutgoingNetworkPacketContainer(nonReceiver, existingPacket, packetType, OutgoingNetworkPacketContainer.OutgoingReceivers.HostToAllButOneSpecificClient, flag);
         messageQueue.Enqueue(packet);
         waitHandle.Set();
     }
 
-    public void SendPacketToSpecificPlayer(CSteamID receiver, Message message, EP2PSend packetType, bool flag = false) {
+    public void SendPacketToSpecificPlayer(CSteamID receiver, Message message, EP2PSend packetType, bool flag = false)
+    {
+        if (packetType == EP2PSend.k_EP2PSendUnreliable && flag)
+        {
+            message.id = packetID++;
+        }
         OutgoingNetworkPacketContainer packet = new OutgoingNetworkPacketContainer(receiver, message, packetType, OutgoingNetworkPacketContainer.OutgoingReceivers.ToSinglePeer, flag);
         messageQueue.Enqueue(packet);
         waitHandle.Set();
     }
 
-    public void SendPacketToSpecificPlayer(CSteamID receiver, Packet existingPacket, EP2PSend packetType, bool flag = false) {
+    public void SendPacketToSpecificPlayer(CSteamID receiver, Packet existingPacket, EP2PSend packetType, bool flag = false)
+    {
+        if (packetType == EP2PSend.k_EP2PSendUnreliable && flag)
+        {
+            ((PacketSingle)(existingPacket)).message.id = packetID++;
+        }
         OutgoingNetworkPacketContainer packet = new OutgoingNetworkPacketContainer(receiver, existingPacket, packetType, OutgoingNetworkPacketContainer.OutgoingReceivers.ToSinglePeer, flag);
         messageQueue.Enqueue(packet);
         waitHandle.Set();
@@ -225,14 +251,15 @@ class NetworkSenderThread
                         continue;
                     }
 
-
+                    ulong packetID;
                     // Now that we're going to try to send the packets, format the outgoing memory ONCE based on packet or message type
                     if (outgoingData.Message is Message message) {
                         memoryStreamArray = getByteArrayFromMessage(message, outgoingData.PacketType, out length);
+                        packetID = message.id;
                     }
                     else if (outgoingData.Message is Packet packet) {
                         memoryStreamArray = getByteArrayFromPacket(packet, out length);
-                        
+                        packetID = ((PacketSingle)(packet)).message.id;
                     }
                     else {
                         // Not a recognized type
@@ -241,13 +268,13 @@ class NetworkSenderThread
 
                     if (outgoingData.ToWhichReceivers() == OutgoingNetworkPacketContainer.OutgoingReceivers.HostToAllClients) {
                         foreach (CSteamID player in internalPlayerList) {
-                            SendP2P(player, memoryStreamArray, packetSingle.sendType, length, outgoingData.Reliable);
+                            SendP2P(player, memoryStreamArray, packetSingle.sendType, length, packetID);
                         }
                     }
                     else {
                         foreach (CSteamID player in internalPlayerList) {
                             if (player != outgoingData.SteamId) {
-                                SendP2P(player, memoryStreamArray, packetSingle.sendType, length, outgoingData.Reliable);
+                                SendP2P(player, memoryStreamArray, packetSingle.sendType, length, packetID);
                             }
                         }
                     }
@@ -272,7 +299,7 @@ class NetworkSenderThread
                         continue;
                     }
 
-                    SendP2P(outgoingData.SteamId, memoryStreamArray, packetSingle.sendType, length, outgoingData.Reliable);
+                    SendP2P(outgoingData.SteamId, memoryStreamArray, packetSingle.sendType, length, packetID);
                 }
             }
             waitHandle.WaitOne();
@@ -295,9 +322,14 @@ class NetworkSenderThread
         return memoryStream.ToArray();
     }
 
-    private void SendP2P(CSteamID remoteID, byte[] serializedPacketData, EP2PSend sendType, uint length, bool flag) {
+    private void SendP2P(CSteamID remoteID, byte[] serializedPacketData, EP2PSend sendType, uint length, ulong uID) {
         if (serializedPacketData.Length > 1200 && (sendType == EP2PSend.k_EP2PSendUnreliable || sendType == EP2PSend.k_EP2PSendUnreliableNoDelay)) {
             //Debug.LogError("MORE THAN 1200 Bytes for message");
+        }
+        if (uID != 0 && sendType == EP2PSend.k_EP2PSendUnreliable)
+        {
+            PlayerManager.logger("Making Unreliable packet.");
+            new UnreliablePacket(remoteID, serializedPacketData, length, uID);
         }
         if (Multiplayer.SoloTesting) {
             //This skips sending the network message and gets sent right to ReadP2PPacket so that we can test solo with a fake player.
@@ -307,11 +339,6 @@ class NetworkSenderThread
         if (!SteamNetworking.SendP2PPacket(remoteID, serializedPacketData, length, sendType))
         {
             //Debug.Log($"Failed to send P2P to {remoteID.m_SteamID}");
-        }
-        else if (flag && sendType == EP2PSend.k_EP2PSendUnreliable)
-        {
-            PlayerManager.logger("Making Unreliable packet.");
-            new UnreliablePacket(remoteID, serializedPacketData, length);
         }
     }
 }
