@@ -136,7 +136,7 @@ public class MissileNetworker_Receiver : MonoBehaviour
             Debug.Log("Missile exploded.");
             if (thisMissile != null)
             {
-                traverse.Field("detonated").SetValue(true);
+                traverse.Field("detonated").SetValue(false);
 
                 ///thisMissile.rb.velocity = thisMissile.transform.forward * 10.0f;
                 thisMissile.Detonate();
