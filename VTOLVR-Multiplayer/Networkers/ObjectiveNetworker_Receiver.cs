@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 using UnityEngine;
 
 
-class ObjectiveNetworker_Reciever
+class ObjectiveNetworker_Receiver
 {
     private static MissionManager mManager = MissionManager.instance;
     public static Dictionary<int, VTEventTarget> scenarioActionsList = new Dictionary<int, VTEventTarget>();
