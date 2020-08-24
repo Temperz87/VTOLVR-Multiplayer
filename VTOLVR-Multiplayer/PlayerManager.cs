@@ -227,6 +227,10 @@ public static class PlayerManager
             SpawnRequestQueue();
         }
     }
+    public static void logger(string msg)
+    {
+        Debug.Log(msg);
+    }
     /// <summary>
     /// This gives all the people waiting their spawn points
     /// </summary>

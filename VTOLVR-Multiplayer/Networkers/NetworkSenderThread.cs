@@ -46,10 +46,12 @@ class NetworkSenderThread
         }
         public UnreliablePacket(CSteamID remoteID , byte[] memoryStream, uint length)
         {
+            PlayerManager.logger("Awaiting unreliable packet.");
             this.remoteID = remoteID;
             this.memoryStream = memoryStream;
             this.length = length;
             this.packetID = Instance.packetID++;
+            Task ticcker = TickRate();
         }
         private async Task TickRate()
         {
@@ -58,7 +60,7 @@ class NetworkSenderThread
             {
                 Instance.SendP2P(remoteID, memoryStream, EP2PSend.k_EP2PSendUnreliable, length, false);
                 max++;
-                TickRate();
+                Task tickker = TickRate();
             }
         }
         private void Destroy(ulong id)
@@ -307,6 +309,9 @@ class NetworkSenderThread
             //Debug.Log($"Failed to send P2P to {remoteID.m_SteamID}");
         }
         else if (flag && sendType == EP2PSend.k_EP2PSendUnreliable)
+        {
+            PlayerManager.logger("Making Unreliable packet.");
             new UnreliablePacket(remoteID, serializedPacketData, length);
+        }
     }
 }
