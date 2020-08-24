@@ -460,7 +460,7 @@ public class Multiplayer : VTOLMOD
             lobbyInfoText.transform.localRotation.y,
             lobbyInfoText.transform.localRotation.z);
         Log("Last one");
-        mpInteractable.OnInteract.AddListener(delegate { Log("Before Opening MP"); RefershFriends(); MPMenu.SetActive(true); ScenarioDisplay.gameObject.SetActive(false); OpenMP(); });
+        mpInteractable.OnInteract.AddListener(delegate { Log("Before Opening MP"); RefreshFriends(); MPMenu.SetActive(true); ScenarioDisplay.gameObject.SetActive(false); OpenMP(); });
         GameObject.Find("InteractableCanvas").GetComponent<VRPointInteractableCanvas>().RefreshInteractables();
         Log("Finished");
 
@@ -473,12 +473,12 @@ public class Multiplayer : VTOLMOD
         VRInteractable RefreshInteractable = RefreshButton.GetComponent<VRInteractable>();
         RefreshInteractable.interactableName = "Refresh Friends";
         RefreshInteractable.OnInteract = new UnityEngine.Events.UnityEvent();
-        RefreshInteractable.OnInteract.AddListener(delegate { Log("Before Host"); RefershFriends(); });
+        RefreshInteractable.OnInteract.AddListener(delegate { Log("Before Host"); RefreshFriends(); });
 
 
     }
 
-    public void RefershFriends()
+    public void RefreshFriends()
     {
         Log("Refreshing Friends");
         steamFriends.Clear();
