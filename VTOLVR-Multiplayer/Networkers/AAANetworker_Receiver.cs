@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using UnityEngine;
 
-class AAANetworker_Reciever : MonoBehaviour
+class AAANetworker_Receiver : MonoBehaviour
 {
     public ulong networkUID;
     public ulong gunID;
