@@ -12,11 +12,15 @@ using Steamworks;
 using System.Collections;
 using TMPro;
 using UnityEngine.Events;
+using System.Net;
+using System.IO;
 
 public class Multiplayer : VTOLMOD
 {
     public static bool SoloTesting = true;
     public static Multiplayer _instance = null;
+    public static bool UpToDate = true;
+    private static bool checkedToDate = false;
 
     private struct FriendItem
     {
@@ -30,7 +34,8 @@ public class Multiplayer : VTOLMOD
         }
     }
 
-    public enum MissileSimMode {
+    public enum MissileSimMode
+    {
         Launcher,
         Host,
         Target
@@ -68,7 +73,7 @@ public class Multiplayer : VTOLMOD
     private UnityAction<bool> replaceWingmenWithClients_changed;
 
     public bool restrictToHostMods = true;
-    private UnityAction<bool> restrictToHostMods_changed; 
+    private UnityAction<bool> restrictToHostMods_changed;
 
     public bool forceWinds = false; // not implemented
     private UnityAction<bool> forceWinds_changed;
@@ -93,7 +98,37 @@ public class Multiplayer : VTOLMOD
         _instance = this;
         Networker.SetMultiplayerInstance(this);
     }
+    public void CheckUpToDate()
+    {
+        if (checkedToDate)
+            return;
+        checkedToDate = false;
+        HttpWebRequest request = (HttpWebRequest)WebRequest.Create("https://vtolvr-mods.com/api/mods/qs6jxkt2/?format=json");
+        request.AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate;
 
+        HttpWebResponse response = (HttpWebResponse)request.GetResponse();
+        Stream stream = response.GetResponseStream();
+        StreamReader reader = new StreamReader(stream);
+        string json = reader.ReadToEnd();
+        string result = "";
+        if (json.Contains("version"))
+        {
+            int idx = json.IndexOf("version");
+            idx = idx + 10;
+            Console.WriteLine(json[idx]);
+            while (int.TryParse(json[idx].ToString(), out _) || json[idx].ToString() == ".")
+            {
+                result += json[idx].ToString();
+                idx++;
+            }
+        }
+        Debug.Log(result + " , " + ModVersionString.ModVersionNumber);
+        if (result != ModVersionString.ModVersionNumber && ModVersionString.ReleaseBranch == "Release")
+        {
+            Debug.Log("Not up to date.");
+            UpToDate = false;
+        }
+    }
     public override void ModLoaded()
     {
         Log($"VTOL VR Multiplayer v{ ModVersionString.ModVersionNumber } - branch: { ModVersionString.ReleaseBranch }");
@@ -201,7 +236,8 @@ public class Multiplayer : VTOLMOD
 
     void OnGUI()//the 2d ping display, feel free to move elsewhere
     {
-        if (displayPing) {
+        if (displayPing)
+        {
             string temp = "";
             foreach (PlayerManager.Player player in PlayerManager.players)
             {
@@ -292,13 +328,14 @@ public class Multiplayer : VTOLMOD
 
     private void CreateUI()
     {
-
-        while (!SceneManager.GetActiveScene().isLoaded){
+        CheckUpToDate();
+        while (!SceneManager.GetActiveScene().isLoaded)
+        {
             Debug.Log("Waiting for scene to be loaded");
         }
 
         Log("Creating Multiplayer UI");
-        
+
         Transform ScenarioDisplay = null;
         bool foundDisplay = false;
         bool foundCampaginDisplay = false;
@@ -390,7 +427,10 @@ public class Multiplayer : VTOLMOD
 
         lableVTOLMPIntro.GetComponent<RectTransform>().localPosition = new Vector3(-200, 200);
         lableVTOLMPIntro.GetComponent<RectTransform>().sizeDelta = new Vector2(850, 500.3f);
-        lableVTOLMPIntro.GetComponentInChildren<Text>().text = $"Hello and welcome to multiplayer version {ModVersionString.ModVersionNumber}!\n\nThis is an alpha release and very much so a work in progress. Expect bugs!\n\nPlease report any issues at https://vtolvr-mods.com or on the modding discord here: https://discord.gg/pW4rkYf";
+        if (UpToDate)
+            lableVTOLMPIntro.GetComponentInChildren<Text>().text = $"Hello and welcome to multiplayer version {ModVersionString.ModVersionNumber}!\n\nThis is an alpha release and very much so a work in progress. Expect bugs!\n\nPlease report any issues at https://vtolvr-mods.com or on the modding discord here: https://discord.gg/pW4rkYf";
+        else
+            lableVTOLMPIntro.GetComponentInChildren<Text>().text = $"Hello and welcome to multiplayer version {ModVersionString.ModVersionNumber}!\n\nThis is an outdated version, please update the mod to be able to play with other players and while you're at it expect bugs!\n\nPlease report any issues at https://vtolvr-mods.com or on the modding discord here: https://discord.gg/pW4rkYf";
         //lableVTOLJoinLog.GetComponentInChildren<Text>().resizeTextForBestFit = true;
         lableVTOLMPIntro.GetComponentInChildren<Text>().color = new Color32(255, 255, 255, 255);
         lableVTOLMPIntro.GetComponentInChildren<Text>().fontSize = 20;
@@ -485,16 +525,17 @@ public class Multiplayer : VTOLMOD
         int totalFriends = 0;
         Debug.Log($"UI List Item Count: {friendListItems.Count}");
 
-        foreach(GameObject uiItem in friendListItems)
+        foreach (GameObject uiItem in friendListItems)
         {
-            if (uiItem != null) {
+            if (uiItem != null)
+            {
                 Debug.Log($"Destroying {uiItem.name}");
             }
             else
             {
                 Debug.Log("UI Item is null");
             }
-            
+
             Destroy(uiItem);
         }
 
@@ -520,7 +561,7 @@ public class Multiplayer : VTOLMOD
         for (int i = 0; i < friendsCount; i++)
         {
             lastFriendID = SteamFriends.GetFriendByIndex(i, EFriendFlags.k_EFriendFlagImmediate);
-             if (SteamFriends.GetFriendGamePlayed(lastFriendID,out FriendGameInfo_t gameInfo))
+            if (SteamFriends.GetFriendGamePlayed(lastFriendID, out FriendGameInfo_t gameInfo))
             {
                 if (gameInfo.m_gameID.AppID().m_AppId == 667970)
                 {
@@ -542,7 +583,7 @@ public class Multiplayer : VTOLMOD
             totalFriends++;
             lastFriendGO = Instantiate(friendsTemplate, content.transform);
             lastFriendGO.name = SteamFriends.GetFriendPersonaName(vtolvrFriends[i]);
-            steamFriends.Add(new FriendItem(vtolvrFriends[i],lastFriendGO.transform));
+            steamFriends.Add(new FriendItem(vtolvrFriends[i], lastFriendGO.transform));
             lastFriendGO.transform.localPosition = new Vector3(0f, -totalFriends * buttonHeight);
             uiListItem = lastFriendGO.GetComponent<VRUIListItemTemplate>();
             uiListItem.Setup(SteamFriends.GetFriendPersonaName(vtolvrFriends[i]), totalFriends - 1, SelectFriend);
@@ -689,7 +730,8 @@ public class Multiplayer : VTOLMOD
         Networker.UpdateLoadingText();
     }
 
-    public void CleanUpOnDisconnect() {
+    public void CleanUpOnDisconnect()
+    {
         selectedFriend = new CSteamID(0);
         steamFriends?.Clear();
         playingMP = false;
