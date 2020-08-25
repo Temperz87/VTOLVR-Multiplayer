@@ -240,6 +240,8 @@ public class Networker : MonoBehaviour
 
     public static float pingToHost = 0;
 
+    private List<ulong> processedPackets = new List<ulong>();
+
     #region Message Type Callbacks
     //These callbacks are use for other scripts to know when a network message has been
     //received for them. They should match the name of the message class they relate to.
@@ -474,525 +476,529 @@ public class Networker : MonoBehaviour
                 Debug.LogError("packetS null.");
             if (packetS.message == null)
                 Debug.LogError("packetS.message null.");
-            switch (packetS.message.type)
+            if (packetS.message.id != 0 || processedPackets.Contains(packetS.message.id))
             {
-                case MessageType.None:
-                    Debug.Log("case none");
-                    break;
-                case MessageType.LobbyInfoRequest:
-                    Debug.Log("case lobby info request");
-                    if (SteamFriends.GetPersonaName() == null)
-                    {
-                        Debug.LogError("Persona name null");
-                    }
-                    if (PilotSaveManager.currentVehicle == null)
-                    {
-                        Debug.LogError("vehicle name null");
-                    }
-                    if (PilotSaveManager.currentScenario == null)
-                    {
-                        Debug.LogError("current scenario null");
-                    }
-                    if (PilotSaveManager.currentCampaign == null)
-                    {
-                        Debug.LogError("Persona name null");
-                    }
-                    if (PlayerManager.players == null)
-                    {
-                        Debug.Log("PLayer manager.players == null");
-                    } // fuck you c#
-                    if (PilotSaveManager.currentScenario.scenarioID == null)
-                    {
-                        Debug.LogError("current scenario name null");
-                    }
-                    if (PilotSaveManager.currentCampaign.campaignName == null)
-                    {
-                        Debug.LogError("current campaign campaign name ");
-                    }
-                    if (PlayerManager.players.Count.ToString() == null)
-                    {
-                        Debug.LogError("players count to string somehow null");
-                    } // Fuck you again unity
-                    NetworkSenderThread.Instance.SendPacketToSpecificPlayer(csteamID,
-                        new Message_LobbyInfoRequest_Result(SteamFriends.GetPersonaName(),
-                                                                PilotSaveManager.currentVehicle.vehicleName,
-                                                                PilotSaveManager.currentScenario.scenarioName,
-                                                                PilotSaveManager.currentCampaign.campaignName,
-                                                                PlayerManager.players.Count.ToString()),
-                        EP2PSend.k_EP2PSendReliable);
-                    break;
-                case MessageType.LobbyInfoRequest_Result:
-                    Debug.Log("case lobby info request result");
-                    Message_LobbyInfoRequest_Result result = packetS.message as Message_LobbyInfoRequest_Result;
-                    Debug.Log("Set result");
-                    if (packetS == null)
-                    {
-                        Debug.LogError("packetS is null");
-                    }
-                    if (packetS.message == null)
-                    {
-                        Debug.LogError("packetS.message is null");
-                    }
-                    if (result == null)
-                    {
-                        Debug.LogError("Result is null");
-                    }
-                    if (result.username == null)
-                    {
-                        Debug.LogError("Result name is null");
-                    }
-                    if (result.vehicle == null)
-                    {
-                        Debug.LogError("Result vehicle is null");
-                    }
-                    if (result.campaign == null)
-                    {
-                        Debug.LogError("Result campaign is null");
-                    }
-                    if (result.scenario == null)
-                    {
-                        Debug.LogError("Result scenario is null");
-                    }
-                    if (result.playercount == null)
-                    {
-                        Debug.LogError("Result playercount is null");
-                    }
-                    if (Multiplayer._instance.lobbyInfoText.text == null)
-                    {
-                        Debug.LogError("Multiplayer _instance lobbyinfotext.text is null");
-                    }
-                    if (Multiplayer._instance == null)
-                    {
-                        Debug.LogError("Multiplayer _instance is null");
-                    }
-                    if (Multiplayer._instance.lobbyInfoText == null)
-                    {
-                        Debug.LogError("Multiplayer _instance lobbyinfotext is null");
-                    }
-                    Multiplayer._instance.lobbyInfoText.text = result.username + "'s Game\n" + result.vehicle + "\n" + result.campaign + " " + result.scenario + "\n" + (result.playercount == "1" ? result.playercount + " Player" : result.playercount + " Players");
-                    Debug.Log("Breaking case set lobby info request result");
-                    break;
-                case MessageType.JoinRequest:
-                    Debug.Log("case join request");
-                    HandleJoinRequest(csteamID, packetS);
-                    break;
-                case MessageType.JoinRequestAccepted_Result:
-                    Debug.Log($"case join request accepted result, joining {csteamID.m_SteamID}");
-                    Multiplayer._instance.displayInfo($"case join request accepted result, joining {csteamID.m_SteamID}");
-                    hostID = csteamID;
-                    TimeoutCounter = 0;
-                    HeartbeatTimerRunning = true;
-                    HeartbeatTimer.Start();
-                    StartCoroutine(FlyButton());
-                    UpdateLoadingText();
-                    break;
-                case MessageType.JoinRequestRejected_Result:
-                    Debug.Log("case join request rejected result");
-                    Message_JoinRequestRejected_Result joinResultRejected = packetS.message as Message_JoinRequestRejected_Result;
-                    Debug.LogWarning($"We can't join {csteamID.m_SteamID} reason = \n{joinResultRejected.reason}");
-                    Multiplayer._instance.displayError($"We can't join {csteamID.m_SteamID} reason = \n{joinResultRejected.reason}");
-                    break;
-                case MessageType.Ready:
-                    if (!isHost)
-                    {
-                        Debug.Log("We shouldn't have gotten a ready message");
+                switch (packetS.message.type)
+                {
+                    case MessageType.None:
+                        Debug.Log("case none");
                         break;
-                    }
-                    Debug.Log("case ready");
-                    Message_Ready readyMessage = packetS.message as Message_Ready;
-
-
-
-                    //The client has said they are ready to start, so we change it in the dictionary
-
-                    if (readyDic.ContainsKey(csteamID) && playerStatusDic.ContainsKey(csteamID))
-                    {
-                        if (readyMessage.isLeft)
+                    case MessageType.LobbyInfoRequest:
+                        Debug.Log("case lobby info request");
+                        if (SteamFriends.GetPersonaName() == null)
                         {
-                            playerStatusDic[csteamID] = PlayerStatus.ReadyREDFOR;
+                            Debug.LogError("Persona name null");
                         }
-                        else
+                        if (PilotSaveManager.currentVehicle == null)
                         {
-                            playerStatusDic[csteamID] = PlayerStatus.ReadyBLUFOR;
+                            Debug.LogError("vehicle name null");
                         }
-
-                        if (readyDic[csteamID])
+                        if (PilotSaveManager.currentScenario == null)
                         {
-                            Debug.Log("Received ready message from the same user twice");
-                            UpdateLoadingText();
+                            Debug.LogError("current scenario null");
+                        }
+                        if (PilotSaveManager.currentCampaign == null)
+                        {
+                            Debug.LogError("Persona name null");
+                        }
+                        if (PlayerManager.players == null)
+                        {
+                            Debug.Log("PLayer manager.players == null");
+                        } // fuck you c#
+                        if (PilotSaveManager.currentScenario.scenarioID == null)
+                        {
+                            Debug.LogError("current scenario name null");
+                        }
+                        if (PilotSaveManager.currentCampaign.campaignName == null)
+                        {
+                            Debug.LogError("current campaign campaign name ");
+                        }
+                        if (PlayerManager.players.Count.ToString() == null)
+                        {
+                            Debug.LogError("players count to string somehow null");
+                        } // Fuck you again unity
+                        NetworkSenderThread.Instance.SendPacketToSpecificPlayer(csteamID,
+                            new Message_LobbyInfoRequest_Result(SteamFriends.GetPersonaName(),
+                                                                    PilotSaveManager.currentVehicle.vehicleName,
+                                                                    PilotSaveManager.currentScenario.scenarioName,
+                                                                    PilotSaveManager.currentCampaign.campaignName,
+                                                                    PlayerManager.players.Count.ToString()),
+                            EP2PSend.k_EP2PSendReliable);
+                        break;
+                    case MessageType.LobbyInfoRequest_Result:
+                        Debug.Log("case lobby info request result");
+                        Message_LobbyInfoRequest_Result result = packetS.message as Message_LobbyInfoRequest_Result;
+                        /*Debug.Log("Set result");
+                        if (packetS == null)
+                        {
+                            Debug.LogError("packetS is null");
+                        }
+                        if (packetS.message == null)
+                        {
+                            Debug.LogError("packetS.message is null");
+                        }
+                        if (result == null)
+                        {
+                            Debug.LogError("Result is null");
+                        }
+                        if (result.username == null)
+                        {
+                            Debug.LogError("Result name is null");
+                        }
+                        if (result.vehicle == null)
+                        {
+                            Debug.LogError("Result vehicle is null");
+                        }
+                        if (result.campaign == null)
+                        {
+                            Debug.LogError("Result campaign is null");
+                        }
+                        if (result.scenario == null)
+                        {
+                            Debug.LogError("Result scenario is null");
+                        }
+                        if (result.playercount == null)
+                        {
+                            Debug.LogError("Result playercount is null");
+                        }
+                        if (Multiplayer._instance.lobbyInfoText.text == null)
+                        {
+                            Debug.LogError("Multiplayer _instance lobbyinfotext.text is null");
+                        }
+                        if (Multiplayer._instance == null)
+                        {
+                            Debug.LogError("Multiplayer _instance is null");
+                        }
+                        if (Multiplayer._instance.lobbyInfoText == null)
+                        {
+                            Debug.LogError("Multiplayer _instance lobbyinfotext is null");
+                        }*/
+                        Multiplayer._instance.lobbyInfoText.text = result.username + "'s Game\n" + result.vehicle + "\n" + result.campaign + " " + result.scenario + "\n" + (result.playercount == "1" ? result.playercount + " Player" : result.playercount + " Players");
+                        Debug.Log("Breaking case set lobby info request result");
+                        break;
+                    case MessageType.JoinRequest:
+                        Debug.Log("case join request");
+                        HandleJoinRequest(csteamID, packetS);
+                        break;
+                    case MessageType.JoinRequestAccepted_Result:
+                        Debug.Log($"case join request accepted result, joining {csteamID.m_SteamID}");
+                        Multiplayer._instance.displayInfo($"case join request accepted result, joining {csteamID.m_SteamID}");
+                        hostID = csteamID;
+                        TimeoutCounter = 0;
+                        HeartbeatTimerRunning = true;
+                        HeartbeatTimer.Start();
+                        StartCoroutine(FlyButton());
+                        UpdateLoadingText();
+                        break;
+                    case MessageType.JoinRequestRejected_Result:
+                        Debug.Log("case join request rejected result");
+                        Message_JoinRequestRejected_Result joinResultRejected = packetS.message as Message_JoinRequestRejected_Result;
+                        Debug.LogWarning($"We can't join {csteamID.m_SteamID} reason = \n{joinResultRejected.reason}");
+                        Multiplayer._instance.displayError($"We can't join {csteamID.m_SteamID} reason = \n{joinResultRejected.reason}");
+                        break;
+                    case MessageType.Ready:
+                        if (!isHost)
+                        {
+                            Debug.Log("We shouldn't have gotten a ready message");
                             break;
                         }
+                        Debug.Log("case ready");
+                        Message_Ready readyMessage = packetS.message as Message_Ready;
 
-                        Debug.Log($"{csteamID.m_SteamID} has said they are ready!\nHost ready state {hostReady}");
-                        readyDic[csteamID] = true;
-                        if (alreadyInGame)
-                        {
-                            //Someone is trying to join when we are already in game.
-                            Debug.Log($"We are already in session, {csteamID} is joining in!");
-                            NetworkSenderThread.Instance.SendPacketToSpecificPlayer(csteamID, new Message(MessageType.AllPlayersReady), EP2PSend.k_EP2PSendReliable);
 
-                            // Send host loaded message right away
-                            NetworkSenderThread.Instance.SendPacketToSpecificPlayer(csteamID, new Message_HostLoaded(true), EP2PSend.k_EP2PSendReliable);
-                            break;
-                        }
-                        else if (hostReady && EveryoneElseReady())
+
+                        //The client has said they are ready to start, so we change it in the dictionary
+
+                        if (readyDic.ContainsKey(csteamID) && playerStatusDic.ContainsKey(csteamID))
                         {
-                            Debug.Log("The last client has said they are ready, starting");
-                            if (!allPlayersReadyHasBeenSentFirstTime)
+                            if (readyMessage.isLeft)
                             {
-                                allPlayersReadyHasBeenSentFirstTime = true;
-                                playerStatusDic[hostID] = PlayerStatus.Loading;
-                                UpdateLoadingText();
-
-                                NetworkSenderThread.Instance.SendPacketAsHostToAllClients(new Message(MessageType.AllPlayersReady), EP2PSend.k_EP2PSendReliable);
+                                playerStatusDic[csteamID] = PlayerStatus.ReadyREDFOR;
                             }
                             else
                             {
-                                // Send only to this player
-                                NetworkSenderThread.Instance.SendPacketToSpecificPlayer(csteamID, new Message(MessageType.AllPlayersReady), EP2PSend.k_EP2PSendReliable);
-                                playerStatusDic[hostID] = PlayerStatus.Loading;
-                                UpdateLoadingText();
+                                playerStatusDic[csteamID] = PlayerStatus.ReadyBLUFOR;
                             }
-                            LoadingSceneController.instance.PlayerReady();
-                        }
-                        UpdateLoadingText();
-                    }
-                    break;
-                case MessageType.AllPlayersReady:
-                    Debug.Log("The host said everyone is ready, waiting for the host to load.");
-                    playerStatusDic[hostID] = PlayerStatus.Loading;
-                    UpdateLoadingText();
-                    hostReady = true;
-                    // LoadingSceneController.instance.PlayerReady();
-                    break;
-                case MessageType.RequestSpawn:
-                    Debug.Log($"case request spawn from: {csteamID.m_SteamID}, we are {SteamUser.GetSteamID().m_SteamID}, host is {hostID}");
-                    if (RequestSpawn != null)
-                    { RequestSpawn.Invoke(packet, csteamID); }
-                    break;
-                case MessageType.RequestSpawn_Result:
-                    Debug.Log("case request spawn result");
-                    if (RequestSpawn_Result != null)
-                        RequestSpawn_Result.Invoke(packet);
-                    break;
-                case MessageType.SpawnAiVehicle:
-                    Debug.Log("case spawn ai vehicle");
-                    AIManager.SpawnAIVehicle(packet);
-                    break;
-                case MessageType.SpawnPlayerVehicle:
-                    Debug.Log("case spawn vehicle");
-                    if (SpawnVehicle != null)
-                        SpawnVehicle.Invoke(packet, csteamID);
-                    break;
-                case MessageType.RigidbodyUpdate:
-                    // Debug.Log("case rigid body update");
-                    if (RigidbodyUpdate != null)
-                        RigidbodyUpdate.Invoke(packet);
-                    break;
-                case MessageType.PlaneUpdate:
-                    // Debug.Log("case plane update");
-                    if (PlaneUpdate != null)
-                        PlaneUpdate.Invoke(packet);
-                    break;
-                case MessageType.EngineTiltUpdate:
-                    // Debug.Log("case engine tilt update");
-                    if (EngineTiltUpdate != null)
-                        EngineTiltUpdate.Invoke(packet);
-                    break;
-                case MessageType.WorldData:
-                    Debug.Log("case world data");
-                    if (WorldDataUpdate != null)
-                        WorldDataUpdate.Invoke(packet);
-                    break;
-                case MessageType.Disconnecting:
-                    Debug.Log("case disconnecting");
-                    if (isHost)
-                    {
-                        Debug.Log("Client disconnected");
-                        if (Multiplayer.SoloTesting)
-                            break;
 
-                        playerStatusDic[csteamID] = PlayerStatus.Disconected;
-                        players.Remove(csteamID);
-                        NetworkSenderThread.Instance.RemovePlayer(csteamID);
-                        NetworkSenderThread.Instance.SendPacketAsHostToAllClients(packet, packet.sendType);
-                    }
-                    else
-                    {
-                        Message_Disconnecting messsage = ((PacketSingle)packet).message as Message_Disconnecting;
-                        playerStatusDic[csteamID] = PlayerStatus.Disconected;
-                        if (messsage.isHost)
+                            if (readyDic[csteamID])
+                            {
+                                Debug.Log("Received ready message from the same user twice");
+                                UpdateLoadingText();
+                                break;
+                            }
+
+                            Debug.Log($"{csteamID.m_SteamID} has said they are ready!\nHost ready state {hostReady}");
+                            readyDic[csteamID] = true;
+                            if (alreadyInGame)
+                            {
+                                //Someone is trying to join when we are already in game.
+                                Debug.Log($"We are already in session, {csteamID} is joining in!");
+                                NetworkSenderThread.Instance.SendPacketToSpecificPlayer(csteamID, new Message(MessageType.AllPlayersReady), EP2PSend.k_EP2PSendReliable);
+
+                                // Send host loaded message right away
+                                NetworkSenderThread.Instance.SendPacketToSpecificPlayer(csteamID, new Message_HostLoaded(true), EP2PSend.k_EP2PSendReliable);
+                                break;
+                            }
+                            else if (hostReady && EveryoneElseReady())
+                            {
+                                Debug.Log("The last client has said they are ready, starting");
+                                if (!allPlayersReadyHasBeenSentFirstTime)
+                                {
+                                    allPlayersReadyHasBeenSentFirstTime = true;
+                                    playerStatusDic[hostID] = PlayerStatus.Loading;
+                                    UpdateLoadingText();
+
+                                    NetworkSenderThread.Instance.SendPacketAsHostToAllClients(new Message(MessageType.AllPlayersReady), EP2PSend.k_EP2PSendReliable);
+                                }
+                                else
+                                {
+                                    // Send only to this player
+                                    NetworkSenderThread.Instance.SendPacketToSpecificPlayer(csteamID, new Message(MessageType.AllPlayersReady), EP2PSend.k_EP2PSendReliable);
+                                    playerStatusDic[hostID] = PlayerStatus.Loading;
+                                    UpdateLoadingText();
+                                }
+                                LoadingSceneController.instance.PlayerReady();
+                            }
+                            UpdateLoadingText();
+                        }
+                        break;
+                    case MessageType.AllPlayersReady:
+                        Debug.Log("The host said everyone is ready, waiting for the host to load.");
+                        playerStatusDic[hostID] = PlayerStatus.Loading;
+                        UpdateLoadingText();
+                        hostReady = true;
+                        // LoadingSceneController.instance.PlayerReady();
+                        break;
+                    case MessageType.RequestSpawn:
+                        Debug.Log($"case request spawn from: {csteamID.m_SteamID}, we are {SteamUser.GetSteamID().m_SteamID}, host is {hostID}");
+                        if (RequestSpawn != null)
+                        { RequestSpawn.Invoke(packet, csteamID); }
+                        break;
+                    case MessageType.RequestSpawn_Result:
+                        Debug.Log("case request spawn result");
+                        if (RequestSpawn_Result != null)
+                            RequestSpawn_Result.Invoke(packet);
+                        break;
+                    case MessageType.SpawnAiVehicle:
+                        Debug.Log("case spawn ai vehicle");
+                        AIManager.SpawnAIVehicle(packet);
+                        break;
+                    case MessageType.SpawnPlayerVehicle:
+                        Debug.Log("case spawn vehicle");
+                        if (SpawnVehicle != null)
+                            SpawnVehicle.Invoke(packet, csteamID);
+                        break;
+                    case MessageType.RigidbodyUpdate:
+                        // Debug.Log("case rigid body update");
+                        if (RigidbodyUpdate != null)
+                            RigidbodyUpdate.Invoke(packet);
+                        break;
+                    case MessageType.PlaneUpdate:
+                        // Debug.Log("case plane update");
+                        if (PlaneUpdate != null)
+                            PlaneUpdate.Invoke(packet);
+                        break;
+                    case MessageType.EngineTiltUpdate:
+                        // Debug.Log("case engine tilt update");
+                        if (EngineTiltUpdate != null)
+                            EngineTiltUpdate.Invoke(packet);
+                        break;
+                    case MessageType.WorldData:
+                        Debug.Log("case world data");
+                        if (WorldDataUpdate != null)
+                            WorldDataUpdate.Invoke(packet);
+                        break;
+                    case MessageType.Disconnecting:
+                        Debug.Log("case disconnecting");
+                        if (isHost)
                         {
-                            Debug.Log("Host disconnected");
-                            //If it is the host quiting we just need to quit the mission as all networking will be lost.
-                            // Make sure time is moving normally so exit scene transition will work
-                            WorldDataNetworker_Receiver timeController = PlayerManager.worldData.GetComponent<WorldDataNetworker_Receiver>();
-                            timeController.ClientNeedsNormalTimeFlowBecauseHostDisconnected();
-                            FlightSceneManager flightSceneManager = FindObjectOfType<FlightSceneManager>();
-                            if (flightSceneManager == null)
-                                Debug.LogError("FlightSceneManager was null when host quit");
-                            flightSceneManager.ExitScene();
-                            Multiplayer._instance.displayError($"Host disconnected from session.");
+                            Debug.Log("Client disconnected");
+                            if (Multiplayer.SoloTesting)
+                                break;
+
+                            playerStatusDic[csteamID] = PlayerStatus.Disconected;
+                            players.Remove(csteamID);
+                            NetworkSenderThread.Instance.RemovePlayer(csteamID);
+                            NetworkSenderThread.Instance.SendPacketAsHostToAllClients(packet, packet.sendType);
                         }
                         else
                         {
-                            Debug.Log("Other client disconnected");
-                            foreach (var player in PlayerManager.players)
+                            Message_Disconnecting messsage = ((PacketSingle)packet).message as Message_Disconnecting;
+                            playerStatusDic[csteamID] = PlayerStatus.Disconected;
+                            if (messsage.isHost)
                             {
-                                if (player.cSteamID == new CSteamID(messsage.UID))
+                                Debug.Log("Host disconnected");
+                                //If it is the host quiting we just need to quit the mission as all networking will be lost.
+                                // Make sure time is moving normally so exit scene transition will work
+                                WorldDataNetworker_Receiver timeController = PlayerManager.worldData.GetComponent<WorldDataNetworker_Receiver>();
+                                timeController.ClientNeedsNormalTimeFlowBecauseHostDisconnected();
+                                FlightSceneManager flightSceneManager = FindObjectOfType<FlightSceneManager>();
+                                if (flightSceneManager == null)
+                                    Debug.LogError("FlightSceneManager was null when host quit");
+                                flightSceneManager.ExitScene();
+                                Multiplayer._instance.displayError($"Host disconnected from session.");
+                            }
+                            else
+                            {
+                                Debug.Log("Other client disconnected");
+                                foreach (var player in PlayerManager.players)
                                 {
-                                    PlayerManager.players.Remove(player);
+                                    if (player.cSteamID == new CSteamID(messsage.UID))
+                                    {
+                                        PlayerManager.players.Remove(player);
+                                    }
+                                }
+                            }
+                            break;
+                        }
+                        if (Disconnecting != null)
+                            Disconnecting.Invoke(packet);
+                        break;
+                    case MessageType.WeaponsSet:
+                        Debug.Log("case weapon set");
+                        if (WeaponSet != null)
+                            WeaponSet.Invoke(packet);
+                        break;
+                    case MessageType.WeaponsSet_Result:
+                        Debug.Log("case weapon set result");
+                        if (WeaponSet_Result != null)
+                            WeaponSet_Result.Invoke(packet);
+                        if (isHost)
+                        {
+                            NetworkSenderThread.Instance.SendPacketAsHostToAllClients(packet, packet.sendType);
+                        }
+                        break;
+                    case MessageType.WeaponFiring:
+                        Debug.Log("case weapon firing");
+                        if (WeaponFiring != null)
+                            WeaponFiring.Invoke(packet);
+                        break;
+                    case MessageType.WeaponStoppedFiring:
+                        Debug.Log("case weapon stopped firing");
+                        if (WeaponStoppedFiring != null)
+                            WeaponStoppedFiring.Invoke(packet);
+                        break;
+                    case MessageType.FireCountermeasure:
+                        Debug.Log("case countermeasure fired");
+                        if (FireCountermeasure != null)
+                            FireCountermeasure.Invoke(packet);
+                        break;
+                    case MessageType.Death:
+                        Debug.Log("case death");
+                        if (Death != null)
+                            Death.Invoke(packet);
+                        break;
+                    case MessageType.Respawn:
+                        Debug.Log("case respawn");
+                        Message_Respawn respawnMessage = ((PacketSingle)packet).message as Message_Respawn;
+                        PlayerManager.SpawnRepresentation(respawnMessage.UID, respawnMessage.position, respawnMessage.rotation, respawnMessage.isLeftie);
+                        break;
+                    case MessageType.WingFold:
+                        Debug.Log("case wingfold");
+                        if (WingFold != null)
+                            WingFold.Invoke(packet);
+                        break;
+                    case MessageType.ExtLight:
+                        Debug.Log("case external light");
+                        if (ExtLight != null)
+                            ExtLight.Invoke(packet);
+                        break;
+                    case MessageType.ShipUpdate:
+                        //Debug.Log("case ship update");
+                        if (ShipUpdate != null)
+                            ShipUpdate.Invoke(packet);
+                        break;
+                    case MessageType.RadarUpdate:
+                        Debug.Log("case radar update");
+                        if (RadarUpdate != null)
+                            RadarUpdate.Invoke(packet);
+                        break;
+                    case MessageType.LockingRadarUpdate:
+                        Debug.Log("case locking radar update");
+                        if (LockingRadarUpdate != null)
+                            LockingRadarUpdate.Invoke(packet);
+                        break;
+                    case MessageType.TurretUpdate:
+                        //Debug.Log("turret update update");
+                        if (TurretUpdate != null)
+                            TurretUpdate.Invoke(packet);
+                        break;
+                    case MessageType.MissileUpdate:
+                        // Debug.Log("case missile update");
+                        if (MissileUpdate != null)
+                            MissileUpdate.Invoke(packet);
+                        break;
+                    case MessageType.RequestNetworkUID:
+                        Debug.Log("case request network UID");
+                        if (RequestNetworkUID != null)
+                            RequestNetworkUID.Invoke(packet);
+                        break;
+                    case MessageType.LoadingTextUpdate:
+                        Debug.Log("case loading text update");
+                        if (!isHost)
+                            UpdateLoadingText(packet);
+                        break;
+                    case MessageType.HostLoaded:
+                        Debug.Log("case host loaded");
+                        if (!hostLoaded)
+                        {
+                            if (isHost)
+                            {
+                                Debug.Log("we shouldn't have gotten a host loaded....");
+                                playerStatusDic[hostID] = PlayerStatus.InGame;
+                            }
+                            else
+                            {
+                                hostLoaded = true;
+                                playerStatusDic[hostID] = PlayerStatus.InGame;
+                                LoadingSceneController.instance.PlayerReady();
+                            }
+                        }
+                        else
+                        {
+                            Debug.Log("Host is already loaded");
+                        }
+                        break;
+                    case MessageType.ServerHeartbeat:
+                        if (!isHost)
+                        {
+                            Message_Heartbeat heartbeatMessage = ((PacketSingle)packet).message as Message_Heartbeat;
+
+                            TimeoutCounter = 0;
+                            NetworkSenderThread.Instance.SendPacketToSpecificPlayer(hostID, new Message_Heartbeat_Result(heartbeatMessage.TimeOnServerGame, PlayerManager.localUID), EP2PSend.k_EP2PSendUnreliableNoDelay);
+                        }
+                        break;
+                    case MessageType.ServerHeartbeat_Response:
+                        if (isHost)
+                        {
+                            Message_Heartbeat_Result heartbeatResult = ((PacketSingle)packet).message as Message_Heartbeat_Result;
+
+                            float pingTime = Time.unscaledTime - heartbeatResult.TimeOnServerGame;
+
+                            int playerID = PlayerManager.FindPlayerIDFromNetworkUID(heartbeatResult.from);
+                            if (playerID != -1)
+                            {
+                                PlayerManager.players[playerID].ping = pingTime / 2.0f;
+                            }
+
+                            NetworkSenderThread.Instance.SendPacketAsHostToAllClients(new Message_ReportPingTime(pingTime / 2.0f, heartbeatResult.from), EP2PSend.k_EP2PSendUnreliableNoDelay);
+                        }
+                        break;
+                    case MessageType.ServerReportingPingTime:
+                        if (!isHost)
+                        {
+                            // You can use ping report however you want
+                            Message_ReportPingTime pingTimeMessage = packetS.message as Message_ReportPingTime;
+                            if (pingTimeMessage.from == PlayerManager.localUID)
+                            {
+                                pingToHost = pingTimeMessage.PingTime;
+                                int playerID = PlayerManager.GetPlayerIDFromCSteamID(hostID);
+                                if (playerID != -1)
+                                {
+                                    PlayerManager.players[playerID].ping = pingTimeMessage.PingTime;
+                                }
+                            }
+                            else
+                            {
+                                int playerID = PlayerManager.FindPlayerIDFromNetworkUID(pingTimeMessage.from);
+                                if (playerID != -1)
+                                {
+                                    PlayerManager.players[playerID].ping = pingToHost + pingTimeMessage.PingTime;
                                 }
                             }
                         }
                         break;
-                    }
-                    if (Disconnecting != null)
-                        Disconnecting.Invoke(packet);
-                    break;
-                case MessageType.WeaponsSet:
-                    Debug.Log("case weapon set");
-                    if (WeaponSet != null)
-                        WeaponSet.Invoke(packet);
-                    break;
-                case MessageType.WeaponsSet_Result:
-                    Debug.Log("case weapon set result");
-                    if (WeaponSet_Result != null)
-                        WeaponSet_Result.Invoke(packet);
-                    if (isHost)
-                    {
-                        NetworkSenderThread.Instance.SendPacketAsHostToAllClients(packet, packet.sendType);
-                    }
-                    break;
-                case MessageType.WeaponFiring:
-                    Debug.Log("case weapon firing");
-                    if (WeaponFiring != null)
-                        WeaponFiring.Invoke(packet);
-                    break;
-                case MessageType.WeaponStoppedFiring:
-                    Debug.Log("case weapon stopped firing");
-                    if (WeaponStoppedFiring != null)
-                        WeaponStoppedFiring.Invoke(packet);
-                    break;
-                case MessageType.FireCountermeasure:
-                    Debug.Log("case countermeasure fired");
-                    if (FireCountermeasure != null)
-                        FireCountermeasure.Invoke(packet);
-                    break;
-                case MessageType.Death:
-                    Debug.Log("case death");
-                    if (Death != null)
-                        Death.Invoke(packet);
-                    break;
-                case MessageType.Respawn:
-                    Debug.Log("case respawn");
-                    Message_Respawn respawnMessage = ((PacketSingle)packet).message as Message_Respawn;
-                    PlayerManager.SpawnRepresentation(respawnMessage.UID, respawnMessage.position, respawnMessage.rotation, respawnMessage.isLeftie);
-                    break;
-                case MessageType.WingFold:
-                    Debug.Log("case wingfold");
-                    if (WingFold != null)
-                        WingFold.Invoke(packet);
-                    break;
-                case MessageType.ExtLight:
-                    Debug.Log("case external light");
-                    if (ExtLight != null)
-                        ExtLight.Invoke(packet);
-                    break;
-                case MessageType.ShipUpdate:
-                    //Debug.Log("case ship update");
-                    if (ShipUpdate != null)
-                        ShipUpdate.Invoke(packet);
-                    break;
-                case MessageType.RadarUpdate:
-                    Debug.Log("case radar update");
-                    if (RadarUpdate != null)
-                        RadarUpdate.Invoke(packet);
-                    break;
-                case MessageType.LockingRadarUpdate:
-                    Debug.Log("case locking radar update");
-                    if (LockingRadarUpdate != null)
-                        LockingRadarUpdate.Invoke(packet);
-                    break;
-                case MessageType.TurretUpdate:
-                    //Debug.Log("turret update update");
-                    if (TurretUpdate != null)
-                        TurretUpdate.Invoke(packet);
-                    break;
-                case MessageType.MissileUpdate:
-                    // Debug.Log("case missile update");
-                    if (MissileUpdate != null)
-                        MissileUpdate.Invoke(packet);
-                    break;
-                case MessageType.RequestNetworkUID:
-                    Debug.Log("case request network UID");
-                    if (RequestNetworkUID != null)
-                        RequestNetworkUID.Invoke(packet);
-                    break;
-                case MessageType.LoadingTextUpdate:
-                    Debug.Log("case loading text update");
-                    if (!isHost)
-                        UpdateLoadingText(packet);
-                    break;
-                case MessageType.HostLoaded:
-                    Debug.Log("case host loaded");
-                    if (!hostLoaded)
-                    {
+                    case MessageType.LoadingTextRequest:
+                        Debug.Log("case LoadingTextRequest");
                         if (isHost)
                         {
-                            Debug.Log("we shouldn't have gotten a host loaded....");
-                            playerStatusDic[hostID] = PlayerStatus.InGame;
+                            UpdateLoadingText();
                         }
                         else
                         {
-                            hostLoaded = true;
-                            playerStatusDic[hostID] = PlayerStatus.InGame;
-                            LoadingSceneController.instance.PlayerReady();
+                            Debug.Log("Received loading text request and we're not the host.");
                         }
-                    }
-                    else
-                    {
-                        Debug.Log("Host is already loaded");
-                    }
-                    break;
-                case MessageType.ServerHeartbeat:
-                    if (!isHost)
-                    {
-                        Message_Heartbeat heartbeatMessage = ((PacketSingle)packet).message as Message_Heartbeat;
+                        break;
+                    case MessageType.JettisonUpdate:
+                        Debug.Log("case jettison update");
+                        if (JettisonUpdate != null)
+                            JettisonUpdate.Invoke(packet);
+                        break;
+                    case MessageType.SamUpdate:
+                        Debug.Log("case sam update");
+                        if (SAMUpdate != null)
+                            SAMUpdate.Invoke(packet);
+                        break;
+                    case MessageType.AAAUpdate:
+                        Debug.Log("case AAA update");
+                        if (AAAUpdate != null)
+                            AAAUpdate.Invoke(packet);
+                        break;
+                    case MessageType.ScenarioAction:
+                        Debug.Log("case scenario action packet");
+                        Message_ScenarioAction lastMessage = (Message_ScenarioAction)((PacketSingle)packet).message;
 
-                        TimeoutCounter = 0;
-                        NetworkSenderThread.Instance.SendPacketToSpecificPlayer(hostID, new Message_Heartbeat_Result(heartbeatMessage.TimeOnServerGame, PlayerManager.localUID), EP2PSend.k_EP2PSendUnreliableNoDelay);
-                    }
-                    break;
-                case MessageType.ServerHeartbeat_Response:
-                    if (isHost)
-                    {
-                        Message_Heartbeat_Result heartbeatResult = ((PacketSingle)packet).message as Message_Heartbeat_Result;
-
-                        float pingTime = Time.unscaledTime - heartbeatResult.TimeOnServerGame;
-
-                        int playerID = PlayerManager.FindPlayerIDFromNetworkUID(heartbeatResult.from);
-                        if (playerID != -1)
+                        Debug.Log("recieved action from other");
+                        // do not run scenarios on self
+                        if (lastMessage.UID == PlayerManager.localUID)
                         {
-                            PlayerManager.players[playerID].ping = pingTime / 2.0f;
-                        }
+                            Debug.Log("ignored action as local event");
 
-                        NetworkSenderThread.Instance.SendPacketAsHostToAllClients(new Message_ReportPingTime(pingTime / 2.0f, heartbeatResult.from), EP2PSend.k_EP2PSendUnreliableNoDelay);
-                    }
-                    break;
-                case MessageType.ServerReportingPingTime:
-                    if (!isHost)
-                    {
-                        // You can use ping report however you want
-                        Message_ReportPingTime pingTimeMessage = packetS.message as Message_ReportPingTime;
-                        if (pingTimeMessage.from == PlayerManager.localUID)
-                        {
-                            pingToHost = pingTimeMessage.PingTime;
-                            int playerID = PlayerManager.GetPlayerIDFromCSteamID(hostID);
-                            if (playerID != -1)
-                            {
-                                PlayerManager.players[playerID].ping = pingTimeMessage.PingTime;
-                            }
                         }
                         else
                         {
-                            int playerID = PlayerManager.FindPlayerIDFromNetworkUID(pingTimeMessage.from);
-                            if (playerID != -1)
-                            {
-                                PlayerManager.players[playerID].ping = pingToHost + pingTimeMessage.PingTime;
-                            }
+                            Debug.Log("running event from another person");
+                            ObjectiveNetworker_Reciever.runScenarioAction(lastMessage.scenarioActionHash);
                         }
-                    }
-                    break;
-                case MessageType.LoadingTextRequest:
-                    Debug.Log("case LoadingTextRequest");
-                    if (isHost)
-                    {
-                        UpdateLoadingText();
-                    }
-                    else
-                    {
-                        Debug.Log("Received loading text request and we're not the host.");
-                    }
-                    break;
-                case MessageType.JettisonUpdate:
-                    Debug.Log("case jettison update");
-                    if (JettisonUpdate != null)
-                        JettisonUpdate.Invoke(packet);
-                    break;
-                case MessageType.SamUpdate:
-                    Debug.Log("case sam update");
-                    if (SAMUpdate != null)
-                        SAMUpdate.Invoke(packet);
-                    break;
-                case MessageType.AAAUpdate:
-                    Debug.Log("case AAA update");
-                    if (AAAUpdate != null)
-                        AAAUpdate.Invoke(packet);
-                    break;
-                case MessageType.ScenarioAction:
-                    Debug.Log("case scenario action packet");
-                    Message_ScenarioAction lastMessage = (Message_ScenarioAction)((PacketSingle)packet).message;
 
-                    Debug.Log("recieved action from other");
-                    // do not run scenarios on self
-                    if (lastMessage.UID == PlayerManager.localUID)
-                    {
-                        Debug.Log("ignored action as local event");
+                        break;
+                    case MessageType.BulletHit:
+                        BulletHit.Invoke(packet);
+                        break;
+                    case MessageType.MissileDamage:
+                        Debug.Log("case missiledmage");
+                        PlayerManager.MissileDamage(packet);
+                        break;
+                    case MessageType.ObjectiveSync:
+                        Debug.Log("case Objective");
 
-                    }
-                    else
-                    {
-                        Debug.Log("running event from another person");
-                        ObjectiveNetworker_Reciever.runScenarioAction(lastMessage.scenarioActionHash);
-                    }
+                        Message_ObjectiveSync lastMessageobbj = (Message_ObjectiveSync)((PacketSingle)packet).message;
 
-                    break;
-                case MessageType.BulletHit:
-                    BulletHit.Invoke(packet);
-                    break;
-                case MessageType.MissileDamage:
-                    Debug.Log("case missiledmage");
-                    PlayerManager.MissileDamage(packet);
-                    break;
-                case MessageType.ObjectiveSync:
-                    Debug.Log("case Objective");
+                        Debug.Log("received objective action from other");
+                        // do not run scenarios on self
+                        if (lastMessageobbj.UID == PlayerManager.localUID)
+                        {
+                            Debug.Log("ignored objective as local obj objective");
 
-                    Message_ObjectiveSync lastMessageobbj = (Message_ObjectiveSync)((PacketSingle)packet).message;
-
-                    Debug.Log("received objective action from other");
-                    // do not run scenarios on self
-                    if (lastMessageobbj.UID == PlayerManager.localUID)
-                    {
-                        Debug.Log("ignored objective as local obj objective");
-
-                    }
-                    else
-                    {
-                        Debug.Log("running obj event from another person");
-                        ObjectiveNetworker_Reciever.objectiveUpdate(lastMessageobbj.objID, lastMessageobbj.status);
-                    }
-                    break;
-                case MessageType.Ack:
-                    Debug.Log("Case ack");
-                    Message_Ack ack = (Message_Ack)((PacketSingle)packet).message;
-                    AckUpdate.Invoke(ack.id);
-                    break;
-                default:
-                    Debug.Log("default case");
-                    break;
+                        }
+                        else
+                        {
+                            Debug.Log("running obj event from another person");
+                            ObjectiveNetworker_Reciever.objectiveUpdate(lastMessageobbj.objID, lastMessageobbj.status);
+                        }
+                        break;
+                    case MessageType.Ack:
+                        Debug.Log("Case ack");
+                        Message_Ack ack = (Message_Ack)((PacketSingle)packet).message;
+                        AckUpdate.Invoke(ack.id);
+                        break;
+                    default:
+                        Debug.Log("default case");
+                        break;
+                }
+                processedPackets.Add(packetS.message.id);
             }
-            if (packetS.message.id != 0)
-            {
-                Debug.Log("Sending Ack.");
-                NetworkSenderThread.Instance.SendPacketToSpecificPlayer((CSteamID)packetS.networkUID, new Message_Ack(packetS.message.id), EP2PSend.k_EP2PSendUnreliable);
-            }
-            if (isHost)
+            if (isHost && (packetS.message.id != 0 ||!processedPackets.Contains(packetS.message.id)))
             {
                 if (MessageTypeShouldBeForwarded(packetS.message.type))
                 {
                     NetworkSenderThread.Instance.SendPacketAsHostToAllButOneSpecificClient((CSteamID)packetS.networkUID, packetS.message, EP2PSend.k_EP2PSendUnreliable);
                 }
+            }
+            if (packetS.message.id != 0)
+            {
+                Debug.Log("Sending Ack.");
+                NetworkSenderThread.Instance.SendPacketToSpecificPlayer((CSteamID)packetS.networkUID, new Message_Ack(packetS.message.id), EP2PSend.k_EP2PSendUnreliable);
             }
         }
     }
