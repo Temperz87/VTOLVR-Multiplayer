@@ -476,7 +476,7 @@ public class Networker : MonoBehaviour
                 Debug.LogError("packetS null.");
             if (packetS.message == null)
                 Debug.LogError("packetS.message null.");
-            if (packetS.message.id != 0 || processedPackets.Contains(packetS.message.id))
+            if (packetS.message.id == 0 || processedPackets.Contains(packetS.message.id))
             {
                 switch (packetS.message.type)
                 {
@@ -986,13 +986,18 @@ public class Networker : MonoBehaviour
                         Debug.Log("default case");
                         break;
                 }
-                processedPackets.Add(packetS.message.id);
+                if (packetS.message.id != 0)
+                    processedPackets.Add(packetS.message.id);
             }
-            if (isHost && (packetS.message.id != 0 ||!processedPackets.Contains(packetS.message.id)))
+            if (isHost && (packetS.message.id == 0 || !processedPackets.Contains(packetS.message.id)))
             {
                 if (MessageTypeShouldBeForwarded(packetS.message.type))
                 {
-                    NetworkSenderThread.Instance.SendPacketAsHostToAllButOneSpecificClient((CSteamID)packetS.networkUID, packetS.message, EP2PSend.k_EP2PSendUnreliable);
+                    if (packetS.message.id != 0)
+                        NetworkSenderThread.Instance.SendPacketAsHostToAllButOneSpecificClient((CSteamID)packetS.networkUID, packetS.message, EP2PSend.k_EP2PSendUnreliable, true);
+                    else
+
+                        NetworkSenderThread.Instance.SendPacketAsHostToAllButOneSpecificClient((CSteamID)packetS.networkUID, packetS.message, EP2PSend.k_EP2PSendUnreliable);
                 }
             }
             if (packetS.message.id != 0)
