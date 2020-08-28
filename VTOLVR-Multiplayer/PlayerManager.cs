@@ -369,7 +369,13 @@ public static class PlayerManager
                 }
                     
             }
-        } 
+        }
+
+        //prevent fall through ground
+        if ((bool)VTMapGenerator.fetch)
+        {
+            VTMapGenerator.fetch.BakeColliderAtPosition(localVehicle.transform.position);
+        }
         SetupLocalAircraft(localVehicle, pos, rot, UID);
 
      
@@ -380,9 +386,7 @@ public static class PlayerManager
                 localVehicle.transform.position = new Vector3(1000000, 10000, 10000);
             }
       */
-
-        if (Multiplayer.SoloTesting)
-            pos += new Vector3(20, 0, 0);
+       
 
         /// * //bad code we ran this before in  SetupLocalAircraft(localVehicle, pos, rot, UID);
         /*List<HPInfo> hpInfos = PlaneEquippableManager.generateLocalHpInfoList(UID);
