@@ -187,7 +187,7 @@ public static class PlayerManager
 
         while (AIManager.AIsToSpawnQueue.Count > 0)
         {
-            AIManager.SpawnAIVehicle(AIManager.AIsToSpawnQueue.Dequeue());
+            Task _ = AIManager.SpawnAIVehicle(AIManager.AIsToSpawnQueue.Dequeue());
         }
         SpawnPlayersInPlayerSpawnQueue();
 

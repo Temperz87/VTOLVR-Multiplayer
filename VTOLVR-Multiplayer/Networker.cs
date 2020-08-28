@@ -674,7 +674,7 @@ public class Networker : MonoBehaviour
                     break;
                 case MessageType.SpawnAiVehicle:
                     Debug.Log("case spawn ai vehicle");
-                    AIManager.SpawnAIVehicle(packet);
+                    Task _ = AIManager.SpawnAIVehicle(packet);
                     break;
                 case MessageType.SpawnPlayerVehicle:
                     Debug.Log("case spawn vehicle");
