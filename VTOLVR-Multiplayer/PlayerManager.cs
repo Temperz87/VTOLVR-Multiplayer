@@ -51,6 +51,7 @@ public static class PlayerManager
         public ulong vehicleUID;
         public bool leftie;
         public float ping;
+        public List<ulong> receivedPackets;
         public Player(CSteamID cSteamID, GameObject vehicle, VTOLVehicles vehicleType, ulong vehicleUID, bool leftTeam)
         {
             this.cSteamID = cSteamID;
@@ -58,6 +59,7 @@ public static class PlayerManager
             this.vehicleType = vehicleType;
             this.vehicleUID = vehicleUID;
             this.leftie = leftTeam;
+            this.receivedPackets = new List<ulong>();
         }
     }
     public static List<Player> players = new List<Player>(); //This is the list of players

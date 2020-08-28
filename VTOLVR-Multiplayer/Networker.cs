@@ -34,72 +34,12 @@ static class MapAndScenarioVersionChecker
     {
         Debug.Log("Creating Hashes");
         // if (PilotSaveManager.currentCampaign.isBuiltIn)
-        if (true)
-        {
-            // Only need to get the scenario ID in this case
-            builtInCampaign = true;
-            // Don't send null arrays over network
-            mapHash = new byte[0];
-            scenarioHash = new byte[0];
-            campaignHash = new byte[0];
-        }
-        else
-        {
-
-
-            Debug.Log("Found custom scenario - setting map hash to 0.");
-            mapHash = new byte[0];
-
-            filePath = PilotSaveManager.currentScenario.customScenarioInfo.filePath;
-            Debug.Log($"Custom Scenario Location: {filePath}");
-            using (FileStream scenarioFile = File.OpenRead(filePath))
-            {
-                scenarioHash = hashCalculator.ComputeHash(scenarioFile);
-            }
-
-            filePath = null;
-
-            if (PilotSaveManager.currentCampaign.campaignID != null)
-            {
-                Debug.Log("Campaign ID Is not null");
-
-
-                //VTCampaignInfo campaignInfo = VTResources.GetCustomCampaigns().Find(id => id.campaignID == PilotSaveManager.currentCampaign.campaignID);
-
-
-                VTCampaignInfo campaignInfo = VTResources.GetSteamWorkshopCampaign(PilotSaveManager.currentCampaign.campaignID);
-
-                if (campaignInfo != null)
-                {
-                    filePath = campaignInfo.filePath;
-
-                    if (filePath != null)
-                    {
-                        Debug.Log($"Campaign File path: {filePath}");
-                        using (FileStream campaignFile = File.OpenRead(filePath))
-                        {
-                            campaignHash = hashCalculator.ComputeHash(campaignFile);
-                        }
-                    }
-                    else
-                    {
-                        Debug.Log("Campaign file path is null, we may not be playing a campaign? Setting the hash to 0.");
-                        campaignHash = new byte[0];
-                    }
-                }
-                else
-                {
-                    Debug.Log("Campaign info is null");
-                    campaignHash = new byte[0];
-                }
-            }
-            else
-            {
-                Debug.Log("Campaign ID is null!");
-                campaignHash = new byte[0];
-            }
-
-        }
+        // Only need to get the scenario ID in this case
+        builtInCampaign = true;
+        // Don't send null arrays over network
+        mapHash = new byte[0];
+        scenarioHash = new byte[0];
+        campaignHash = new byte[0];
         Debug.Log($"Campaign File Path: {filePath}");
         Debug.Log($"Campaign Hash: {campaignHash}");
         scenarioId = PilotSaveManager.currentScenario.scenarioID;
@@ -153,6 +93,7 @@ public class CSteamIDNotFoundException : Exception
     public CSteamIDNotFoundException()
     {
         Debug.LogError("A CSteamID was not found.");
+        throw new NullReferenceException("FUCK NO CSTEAMID EXCEPTION DAMNIT.");
     }
 }
 
@@ -239,8 +180,6 @@ public class Networker : MonoBehaviour
     public static readonly System.Timers.Timer HeartbeatTimer = new System.Timers.Timer(1000);
 
     public static float pingToHost = 0;
-
-    private List<ulong> processedPackets = new List<ulong>();
 
     #region Message Type Callbacks
     //These callbacks are use for other scripts to know when a network message has been
@@ -476,7 +415,7 @@ public class Networker : MonoBehaviour
                 Debug.LogError("packetS null.");
             if (packetS.message == null)
                 Debug.LogError("packetS.message null.");
-            if (packetS.message.id == 0 || processedPackets.Contains(packetS.message.id))
+            if (packetS.message.id == 0 && !PlayerManager.players[PlayerManager.GetPlayerIDFromCSteamID((CSteamID)packetS.networkUID)].receivedPackets.Contains(packetS.message.id))
             {
                 switch (packetS.message.type)
                 {
@@ -987,9 +926,9 @@ public class Networker : MonoBehaviour
                         break;
                 }
                 if (packetS.message.id != 0)
-                    processedPackets.Add(packetS.message.id);
+                    PlayerManager.players[PlayerManager.GetPlayerIDFromCSteamID((CSteamID)packetS.networkUID)].receivedPackets.Add(packetS.message.id);
             }
-            if (isHost && (packetS.message.id == 0 || !processedPackets.Contains(packetS.message.id)))
+            if (isHost && (packetS.message.id == 0))
             {
                 if (MessageTypeShouldBeForwarded(packetS.message.type))
                 {
@@ -1002,6 +941,10 @@ public class Networker : MonoBehaviour
             }
             if (packetS.message.id != 0)
             {
+                if (!PlayerManager.players[PlayerManager.GetPlayerIDFromCSteamID((CSteamID)packetS.networkUID)].receivedPackets.Contains(packetS.message.id))
+                {
+                    PlayerManager.players[PlayerManager.GetPlayerIDFromCSteamID((CSteamID)packetS.networkUID)].receivedPackets.Add(packetS.message.id);
+                }
                 Debug.Log("Sending Ack.");
                 NetworkSenderThread.Instance.SendPacketToSpecificPlayer((CSteamID)packetS.networkUID, new Message_Ack(packetS.message.id), EP2PSend.k_EP2PSendUnreliable);
             }
