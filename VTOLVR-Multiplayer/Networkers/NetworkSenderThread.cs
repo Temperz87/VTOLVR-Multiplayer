@@ -253,7 +253,7 @@ class NetworkSenderThread
                         continue;
                     }
                     // See if we can batch the next message
-                    if (messageQueue.TryPeek(out OutgoingNetworkPacketContainer peekdPacket) && peekdPacket.PacketType == outgoingData.PacketType)
+                    if (messageQueue.TryPeek(out OutgoingNetworkPacketContainer peekdPacket) && peekdPacket.PacketType == outgoingData.PacketType && outgoingData.SteamId == peekdPacket.SteamId)
                     {
                         messageQueue.TryDequeue(out peekdPacket);
                         if (peekdPacket.Message is Message message)
@@ -273,7 +273,7 @@ class NetworkSenderThread
                             }
                             while (Buffer.ByteLength(batchedMessages.ToArray()) < 1000) // Same code as above
                             {
-                                if (messageQueue.TryPeek(out OutgoingNetworkPacketContainer peekdPacket2) && peekdPacket2.PacketType == outgoingData.PacketType)
+                                if (messageQueue.TryPeek(out OutgoingNetworkPacketContainer peekdPacket2) && peekdPacket2.PacketType == outgoingData.PacketType && outgoingData.SteamId == peekdPacket.SteamId)
                                 {
                                     messageQueue.TryDequeue(out peekdPacket2);
                                     if (peekdPacket2.Message is Message message2)
