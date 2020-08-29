@@ -288,9 +288,9 @@ class NetworkSenderThread
                                         {
                                             foreach (var nestedMessage in ((PacketMultiple)packet2).messages)
                                             {
-                                                batchedMessages.Add(nestedMessage);
                                                 if ((Buffer.ByteLength(batchedMessages.ToArray()) > 1000))
                                                     break;
+                                                batchedMessages.Add(nestedMessage);
                                             }
                                         }
                                     }
