@@ -123,7 +123,6 @@ public class Networker : MonoBehaviour
     }
     private static readonly object timeoutCounterLock = new object();
     private static int timeoutCounterInternal = 0;
-    private static ulong MaxPacketReceived = 0;
     private static int TimeoutCounter
     {
         get { lock (timeoutCounterLock) { return timeoutCounterInternal; } }
@@ -1353,7 +1352,6 @@ public class Networker : MonoBehaviour
         alreadyInGame = false;
         hostID = new CSteamID(0);
         pingToHost = 0;
-        MaxPacketReceived = 0;
         AIManager.CleanUpOnDisconnect();
         multiplayerInstance?.CleanUpOnDisconnect();
         hostLoaded = false;
