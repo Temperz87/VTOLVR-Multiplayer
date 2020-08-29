@@ -23,7 +23,7 @@ public class RigidbodyNetworker_Sender : MonoBehaviour
     
     private ulong updateNumber;
     private float tick;
-    private float tickRate = 10;
+    public float tickRate = 10;
 
     public int first = 0;
     public bool player = false;
@@ -106,6 +106,7 @@ public class RigidbodyNetworker_Sender : MonoBehaviour
    
         yield return new WaitForSeconds(0.5f);
         rb.detectCollisions = true;
+        rb.interpolation = RigidbodyInterpolation.Interpolate;
 
 
     }

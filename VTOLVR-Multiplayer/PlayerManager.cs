@@ -811,7 +811,16 @@ public static class PlayerManager
         {
             if (collider)
             {
-                collider.gameObject.layer = 9;
+                Hitbox hitbox = collider.GetComponent<Hitbox>();
+
+                if (hitbox !=null)
+                {
+                    hitbox.health.invincible = true;
+                }
+                else
+                {
+                    collider.gameObject.layer = 9;
+                }
             }
         }
         aIPilot.enabled = false;
@@ -1055,6 +1064,8 @@ public static class PlayerManager
         localUID = 0;
         worldData = null;
         players?.Clear();
+        buttonMade = false;
+        text = null;
         ObjectiveNetworker_Reciever.scenarioActionsList?.Clear();
         ObjectiveNetworker_Reciever.scenarioActionsListCoolDown?.Clear();
         PlaneNetworker_Receiver.dontPrefixNextJettison = false;

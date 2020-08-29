@@ -55,30 +55,25 @@ class HealthNetworker_ReceiverHostEnforced : MonoBehaviour
 
         if (bulletMessage.destUID != networkUID)
             return;
-
-
-        RaycastHit hitInfo;
         Vector3 pos = VTMapManager.GlobalToWorldPoint(bulletMessage.pos);
         Vector3 vel = bulletMessage.dir.toVector3;
-        Vector3 a = pos;
-        a += vel * 0.2f;
 
-        bool flag = Physics.Linecast(pos, a, out hitInfo, 1025);
+        RaycastHit[] hits;
+        hits = Physics.RaycastAll(pos, vel, 100.0f, 1025);
         Hitbox hitbox = null;
-        if (flag)
+        for (int i = 0; i < hits.Length; i++)
         {
-
-            hitbox = hitInfo.collider.GetComponent<Hitbox>();
+            RaycastHit hit = hits[i];
+            hitbox = hit.collider.GetComponent<Hitbox>();
             if ((bool)hitbox && (bool)hitbox.actor)
             {
 
                 Debug.Log("found  target bullet hit");
-                hitbox.Damage(bulletMessage.damage, hitInfo.point, Health.DamageTypes.Impact, hitbox.actor, "lol");
-                BulletHitManager.instance.CreateBulletHit(hitInfo.point, -vel, true);
+                hitbox.Damage(bulletMessage.damage, hit.point, Health.DamageTypes.Impact, hitbox.actor, "Bullet Hit Network");
+                BulletHitManager.instance.CreateBulletHit(hit.point, -vel, true);
 
 
             }
-
 
         }
     }
