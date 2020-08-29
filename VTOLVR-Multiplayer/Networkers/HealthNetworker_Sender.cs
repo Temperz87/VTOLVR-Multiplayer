@@ -21,9 +21,9 @@ class HealthNetworker_Sender : MonoBehaviour
 
         Networker.BulletHit += this.BulletHit;
     }
-    public void BulletHit(Packet packet)
+    public void BulletHit(Message message)
     {
-        bulletMessage = (Message_BulletHit)((PacketSingle)packet).message;
+        bulletMessage = (Message_BulletHit)message;
 
         Debug.Log("handling bullet hit");
 
