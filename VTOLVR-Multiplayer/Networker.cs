@@ -471,7 +471,7 @@ public class Networker : MonoBehaviour
                 Debug.LogError("packetS null.");
             if (packetS.message == null)
                 Debug.LogError("packetS.message null.");
-            ProcessMessage(packetS.message, (CSteamID)packetS.networkUID, packet.sendType);
+            ProcessMessage(packetS.message, csteamID, packet.sendType);
             if (isHost)
             {
                 if (MessageTypeShouldBeForwarded(packetS.message.type))
@@ -490,7 +490,7 @@ public class Networker : MonoBehaviour
             foreach (Message message in packetM.messages)
             {
                 if (message != null)
-                    ProcessMessage(message, (CSteamID)packetM.networkUID, packet.sendType);
+                    ProcessMessage(message, csteamID, packet.sendType);
                 if (MessageTypeShouldBeForwarded(message.type))
                     NetworkSenderThread.Instance.SendPacketAsHostToAllButOneSpecificClient((CSteamID)packetM.networkUID, message, EP2PSend.k_EP2PSendUnreliable);
                 else

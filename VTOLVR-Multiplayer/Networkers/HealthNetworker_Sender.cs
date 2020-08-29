@@ -41,7 +41,6 @@ class HealthNetworker_Sender : MonoBehaviour
         Hitbox hitbox = null;
         if (flag)
         {
-
             hitbox = hitInfo.collider.GetComponent<Hitbox>();
             if ((bool)hitbox && (bool)hitbox.actor)
             {
@@ -49,8 +48,6 @@ class HealthNetworker_Sender : MonoBehaviour
                 Debug.Log("found  target bullet hit");
                 hitbox.Damage(bulletMessage.damage, hitInfo.point, Health.DamageTypes.Impact, hitbox.actor, "lol");
                 BulletHitManager.instance.CreateBulletHit(hitInfo.point, -vel, true);
-
-
             }
         }
     }
@@ -59,8 +56,8 @@ class HealthNetworker_Sender : MonoBehaviour
         lastMessage.UID = networkUID;
         lastMessage.immediate = immediateFlag;
         if (Networker.isHost)
-            NetworkSenderThread.Instance.SendPacketAsHostToAllClients(lastMessage, Steamworks.EP2PSend.k_EP2PSendUnreliableNoDelay);
+            NetworkSenderThread.Instance.SendPacketAsHostToAllClients(lastMessage, Steamworks.EP2PSend.k_EP2PSendUnreliable);
         else
-            NetworkSenderThread.Instance.SendPacketToSpecificPlayer(Networker.hostID, lastMessage, Steamworks.EP2PSend.k_EP2PSendUnreliableNoDelay);
+            NetworkSenderThread.Instance.SendPacketToSpecificPlayer(Networker.hostID, lastMessage, Steamworks.EP2PSend.k_EP2PSendUnreliable);
     }
 }
