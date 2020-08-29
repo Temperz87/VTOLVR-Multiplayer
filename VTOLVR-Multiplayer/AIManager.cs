@@ -45,7 +45,7 @@ public static class AIManager
         }
         Message_SpawnAIVehicle message = (Message_SpawnAIVehicle)((PacketSingle)packet).message;
 
-        if (!PlayerManager.gameLoaded)
+        if (!PlayerManager.gameLoaded && !PlayerManager.firstSpawnDone)
         {
             Debug.LogWarning("Our game isn't loaded, adding spawn vehicle to queue");
             AIsToSpawnQueue.Enqueue(packet);

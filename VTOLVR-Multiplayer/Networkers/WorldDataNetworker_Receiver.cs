@@ -32,8 +32,6 @@ public class WorldDataNetworker_Receiver : MonoBehaviour
             Time.timeScale = serverTimescale;
         }
 
-        PlayerManager.SpawnPlayersInPlayerSpawnQueue();//addmitedly, this probably isnt the best place to put this, feel free to move it somewhere els
-   
     }
 
     public void WorldDataUpdate(Packet packet)

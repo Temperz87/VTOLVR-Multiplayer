@@ -25,6 +25,7 @@ public class PlaneNetworker_Receiver : MonoBehaviour
     private bool noAmmo;
     // private RadarLockData radarLockData;
     private ulong mostCurrentUpdateNumber;
+    private Actor ownerActor;
     private void Awake()
     {
         firstMessageReceived = false;
@@ -55,7 +56,7 @@ public class PlaneNetworker_Receiver : MonoBehaviour
         if (fuelTank == null)
             Debug.LogError("FuelTank was null on " + gameObject.name);
 
-        Actor ownerActor = this.GetComponentInParent<Actor>();
+         ownerActor = this.GetComponentInParent<Actor>();
 
         //?fix gun sight jitter
         if (ownerActor != null)
@@ -123,6 +124,12 @@ public class PlaneNetworker_Receiver : MonoBehaviour
 
         }
         lastMessage = newMessage;
+
+        if (ownerActor != null)
+        {
+            ownerActor.flightInfo.PauseGCalculations();
+            ownerActor.flightInfo.OverrideRecordedAcceleration(Vector3.zero);
+        }
     }
     private void SetLandingGear(bool state)
     {

@@ -23,6 +23,9 @@ public static class PlayerManager
     public static Text text;
     public static bool firstSpawnDone = false;
     public static bool airSpawn = false;
+    public static bool carrierStart = false;
+
+    public static bool carrierFound = false;
     /// <summary>
     /// This is the queue for people waiting to get a spawn point,
     /// incase the host hasn't loaded in, in time.
@@ -34,7 +37,7 @@ public static class PlayerManager
     private static GameObject av42cPrefab, fa26bPrefab, f45Prefab;
     private static List<ulong> spawnedVehicles = new List<ulong>();
     public static ulong localUID;
-
+    private static Packet storedSpawnMessage;
     public static GameObject worldData;
 
     public static Multiplayer multiplayerInstance = null;
@@ -51,6 +54,7 @@ public static class PlayerManager
         public ulong vehicleUID;
         public bool leftie;
         public float ping;
+        public float timeSinceLastResponse;
         public Player(CSteamID cSteamID, GameObject vehicle, VTOLVehicles vehicleType, ulong vehicleUID, bool leftTeam)
         {
             this.cSteamID = cSteamID;
@@ -58,6 +62,8 @@ public static class PlayerManager
             this.vehicleType = vehicleType;
             this.vehicleUID = vehicleUID;
             this.leftie = leftTeam;
+
+            timeSinceLastResponse = 0.0f;
         }
     }
     public static List<Player> players = new List<Player>(); //This is the list of players
@@ -76,9 +82,10 @@ public static class PlayerManager
         gameLoaded = true;
         // As a client, when the map has loaded we are going to request a spawn point from the host
         SetPrefabs();
+
+       
         if (!Networker.isHost)
         {
-            ScreenFader.FadeOut(Color.black, 0.0f);
             Debug.Log($"Sending spawn request to host, host id: {Networker.hostID}, client id: {SteamUser.GetSteamID().m_SteamID}");
             Debug.Log("Killing all units currently on the map.");
             List<Actor> allActors = new List<Actor>();
@@ -141,14 +148,15 @@ public static class PlayerManager
                 }
 
 
+            Message_RequestSpawn msg = new Message_RequestSpawn(teamLeftie, SteamUser.GetSteamID().m_SteamID);
+            NetworkSenderThread.Instance.SendPacketToSpecificPlayer(Networker.hostID, msg, EP2PSend.k_EP2PSendReliable);
+
             /*foreach (var actor in TargetManager.instance.allActors)
             {
                 VTScenario.current.units.AddSpawner(actor.unitSpawn.unitSpawner);
             }*/
-            Message_RequestSpawn msg = new Message_RequestSpawn(teamLeftie, SteamUser.GetSteamID().m_SteamID);
-            NetworkSenderThread.Instance.SendPacketToSpecificPlayer(Networker.hostID, msg, EP2PSend.k_EP2PSendReliable);
-       
-            
+
+
         }
         else
         {
@@ -191,7 +199,7 @@ public static class PlayerManager
         }
         SpawnPlayersInPlayerSpawnQueue();
 
-
+        carrierStart = FlightSceneManager.instance.playerActor.unitSpawn.unitSpawner.linkedToCarrier;
         if (!Networker.isHost)
         {
             // If the player is not the host, they only need a receiver?
@@ -241,9 +249,15 @@ public static class PlayerManager
             Debug.Log("The players spawn will be " + lastSpawn);
 
 
+            if (Networker.isHost)
+            {
+                Debug.Log("Telling connected client about AI units");
+                AIManager.TellClientAboutAI(new CSteamID(lastMessage.senderSteamID));
+            }
+            GameObject localVehicle = VTOLAPI.GetPlayersVehicleGameObject();
             NetworkSenderThread.Instance.SendPacketToSpecificPlayer(
                 new CSteamID(lastMessage.senderSteamID),
-                new Message_RequestSpawn_Result(new Vector3D(lastSpawn.position), lastSpawn.rotation, Networker.GenerateNetworkUID(), players.Count),
+                new Message_RequestSpawn_Result(new Vector3D(localVehicle.transform.position), localVehicle.transform.rotation, Networker.GenerateNetworkUID(), players.Count),
                 EP2PSend.k_EP2PSendReliable);
         }
     }
@@ -286,8 +300,14 @@ public static class PlayerManager
 
 
 
+        if (Networker.isHost)
+        {
+            Debug.Log("Telling connected client about AI units");
+            AIManager.TellClientAboutAI(new CSteamID(lastMessage.senderSteamID));
+        }
+        GameObject localVehicle = VTOLAPI.GetPlayersVehicleGameObject();
         Debug.Log("The players spawn will be " + spawn);
-        NetworkSenderThread.Instance.SendPacketToSpecificPlayer(sender, new Message_RequestSpawn_Result(new Vector3D(spawn.position), spawn.rotation, Networker.GenerateNetworkUID(), players.Count), EP2PSend.k_EP2PSendReliable);
+        NetworkSenderThread.Instance.SendPacketToSpecificPlayer(sender, new Message_RequestSpawn_Result(new Vector3D(localVehicle.transform.position), localVehicle.transform.rotation, Networker.GenerateNetworkUID(), players.Count), EP2PSend.k_EP2PSendReliable);
     }
     /// <summary>
     /// When the client receives a P2P message of their spawn point, 
@@ -314,6 +334,12 @@ public static class PlayerManager
         PlayerVehicle currentVehiclet = PilotSaveManager.currentVehicle;
         localVehicle.transform.TransformPoint(currentVehiclet.playerSpawnOffset);
 
+        if(carrierStart)
+        if (!carrierFound)
+        {
+            storedSpawnMessage = packet;
+            return;
+        }
         SpawnLocalVehicleAndInformOtherClients(localVehicle,  localVehicle.transform.position, localVehicle.transform.rotation, result.vehicleUID,result.playerCount);
         localUID = result.vehicleUID;
 
@@ -324,7 +350,53 @@ public static class PlayerManager
     /// spawn their representation of this vehicle
     /// </summary>
     /// <param name="localVehicle">The local clients gameobject</param>
-    public static void SpawnLocalVehicleAndInformOtherClients(GameObject localVehicle, Vector3 pos, Quaternion rot, ulong UID,int playercount =0 ) //Both
+    public static void Update()
+    {
+       if (!firstSpawnDone) 
+        {
+
+            if (carrierStart)
+
+            {
+                foreach (var actor in TargetManager.instance.allActors)
+                {
+                    if (actor.role == Actor.Roles.Ship)
+                    {
+
+                        carrierFound = true;
+                    }
+                }
+
+
+            }
+            ReArmingPoint[] rearmPoints = GameObject.FindObjectsOfType<ReArmingPoint>();
+            ReArmingPoint rearmPoint = null;
+
+            float lastRadius = 0;
+            if (PlayerManager.carrierStart)
+            {
+                foreach (ReArmingPoint rep in rearmPoints)
+                {
+                    if (rep.team == Teams.Allied)
+                    {
+                        if ( rep.radius < 19.0f)
+                        {
+                            rearmPoint = rep;
+                        }
+                    }
+                }
+            }
+            if(rearmPoint != null && carrierFound && carrierStart)
+                RequestSpawn_Result(storedSpawnMessage);
+       
+
+
+        }
+
+        PlayerManager.SpawnPlayersInPlayerSpawnQueue();//addmitedly, this probably isnt the best place to put this, feel free to move it somewhere els
+
+    }
+    public static void SpawnLocalVehicleAndInformOtherClients(GameObject localVehicle, Vector3 pos, Quaternion rot, ulong UID,int playercount = 0 ) //Both
     {
         Debug.Log("Sending our location to spawn our vehicle");
         VTOLVehicles currentVehicle = VTOLAPI.GetPlayersVehicleEnum();
@@ -332,14 +404,29 @@ public static class PlayerManager
         Player localPlayer = new Player(SteamUser.GetSteamID(), localVehicle, currentVehicle, UID, PlayerManager.teamLeftie);
         AddToPlayerList(localPlayer);
 
-
+       
         ReArmingPoint[] rearmPoints = GameObject.FindObjectsOfType<ReArmingPoint>();
         ReArmingPoint rearmPoint = rearmPoints[UnityEngine.Random.Range(0, rearmPoints.Length - 1)];
         int rand = UnityEngine.Random.Range(0, rearmPoints.Length - 1);
         int counter = 0;
 
         float lastRadius = 0.0f;
-        foreach (ReArmingPoint rep in rearmPoints)
+
+        if (PlayerManager.carrierStart)
+        {
+            foreach (ReArmingPoint rep in rearmPoints)
+            {
+                if (rep.team == Teams.Allied)
+                {
+                    if (rep.radius > 17.0f && rep.radius < 19.0f)
+                    {
+                        rearmPoint = rep;
+                    }
+                }
+            }
+        }
+        else
+            foreach (ReArmingPoint rep in rearmPoints)
         {
             if (rep.team == Teams.Allied && rep.CheckIsClear(actor))
             {
@@ -354,8 +441,11 @@ public static class PlayerManager
  
         if(Networker.isHost && firstSpawnDone == false)
         {
+            if(firstSpawnDone)
+            rearmPoint.BeginReArm();
 
-        }else
+        }
+        else
         {
             if(teamLeftie)
             rearmPoint.BeginReArm();
@@ -371,6 +461,7 @@ public static class PlayerManager
             }
         }
 
+       
         //prevent fall through ground
         if ((bool)VTMapGenerator.fetch)
         {
@@ -807,7 +898,7 @@ public static class PlayerManager
             {
                 Hitbox hitbox = collider.GetComponent<Hitbox>();
 
-                if (hitbox !=null)
+                if (hitbox != null)
                 {
                     hitbox.health.invincible = true;
                 }
@@ -1064,7 +1155,10 @@ public static class PlayerManager
         ObjectiveNetworker_Reciever.scenarioActionsListCoolDown?.Clear();
         PlaneNetworker_Receiver.dontPrefixNextJettison = false;
         firstSpawnDone = false;
-    }
+        carrierStart = false;
+        airSpawn = false;
+        carrierFound = false;
+}
 
     public static void OnDisconnect()
     {
