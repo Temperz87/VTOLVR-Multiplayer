@@ -196,7 +196,7 @@ public class PlaneNetworker_Receiver : MonoBehaviour
         if (message.UID != networkUID)
             return;
 
-        if (Networker.isHost && packet.networkUID != networkUID)
+        if (Networker.isHost && message.UID != networkUID)
         {
             //Debug.Log("Generating UIDS for any missiles the new vehicle has");
             for (int i = 0; i < message.hpLoadout.Length; i++)

@@ -7,7 +7,7 @@ public class Packet
 {
     public PacketType packetType;
     public EP2PSend sendType;
-    public ulong networkUID = 0;
+    //public ulong networkUID = 0;
 }
 [Serializable]
 public class PacketSingle : Packet

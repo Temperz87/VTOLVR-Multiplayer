@@ -11,8 +11,9 @@ class NetworkSenderThread
 {
     private static readonly Lazy<NetworkSenderThread> lazy = new Lazy<NetworkSenderThread>(() => new NetworkSenderThread());
     public static NetworkSenderThread Instance { get { return lazy.Value; } }
-    
-    private NetworkSenderThread() {
+
+    private NetworkSenderThread()
+    {
         waitHandle = new EventWaitHandle(true, EventResetMode.ManualReset);
 
         messageQueue = new ConcurrentQueue<OutgoingNetworkPacketContainer>();
@@ -44,7 +45,7 @@ class NetworkSenderThread
             memoryStream = null;
             packetID = 0;
         }
-        public UnreliablePacket(CSteamID remoteID , byte[] memoryStream, uint length, ulong packetID)
+        public UnreliablePacket(CSteamID remoteID, byte[] memoryStream, uint length, ulong packetID)
         {
             PlayerManager.logger("Awaiting unreliable packet.");
             this.remoteID = remoteID;
@@ -83,28 +84,38 @@ class NetworkSenderThread
 
     private class OutgoingNetworkPacketContainer
     {
-        public enum OutgoingReceivers {
+        public enum OutgoingReceivers
+        {
             ToSinglePeer,
             HostToAllClients,
             HostToAllButOneSpecificClient,
         }
 
-        public OutgoingNetworkPacketContainer(object message, EP2PSend packetType, bool flag = false) {
+        public OutgoingNetworkPacketContainer(object message, EP2PSend packetType, bool flag = false)
+        {
             outgoingReceivers = OutgoingReceivers.HostToAllClients;
             Message = message;
             PacketType = packetType;
-            Reliable = flag;
+            if (flag)
+                this.packetID = Instance.packetID++;
+            else
+                this.packetID = 0;
         }
 
-        public OutgoingNetworkPacketContainer(CSteamID receiver, object message, EP2PSend packetType, OutgoingReceivers outgoingReceivers, bool flag = false) {
+        public OutgoingNetworkPacketContainer(CSteamID receiver, object message, EP2PSend packetType, OutgoingReceivers outgoingReceivers, bool flag = false)
+        {
             this.outgoingReceivers = outgoingReceivers;
             SteamId = receiver;
             Message = message;
             PacketType = packetType;
-            Reliable = flag;
+            if (flag)
+                this.packetID = Instance.packetID++;
+            else
+                this.packetID = 0;
         }
 
-        public OutgoingReceivers ToWhichReceivers() {
+        public OutgoingReceivers ToWhichReceivers()
+        {
             return outgoingReceivers;
         }
 
@@ -112,7 +123,7 @@ class NetworkSenderThread
         public CSteamID SteamId;
         public object Message;
         public EP2PSend PacketType;
-        public bool Reliable;
+        public ulong packetID;
     }
 
     private readonly Thread networkThread;
@@ -129,7 +140,8 @@ class NetworkSenderThread
     private bool dumpAllExistingPlayers;
     private readonly object dumpAllExistingPlayersLock = new object();
 
-    public void SendPacketAsHostToAllClients(Message message, EP2PSend packetType, bool flag = false) {
+    public void SendPacketAsHostToAllClients(Message message, EP2PSend packetType, bool flag = false)
+    {
         OutgoingNetworkPacketContainer packet = new OutgoingNetworkPacketContainer(message, packetType, flag);
         messageQueue.Enqueue(packet);
         waitHandle.Set();
@@ -146,7 +158,8 @@ class NetworkSenderThread
         waitHandle.Set();
     }
 
-    public void SendPacketAsHostToAllButOneSpecificClient(CSteamID nonReceiver, Message message, EP2PSend packetType, bool flag = false) {
+    public void SendPacketAsHostToAllButOneSpecificClient(CSteamID nonReceiver, Message message, EP2PSend packetType, bool flag = false)
+    {
         if (packetType == EP2PSend.k_EP2PSendUnreliable && flag)
         {
             message.id = packetID++;
@@ -189,125 +202,157 @@ class NetworkSenderThread
         waitHandle.Set();
     }
 
-    public void AddPlayer(CSteamID player) {
+    public void AddPlayer(CSteamID player)
+    {
         newPlayerQueue.Enqueue(player);
         waitHandle.Set();
     }
 
-    public void RemovePlayer(CSteamID player) {
+    public void RemovePlayer(CSteamID player)
+    {
         removePlayerQueue.Enqueue(player);
         waitHandle.Set();
     }
 
-    public void DumpAllExistingPlayers() {
-        lock (dumpAllExistingPlayersLock) {
+    public void DumpAllExistingPlayers()
+    {
+        lock (dumpAllExistingPlayersLock)
+        {
             dumpAllExistingPlayers = true;
         }
         waitHandle.Set();
     }
 
-    private void ThreadMethod() {
+    private void ThreadMethod()
+    {
         byte[] memoryStreamArray;
         bool dumpAllExistingPlayersLocal;
         uint length;
 
-        while (true) {
+        while (true)
+        {
             waitHandle.Reset();
 
-            while (newPlayerQueue.TryDequeue(out CSteamID newPlayer)) {
-                if (!internalPlayerList.Contains(newPlayer)) {
+            while (newPlayerQueue.TryDequeue(out CSteamID newPlayer))
+            {
+                if (!internalPlayerList.Contains(newPlayer))
+                {
                     internalPlayerList.Add(newPlayer);
                 }
             }
 
-            while (removePlayerQueue.TryDequeue(out CSteamID removePlayer)) {
-                if (internalPlayerList.Contains(removePlayer)) {
+            while (removePlayerQueue.TryDequeue(out CSteamID removePlayer))
+            {
+                if (internalPlayerList.Contains(removePlayer))
+                {
                     internalPlayerList.Remove(removePlayer);
                 }
             }
 
-            lock (dumpAllExistingPlayersLock) {
+            lock (dumpAllExistingPlayersLock)
+            {
                 dumpAllExistingPlayersLocal = dumpAllExistingPlayers;
             }
-            if (dumpAllExistingPlayersLocal) {
-                lock (dumpAllExistingPlayersLock) {
+            if (dumpAllExistingPlayersLocal)
+            {
+                lock (dumpAllExistingPlayersLock)
+                {
                     dumpAllExistingPlayers = false;
                 }
                 internalPlayerList.Clear();
             }
 
-            while (messageQueue.TryDequeue(out OutgoingNetworkPacketContainer outgoingData)) {
+            while (messageQueue.TryDequeue(out OutgoingNetworkPacketContainer outgoingData))
+            {
                 // Null checks first
-                if (outgoingData.Message == null) {
+                if (outgoingData.Message == null)
+                {
                     // Skip this one
                     continue;
                 }
 
-                if (outgoingData.ToWhichReceivers() == OutgoingNetworkPacketContainer.OutgoingReceivers.HostToAllClients || outgoingData.ToWhichReceivers() == OutgoingNetworkPacketContainer.OutgoingReceivers.HostToAllButOneSpecificClient) {
-                    if (!Networker.isHost) {
+                if (outgoingData.ToWhichReceivers() == OutgoingNetworkPacketContainer.OutgoingReceivers.HostToAllClients || outgoingData.ToWhichReceivers() == OutgoingNetworkPacketContainer.OutgoingReceivers.HostToAllButOneSpecificClient)
+                {
+                    if (!Networker.isHost)
+                    {
                         //Debug.LogError("Can't send global P2P as user isn't host");
                         continue;
                     }
-                    if (Multiplayer.SoloTesting) {
+                    if (Multiplayer.SoloTesting)
+                    {
                         continue;
                     }
 
                     ulong packetID;
                     // Now that we're going to try to send the packets, format the outgoing memory ONCE based on packet or message type
-                    if (outgoingData.Message is Message message) {
+                    if (outgoingData.Message is Message message)
+                    {
                         memoryStreamArray = getByteArrayFromMessage(message, outgoingData.PacketType, out length);
                         packetID = message.id;
                     }
-                    else if (outgoingData.Message is Packet packet) {
+                    else if (outgoingData.Message is Packet packet)
+                    {
                         memoryStreamArray = getByteArrayFromPacket(packet, out length);
                         packetID = ((PacketSingle)(packet)).message.id;
                     }
-                    else {
+                    else
+                    {
                         // Not a recognized type
                         continue;
                     }
 
-                    if (outgoingData.ToWhichReceivers() == OutgoingNetworkPacketContainer.OutgoingReceivers.HostToAllClients) {
-                        foreach (CSteamID player in internalPlayerList) {
+                    if (outgoingData.ToWhichReceivers() == OutgoingNetworkPacketContainer.OutgoingReceivers.HostToAllClients)
+                    {
+                        foreach (CSteamID player in internalPlayerList)
+                        {
                             SendP2P(player, memoryStreamArray, packetSingle.sendType, length, packetID);
                         }
                     }
-                    else {
-                        foreach (CSteamID player in internalPlayerList) {
-                            if (player != outgoingData.SteamId) {
+                    else
+                    {
+                        foreach (CSteamID player in internalPlayerList)
+                        {
+                            if (player != outgoingData.SteamId)
+                            {
                                 SendP2P(player, memoryStreamArray, packetSingle.sendType, length, packetID);
                             }
                         }
                     }
                 }
-                else {
+                else
+                {
                     // Send to single client
                     // Check for valid id
-                    if (outgoingData.SteamId == null) {
+                    if (outgoingData.SteamId == null)
+                    {
                         // Skip this one
                         continue;
                     }
 
                     // Now that we're going to try to send the packets, format the outgoing memory ONCE based on packet or message type
-                    if (outgoingData.Message is Message message) {
+                    if (outgoingData.Message is Message message)
+                    {
                         memoryStreamArray = getByteArrayFromMessage(message, outgoingData.PacketType, out length);
                     }
-                    else if (outgoingData.Message is Packet packet) {
+                    else if (outgoingData.Message is Packet packet)
+                    {
                         memoryStreamArray = getByteArrayFromPacket(packet, out length);
                     }
-                    else {
+                    else
+                    {
                         // Not a recognized type
                         continue;
                     }
 
-                    SendP2P(outgoingData.SteamId, memoryStreamArray, packetSingle.sendType, length, packetID);
+                    SendP2P(outgoingData.SteamId, memoryStreamArray, packetSingle.sendType, length, outgoingData.packetID);
                 }
             }
             waitHandle.WaitOne();
         }
     }
 
-    private byte[] getByteArrayFromMessage(Message message, EP2PSend packetType, out uint length) {
+    private byte[] getByteArrayFromMessage(Message message, EP2PSend packetType, out uint length)
+    {
         packetSingle.message = message;
         packetSingle.sendType = packetType;
         MemoryStream memoryStream = new MemoryStream();
@@ -316,15 +361,18 @@ class NetworkSenderThread
         return memoryStream.ToArray();
     }
 
-    private byte[] getByteArrayFromPacket(Packet packet, out uint length) {
+    private byte[] getByteArrayFromPacket(Packet packet, out uint length)
+    {
         MemoryStream memoryStream = new MemoryStream();
         binaryFormatter.Serialize(memoryStream, packet);
         length = (uint)memoryStream.Length;
         return memoryStream.ToArray();
     }
 
-    private void SendP2P(CSteamID remoteID, byte[] serializedPacketData, EP2PSend sendType, uint length, ulong uID) {
-        if (serializedPacketData.Length > 1200 && (sendType == EP2PSend.k_EP2PSendUnreliable || sendType == EP2PSend.k_EP2PSendUnreliableNoDelay)) {
+    private void SendP2P(CSteamID remoteID, byte[] serializedPacketData, EP2PSend sendType, uint length, ulong uID)
+    {
+        if (serializedPacketData.Length > 1200 && (sendType == EP2PSend.k_EP2PSendUnreliable || sendType == EP2PSend.k_EP2PSendUnreliableNoDelay))
+        {
             //Debug.LogError("MORE THAN 1200 Bytes for message");
         }
         if (uID != 0 && sendType == EP2PSend.k_EP2PSendUnreliable)
@@ -332,7 +380,8 @@ class NetworkSenderThread
             PlayerManager.logger("Making Unreliable packet.");
             new UnreliablePacket(remoteID, serializedPacketData, length, uID);
         }
-        if (Multiplayer.SoloTesting) {
+        if (Multiplayer.SoloTesting)
+        {
             //This skips sending the network message and gets sent right to ReadP2PPacket so that we can test solo with a fake player.
             //_instance.ReadP2PPacket(memoryStream.ToArray(), 0, 0, new CSteamID(1));
             return;

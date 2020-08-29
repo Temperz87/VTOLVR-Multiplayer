@@ -943,27 +943,21 @@ public class Networker : MonoBehaviour
                     Debug.Log("default case");
                     break;
             }
-            if (packetS.message.id != 0)
-                PlayerManager.players[PlayerManager.GetPlayerIDFromCSteamID((CSteamID)packetS.networkUID)].receivedPackets.Add(packetS.message.id);
             if (isHost && (packetS.message.id == 0))
             {
                 if (MessageTypeShouldBeForwarded(packetS.message.type))
                 {
                     if (packetS.message.id != 0)
-                        NetworkSenderThread.Instance.SendPacketAsHostToAllButOneSpecificClient((CSteamID)packetS.networkUID, packetS.message, EP2PSend.k_EP2PSendUnreliable, true);
+                        NetworkSenderThread.Instance.SendPacketAsHostToAllButOneSpecificClient(csteamID, packetS.message, EP2PSend.k_EP2PSendUnreliable, true);
                     else
 
-                        NetworkSenderThread.Instance.SendPacketAsHostToAllButOneSpecificClient((CSteamID)packetS.networkUID, packetS.message, EP2PSend.k_EP2PSendUnreliable);
+                        NetworkSenderThread.Instance.SendPacketAsHostToAllButOneSpecificClient(csteamID, packetS.message, EP2PSend.k_EP2PSendUnreliable);
                 }
             }
             if (packetS.message.id != 0)
             {
-                if (!PlayerManager.players[PlayerManager.GetPlayerIDFromCSteamID((CSteamID)packetS.networkUID)].receivedPackets.Contains(packetS.message.id))
-                {
-                    PlayerManager.players[PlayerManager.GetPlayerIDFromCSteamID((CSteamID)packetS.networkUID)].receivedPackets.Add(packetS.message.id);
-                }
                 Debug.Log("Sending Ack.");
-                NetworkSenderThread.Instance.SendPacketToSpecificPlayer((CSteamID)packetS.networkUID, new Message_Ack(packetS.message.id), EP2PSend.k_EP2PSendUnreliable);
+                NetworkSenderThread.Instance.SendPacketToSpecificPlayer(csteamID, new Message_Ack(packetS.message.id), EP2PSend.k_EP2PSendUnreliable);
             }
         }
     }

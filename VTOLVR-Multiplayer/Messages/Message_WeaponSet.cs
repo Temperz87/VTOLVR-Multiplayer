@@ -9,7 +9,6 @@ public class Message_WeaponSet_Result : Message
     public int[] cmLoadout;
     public float normalizedFuel;
     public ulong UID;
-
     public Message_WeaponSet_Result(HPInfo[] hpLoadout, int[] cmLoadout, float normalizedFuel, ulong uID)
     {
         this.hpLoadout = hpLoadout;
