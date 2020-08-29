@@ -51,6 +51,7 @@ class NetworkSenderThread
             this.memoryStream = memoryStream;
             this.length = length;
             this.packetID = packetID;
+            Networker.AckUpdate += Destroy;
             Task ticcker = TickRate();
         }
         private async Task TickRate()

@@ -406,8 +406,27 @@ public class Networker : MonoBehaviour
             Debug.LogError("Csteam ID is null in read p2p, how is this even possible.");
             throw new CSteamIDNotFoundException();
         }
-        MemoryStream serializationStream = new MemoryStream(array);
-        Packet packet = new BinaryFormatter().Deserialize(serializationStream) as Packet;
+        MemoryStream serializationStream;
+        try
+        {
+            serializationStream = new MemoryStream(array);
+        }
+        catch (ArgumentOutOfRangeException)
+        {
+            Debug.Log("serializable stream could not be created");
+            throw new Exception("Memory stream could not be created from memory stream array");
+        }
+        Packet packet;
+        try
+        {
+            packet = new BinaryFormatter().Deserialize(serializationStream) as Packet;
+        }
+        catch (ArgumentOutOfRangeException)
+        {
+            Debug.Log("Caught argument out of range exception.");
+            packet = null;
+            throw new Exception("Serializable stream could not be deserialized.");
+        }
         if (packet.packetType == PacketType.Single)
         {
             PacketSingle packetS = packet as PacketSingle;
@@ -917,7 +936,8 @@ public class Networker : MonoBehaviour
                 case MessageType.Ack:
                     Debug.Log("Case ack");
                     Message_Ack ack = (Message_Ack)((PacketSingle)packet).message;
-                    AckUpdate.Invoke(ack.id);
+                    if (AckUpdate != null)
+                        AckUpdate.Invoke(ack.id);
                     break;
                 default:
                     Debug.Log("default case");

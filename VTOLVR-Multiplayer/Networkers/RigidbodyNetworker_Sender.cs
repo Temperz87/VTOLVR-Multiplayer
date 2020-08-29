@@ -74,9 +74,9 @@ public class RigidbodyNetworker_Sender : MonoBehaviour
             lastMessage.networkUID = networkUID;
             lastMessage.sequenceNumber = ++updateNumber;
             if (Networker.isHost)
-                NetworkSenderThread.Instance.SendPacketAsHostToAllClients(lastMessage, Steamworks.EP2PSend.k_EP2PSendUnreliable, true);
+                NetworkSenderThread.Instance.SendPacketAsHostToAllClients(lastMessage, Steamworks.EP2PSend.k_EP2PSendUnreliable);
             else
-                NetworkSenderThread.Instance.SendPacketToSpecificPlayer(Networker.hostID, lastMessage, Steamworks.EP2PSend.k_EP2PSendUnreliable, true);
+                NetworkSenderThread.Instance.SendPacketToSpecificPlayer(Networker.hostID, lastMessage, Steamworks.EP2PSend.k_EP2PSendUnreliable);
         }
             // Temperz STOP KILLING PERFORMANCE AND HARD DRIVES!
             //Debug.Log($"{actor.name} is not outside of the threshold {Threshold}, the distance is {Vector3.Distance(lastPos, gameObject.transform.position)} not updating it.");
