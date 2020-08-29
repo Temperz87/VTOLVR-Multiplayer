@@ -5,6 +5,7 @@ using System.IO;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.Threading;
 using Steamworks;
+using System.Linq;
 
 class NetworkSenderThread
 {
@@ -18,7 +19,7 @@ class NetworkSenderThread
         messageQueue = new ConcurrentQueue<OutgoingNetworkPacketContainer>();
 
         packetSingle = new PacketSingle();
-
+        batchedMessages = new List<Message>();
         binaryFormatter = new BinaryFormatter();
 
         newPlayerQueue = new ConcurrentQueue<CSteamID>();
@@ -74,6 +75,7 @@ class NetworkSenderThread
     private readonly EventWaitHandle waitHandle;
     private readonly ConcurrentQueue<OutgoingNetworkPacketContainer> messageQueue;
     private readonly PacketSingle packetSingle;
+    private readonly List<Message> batchedMessages;
 
     private readonly ConcurrentQueue<CSteamID> newPlayerQueue;
     private readonly ConcurrentQueue<CSteamID> removePlayerQueue;
@@ -207,7 +209,7 @@ class NetworkSenderThread
                         continue;
                     }
 
-
+                    
                     // Now that we're going to try to send the packets, format the outgoing memory ONCE based on packet or message type
                     if (outgoingData.Message is Message message)
                     {
@@ -250,22 +252,72 @@ class NetworkSenderThread
                         // Skip this one
                         continue;
                     }
-
-                    // Now that we're going to try to send the packets, format the outgoing memory ONCE based on packet or message type
-                    if (outgoingData.Message is Message message)
+                    // See if we can batch the next message
+                    if (messageQueue.TryPeek(out OutgoingNetworkPacketContainer peekdPacket) && peekdPacket.PacketType == outgoingData.PacketType)
                     {
-                        memoryStreamArray = getByteArrayFromMessage(message, outgoingData.PacketType, out length);
-                    }
-                    else if (outgoingData.Message is Packet packet)
-                    {
-                        memoryStreamArray = getByteArrayFromPacket(packet, out length);
+                        messageQueue.TryDequeue(out peekdPacket);
+                        if (peekdPacket.Message is Message message)
+                        {
+                            batchedMessages.Add(message);
+                        }
+                        else if (peekdPacket.Message is Packet packet)
+                        {
+                            if (packet is PacketSingle)
+                                batchedMessages.Add(((PacketSingle)packet).message);
+                            else if (packet is PacketMultiple)
+                            {
+                                foreach (var nestedMessage in ((PacketMultiple)packet).messages)
+                                {
+                                    batchedMessages.Add(nestedMessage);
+                                }
+                            }
+                            while (Buffer.ByteLength(batchedMessages.ToArray()) < 1000) // Same code as above
+                            {
+                                if (messageQueue.TryPeek(out OutgoingNetworkPacketContainer peekdPacket2) && peekdPacket2.PacketType == outgoingData.PacketType)
+                                {
+                                    messageQueue.TryDequeue(out peekdPacket2);
+                                    if (peekdPacket2.Message is Message message2)
+                                    {
+                                        batchedMessages.Add(message2);
+                                    }
+                                    else if (peekdPacket2.Message is Packet packet2)
+                                    {
+                                        if (packet2 is PacketSingle)
+                                            batchedMessages.Add(((PacketSingle)packet2).message);
+                                        else if (packet is PacketMultiple)
+                                        {
+                                            foreach (var nestedMessage in ((PacketMultiple)packet2).messages)
+                                            {
+                                                batchedMessages.Add(nestedMessage);
+                                                if ((Buffer.ByteLength(batchedMessages.ToArray()) > 1000))
+                                                    break;
+                                            }
+                                        }
+                                    }
+                                }
+                                else
+                                    break;
+                            }
+                        }
+                        memoryStreamArray = getByteArrayFromPacket(new PacketMultiple(batchedMessages.ToArray(), outgoingData.PacketType), out length);
                     }
                     else
                     {
-                        // Not a recognized type
-                        continue;
+                        // Now that we're going to try to send the packets, format the outgoing memory ONCE based on packet or message type
+                        if (outgoingData.Message is Message message)
+                        {
+                            memoryStreamArray = getByteArrayFromMessage(message, outgoingData.PacketType, out length);
+                        }
+                        else if (outgoingData.Message is Packet packet)
+                        {
+                            memoryStreamArray = getByteArrayFromPacket(packet, out length);
+                        }
+                        else
+                        {
+                            // Not a recognized type
+                            continue;
+                        }
                     }
-
                     SendP2P(outgoingData.SteamId, memoryStreamArray, packetSingle.sendType, length);
                 }
             }
@@ -308,5 +360,6 @@ class NetworkSenderThread
         {
             //Debug.Log($"Failed to send P2P to {remoteID.m_SteamID}");
         }
+        batchedMessages.Clear();
     }
 }

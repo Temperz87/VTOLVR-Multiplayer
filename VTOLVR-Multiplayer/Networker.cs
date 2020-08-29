@@ -471,18 +471,35 @@ public class Networker : MonoBehaviour
                 Debug.LogError("packetS null.");
             if (packetS.message == null)
                 Debug.LogError("packetS.message null.");
-            ProcessPacket(packetS.message, (CSteamID)packetS.networkUID, packet.sendType);
+            ProcessMessage(packetS.message, (CSteamID)packetS.networkUID, packet.sendType);
             if (isHost)
             {
                 if (MessageTypeShouldBeForwarded(packetS.message.type))
                 {
-                    NetworkSenderThread.Instance.SendPacketAsHostToAllButOneSpecificClient((CSteamID)packetS.networkUID, packetS.message, EP2PSend.k_EP2PSendUnreliableNoDelay);
+                    NetworkSenderThread.Instance.SendPacketAsHostToAllButOneSpecificClient((CSteamID)packetS.networkUID, packet, EP2PSend.k_EP2PSendUnreliable);
                 }
+            }
+        }
+        else
+        {
+            PacketMultiple packetM = packet as PacketMultiple;
+            if (packetM == null)
+                Debug.LogError("packetS null.");
+            if (packetM.messages == null)
+                Debug.LogError("packetS.message null.");
+            foreach (Message message in packetM.messages)
+            {
+                if (message != null)
+                    ProcessMessage(message, (CSteamID)packetM.networkUID, packet.sendType);
+                if (MessageTypeShouldBeForwarded(message.type))
+                    NetworkSenderThread.Instance.SendPacketAsHostToAllButOneSpecificClient((CSteamID)packetM.networkUID, message, EP2PSend.k_EP2PSendUnreliable);
+                else
+                    Debug.LogError("A message in a Packet Multiple was null.");
             }
         }
     }
 
-    private void ProcessPacket(Message message, CSteamID csteamID, EP2PSend sendType)
+    private void ProcessMessage(Message message, CSteamID csteamID, EP2PSend sendType)
     {
         switch (message.type)
         {
