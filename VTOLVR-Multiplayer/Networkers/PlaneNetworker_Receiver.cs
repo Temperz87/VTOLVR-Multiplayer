@@ -62,9 +62,9 @@ public class PlaneNetworker_Receiver : MonoBehaviour
         ownerActor.flightInfo.PauseGCalculations();
         //FlightSceneManager.instance.playerActor.flightInfo.OverrideRecordedAcceleration(Vector3.zero);
     }
-    public void PlaneUpdate(Packet packet)
+    public void PlaneUpdate(Message message)
     {
-        Message_PlaneUpdate newMessage = (Message_PlaneUpdate)((PacketSingle)packet).message;
+        Message_PlaneUpdate newMessage = (Message_PlaneUpdate)message;
 
         if (newMessage.networkUID != networkUID)
             return;
@@ -190,13 +190,13 @@ public class PlaneNetworker_Receiver : MonoBehaviour
             autoPilot.engines[i].SetThrottle(throttle);
         }
     }
-    public void WeaponSet_Result(Packet packet)
+    public void WeaponSet_Result(Message lastMessage)
     {
-        Message_WeaponSet_Result message = (Message_WeaponSet_Result)((PacketSingle)packet).message;
+        Message_WeaponSet_Result message = (Message_WeaponSet_Result)lastMessage;
         if (message.UID != networkUID)
             return;
 
-        if (Networker.isHost && packet.networkUID != networkUID)
+        if (Networker.isHost && message.UID != networkUID)
         {
             //Debug.Log("Generating UIDS for any missiles the new vehicle has");
             for (int i = 0; i < message.hpLoadout.Length; i++)
@@ -228,9 +228,9 @@ public class PlaneNetworker_Receiver : MonoBehaviour
         }
     }
 
-    private void JettisonUpdate(Packet packet)
+    private void JettisonUpdate(Message lmessage)
     {
-        Message_JettisonUpdate message = ((PacketSingle)packet).message as Message_JettisonUpdate;
+        Message_JettisonUpdate message = lmessage as Message_JettisonUpdate;
         if (message.networkUID != networkUID)
             return;
         if (message.toJettison == null)
@@ -247,9 +247,9 @@ public class PlaneNetworker_Receiver : MonoBehaviour
         dontPrefixNextJettison = true;
         weaponManager.JettisonMarkedItems();
     }
-    public void WeaponFiring(Packet packet)
+    public void WeaponFiring(Message lmessage)
     {
-        Message_WeaponFiring message = ((PacketSingle)packet).message as Message_WeaponFiring;
+        Message_WeaponFiring message = lmessage as Message_WeaponFiring;
         if (message.UID != networkUID)
             return;
 
@@ -332,9 +332,9 @@ public class PlaneNetworker_Receiver : MonoBehaviour
             }
         }
     }
-    public void FireCountermeasure(Packet packet) // chez
+    public void FireCountermeasure(Message lmessage) // chez
     {
-        Message_FireCountermeasure message = ((PacketSingle)packet).message as Message_FireCountermeasure;
+        Message_FireCountermeasure message = lmessage as Message_FireCountermeasure;
         if (message.UID != networkUID)
             return;
         aiPilot.aiSpawn.CountermeasureProgram(message.flares, message.chaff, 2, 0.1f);
@@ -360,9 +360,9 @@ public class PlaneNetworker_Receiver : MonoBehaviour
     {
         return fuelTank.fuel;
     }
-    public void OnDisconnect(Packet packet)
+    public void OnDisconnect(Message lastMessage)
     {
-        Message_Disconnecting message = ((PacketSingle)packet).message as Message_Disconnecting;
+        Message_Disconnecting message = lastMessage as Message_Disconnecting;
         if (message.UID != networkUID)
             return;
 

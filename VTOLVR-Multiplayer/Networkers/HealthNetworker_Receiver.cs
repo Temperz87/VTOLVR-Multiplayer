@@ -19,9 +19,9 @@ class HealthNetworker_Receiver : MonoBehaviour
         Networker.BulletHit += this.BulletHit;
     }
 
-    public void Death(Packet packet)
+    public void Death(Message message)
     {
-        lastMessage = (Message_Death)((PacketSingle)packet).message;
+        lastMessage = (Message_Death)message;
         if (lastMessage.UID != networkUID)
             return;
 
@@ -36,9 +36,9 @@ class HealthNetworker_Receiver : MonoBehaviour
         }
     }
 
-    public void BulletHit(Packet packet)
+    public void BulletHit(Message message)
     {
-        bulletMessage = (Message_BulletHit)((PacketSingle)packet).message;
+        bulletMessage = (Message_BulletHit)message;
 
         Debug.Log("handling bullet hit");
 

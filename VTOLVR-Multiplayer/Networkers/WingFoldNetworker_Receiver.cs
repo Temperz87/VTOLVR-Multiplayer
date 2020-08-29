@@ -18,9 +18,9 @@ class WingFoldNetworker_Receiver : MonoBehaviour
         Networker.WingFold += WingFold;
     }
 
-    public void WingFold(Packet packet)
+    public void WingFold(Message message)
     {
-        lastMessage = (Message_WingFold)((PacketSingle)packet).message;
+        lastMessage = (Message_WingFold)message;
         if (lastMessage.UID != networkUID)
             return;
         if (lastMessage.folded)

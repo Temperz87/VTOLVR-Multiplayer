@@ -28,7 +28,7 @@ public static class PlayerManager
     /// incase the host hasn't loaded in, in time.
     /// </summary>
     private static Queue<Message_RequestSpawn> spawnRequestQueue = new Queue<Message_RequestSpawn>();
-    private static Queue<Packet> playersToSpawnQueue = new Queue<Packet>();
+    private static Queue<Message> playersToSpawnQueue = new Queue<Message>();
     private static Queue<CSteamID> playersToSpawnIdQueue = new Queue<CSteamID>();
     public static bool gameLoaded;
     private static GameObject av42cPrefab, fa26bPrefab, f45Prefab;
@@ -267,9 +267,9 @@ public static class PlayerManager
         return false;
     }
 
-    public static void RequestSpawn(Packet packet, CSteamID sender) //Run by Host Only
+    public static void RequestSpawn(Message message, CSteamID sender) //Run by Host Only
     {
-        Message_RequestSpawn lastMessage = (Message_RequestSpawn)((PacketSingle)packet).message;
+        Message_RequestSpawn lastMessage = (Message_RequestSpawn)message;
         Debug.Log("A player has requested for a spawn point");
         if (!Networker.hostLoaded)
         {
@@ -296,10 +296,10 @@ public static class PlayerManager
     /// vehicle. 
     /// </summary>
     /// <param name="packet">The message sent over the network</param>
-    public static void RequestSpawn_Result(Packet packet) //Run by Clients Only
+    public static void RequestSpawn_Result(Message message) //Run by Clients Only
     {
         Debug.Log("The host has sent back our spawn point");
-        Message_RequestSpawn_Result result = (Message_RequestSpawn_Result)((PacketSingle)packet).message;
+        Message_RequestSpawn_Result result = (Message_RequestSpawn_Result)message;
         Debug.Log($"We need to move to {result.position} : {result.rotation}");
 
         GameObject localVehicle = VTOLAPI.GetPlayersVehicleGameObject();
@@ -571,12 +571,12 @@ public static class PlayerManager
     /// this creates the player vehicle and removes any thing which shouldn't
     /// be on it. 
     /// </summary>
-    /// <param name="packet">The message</param>
-    public static void SpawnPlayerVehicle(Packet packet, CSteamID sender) //Both, but never spawns the local vehicle, only executes spawn vehicle messages from other clients
+    /// <param name="message">The message</param>
+    public static void SpawnPlayerVehicle(Message lmessage, CSteamID sender) //Both, but never spawns the local vehicle, only executes spawn vehicle messages from other clients
     {
         // We don't actually need the "sender" id, unless we're a client and want to check that the packet came from the host
         // which we're not doing right now.
-        Message_SpawnPlayerVehicle message = (Message_SpawnPlayerVehicle)((PacketSingle)packet).message;
+        Message_SpawnPlayerVehicle message = (Message_SpawnPlayerVehicle)lmessage;
 
         if (message.networkID == PlayerManager.localUID)
         {
@@ -589,7 +589,7 @@ public static class PlayerManager
         if (!gameLoaded)
         {
             Debug.LogWarning("Our game isn't loaded, adding spawn vehicle to queue");
-            playersToSpawnQueue.Enqueue(packet);
+            playersToSpawnQueue.Enqueue(message);
             playersToSpawnIdQueue.Enqueue(sender);
             return;
         }

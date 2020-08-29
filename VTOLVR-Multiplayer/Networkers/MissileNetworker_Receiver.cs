@@ -44,7 +44,7 @@ public class MissileNetworker_Receiver : MonoBehaviour
         traverse.Field("detonated").SetValue(true);
     }
 
-    public void MissileUpdate(Packet packet)
+    public void MissileUpdate(Message message)
     {
         if (!thisMissile.gameObject.activeSelf)
         {
@@ -55,7 +55,7 @@ public class MissileNetworker_Receiver : MonoBehaviour
         {
             traverse = Traverse.Create(thisML);
         }
-        lastMessage = ((PacketSingle)packet).message as Message_MissileUpdate;
+        lastMessage = message as Message_MissileUpdate;
         if (lastMessage.networkUID != networkUID)
         {
             return;

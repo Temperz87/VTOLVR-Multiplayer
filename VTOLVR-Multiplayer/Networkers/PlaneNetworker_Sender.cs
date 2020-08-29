@@ -170,7 +170,7 @@ public class PlaneNetworker_Sender : MonoBehaviour
         lastMessage.throttle = t;
     }
 
-    public void WeaponSet(Packet packet)
+    public void WeaponSet(Message message)
     {
         if (weaponManager == null)
             return;

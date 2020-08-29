@@ -243,33 +243,33 @@ public class Networker : MonoBehaviour
     #region Message Type Callbacks
     //These callbacks are use for other scripts to know when a network message has been
     //received for them. They should match the name of the message class they relate to.
-    public static event UnityAction<Packet, CSteamID> RequestSpawn;
-    public static event UnityAction<Packet> RequestSpawn_Result;
-    public static event UnityAction<Packet, CSteamID> SpawnVehicle;
-    public static event UnityAction<Packet> RigidbodyUpdate;
-    public static event UnityAction<Packet> PlaneUpdate;
-    public static event UnityAction<Packet> EngineTiltUpdate;
-    public static event UnityAction<Packet> Disconnecting;
-    public static event UnityAction<Packet> WeaponSet;
-    public static event UnityAction<Packet> WeaponSet_Result;
-    public static event UnityAction<Packet> WeaponFiring;
-    public static event UnityAction<Packet> WeaponStoppedFiring;
-    public static event UnityAction<Packet> FireCountermeasure;
-    public static event UnityAction<Packet> Rearm;
-    public static event UnityAction<Packet> Death;
-    public static event UnityAction<Packet> WingFold;
-    public static event UnityAction<Packet> ExtLight;
-    public static event UnityAction<Packet> ShipUpdate;
-    public static event UnityAction<Packet> RadarUpdate;
-    public static event UnityAction<Packet> TurretUpdate;
-    public static event UnityAction<Packet> MissileUpdate;
-    public static event UnityAction<Packet> WorldDataUpdate;
-    public static event UnityAction<Packet> RequestNetworkUID;
-    public static event UnityAction<Packet> LockingRadarUpdate;
-    public static event UnityAction<Packet> JettisonUpdate;
-    public static event UnityAction<Packet> SAMUpdate;
-    public static event UnityAction<Packet> AAAUpdate;
-    public static event UnityAction<Packet> BulletHit;
+    public static event UnityAction<Message, CSteamID> RequestSpawn;
+    public static event UnityAction<Message> RequestSpawn_Result;
+    public static event UnityAction<Message, CSteamID> SpawnVehicle;
+    public static event UnityAction<Message> RigidbodyUpdate;
+    public static event UnityAction<Message> PlaneUpdate;
+    public static event UnityAction<Message> EngineTiltUpdate;
+    public static event UnityAction<Message> Disconnecting;
+    public static event UnityAction<Message> WeaponSet;
+    public static event UnityAction<Message> WeaponSet_Result;
+    public static event UnityAction<Message> WeaponFiring;
+    public static event UnityAction<Message> WeaponStoppedFiring;
+    public static event UnityAction<Message> FireCountermeasure;
+    public static event UnityAction<Message> Rearm;
+    public static event UnityAction<Message> Death;
+    public static event UnityAction<Message> WingFold;
+    public static event UnityAction<Message> ExtLight;
+    public static event UnityAction<Message> ShipUpdate;
+    public static event UnityAction<Message> RadarUpdate;
+    public static event UnityAction<Message> TurretUpdate;
+    public static event UnityAction<Message> MissileUpdate;
+    public static event UnityAction<Message> WorldDataUpdate;
+    public static event UnityAction<Message> RequestNetworkUID;
+    public static event UnityAction<Message> LockingRadarUpdate;
+    public static event UnityAction<Message> JettisonUpdate;
+    public static event UnityAction<Message> SAMUpdate;
+    public static event UnityAction<Message> AAAUpdate;
+    public static event UnityAction<Message> BulletHit;
     #endregion
     #region Host Forwarding Suppress By Message Type List
     private List<MessageType> hostMessageForwardingSuppressList = new List<MessageType> {

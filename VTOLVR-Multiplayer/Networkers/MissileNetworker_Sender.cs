@@ -76,9 +76,9 @@ public class MissileNetworker_Sender : MonoBehaviour
             }
         }*/
     }
-    public void RequestUID(Packet packet)
+    public void RequestUID(Message message)
     {
-        Message_RequestNetworkUID lastMessage = ((PacketSingle)packet).message as Message_RequestNetworkUID;
+        Message_RequestNetworkUID lastMessage = message as Message_RequestNetworkUID;
         if (lastMessage.clientsUID != networkUID)
             return;
         networkUID = lastMessage.resultUID;

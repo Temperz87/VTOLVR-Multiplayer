@@ -19,9 +19,9 @@ class EngineTiltNetworker_Receiver : MonoBehaviour
         Networker.EngineTiltUpdate += EngineTiltUpdate;
     }
 
-    public void EngineTiltUpdate(Packet packet)
+    public void EngineTiltUpdate(Message message)
     {
-        lastMessage = (Message_EngineTiltUpdate)((PacketSingle)packet).message;
+        lastMessage = (Message_EngineTiltUpdate)message;
         if (lastMessage.networkUID != networkUID)
             return;
         tiltController.SetTiltImmediate(lastMessage.angle);

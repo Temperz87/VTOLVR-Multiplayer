@@ -18,9 +18,9 @@ class ExtLight_Receiver : MonoBehaviour
         Networker.ExtLight += ChangeLights;
     }
 
-    public void ChangeLights(Packet packet)
+    public void ChangeLights(Message message)
     {
-        lastMessage = (Message_ExtLight)((PacketSingle)packet).message;
+        lastMessage = (Message_ExtLight)message;
         if (lastMessage.UID != networkUID)
             return;
 

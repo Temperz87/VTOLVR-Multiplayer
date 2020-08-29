@@ -36,10 +36,10 @@ public class WorldDataNetworker_Receiver : MonoBehaviour
    
     }
 
-    public void WorldDataUpdate(Packet packet)
+    public void WorldDataUpdate(Message message)
     {
 
-        Message_WorldData worldDataUpdate = (Message_WorldData)((PacketSingle)packet).message;
+        Message_WorldData worldDataUpdate = (Message_WorldData)message;
         Time.timeScale = worldDataUpdate.timeScale;
         serverTimescale = worldDataUpdate.timeScale;
 
@@ -52,9 +52,9 @@ public class WorldDataNetworker_Receiver : MonoBehaviour
         Time.timeScale = serverTimescale;
     }
 
-    public void OnDisconnect(Packet packet)
+    public void OnDisconnect(Message message)
     {
-        Message_Disconnecting message = ((PacketSingle)packet).message as Message_Disconnecting;
+        // Message_Disconnecting message = ((PacketSingle)packet).message as Message_Disconnecting;
         Destroy(gameObject);
     }
 

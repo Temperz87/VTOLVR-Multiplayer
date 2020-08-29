@@ -38,9 +38,9 @@ class ShipNetworker_Receiver : MonoBehaviour
         ship.rb.MoveRotation(Quaternion.Lerp(ship.transform.rotation, targetRotation, Time.fixedDeltaTime/rotSmoothTime));
     }
 
-    public void ShipUpdate(Packet packet)
+    public void ShipUpdate(Message message)
     {
-        lastMessage = (Message_ShipUpdate)((PacketSingle)packet).message;
+        lastMessage = (Message_ShipUpdate)message;
         if (lastMessage.UID != networkUID)
             return;
 

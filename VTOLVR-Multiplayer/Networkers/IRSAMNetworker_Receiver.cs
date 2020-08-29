@@ -43,7 +43,7 @@ class IRSAMNetworker_Reciever : MonoBehaviour
             samLauncher.lockingRadars = lockingRadars.ToArray();
         }
     }
-    private void SamUpdate(Packet packet)
+    private void SamUpdate(Message message)
     {
         if (samLauncher.lockingRadars == null)
         {
@@ -69,7 +69,7 @@ class IRSAMNetworker_Reciever : MonoBehaviour
             }
             samLauncher.lockingRadars = lockingRadars.ToArray();
         }
-        lastMessage = (Message_SamUpdate)((PacketSingle)packet).message;
+        lastMessage = (Message_SamUpdate)message;
         if (lastMessage.senderUID != networkUID)
             return;
         Debug.Log("Got a sam update message.");

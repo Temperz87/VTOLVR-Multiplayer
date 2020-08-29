@@ -33,7 +33,7 @@ class WorldDataNetworker_Sender : MonoBehaviour
         }
     }
 
-    public void OnDisconnect(Packet packet)
+    public void OnDisconnect(Message LastMessage)
     {
         // If the player disconnects force the timescale back to 1 other wise they get stuck.
 
@@ -44,7 +44,7 @@ class WorldDataNetworker_Sender : MonoBehaviour
             NetworkSenderThread.Instance.SendPacketAsHostToAllClients(lastMessage, Steamworks.EP2PSend.k_EP2PSendReliable);
         }
 
-        Message_Disconnecting message = ((PacketSingle)packet).message as Message_Disconnecting;
+        Message_Disconnecting message = LastMessage as Message_Disconnecting;
         Destroy(gameObject);
     }
 

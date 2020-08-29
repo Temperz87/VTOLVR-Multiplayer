@@ -113,9 +113,9 @@ public class RigidbodyNetworker_Receiver : MonoBehaviour
         rb.MoveRotation(Quaternion.Lerp(currentRotation, targetRotation, Time.fixedDeltaTime / rotSmoothingTime));
     }
 
-    public void RigidbodyUpdate(Packet packet)
+    public void RigidbodyUpdate(Message message)
     {
-        Message_RigidbodyUpdate rigidbodyUpdate = (Message_RigidbodyUpdate)((PacketSingle)packet).message;
+        Message_RigidbodyUpdate rigidbodyUpdate = (Message_RigidbodyUpdate)message;
         //Debug.Log($"Rigidbody Update\nOur Network ID = {networkUID} Packet Network ID = {rigidbodyUpdate.networkUID}");
         if (rigidbodyUpdate.networkUID != networkUID)
             return;
@@ -149,9 +149,9 @@ public class RigidbodyNetworker_Receiver : MonoBehaviour
     //    GUI.TextField(new Rect(300, 50, 200, 30), "velocityMatchingForce: " + (Mathf.Round(velocityMatchingForce*10)/10f).ToString());
     //}
 
-    public void OnDisconnect(Packet packet)
+    public void OnDisconnect(Message lmessage)
     {
-        Message_Disconnecting message = ((PacketSingle)packet).message as Message_Disconnecting;
+        Message_Disconnecting message = (Message_Disconnecting)lmessage as Message_Disconnecting;
         if (message.UID != networkUID)
             return;
         Destroy(gameObject);

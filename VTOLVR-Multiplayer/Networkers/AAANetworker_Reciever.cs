@@ -18,9 +18,9 @@ class AAANetworker_Reciever : MonoBehaviour
         Networker.AAAUpdate += AAAUpdate;
         gunTurret.gun.currentAmmo = gunTurret.gun.maxAmmo;
     }
-    private void AAAUpdate(Packet packet)
+    private void AAAUpdate(Message message)
     {
-        lastMessage = (Message_AAAUpdate)((PacketSingle)packet).message;
+        lastMessage = (Message_AAAUpdate)message;
         if (lastMessage.networkUID != networkUID)
             return;
         if (lastMessage.gunID != gunID)

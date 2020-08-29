@@ -35,9 +35,9 @@ class LockingRadarNetworker_Receiver : MonoBehaviour
         Networker.LockingRadarUpdate += LockingRadarUpdate;
     }
 
-    public void RadarUpdate(Packet packet)
+    public void RadarUpdate(Message message)
     {
-        lastRadarMessage = (Message_RadarUpdate)((PacketSingle)packet).message;
+        lastRadarMessage = (Message_RadarUpdate)message;
         // Debug.Log("Got a new radar update intended for id " + lastRadarMessage.UID);
         if (lastRadarMessage.UID != networkUID)
             return;
@@ -46,9 +46,9 @@ class LockingRadarNetworker_Receiver : MonoBehaviour
         lockingRadar.radar.radarEnabled = lastRadarMessage.on;
         lockingRadar.radar.sweepFov = lastRadarMessage.fov;
     }
-    public void LockingRadarUpdate(Packet packet)
+    public void LockingRadarUpdate(Message message)
     {
-        lastLockingMessage = (Message_LockingRadarUpdate)((PacketSingle)packet).message;
+        lastLockingMessage = (Message_LockingRadarUpdate)message;
         // Debug.Log("Got a new locking radar update intended for id " + lastLockingMessage.senderUID);
         if (lastLockingMessage.senderUID != networkUID)
             return;

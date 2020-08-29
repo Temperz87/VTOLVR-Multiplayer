@@ -24,9 +24,9 @@ class TurretNetworker_Receiver : MonoBehaviour
         }
     }
 
-    public void TurretUpdate(Packet packet)
+    public void TurretUpdate(Message message)
     {
-        lastMessage = (Message_TurretUpdate)((PacketSingle)packet).message;
+        lastMessage = (Message_TurretUpdate)message;
         if (lastMessage.UID != networkUID)
             return;
         if (lastMessage.turretID != turretID)
