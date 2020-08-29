@@ -419,9 +419,9 @@ public static class PlayerManager
         }*/
     }
 
-    public static void MissileDamage(Packet packet)
+    public static void MissileDamage(Message message)
     {
-        Message_MissileDamage lastMissileDamageMessage = ((PacketSingle)packet).message as Message_MissileDamage;
+        Message_MissileDamage lastMissileDamageMessage = message as Message_MissileDamage;
 
         //ignore damage message from same player
         //if (lastMissileDamageMessage.networkUID == PlayerManager.localUID)

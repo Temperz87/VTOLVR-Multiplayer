@@ -12,7 +12,7 @@ using UnityEngine.SceneManagement;
 
 public static class AIManager
 {
-    public static Queue<Packet> AIsToSpawnQueue = new Queue<Packet>();
+    public static Queue<Message> AIsToSpawnQueue = new Queue<Message>();
     private static List<ulong> spawnedAI = new List<ulong>();
     public static List<AI> AIVehicles = new List<AI>(); //This is the list of all AI, and an easy way to access AI variables
     public struct AI
@@ -36,19 +36,19 @@ public static class AIManager
     /// <summary>
     /// This is used by the client and only the client to spawn ai vehicles.
     /// </summary>
-    public static void SpawnAIVehicle(Packet packet) // This should never run on the host
+    public static void SpawnAIVehicle(Message lmessage) // This should never run on the host
     {
         if (Networker.isHost)
         {
             Debug.LogWarning("Host shouldn't be trying to spawn an ai vehicle.");
             return;
         }
-        Message_SpawnAIVehicle message = (Message_SpawnAIVehicle)((PacketSingle)packet).message;
+        Message_SpawnAIVehicle message = (Message_SpawnAIVehicle)lmessage;
 
         if (!PlayerManager.gameLoaded)
         {
             Debug.LogWarning("Our game isn't loaded, adding spawn vehicle to queue");
-            AIsToSpawnQueue.Enqueue(packet);
+            AIsToSpawnQueue.Enqueue(lmessage);
             return;
         }
         foreach (ulong id in spawnedAI)
