@@ -65,7 +65,10 @@ public class Multiplayer : VTOLMOD
     private UnityAction<bool> replaceWingmenWithClients_changed;
 
     public bool restrictToHostMods = true;
-    private UnityAction<bool> restrictToHostMods_changed; 
+    private UnityAction<bool> restrictToHostMods_changed;
+
+    public bool debugLogs = false;
+    private UnityAction<bool> debugLogs_changed;
 
     public bool forceWinds = false; // not implemented
     private UnityAction<bool> forceWinds_changed;
@@ -111,6 +114,7 @@ public class Multiplayer : VTOLMOD
         base.ModLoaded();
         CreateUI();
         gameObject.AddComponent<Networker>();
+        debugLog_Settings(false);
     }
     public void CheckUpToDate()
     {
@@ -164,26 +168,30 @@ public class Multiplayer : VTOLMOD
         //public bool FreeForAllMode = false; // not implemented
         //private bool FreeForAllMode_changed;
         settings.CreateCustomLabel("Host Settings");
-        spawnRemainingPlayersAtAirBase_changed += spawnRemainingPlayersAtAirBase_Setting;
+        /*spawnRemainingPlayersAtAirBase_changed += spawnRemainingPlayersAtAirBase_Setting;
         settings.CreateCustomLabel("Spawn players at airbase if there are no wingmen available.");
-        settings.CreateBoolSetting("Default = False", spawnRemainingPlayersAtAirBase_changed, spawnRemainingPlayersAtAirBase);
+        settings.CreateBoolSetting("Default = False", spawnRemainingPlayersAtAirBase_changed, spawnRemainingPlayersAtAirBase);*/
 
 
-        replaceWingmenWithClients_changed += replaceWingmenWithClients_Setting;
-        settings.CreateCustomLabel("Replace AI wingmen (with the same flight designation) with clients.");
-        settings.CreateBoolSetting("Default = True", replaceWingmenWithClients_changed, replaceWingmenWithClients);
+        /*replaceWingmenWithClients_changed += replaceWingmenWithClients_Setting;
+       settings.CreateCustomLabel("Replace AI wingmen (with the same flight designation) with clients.");
+       settings.CreateBoolSetting("Default = True", replaceWingmenWithClients_changed, replaceWingmenWithClients);*/
 
-        restrictToHostMods_changed += restrictToHostMods_Settings;
-        settings.CreateCustomLabel("Require clients to use the same mods as host.");
-        settings.CreateBoolSetting("Default = True", restrictToHostMods_changed, restrictToHostMods);
+       restrictToHostMods_changed += restrictToHostMods_Settings;
+       settings.CreateCustomLabel("Require clients to use the same mods as host.");
+       settings.CreateBoolSetting("Default = True", restrictToHostMods_changed, restrictToHostMods);
 
-        forceWinds_changed += forceWinds_Settings;
-        settings.CreateCustomLabel("Force winds on for clients (Not functional).");
-        settings.CreateBoolSetting("Default = True", forceWinds_changed, forceWinds);
+       /*forceWinds_changed += forceWinds_Settings;
+       settings.CreateCustomLabel("Force winds on for clients (Not functional).");
+       settings.CreateBoolSetting("Default = True", forceWinds_changed, forceWinds);*/
 
-        FreeForAllMode_changed += FreeForAllMode_Settings;
+        debugLogs_changed += debugLog_Settings;
+        settings.CreateCustomLabel("Activate Debug Logs.");
+        settings.CreateBoolSetting("Default = False", debugLogs_changed, debugLogs);
+
+        /*FreeForAllMode_changed += FreeForAllMode_Settings;
         settings.CreateCustomLabel("Free For All Mode! Sets all clients to enemies (Not functional).");
-        settings.CreateBoolSetting("Default = True", FreeForAllMode_changed, FreeForAllMode);
+        settings.CreateBoolSetting("Default = True", FreeForAllMode_changed, FreeForAllMode);*/
 
         DisplayPing_changed += DisplayPing_Settings;
         settings.CreateCustomLabel("Show ping on the screen. (Not vr)");
@@ -205,6 +213,12 @@ public class Multiplayer : VTOLMOD
     public void restrictToHostMods_Settings(bool newval)
     {
         restrictToHostMods = newval;
+    }
+
+    public void debugLog_Settings(bool newval)
+    {
+        debugLogs = newval;
+        Debug.logger.logEnabled = newval;
     }
 
     public void forceWinds_Settings(bool newval)

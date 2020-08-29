@@ -545,6 +545,11 @@ public static class AIManager
             {
                 RigidbodyNetworker_Sender lastRigidSender = actor.gameObject.AddComponent<RigidbodyNetworker_Sender>();
                 lastRigidSender.networkUID = networkUID;
+                //reduced tick rate for ground Units
+                if (actor.role == Actor.Roles.Ground)
+                {
+                    lastRigidSender.tickRate = 1.0f;
+                }
             }
             if (!actor.isPlayer && actor.role == Actor.Roles.Air)
             {

@@ -922,14 +922,12 @@ public class Networker : MonoBehaviour
                 if (lastMessage.UID == PlayerManager.localUID)
                 {
                     Debug.Log("ignored action as local event");
-
                 }
                 else
                 {
                     Debug.Log("running event from another person");
                     ObjectiveNetworker_Reciever.runScenarioAction(lastMessage.scenarioActionHash);
                 }
-
                 break;
             case MessageType.BulletHit:
                 BulletHit.Invoke(message);
