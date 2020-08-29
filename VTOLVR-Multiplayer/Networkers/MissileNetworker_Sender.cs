@@ -10,6 +10,9 @@ public class MissileNetworker_Sender : MonoBehaviour
     private Message_MissileUpdate lastMessage;
     private Missile thisMissile;
     private bool hasFired = false;
+
+    private float tick;
+    private float tickRate = 1.0f/10.0f;
     private void Awake()
     {
         Networker.RequestNetworkUID += RequestUID;
@@ -18,7 +21,17 @@ public class MissileNetworker_Sender : MonoBehaviour
 
         thisMissile.OnMissileDetonated += OnDetonated;
     }
+    private bool sendRateLimiter()
+    {
+        tick += Time.fixedDeltaTime;
 
+        if (tick > tickRate)
+        {
+            tick = 0.0f;
+            return true;
+        }
+        return false;
+    }
     private void FixedUpdate()
     {
         if (thisMissile == null)
@@ -96,13 +109,16 @@ public class MissileNetworker_Sender : MonoBehaviour
 
     private void SendMessage(bool isDestoryed)
     {
-        if (Networker.isHost)
+        if(sendRateLimiter())
         {
-            NetworkSenderThread.Instance.SendPacketAsHostToAllClients(lastMessage, isDestoryed ? Steamworks.EP2PSend.k_EP2PSendReliable : Steamworks.EP2PSend.k_EP2PSendUnreliable);
-        }
-        else
-        {
-            NetworkSenderThread.Instance.SendPacketToSpecificPlayer(Networker.hostID,lastMessage, isDestoryed ? Steamworks.EP2PSend.k_EP2PSendReliable : Steamworks.EP2PSend.k_EP2PSendUnreliable);
+            if (Networker.isHost)
+            {
+                NetworkSenderThread.Instance.SendPacketAsHostToAllClients(lastMessage, isDestoryed ? Steamworks.EP2PSend.k_EP2PSendReliable : Steamworks.EP2PSend.k_EP2PSendUnreliable);
+            }
+            else
+            {
+                NetworkSenderThread.Instance.SendPacketToSpecificPlayer(Networker.hostID,lastMessage, isDestoryed ? Steamworks.EP2PSend.k_EP2PSendReliable : Steamworks.EP2PSend.k_EP2PSendUnreliable);
+            }
         }
     }
 

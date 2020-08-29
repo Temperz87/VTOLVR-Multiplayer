@@ -14,34 +14,40 @@ class PatchBullet
 {
     static bool Prefix(Bullet __instance)
     {
-        RaycastHit hitInfo;
-        Vector3 pos = Traverse.Create(__instance).Field("position").GetValue<Vector3>();
+        
+        Vector3 pos = Traverse.Create(__instance).Field("hitPoint").GetValue<Vector3>();
         Vector3 vel = Traverse.Create(__instance).Field("velocity").GetValue<Vector3>();
         Vector3 a = pos;
-        a += vel * 0.2f;
+        a += -vel * Time.deltaTime;
         float damage = Traverse.Create(__instance).Field("damage").GetValue<float>();
-        bool flag = Physics.Linecast(pos, a, out hitInfo, 1025);
+      
         Hitbox hitbox = null;
-        if (flag)
+
+
+
+        RaycastHit[] hits;
+        hits = Physics.RaycastAll(pos, vel, 100.0f, 1025);
+        for (int i = 0; i < hits.Length; i++)
         {
-            hitbox = hitInfo.collider.GetComponent<Hitbox>();
+            RaycastHit hit = hits[i];
+            hitbox = hit.collider.GetComponent<Hitbox>();
             if ((bool)hitbox && (bool)hitbox.actor)
             {
                 PlayerManager.lastBulletHit = hitbox;
-
+                Debug.Log("hit box bullet hit");
                 ulong lastID;
                 if (VTOLVR_Multiplayer.AIDictionaries.reverseAllActors.TryGetValue(hitbox.actor, out lastID))
                 {
 
                     Debug.Log("hit player sending bullet packet");
-                    Message_BulletHit hitmsg = new Message_BulletHit(PlayerManager.localUID, PlayerManager.localUID, new Vector3D(pos), new Vector3D(vel), damage);
-                    NetworkSenderThread.Instance.SendPacketToSpecificPlayer(PlayerManager.GetPlayerCSteamID(PlayerManager.localUID), hitmsg, Steamworks.EP2PSend.k_EP2PSendReliableWithBuffering);
+                    Message_BulletHit hitmsg = new Message_BulletHit(PlayerManager.localUID, lastID, VTMapManager.WorldToGlobalPoint(pos), new Vector3D(vel), damage);
+                    NetworkSenderThread.Instance.SendPacketToSpecificPlayer(Networker.hostID, hitmsg, Steamworks.EP2PSend.k_EP2PSendUnreliable);
                 }
 
             }
         }
 
-        return true;//dont run bahas code
+        return true;
     }
 }
 
@@ -164,7 +170,8 @@ class Patch4
         }
         else
         {
-            if (VTScenario.current.objectives.GetObjective(__instance.objectiveID).objectiveType == VTObjective.ObjectiveTypes.Destroy)
+            if (VTScenario.current.objectives.GetObjective(__instance.objectiveID).objectiveType == VTObjective.ObjectiveTypes.Destroy ||
+                VTScenario.current.objectives.GetObjective(__instance.objectiveID).objectiveType == VTObjective.ObjectiveTypes.Conditional)
             {
                 Debug.Log("Making client not send kill objective packet.");
                 bool shouldComplete = ObjectiveNetworker_Reciever.completeNext;

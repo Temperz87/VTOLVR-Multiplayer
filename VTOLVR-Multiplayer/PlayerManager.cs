@@ -805,7 +805,16 @@ public static class PlayerManager
         {
             if (collider)
             {
-                collider.gameObject.layer = 9;
+                Hitbox hitbox = collider.GetComponent<Hitbox>();
+
+                if (hitbox !=null)
+                {
+                    hitbox.health.invincible = true;
+                }
+                else
+                {
+                    collider.gameObject.layer = 9;
+                }
             }
         }
         aIPilot.enabled = false;

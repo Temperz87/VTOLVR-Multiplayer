@@ -946,6 +946,7 @@ public class Networker : MonoBehaviour
 
                     break;
                 case MessageType.BulletHit:
+                    Debug.Log("case bulletDamage");
                     BulletHit.Invoke(packet);
                     break;
                 case MessageType.MissileDamage:
