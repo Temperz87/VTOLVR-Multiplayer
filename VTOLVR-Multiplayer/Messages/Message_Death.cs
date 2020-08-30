@@ -12,7 +12,7 @@ public class Message_Death : Message
         type = MessageType.Death;
     }
 }
-
+[Serializable]
 public class Message_BulletHit : Message
 {
     public ulong UID;

@@ -25,6 +25,8 @@ public class PlaneNetworker_Receiver : MonoBehaviour
     private bool noAmmo;
     // private RadarLockData radarLockData;
     private ulong mostCurrentUpdateNumber;
+    private Actor ownerActor;
+    private List<int> collidersStore;
     private void Awake()
     {
         firstMessageReceived = false;
@@ -55,12 +57,39 @@ public class PlaneNetworker_Receiver : MonoBehaviour
         if (fuelTank == null)
             Debug.LogError("FuelTank was null on " + gameObject.name);
 
-        Actor ownerActor = this.GetComponentInParent<Actor>();
-
+         ownerActor = this.GetComponentInParent<Actor>();
+        collidersStore = new List<int>();
         //?fix gun sight jitter
         if (ownerActor != null)
-        ownerActor.flightInfo.PauseGCalculations();
-        //FlightSceneManager.instance.playerActor.flightInfo.OverrideRecordedAcceleration(Vector3.zero);
+        {   ownerActor.flightInfo.PauseGCalculations();
+            //FlightSceneManager.instance.playerActor.flightInfo.OverrideRecordedAcceleration(Vector3.zero);
+
+            foreach (Rigidbody rb in ownerActor.gameObject.GetComponentsInChildren<Rigidbody>())
+            {
+                rb.detectCollisions = false;
+            }
+            foreach (Collider collider in ownerActor.gameObject.GetComponentsInChildren<Collider>())
+            {
+                if (collider)
+                {
+                    Hitbox hitbox = collider.GetComponent<Hitbox>();
+
+                    if (hitbox != null)
+                    {
+                        hitbox.health.invincible = true;
+                        collidersStore.Add(collider.gameObject.layer);
+                        collider.gameObject.layer = 9;
+                    }
+                    else
+                    {
+                        collider.gameObject.layer = 9;
+                    }
+                }
+            }
+        }
+
+
+        StartCoroutine(colliderTimer());
     }
     public void PlaneUpdate(Packet packet)
     {
@@ -123,6 +152,12 @@ public class PlaneNetworker_Receiver : MonoBehaviour
 
         }
         lastMessage = newMessage;
+
+        if (ownerActor != null)
+        {
+            ownerActor.flightInfo.PauseGCalculations();
+            ownerActor.flightInfo.OverrideRecordedAcceleration(Vector3.zero);
+        }
     }
     private void SetLandingGear(bool state)
     {
@@ -381,6 +416,41 @@ public class PlaneNetworker_Receiver : MonoBehaviour
         Debug.Log("Destroyed Plane Update");
         Debug.Log(gameObject.name);
     }
+
+    
+    private System.Collections.IEnumerator colliderTimer()
+    {
+        yield return new WaitForSeconds(10.5f);
+
+        if (ownerActor != null)
+        {
+            foreach (Rigidbody rb in ownerActor.gameObject.GetComponentsInChildren<Rigidbody>())
+            {
+                rb.detectCollisions = true;
+            }
+            int i = 0;
+            foreach (Collider collider in ownerActor.gameObject.GetComponentsInChildren<Collider>())
+            {
+                if (collider)
+                {
+                    Hitbox hitbox = collider.GetComponent<Hitbox>();
+
+                    if (hitbox != null)
+                    {
+                        hitbox.health.invincible = true; 
+                        collider.gameObject.layer = collidersStore[i];
+                        i+=1;
+                    }
+                    else
+                    {
+                        collider.gameObject.layer = 9;
+                    }
+                }
+            }
+        }
+
+    }
+
 }
 
 [HarmonyPatch(typeof(AutoPilot))]

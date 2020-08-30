@@ -12,7 +12,7 @@ using System.IO;
 using System.Collections;
 using System.Security.Cryptography;
 using TMPro;
-
+using Oculus.Platform.Samples.VrHoops;
 
 static class MapAndScenarioVersionChecker
 {
@@ -328,6 +328,22 @@ public class Networker : MonoBehaviour
             }
         }
         ReadP2P();
+        foreach (PlayerManager.Player play in PlayerManager.players)
+        {
+            play.timeSinceLastResponse += Time.deltaTime;
+
+            if(play.timeSinceLastResponse > 5.0f)
+            {
+
+                playerStatusDic[play.cSteamID] = PlayerStatus.Disconected;
+                players.Remove(play.cSteamID);
+                NetworkSenderThread.Instance.RemovePlayer(play.cSteamID);
+
+                Message_Disconnecting disMessage = new Message_Disconnecting(play.cSteamID.m_SteamID, false);
+                NetworkSenderThread.Instance.SendPacketAsHostToAllClients(disMessage, EP2PSend.k_EP2PSendReliable);
+            }
+        }
+        PlayerManager.Update();
     }
 
     private void LateUpdate()
@@ -872,6 +888,7 @@ public class Networker : MonoBehaviour
                         if (playerID != -1)
                         {
                             PlayerManager.players[playerID].ping = pingTime / 2.0f;
+                            PlayerManager.players[playerID].timeSinceLastResponse = 0;
                         }
 
                         NetworkSenderThread.Instance.SendPacketAsHostToAllClients(new Message_ReportPingTime(pingTime / 2.0f, heartbeatResult.from), EP2PSend.k_EP2PSendUnreliableNoDelay);
@@ -946,6 +963,7 @@ public class Networker : MonoBehaviour
 
                     break;
                 case MessageType.BulletHit:
+                    Debug.Log("case bulletDamage");
                     BulletHit.Invoke(packet);
                     break;
                 case MessageType.MissileDamage:
@@ -979,7 +997,7 @@ public class Networker : MonoBehaviour
             {
                 if (MessageTypeShouldBeForwarded(packetS.message.type))
                 {
-                    NetworkSenderThread.Instance.SendPacketAsHostToAllButOneSpecificClient((CSteamID)packetS.networkUID, packetS.message, EP2PSend.k_EP2PSendUnreliableNoDelay);
+                    NetworkSenderThread.Instance.SendPacketAsHostToAllButOneSpecificClient((CSteamID)packetS.networkUID, packetS.message, packetS.sendType);
                 }
             }
         }

@@ -70,26 +70,37 @@ class PlayerNetworker_Sender : MonoBehaviour
 
         ReArmingPoint[] rearmPoints = GameObject.FindObjectsOfType<ReArmingPoint>();
         ReArmingPoint rearmPoint = rearmPoints[Random.Range(0, rearmPoints.Length - 1)];
-        foreach (ReArmingPoint rep in rearmPoints)
+
+        float lastRadius = 0;
+        if (PlayerManager.carrierStart)
         {
-            if (rep.CheckIsClear(actor))
+            foreach (ReArmingPoint rep in rearmPoints)
             {
-                rearmPoint = rep;
-            }
-        }
-        float lastRadius=0.0f;
-        foreach (ReArmingPoint rep in rearmPoints)
-        {
-            if(rep.team == Teams.Allied && rep.CheckIsClear(actor))
-            {
-                if (rep.radius > lastRadius)
+                if (rep.team == Teams.Allied)
                 {
-                    rearmPoint = rep;
-                    lastRadius = rep.radius;
+                    if (rep.radius < 19.0f)
+                    {
+                        rearmPoint = rep;
+                    }
                 }
             }
         }
-        
+        else
+            foreach (ReArmingPoint rep in rearmPoints)
+            {
+                Debug.Log("finding rearm pt");
+                if (rep.team == Teams.Allied && rep.CheckIsClear(actor))
+                {
+                    
+                    if (rep.radius > lastRadius)
+                    {
+                        rearmPoint = rep;
+                        lastRadius = rep.radius;
+                    }
+                }
+            }
+
+
 
         //UnEject();
         //PutPlayerBackInAircraft();
@@ -159,8 +170,10 @@ class PlayerNetworker_Sender : MonoBehaviour
         PilotSaveManager.currentScenario.initialSpending = 0;
         PilotSaveManager.currentScenario.inFlightSpending = 0;
         PilotSaveManager.currentScenario.equipConfigurable = true;
+        newPlayer.GetComponent<Rigidbody>().detectCollisions = false;
         rearmPoint.BeginReArm();
-        
+        newPlayer.GetComponent<Rigidbody>().detectCollisions = true;
+   
         PlayerManager.SetupLocalAircraft(newPlayer, newPlayer.transform.position, newPlayer.transform.rotation, networkUID);
 
         lastMessage.UID = networkUID;

@@ -61,7 +61,10 @@ public class PlaneNetworker_Sender : MonoBehaviour
             Networker.WeaponSet += WeaponSet;
             //weaponManager.OnWeaponEquipped += Rearm;
             //weaponManager.OnWeaponUnequippedHPIdx +=Rearm;
+
+            //detect player rearm
             PlayerVehicleSetup pv =  gameObject.GetComponent<PlayerVehicleSetup>();
+            if(pv != null)
             pv.OnEndRearming.AddListener(Rearm);
          
             if (actor.isPlayer && weaponManager.GetIWBForEquip(3) != null)
@@ -162,7 +165,11 @@ public class PlaneNetworker_Sender : MonoBehaviour
 
     private bool LandingGearState()
     {
+        if(wheelsController !=null)
+        { 
         return wheelsController.gearAnimator.GetCurrentState() == GearAnimator.GearStates.Extended;
+        }
+        return false;
     }
 
     public void SetThrottle(float t)
