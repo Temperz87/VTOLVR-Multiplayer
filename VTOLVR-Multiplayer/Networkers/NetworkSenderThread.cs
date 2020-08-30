@@ -10,11 +10,14 @@ class NetworkSenderThread
 {
     private static readonly Lazy<NetworkSenderThread> lazy = new Lazy<NetworkSenderThread>(() => new NetworkSenderThread());
     public static NetworkSenderThread Instance { get { return lazy.Value; } }
-    
+
+    public Dictionary<MessageType, ulong> messageCounterTypes;
+    public ulong messageCounter =0;
     private NetworkSenderThread() {
         waitHandle = new EventWaitHandle(true, EventResetMode.ManualReset);
-
-        messageQueue = new ConcurrentQueue<OutgoingNetworkPacketContainer>();
+         messageCounterTypes = new Dictionary<MessageType, ulong>();
+     
+    messageQueue = new ConcurrentQueue<OutgoingNetworkPacketContainer>();
 
         packetSingle = new PacketSingle();
 
@@ -238,6 +241,21 @@ class NetworkSenderThread
         MemoryStream memoryStream = new MemoryStream();
         binaryFormatter.Serialize(memoryStream, packetSingle);
         length = (uint)memoryStream.Length;
+
+        ulong count = 0;
+        if (messageCounterTypes.ContainsKey(message.type))
+        {
+            count = messageCounterTypes[message.type];
+            count += length;
+            messageCounterTypes[message.type] = count;
+            messageCounter += length;
+        }
+        else
+        {
+            messageCounterTypes.Add(message.type, length);
+            messageCounter += length;
+        }
+
         return memoryStream.ToArray();
     }
 
