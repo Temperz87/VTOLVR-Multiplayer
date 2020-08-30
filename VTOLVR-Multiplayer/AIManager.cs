@@ -75,7 +75,7 @@ public static class AIManager
             Debug.LogError(message.unitName + " was not found.");
             return;
         }
-        GameObject newAI = GameObject.Instantiate(prefab, VTMapManager.GlobalToWorldPoint(message.position), Quaternion.Euler(message.rotation.toVector3));
+        GameObject newAI = GameObject.Instantiate(prefab, VTMapManager.GlobalToWorldPoint(message.position), message.rotation);
         //Debug.Log("Setting vehicle name");
         newAI.name = message.aiVehicleName;
         Actor actor = newAI.GetComponent<Actor>();
@@ -168,20 +168,22 @@ public static class AIManager
         {
             Debug.Log(message.aiVehicleName + " has no health?");
         }
+
+        newAI.transform.position = VTMapManager.GlobalToWorldPoint(message.position);
+        newAI.transform.rotation = message.rotation;
+
         if (newAI.GetComponent<ShipMover>() != null)
         {
             ShipNetworker_Receiver shipNetworker = newAI.AddComponent<ShipNetworker_Receiver>();
             shipNetworker.networkUID = message.networkID;
         }
+        else if (newAI.GetComponent<GroundUnitMover>() != null) {
+            GroundNetworker_Receiver groundNetworker = newAI.AddComponent<GroundNetworker_Receiver>();
+            groundNetworker.networkUID = message.networkID;
+        }
         else if (newAI.GetComponent<Rigidbody>() != null)
         {
             Rigidbody rb = newAI.GetComponent<Rigidbody>();
-            Debug.Log($"Changing {newAI.name}'s position and rotation\nPos:{rb.position} Rotation:{rb.rotation.eulerAngles}");
-            rb.interpolation = RigidbodyInterpolation.None;
-            rb.position = message.position.toVector3;
-            rb.rotation = Quaternion.Euler(message.rotation.toVector3);
-            rb.interpolation = RigidbodyInterpolation.Interpolate;
-            Debug.Log($"Finished changing {newAI.name}\n Pos:{rb.position} Rotation:{rb.rotation.eulerAngles}");
             RigidbodyNetworker_Receiver rbNetworker = newAI.AddComponent<RigidbodyNetworker_Receiver>();
             rbNetworker.networkUID = message.networkID;
         }
@@ -461,7 +463,7 @@ public static class AIManager
                         {
                             NetworkSenderThread.Instance.SendPacketToSpecificPlayer(steamID, new Message_SpawnAIVehicle(actor.name, GetUnitNameFromCatalog(actor.unitSpawn.unitName),
                                 VTMapManager.WorldToGlobalPoint(actor.gameObject.transform.position),
-                                new Vector3D(actor.gameObject.transform.rotation.eulerAngles), uidSender.networkUID, hPInfos2, cmLoadout, 0.65f, Aggresion, actor.unitSpawn.unitSpawner.unitInstanceID, letters, ids.ToArray(), irIDS),
+                                actor.gameObject.transform.rotation, uidSender.networkUID, hPInfos2, cmLoadout, 0.65f, Aggresion, actor.unitSpawn.unitSpawner.unitInstanceID, letters, ids.ToArray(), irIDS),
                                 EP2PSend.k_EP2PSendReliable);
                         }
                         else
@@ -469,7 +471,7 @@ public static class AIManager
                             // Debug.Log("It seems that " + actor.name + " is not in a unit group, sending anyways.");
                             NetworkSenderThread.Instance.SendPacketToSpecificPlayer(steamID, new Message_SpawnAIVehicle(actor.name, GetUnitNameFromCatalog(actor.unitSpawn.unitName),
                                 VTMapManager.WorldToGlobalPoint(actor.gameObject.transform.position),
-                                new Vector3D(actor.gameObject.transform.rotation.eulerAngles), uidSender.networkUID, hPInfos2, cmLoadout, 0.65f, Aggresion, actor.unitSpawn.unitSpawner.unitInstanceID, ids.ToArray(), irIDS),
+                                actor.gameObject.transform.rotation, uidSender.networkUID, hPInfos2, cmLoadout, 0.65f, Aggresion, actor.unitSpawn.unitSpawner.unitInstanceID, ids.ToArray(), irIDS),
                                 EP2PSend.k_EP2PSendReliable);
                         }
                     }
@@ -480,7 +482,7 @@ public static class AIManager
                         {
                             NetworkSenderThread.Instance.SendPacketAsHostToAllClients(new Message_SpawnAIVehicle(actor.name, GetUnitNameFromCatalog(actor.unitSpawn.unitName),
                                 VTMapManager.WorldToGlobalPoint(actor.gameObject.transform.position),
-                                new Vector3D(actor.gameObject.transform.rotation.eulerAngles), uidSender.networkUID, hPInfos2, cmLoadout, 0.65f, Aggresion, actor.unitSpawn.unitSpawner.unitInstanceID, letters, ids.ToArray(), irIDS),
+                                actor.gameObject.transform.rotation, uidSender.networkUID, hPInfos2, cmLoadout, 0.65f, Aggresion, actor.unitSpawn.unitSpawner.unitInstanceID, letters, ids.ToArray(), irIDS),
                                 EP2PSend.k_EP2PSendReliable);
                         }
                         else
@@ -488,7 +490,7 @@ public static class AIManager
                             // Debug.Log("It seems that " + actor.name + " is not in a unit group, sending anyways.");
                             NetworkSenderThread.Instance.SendPacketAsHostToAllClients(new Message_SpawnAIVehicle(actor.name, GetUnitNameFromCatalog(actor.unitSpawn.unitName),
                                 VTMapManager.WorldToGlobalPoint(actor.gameObject.transform.position),
-                                new Vector3D(actor.gameObject.transform.rotation.eulerAngles), uidSender.networkUID, hPInfos2, cmLoadout, 0.65f, Aggresion, actor.unitSpawn.unitSpawner.unitInstanceID, ids.ToArray(), irIDS),
+                                actor.gameObject.transform.rotation, uidSender.networkUID, hPInfos2, cmLoadout, 0.65f, Aggresion, actor.unitSpawn.unitSpawner.unitInstanceID, ids.ToArray(), irIDS),
                                 EP2PSend.k_EP2PSendReliable);
                         }
                     }
@@ -540,6 +542,11 @@ public static class AIManager
             {
                 ShipNetworker_Sender shipNetworker = actor.gameObject.AddComponent<ShipNetworker_Sender>();
                 shipNetworker.networkUID = networkUID;
+            }
+            else if (actor.gameObject.GetComponent<GroundUnitMover>() != null)
+            {
+                GroundNetworker_Sender lastGroundSender = actor.gameObject.AddComponent<GroundNetworker_Sender>();
+                lastGroundSender.networkUID = networkUID;
             }
             else if (actor.gameObject.GetComponent<Rigidbody>() != null)
             {

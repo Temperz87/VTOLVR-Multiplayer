@@ -93,7 +93,7 @@ class Patch8
                     {
                         NetworkSenderThread.Instance.SendPacketAsHostToAllClients(new Message_SpawnAIVehicle(actor.name, AIManager.GetUnitNameFromCatalog(actor.unitSpawn.unitName),
                             VTMapManager.WorldToGlobalPoint(actor.gameObject.transform.position),
-                            new Vector3D(actor.gameObject.transform.rotation.eulerAngles), uidSender.networkUID, hPInfos2, cmLoadout, 0.65f, Aggresion, actor.unitSpawn.unitSpawner.unitInstanceID, letters, ids.ToArray(), irIDS),
+                            actor.gameObject.transform.rotation, uidSender.networkUID, hPInfos2, cmLoadout, 0.65f, Aggresion, actor.unitSpawn.unitSpawner.unitInstanceID, letters, ids.ToArray(), irIDS),
                             EP2PSend.k_EP2PSendReliable);
                     }
                     else
@@ -101,7 +101,7 @@ class Patch8
                         // Debug.Log("It seems that " + actor.name + " is not in a unit group, sending anyways.");
                         NetworkSenderThread.Instance.SendPacketAsHostToAllClients(new Message_SpawnAIVehicle(actor.name, AIManager.GetUnitNameFromCatalog(actor.unitSpawn.unitName),
                             VTMapManager.WorldToGlobalPoint(actor.gameObject.transform.position),
-                            new Vector3D(actor.gameObject.transform.rotation.eulerAngles), uidSender.networkUID, hPInfos2, cmLoadout, 0.65f, Aggresion, actor.unitSpawn.unitSpawner.unitInstanceID, ids.ToArray(), irIDS),
+                            actor.gameObject.transform.rotation, uidSender.networkUID, hPInfos2, cmLoadout, 0.65f, Aggresion, actor.unitSpawn.unitSpawner.unitInstanceID, ids.ToArray(), irIDS),
                             EP2PSend.k_EP2PSendReliable);
                     }
                 }
