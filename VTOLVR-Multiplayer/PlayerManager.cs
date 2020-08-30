@@ -83,9 +83,11 @@ public static class PlayerManager
         // As a client, when the map has loaded we are going to request a spawn point from the host
         SetPrefabs();
 
+        carrierStart = FlightSceneManager.instance.playerActor.unitSpawn.unitSpawner.linkedToCarrier;
        
         if (!Networker.isHost)
         {
+            FlightSceneManager.instance.playerActor.gameObject.transform.parent = null;
             Debug.Log($"Sending spawn request to host, host id: {Networker.hostID}, client id: {SteamUser.GetSteamID().m_SteamID}");
             Debug.Log("Killing all units currently on the map.");
             List<Actor> allActors = new List<Actor>();
@@ -199,7 +201,7 @@ public static class PlayerManager
         }
         SpawnPlayersInPlayerSpawnQueue();
 
-        carrierStart = FlightSceneManager.instance.playerActor.unitSpawn.unitSpawner.linkedToCarrier;
+       
         if (!Networker.isHost)
         {
             // If the player is not the host, they only need a receiver?
@@ -412,8 +414,8 @@ public static class PlayerManager
 
         float lastRadius = 0.0f;
 
-        Rigidbody rb = localVehicle.GetComponent<Rigidbody>();
-        rb.detectCollisions = false;
+        //Rigidbody rb = localVehicle.GetComponent<Rigidbody>();
+        //rb.detectCollisions = false;
         if (PlayerManager.carrierStart)
         {
             foreach (ReArmingPoint rep in rearmPoints)
@@ -469,7 +471,7 @@ public static class PlayerManager
         {
             VTMapGenerator.fetch.BakeColliderAtPosition(localVehicle.transform.position);
         }
-        rb.detectCollisions = true;
+        //rb.detectCollisions = true;
         SetupLocalAircraft(localVehicle, pos, rot, UID);
 
      

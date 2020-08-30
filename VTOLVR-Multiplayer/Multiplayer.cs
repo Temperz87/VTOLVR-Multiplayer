@@ -240,10 +240,27 @@ public class Multiplayer : VTOLMOD
     {
         if (displayPing) {
             string temp = "";
-            foreach (PlayerManager.Player player in PlayerManager.players)
+            if(Networker.isClient)
+             foreach (PlayerManager.Player player in PlayerManager.players)
             {
                 temp += player.cSteamID + ": " + Mathf.Round(player.ping * 1000f) + "\n";
+            } 
+            if(NetworkSenderThread.Instance != null)
+            {
+                int enumCount = MessageType.GetNames(typeof(MessageType)).Length;
+                for (int i = 0; i < enumCount; i++)
+                {
+                    MessageType enumHandle = (MessageType)i;
+                    if (NetworkSenderThread.Instance.messageCounterTypes.ContainsKey(enumHandle))
+                    {
+                        float percent = (float)NetworkSenderThread.Instance.messageCounterTypes[enumHandle] / (float)NetworkSenderThread.Instance.messageCounter * 100.0f;
+                        temp += MessageType.GetNames(typeof(MessageType))[i] + " " + percent + "\n";
+                    }
+
+
+                }
             }
+           
             GUI.TextArea(new Rect(100, 100, 800, 800), temp);
         }
     }
