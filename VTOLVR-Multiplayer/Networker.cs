@@ -328,7 +328,7 @@ public class Networker : MonoBehaviour
             }
         }
         ReadP2P();
-        foreach (PlayerManager.Player play in PlayerManager.players)
+      /*foreach (PlayerManager.Player play in PlayerManager.players)
         {
             play.timeSinceLastResponse += Time.deltaTime;
             if(play.vehicleUID != hostID.m_SteamID)
@@ -342,7 +342,7 @@ public class Networker : MonoBehaviour
                 Message_Disconnecting disMessage = new Message_Disconnecting(play.cSteamID.m_SteamID, false);
                 NetworkSenderThread.Instance.SendPacketAsHostToAllClients(disMessage, EP2PSend.k_EP2PSendReliable);
             }
-        }
+        }*/
         PlayerManager.Update();
     }
 
@@ -727,6 +727,7 @@ public class Networker : MonoBehaviour
 
                         playerStatusDic[csteamID] = PlayerStatus.Disconected;
                         players.Remove(csteamID);
+                        readyDic.Remove(csteamID);
                         NetworkSenderThread.Instance.RemovePlayer(csteamID);
                         NetworkSenderThread.Instance.SendPacketAsHostToAllClients(packet, packet.sendType);
                     }

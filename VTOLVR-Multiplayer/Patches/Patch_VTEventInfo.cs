@@ -66,7 +66,14 @@ class Patch22
         {
 
             if (__instance.targetType == VTEventTarget.TargetTypes.Objective || __instance.targetType == VTEventTarget.TargetTypes.System)
-                return true;
+            {
+                bool shouldComplete = ObjectiveNetworker_Reciever.completeNextEvent;
+                Debug.Log($"Should complete is {shouldComplete}.");
+                ObjectiveNetworker_Reciever.completeNextEvent = false;
+                return shouldComplete;// clients should not send kill obj packets or have them complete
+
+            }
+               
         }
         return false;
     }
@@ -96,7 +103,7 @@ class Patch2
         else
         {
             Debug.Log("Client sent Event action" + __instance.eventName + " of type " + __instance.methodName + " for target " + __instance.targetID);
-            NetworkSenderThread.Instance.SendPacketToSpecificPlayer(Networker.hostID, ScanarioActionOutMessage, Steamworks.EP2PSend.k_EP2PSendUnreliable);
+           // NetworkSenderThread.Instance.SendPacketToSpecificPlayer(Networker.hostID, ScanarioActionOutMessage, Steamworks.EP2PSend.k_EP2PSendUnreliable);
         }
     }
 }
@@ -170,18 +177,15 @@ class Patch4
         }
         else
         {
-            if (VTScenario.current.objectives.GetObjective(__instance.objectiveID).objectiveType == VTObjective.ObjectiveTypes.Destroy ||
-                VTScenario.current.objectives.GetObjective(__instance.objectiveID).objectiveType == VTObjective.ObjectiveTypes.Conditional)
-            {
-                Debug.Log("Making client not send kill objective packet.");
+            //if (VTScenario.current.objectives.GetObjective(__instance.objectiveID).objectiveType == VTObjective.ObjectiveTypes.Destroy ||
+            //    VTScenario.current.objectives.GetObjective(__instance.objectiveID).objectiveType == VTObjective.ObjectiveTypes.Conditional)
+             
                 bool shouldComplete = ObjectiveNetworker_Reciever.completeNext;
                 Debug.Log($"Should complete is {shouldComplete}.");
                 ObjectiveNetworker_Reciever.completeNext = false;
                 return shouldComplete;// clients should not send kill obj packets or have them complete
-            }
-            ObjectiveNetworker_Reciever.completeNext = false;
-            Debug.Log("Client sent objective complete " + __instance.objectiveID);
-            NetworkSenderThread.Instance.SendPacketToSpecificPlayer(Networker.hostID, objOutMessage, Steamworks.EP2PSend.k_EP2PSendUnreliable);
+            
+            //NetworkSenderThread.Instance.SendPacketToSpecificPlayer(Networker.hostID, objOutMessage, Steamworks.EP2PSend.k_EP2PSendUnreliable);
         }
         return true;
     }
@@ -215,12 +219,12 @@ class Patch5
         }
         else
         {
-            if (VTScenario.current.objectives.GetObjective(__instance.objectiveID).objectiveType == VTObjective.ObjectiveTypes.Destroy)
-            {
-                Debug.Log("Making client not send kill objective packet.");
-                return true;// clients should not send kill obj packets
-            }
-            NetworkSenderThread.Instance.SendPacketToSpecificPlayer(Networker.hostID, objOutMessage, Steamworks.EP2PSend.k_EP2PSendUnreliable);
+            
+            bool shouldComplete = ObjectiveNetworker_Reciever.completeNext;
+            Debug.Log($"Should complete is {shouldComplete}.");
+            ObjectiveNetworker_Reciever.completeNext = false;
+            return shouldComplete;// clients should not send kill obj packets or have them complete
+            //NetworkSenderThread.Instance.SendPacketToSpecificPlayer(Networker.hostID, objOutMessage, Steamworks.EP2PSend.k_EP2PSendUnreliable);
         }
         return true;
     }
@@ -293,14 +297,13 @@ class Patch7
             NetworkSenderThread.Instance.SendPacketAsHostToAllClients(objOutMessage, Steamworks.EP2PSend.k_EP2PSendUnreliable);
         }
         else
-        {
-            if (VTScenario.current.objectives.GetObjective(__instance.objectiveID).objectiveType == VTObjective.ObjectiveTypes.Destroy)
-            {
-                Debug.Log("Making client not send kill objective packet.");
-                return true;// clients should not send kill obj packets
-            }
-            Debug.Log("Client sent objective CancelObjective " + __instance.objectiveID);
-            NetworkSenderThread.Instance.SendPacketToSpecificPlayer(Networker.hostID, objOutMessage, Steamworks.EP2PSend.k_EP2PSendUnreliable);
+        { 
+            bool shouldComplete = ObjectiveNetworker_Reciever.completeNext;
+            Debug.Log($"Should complete is {shouldComplete}.");
+            ObjectiveNetworker_Reciever.completeNext = false;
+            return shouldComplete;// clients should not send kill obj packets or have them complete
+            //Debug.Log("Client sent objective CancelObjective " + __instance.objectiveID);
+            // NetworkSenderThread.Instance.SendPacketToSpecificPlayer(Networker.hostID, objOutMessage, Steamworks.EP2PSend.k_EP2PSendUnreliable);
         }
         return true;
     }
