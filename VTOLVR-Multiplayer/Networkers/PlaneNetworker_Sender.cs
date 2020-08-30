@@ -33,6 +33,9 @@ public class PlaneNetworker_Sender : MonoBehaviour
     private InternalWeaponBay iwb = null;
     private ulong sequenceNumber;
     private HPEquipMissileLauncher lastml;
+
+    private float tick = 0;
+    public float tickRate = 2;
     private void Awake()
     {
         actor = gameObject.GetComponent<Actor>();
@@ -126,6 +129,10 @@ public class PlaneNetworker_Sender : MonoBehaviour
 
     private void LateUpdate()
     {
+        tick += Time.deltaTime;
+        if (tick > 1.0f / tickRate)
+        { 
+        tick = 0;
         lastMessage.flaps = aeroController.flaps;
         lastMessage.pitch = Mathf.Round(aeroController.input.x * 100000f) / 100000f;
         lastMessage.yaw = Mathf.Round(aeroController.input.y * 100000f) / 100000f;
@@ -160,6 +167,7 @@ public class PlaneNetworker_Sender : MonoBehaviour
         else
         {
             NetworkSenderThread.Instance.SendPacketToSpecificPlayer(Networker.hostID, lastMessage, Steamworks.EP2PSend.k_EP2PSendUnreliable);
+        }
         }
     }
 

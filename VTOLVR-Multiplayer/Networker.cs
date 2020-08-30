@@ -331,7 +331,7 @@ public class Networker : MonoBehaviour
         foreach (PlayerManager.Player play in PlayerManager.players)
         {
             play.timeSinceLastResponse += Time.deltaTime;
-
+            if(play.vehicleUID != hostID.m_SteamID)
             if(play.timeSinceLastResponse > 5.0f)
             {
 
@@ -1346,7 +1346,6 @@ public class Networker : MonoBehaviour
     {
         multiplayerInstance = null;
     }
-
     public void OnApplicationQuit()
     {
         if (HeartbeatTimerRunning)
