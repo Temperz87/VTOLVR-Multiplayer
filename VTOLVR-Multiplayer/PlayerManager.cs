@@ -412,6 +412,8 @@ public static class PlayerManager
 
         float lastRadius = 0.0f;
 
+        Rigidbody rb = localVehicle.GetComponent<Rigidbody>();
+        rb.detectCollisions = false;
         if (PlayerManager.carrierStart)
         {
             foreach (ReArmingPoint rep in rearmPoints)
@@ -467,6 +469,7 @@ public static class PlayerManager
         {
             VTMapGenerator.fetch.BakeColliderAtPosition(localVehicle.transform.position);
         }
+        rb.detectCollisions = true;
         SetupLocalAircraft(localVehicle, pos, rot, UID);
 
      
@@ -892,22 +895,6 @@ public static class PlayerManager
             extLightReceiver.networkUID = networkID;
         }
 
-        foreach (Collider collider in newVehicle.GetComponentsInChildren<Collider>())
-        {
-            if (collider)
-            {
-                Hitbox hitbox = collider.GetComponent<Hitbox>();
-
-                if (hitbox != null)
-                {
-                    hitbox.health.invincible = true;
-                }
-                else
-                {
-                    collider.gameObject.layer = 9;
-                }
-            }
-        }
         aIPilot.enabled = false;
         Debug.Log($"Changing {newVehicle.name}'s position and rotation\nPos:{rb.position} Rotation:{rb.rotation.eulerAngles}");
         aIPilot.kPlane.SetToKinematic();
