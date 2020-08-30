@@ -54,9 +54,9 @@ public class RigidbodyNetworker_Sender : MonoBehaviour
         lastUp = lastRotation * Vector3.up;
         lastForward = lastRotation * Vector3.forward;
         tick += Time.fixedDeltaTime;
-        if (tick > 1/tickRate || Vector3.Distance(localLastPosition, transform.TransformPoint(originOffset)) > threshold || Vector3.Angle(lastUp, transform.up) > angleThreshold || Vector3.Angle(lastForward, transform.forward) > angleThreshold)
+        if (tick > 1.0f/tickRate || Vector3.Distance(localLastPosition, transform.TransformPoint(originOffset)) > threshold || Vector3.Angle(lastUp, transform.up) > angleThreshold || Vector3.Angle(lastForward, transform.forward) > angleThreshold)
         {
-            tick = 0;
+            tick = 0.0f;
             lastUp = transform.up;
             lastForward = transform.forward;
 

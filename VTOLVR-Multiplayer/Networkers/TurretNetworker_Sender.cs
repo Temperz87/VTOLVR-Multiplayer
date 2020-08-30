@@ -6,7 +6,8 @@ class TurretNetworker_Sender : MonoBehaviour
     public ulong turretID;
     private Message_TurretUpdate lastMessage;
     public ModuleTurret turret;
-
+    private float tick;
+    public float tickRate = 4.0f;
     private void Awake()
     {
         lastMessage = new Message_TurretUpdate(new Vector3D(), networkUID, turretID);
@@ -20,16 +21,24 @@ class TurretNetworker_Sender : MonoBehaviour
         }
     }
 
-    private void FixedUpdate()
+    private void LateUpdate()
     {
-        Vector3D dir = new Vector3D(turret.pitchTransform.forward);
-        lastMessage.direction = dir;
+        if (turret == null)
+            return;
 
-        lastMessage.UID = networkUID;
-        lastMessage.turretID = turretID;
-        if (Networker.isHost)
-            NetworkSenderThread.Instance.SendPacketAsHostToAllClients(lastMessage, Steamworks.EP2PSend.k_EP2PSendUnreliable);
-        else
-            NetworkSenderThread.Instance.SendPacketToSpecificPlayer(Networker.hostID, lastMessage, Steamworks.EP2PSend.k_EP2PSendUnreliable);
+         tick += Time.deltaTime;
+        if (tick > 1.0f / tickRate)
+        {
+            tick = 0.0f;
+            Vector3D dir = new Vector3D(turret.pitchTransform.forward);
+            lastMessage.direction = dir;
+
+            lastMessage.UID = networkUID;
+            lastMessage.turretID = turretID;
+            if (Networker.isHost)
+                NetworkSenderThread.Instance.SendPacketAsHostToAllClients(lastMessage, Steamworks.EP2PSend.k_EP2PSendUnreliable);
+            else
+                NetworkSenderThread.Instance.SendPacketToSpecificPlayer(Networker.hostID, lastMessage, Steamworks.EP2PSend.k_EP2PSendUnreliable);
+        }
     }
 }
