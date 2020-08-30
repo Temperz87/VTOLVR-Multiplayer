@@ -96,10 +96,7 @@ class NetworkSenderThread
             outgoingReceivers = OutgoingReceivers.HostToAllClients;
             Message = message;
             PacketType = packetType;
-            if (flag)
-                this.packetID = Instance.packetID++;
-            else
-                this.packetID = 0;
+            this.reliable = flag;
         }
 
         public OutgoingNetworkPacketContainer(CSteamID receiver, object message, EP2PSend packetType, OutgoingReceivers outgoingReceivers, bool flag = false)
@@ -108,10 +105,7 @@ class NetworkSenderThread
             SteamId = receiver;
             Message = message;
             PacketType = packetType;
-            if (flag)
-                this.packetID = Instance.packetID++;
-            else
-                this.packetID = 0;
+            this.reliable = flag;
         }
 
         public OutgoingReceivers ToWhichReceivers()
@@ -123,7 +117,7 @@ class NetworkSenderThread
         public CSteamID SteamId;
         public object Message;
         public EP2PSend PacketType;
-        public ulong packetID;
+        public bool reliable;
     }
 
     private readonly Thread networkThread;
