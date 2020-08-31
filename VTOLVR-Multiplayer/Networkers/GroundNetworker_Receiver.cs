@@ -12,12 +12,12 @@ class GroundNetworker_Receiver : MonoBehaviour
 
     public float smoothTime = 2f;
     public float rotSmoothTime = 0.5f;
-    public Vector3 targetPositionGlobal;
+    public Vector3D targetPositionGlobal;
     public Vector3 targetPosition;
     public Vector3 targetVelocity;
     public Quaternion targetRotation;
 
-    Vector3 smoothedPosition;
+    Vector3D smoothedPosition;
     Quaternion smoothedRotation;
 
     private void Awake()
@@ -32,12 +32,11 @@ class GroundNetworker_Receiver : MonoBehaviour
 
     void FixedUpdate() {
         targetPositionGlobal += targetVelocity * Time.fixedDeltaTime;
-        targetPosition = VTMapManager.GlobalToWorldPoint(new Vector3D(targetPositionGlobal));
 
-        smoothedPosition = smoothedPosition + targetVelocity * Time.fixedDeltaTime + ((targetPosition - smoothedPosition) * Time.fixedDeltaTime) / smoothTime;
+        smoothedPosition = smoothedPosition + targetVelocity * Time.fixedDeltaTime + ((targetPositionGlobal - smoothedPosition) * Time.fixedDeltaTime) / smoothTime;
         smoothedRotation = Quaternion.Lerp(smoothedRotation, targetRotation, Time.fixedDeltaTime / rotSmoothTime);
 
-        Vector3 adjustedPos = smoothedPosition;
+        Vector3 adjustedPos = VTMapManager.GlobalToWorldPoint(smoothedPosition);
         Vector3 surfaceNormal = smoothedRotation * Vector3.up;
         Vector3 surfaceRight = smoothedRotation * Vector3.right;
         Vector3 surfaceForward = smoothedRotation * Vector3.forward;
@@ -54,7 +53,7 @@ class GroundNetworker_Receiver : MonoBehaviour
         }
 
         rb.MovePosition(adjustedPos);
-        rb.MoveRotation(adjustedRotation);
+        rb.transform.rotation = adjustedRotation;//move rotation was throwing "Rotation quaternions must be unit length"
     }
 
     public void GroundUpdate(Packet packet)
@@ -63,13 +62,20 @@ class GroundNetworker_Receiver : MonoBehaviour
         if (lastMessage.UID != networkUID)
             return;
 
-        targetPositionGlobal = lastMessage.position.toVector3 + lastMessage.velocity.toVector3 * Networker.pingToHost;
+        targetPositionGlobal = lastMessage.position + lastMessage.velocity * Networker.pingToHost;
         targetVelocity = lastMessage.velocity.toVector3;
-        targetRotation =  lastMessage.rotation;
+        targetRotation = lastMessage.rotation;
+        targetRotation = targetRotation.normalized;
+        
+
+        Debug.Log("Ground reciever rotation is: " + lastMessage.rotation.ToString());
 
         if ((VTMapManager.GlobalToWorldPoint(lastMessage.position) - groundUnitMover.transform.position).magnitude > 100) {
             Debug.Log("Ground mover is too far, teleporting.");
             groundUnitMover.transform.position = VTMapManager.GlobalToWorldPoint(lastMessage.position);
+            groundUnitMover.transform.rotation = lastMessage.rotation;
+            smoothedPosition = lastMessage.position;
+            smoothedRotation = lastMessage.rotation;
         }
     }
 

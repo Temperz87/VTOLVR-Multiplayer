@@ -12,7 +12,7 @@ class ShipNetworker_Receiver : MonoBehaviour
 
     public float smoothTime = 5f;
     public float rotSmoothTime = 5f;
-    public Vector3 targetPositionGlobal;
+    public Vector3D targetPositionGlobal;
     public Vector3 targetPosition;
     public Vector3 targetVelocity;
     public Quaternion targetRotation;
@@ -32,7 +32,7 @@ class ShipNetworker_Receiver : MonoBehaviour
 
     void FixedUpdate() {
         targetPositionGlobal += targetVelocity * Time.fixedDeltaTime;
-        targetPosition = VTMapManager.GlobalToWorldPoint(new Vector3D(targetPositionGlobal));
+        targetPosition = VTMapManager.GlobalToWorldPoint(targetPositionGlobal);
         ship.rb.MovePosition(ship.transform.position + targetVelocity * Time.fixedDeltaTime + ((targetPosition - ship.transform.position) * Time.fixedDeltaTime) / smoothTime);
         ship.rb.velocity = targetVelocity + (targetPosition - ship.transform.position)/smoothTime;
         ship.rb.MoveRotation(Quaternion.Lerp(ship.transform.rotation, targetRotation, Time.fixedDeltaTime/rotSmoothTime));
@@ -44,7 +44,7 @@ class ShipNetworker_Receiver : MonoBehaviour
         if (lastMessage.UID != networkUID)
             return;
 
-        targetPositionGlobal = lastMessage.position.toVector3 + lastMessage.velocity.toVector3 * Networker.pingToHost;
+        targetPositionGlobal = lastMessage.position + lastMessage.velocity * Networker.pingToHost;
         targetVelocity = lastMessage.velocity.toVector3;
         targetRotation =  lastMessage.rotation;
 

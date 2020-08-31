@@ -20,8 +20,10 @@ class GroundNetworker_Sender : MonoBehaviour
             timer = 0;
 
             lastMessage.position = VTMapManager.WorldToGlobalPoint(groundUnitMover.transform.position);
-            lastMessage.rotation = groundUnitMover.transform.rotation;
+            lastMessage.rotation = groundUnitMover.transform.rotation.normalized;
             lastMessage.velocity = new Vector3D(groundUnitMover.velocity);
+
+            Debug.Log("Ground sender rotation is: " + groundUnitMover.transform.rotation.ToString());
 
             lastMessage.UID = networkUID;
             if (Networker.isHost)
