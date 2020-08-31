@@ -11,6 +11,7 @@ class ObjectiveNetworker_Reciever
     public static Dictionary<int, VTEventTarget> scenarioActionsList = new Dictionary<int, VTEventTarget>();
     public static Dictionary<int, float> scenarioActionsListCoolDown = new Dictionary<int, float>();
     public static bool completeNext = false;
+    public static bool completeNextEvent = false;
     public static void objectiveUpdate(int id, ObjSyncType status)
     {
         Debug.Log($"Doing objective update for id {id}.");
@@ -46,21 +47,21 @@ class ObjectiveNetworker_Reciever
         if (status == ObjSyncType.EMissionFailed && !obj.failed)
         {
             Debug.Log("failing mission complete locally");
-
+            completeNext = true;
             obj.FailObjective();
         }
 
         if (status == ObjSyncType.EMissionBegin && !obj.started)
         {
             Debug.Log("starting mission begin locally");
-
+            completeNext = true;
             obj.BeginMission();
         }
 
         if (status == ObjSyncType.EMissionCanceled && !obj.cancelled)
         {
             Debug.Log("starting mission cancel locally");
-
+            completeNext = true;
             obj.CancelObjective();
         }
     }
@@ -76,6 +77,7 @@ class ObjectiveNetworker_Reciever
 
                     scenarioActionsListCoolDown.Remove(hash);
                     scenarioActionsListCoolDown.Add(hash, currentTime);
+                    completeNextEvent = true;
                     scenarioActionsList[hash].Invoke();
                 }
                 else
@@ -90,6 +92,7 @@ class ObjectiveNetworker_Reciever
             {
                 float currentTime = Time.unscaledTime;
                 scenarioActionsList[hash].Invoke();
+                completeNextEvent = true;
                 scenarioActionsListCoolDown.Add(hash, currentTime);
 
             }

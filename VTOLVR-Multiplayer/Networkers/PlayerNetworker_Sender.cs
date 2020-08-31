@@ -170,9 +170,11 @@ class PlayerNetworker_Sender : MonoBehaviour
         PilotSaveManager.currentScenario.initialSpending = 0;
         PilotSaveManager.currentScenario.inFlightSpending = 0;
         PilotSaveManager.currentScenario.equipConfigurable = true;
-        newPlayer.GetComponent<Rigidbody>().detectCollisions = false;
+        Rigidbody rb = newPlayer.GetComponent<Rigidbody>();
+        rb.detectCollisions = false;
         rearmPoint.BeginReArm();
-        newPlayer.GetComponent<Rigidbody>().detectCollisions = true;
+        rb.velocity = Vector3.zero;
+        rb.detectCollisions = true;
    
         PlayerManager.SetupLocalAircraft(newPlayer, newPlayer.transform.position, newPlayer.transform.rotation, networkUID);
 

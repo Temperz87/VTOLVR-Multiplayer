@@ -414,7 +414,7 @@ public static class PlayerManager
 
         float lastRadius = 0.0f;
 
-        //Rigidbody rb = localVehicle.GetComponent<Rigidbody>();
+        Rigidbody rb = localVehicle.GetComponent<Rigidbody>();
         //rb.detectCollisions = false;
         if (PlayerManager.carrierStart)
         {
@@ -447,19 +447,27 @@ public static class PlayerManager
         {
             if(firstSpawnDone)
             rearmPoint.BeginReArm();
+            rb.velocity = Vector3.zero;
 
         }
         else
         {
             if(teamLeftie)
-            rearmPoint.BeginReArm();
+            {
+                rearmPoint.BeginReArm();
+                rb.velocity = Vector3.zero;
+            }
             else
             {
                 if(firstSpawnDone == false)
                 {
                     PlayerSpawn ps =  GameObject.FindObjectOfType<PlayerSpawn>();
                     if(ps.initialSpeed < 5.0f)
+                    {
                         rearmPoint.BeginReArm();
+                        rb.velocity = Vector3.zero;
+                    }
+                        
                 }
                     
             }
