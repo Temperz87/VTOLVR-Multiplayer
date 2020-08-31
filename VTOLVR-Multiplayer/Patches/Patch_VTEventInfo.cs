@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Harmony;
+using Oculus.Platform.Samples.VrHoops;
 using UnityEngine;
 
 
@@ -50,6 +51,34 @@ class PatchBullet
         return true;
     }
 }
+
+
+[HarmonyPatch(typeof(GPSTargetSystem), "AddTarget")]
+class PatchGPS
+{
+    static bool Prefix(GPSTargetSystem __instance, Vector3 worldPosition, string prefix)
+    {
+
+        Vector3 pos = worldPosition;
+        string msgp = prefix;
+        Debug.Log("sending GPS");
+        Message_GPSData gpsm = new Message_GPSData(VTMapManager.WorldToGlobalPoint(pos), "MP", PlayerManager.teamLeftie);
+
+        if(PlayerManager.sendGPS)
+        {
+            if (Networker.isHost)
+            {
+                NetworkSenderThread.Instance.SendPacketAsHostToAllClients(gpsm, Steamworks.EP2PSend.k_EP2PSendReliable);
+            }
+            else
+            {
+                NetworkSenderThread.Instance.SendPacketToSpecificPlayer(Networker.hostID, gpsm, Steamworks.EP2PSend.k_EP2PSendReliable);
+            }
+        }
+        return true;
+    }
+}
+
 
 [HarmonyPatch(typeof(VTEventTarget), "Invoke")]
 class Patch22

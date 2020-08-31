@@ -24,7 +24,7 @@ public static class PlayerManager
     public static bool firstSpawnDone = false;
     public static bool airSpawn = false;
     public static bool carrierStart = false;
-
+    public static  bool sendGPS = true;
     public static bool carrierFound = false;
     /// <summary>
     /// This is the queue for people waiting to get a spawn point,
@@ -44,7 +44,7 @@ public static class PlayerManager
     public static bool teamLeftie = false;
 
     public static Vector3 av42Offset = new Vector3(0, 0.972f, -5.126f);//the difference between the origin of the ai and player AV-42s
-
+    
     public static Hitbox lastBulletHit;
     public class Player
     {
@@ -84,7 +84,6 @@ public static class PlayerManager
         SetPrefabs();
 
         carrierStart = FlightSceneManager.instance.playerActor.unitSpawn.unitSpawner.linkedToCarrier;
-
         if (!Networker.isHost)
         {
             FlightSceneManager.instance.playerActor.gameObject.transform.parent = null;
@@ -394,7 +393,11 @@ public static class PlayerManager
 
 
         }
+        
+       if(gameLoaded)
+        {
 
+        }
         PlayerManager.SpawnPlayersInPlayerSpawnQueue();//addmitedly, this probably isnt the best place to put this, feel free to move it somewhere els
 
     }
@@ -666,7 +669,11 @@ public static class PlayerManager
                     cm.ToArray(),
                     fuel, PlayerManager.teamLeftie),
                 EP2PSend.k_EP2PSendReliable);
-        }
+        } 
+        WeaponManager localWManager = localVehicle.GetComponent<WeaponManager>();
+
+        localWManager.gpsSystem.CreateGroup("MP");
+        localWManager.gpsSystem.UpdateRemotelyModifiedGroups();
     }
     /// <summary>
     /// When the user has received a message of spawn player vehicle, 
@@ -805,8 +812,29 @@ public static class PlayerManager
         {
             PlaneEquippableManager.SetLoadout(puppet, message.networkID, message.normalizedFuel, message.hpLoadout, message.cmLoadout);
         }
+
+     
     }
 
+    public static void addGPSTarget(Message_GPSData msg)
+    {
+        GameObject localVehicle = VTOLAPI.GetPlayersVehicleGameObject();
+        WeaponManager localWManager = localVehicle.GetComponent<WeaponManager>();
+        if (teamLeftie == msg.teamLeft)
+
+            sendGPS = false;
+
+        if (localWManager.gpsSystem.groupNames.Count == 0)
+            localWManager.gpsSystem.CreateGroup("MP");
+
+        if (localWManager != null)
+        {
+            localWManager.gpsSystem.AddTarget(VTMapManager.GlobalToWorldPoint(msg.pos), msg.prefix);
+            localWManager.gpsSystem.TargetsChanged();
+        }
+        sendGPS = true;
+        //NetworkSenderThread.Instance.SendPacketToSpecificPlayer(Networker.hostID, msg, EP2PSend.k_EP2PSendReliable);
+    }
     public static GameObject SpawnRepresentation(ulong networkID, Vector3D position, Quaternion rotation, bool isLeft)
     {
         if (networkID == localUID)

@@ -50,7 +50,8 @@ public enum MessageType
     SamUpdate, // To sync sams
     AAAUpdate, // To sync A's x 3
     BulletHit, // Obvious
-    MissileDamage // Obvious
+    MissileDamage, // Obvious
     //AWACSComms, // To update awacs comms state
     //AWACSCommsRequest // To request the initial state
+    GPSTarget
 }
