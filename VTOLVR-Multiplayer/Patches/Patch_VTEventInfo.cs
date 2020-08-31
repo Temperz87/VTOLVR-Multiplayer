@@ -41,7 +41,7 @@ class PatchBullet
 
                     Debug.Log("hit player sending bullet packet");
                     Message_BulletHit hitmsg = new Message_BulletHit(PlayerManager.localUID, lastID, VTMapManager.WorldToGlobalPoint(pos), new Vector3D(vel), damage);
-                    NetworkSenderThread.Instance.SendPacketToSpecificPlayer(Networker.hostID, hitmsg, Steamworks.EP2PSend.k_EP2PSendUnreliable);
+                    NetworkSenderThread.Instance.SendPacketToSpecificPlayer(Networker.hostID, hitmsg, Steamworks.EP2PSend.k_EP2PSendReliable);
                 }
 
             }
@@ -65,7 +65,7 @@ class Patch22
         else
         {
 
-            if (__instance.targetType == VTEventTarget.TargetTypes.Objective || __instance.targetType == VTEventTarget.TargetTypes.System)
+            if (__instance.targetType == VTEventTarget.TargetTypes.System)
             {
                 bool shouldComplete = ObjectiveNetworker_Reciever.completeNextEvent;
                 Debug.Log($"Should complete is {shouldComplete}.");
