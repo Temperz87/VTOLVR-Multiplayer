@@ -35,15 +35,8 @@ public class RigidbodyNetworker_Sender : MonoBehaviour
         rb = GetComponent<Rigidbody>();
         lastMessage = new Message_RigidbodyUpdate(new Vector3D(), new Vector3D(), new Vector3D(), Quaternion.identity, 0, networkUID);
         tick = 0;
-
     }
 
-    private void LateUpdate()
-    {
-        
-
-            
-    }
     private void FixedUpdate()
     {
         globalLastPosition += new Vector3D(lastVelocity * Time.fixedDeltaTime);

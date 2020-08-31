@@ -17,6 +17,9 @@ class GroundNetworker_Receiver : MonoBehaviour
     public Vector3 targetVelocity;
     public Quaternion targetRotation;
 
+    Vector3 smoothedPosition;
+    Quaternion smoothedRotation;
+
     private void Awake()
     {
         lastMessage = new Message_ShipUpdate(new Vector3D(), new Quaternion(), new Vector3D(), networkUID);//it uses ship update, cause the information really isnt all that different
@@ -30,8 +33,28 @@ class GroundNetworker_Receiver : MonoBehaviour
     void FixedUpdate() {
         targetPositionGlobal += targetVelocity * Time.fixedDeltaTime;
         targetPosition = VTMapManager.GlobalToWorldPoint(new Vector3D(targetPositionGlobal));
-        rb.MovePosition(groundUnitMover.transform.position + targetVelocity * Time.fixedDeltaTime + ((targetPosition - groundUnitMover.transform.position) * Time.fixedDeltaTime) / smoothTime);
-        rb.MoveRotation(Quaternion.Lerp(groundUnitMover.transform.rotation, targetRotation, Time.fixedDeltaTime/rotSmoothTime));
+
+        smoothedPosition = smoothedPosition + targetVelocity * Time.fixedDeltaTime + ((targetPosition - smoothedPosition) * Time.fixedDeltaTime) / smoothTime;
+        smoothedRotation = Quaternion.Lerp(smoothedRotation, targetRotation, Time.fixedDeltaTime / rotSmoothTime);
+
+        Vector3 adjustedPos = smoothedPosition;
+        Vector3 surfaceNormal = smoothedRotation * Vector3.up;
+        Vector3 surfaceRight = smoothedRotation * Vector3.right;
+        Vector3 surfaceForward = smoothedRotation * Vector3.forward;
+        Quaternion adjustedRotation = smoothedRotation;
+
+        RaycastHit hit;
+        if (Physics.Raycast(transform.position + 500 * Vector3.up, Vector3.down, out hit, 1000, 1, QueryTriggerInteraction.Ignore) && false) {
+            adjustedPos = hit.point;
+            surfaceNormal = hit.normal;
+            surfaceRight = Vector3.Cross(surfaceNormal, smoothedRotation * Vector3.forward);
+            surfaceForward = Vector3.Cross(surfaceRight, surfaceNormal);
+
+            adjustedRotation = Quaternion.LookRotation(surfaceForward, surfaceNormal);
+        }
+
+        rb.MovePosition(adjustedPos);
+        rb.MoveRotation(adjustedRotation);
     }
 
     public void GroundUpdate(Packet packet)
