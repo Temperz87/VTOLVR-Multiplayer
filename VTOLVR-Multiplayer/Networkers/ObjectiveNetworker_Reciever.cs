@@ -12,6 +12,9 @@ class ObjectiveNetworker_Reciever
     public static Dictionary<int, float> scenarioActionsListCoolDown = new Dictionary<int, float>();
     public static bool completeNext = false;
     public static bool completeNextEvent = false;
+    public static bool completeNextFailed = false;
+    public static bool completeNextBegin = false;
+    public static bool completeNextCancel = false;
     public static void objectiveUpdate(int id, ObjSyncType status)
     {
         Debug.Log($"Doing objective update for id {id}.");
@@ -41,27 +44,33 @@ class ObjectiveNetworker_Reciever
         {
             Debug.Log("Completeing mission complete locally");
             completeNext = true;
+            if (!obj.started)
+                obj.BeginMission();
             obj.CompleteObjective();
         }
 
         if (status == ObjSyncType.EMissionFailed && !obj.failed)
         {
             Debug.Log("failing mission complete locally");
-            completeNext = true;
+            completeNextFailed = true;
+            if (!obj.started)
+                obj.BeginMission();
             obj.FailObjective();
         }
 
         if (status == ObjSyncType.EMissionBegin && !obj.started)
         {
             Debug.Log("starting mission begin locally");
-            completeNext = true;
+            completeNextBegin = true;
             obj.BeginMission();
         }
 
         if (status == ObjSyncType.EMissionCanceled && !obj.cancelled)
         {
             Debug.Log("starting mission cancel locally");
-            completeNext = true;
+            completeNextCancel = true;
+            if (!obj.started)
+                obj.BeginMission();
             obj.CancelObjective();
         }
     }
