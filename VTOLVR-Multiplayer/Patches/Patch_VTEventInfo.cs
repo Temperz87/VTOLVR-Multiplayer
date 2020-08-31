@@ -65,7 +65,7 @@ class Patch22
         else
         {
 
-            if (__instance.targetType == VTEventTarget.TargetTypes.System)
+            if (__instance.targetType == VTEventTarget.TargetTypes.Objective || __instance.targetType == VTEventTarget.TargetTypes.System)
             {
                 bool shouldComplete = ObjectiveNetworker_Reciever.completeNextEvent;
                 Debug.Log($"Should complete is {shouldComplete}.");
@@ -98,7 +98,7 @@ class Patch2
         {
             Debug.Log("Host sent Event action" + __instance.eventName + " of type " + __instance.methodName + " for target " + __instance.targetID);
 
-            NetworkSenderThread.Instance.SendPacketAsHostToAllClients(ScanarioActionOutMessage, Steamworks.EP2PSend.k_EP2PSendUnreliable);
+            NetworkSenderThread.Instance.SendPacketAsHostToAllClients(ScanarioActionOutMessage, Steamworks.EP2PSend.k_EP2PSendReliable);
         }
         else
         {
@@ -173,7 +173,7 @@ class Patch4
         {
             Debug.Log("Host sent objective complete " + __instance.objectiveID);
             ObjectiveNetworker_Reciever.completeNext = false;
-            NetworkSenderThread.Instance.SendPacketAsHostToAllClients(objOutMessage, Steamworks.EP2PSend.k_EP2PSendUnreliable);
+            NetworkSenderThread.Instance.SendPacketAsHostToAllClients(objOutMessage, Steamworks.EP2PSend.k_EP2PSendReliable);
         }
         else
         {
@@ -215,14 +215,14 @@ class Patch5
         if (Networker.isHost && objOutMessage.objID != -1)
         {
             Debug.Log("Host sent objective fail " + __instance.objectiveID);
-            NetworkSenderThread.Instance.SendPacketAsHostToAllClients(objOutMessage, Steamworks.EP2PSend.k_EP2PSendUnreliable);
+            NetworkSenderThread.Instance.SendPacketAsHostToAllClients(objOutMessage, Steamworks.EP2PSend.k_EP2PSendReliable);
         }
         else
         {
             
-            bool shouldComplete = ObjectiveNetworker_Reciever.completeNext;
+            bool shouldComplete = ObjectiveNetworker_Reciever.completeNextFailed;
             Debug.Log($"Should complete is {shouldComplete}.");
-            ObjectiveNetworker_Reciever.completeNext = false;
+            ObjectiveNetworker_Reciever.completeNextFailed = false;
             return shouldComplete;// clients should not send kill obj packets or have them complete
             //NetworkSenderThread.Instance.SendPacketToSpecificPlayer(Networker.hostID, objOutMessage, Steamworks.EP2PSend.k_EP2PSendUnreliable);
         }
@@ -230,43 +230,46 @@ class Patch5
     }
 }
 
-/* Redundant, there is no reason for this.
+/*
+//patch to grab all the events being loaded on creation this replaces original method
 [HarmonyPatch(typeof(MissionObjective), "BeginMission")]
 class Patch6
 {
-    [HarmonyPostfix]
-    static void Postfix(MissionObjective __instance)
+    static bool Prefix(MissionObjective __instance)
     {
         //prevents infinite client host pings
-        //if (__instance.started)
-        //   return true;
-        Debug.Log("A mission got BeginMission we need to send it");
+        //if (__instance.failed)
+        //    return true;
+        Debug.Log("A mission got failed we need to send it");
 
 
         //Debug.Log("sending __instance.objectiveName + __instance.objectiveID");
         String actionIdentifier = __instance.objectiveName + __instance.objectiveID;
 
         Debug.Log(actionIdentifier);
-        /*dont run corrupt objectives 
+
+        //dont run corrupt objectives
         if (MissionManager.instance.IndexOfObjective(__instance) == -1)
+            return false;
         Message_ObjectiveSync objOutMessage = new Message_ObjectiveSync(PlayerManager.localUID, MissionManager.instance.IndexOfObjective(__instance), ObjSyncType.EMissionBegin);
-        if (Networker.isHost)
+        if (Networker.isHost && objOutMessage.objID != -1)
         {
-            Debug.Log("Host sent objective BeginMission " + __instance.objectiveID);
-            NetworkSenderThread.Instance.SendPacketAsHostToAllClients(objOutMessage, Steamworks.EP2PSend.k_EP2PSendUnreliableNoDelay);
+            Debug.Log("Host sent objective fail " + __instance.objectiveID);
+            NetworkSenderThread.Instance.SendPacketAsHostToAllClients(objOutMessage, Steamworks.EP2PSend.k_EP2PSendReliable);
         }
         else
         {
-            if (VTScenario.current.objectives.GetObjective(__instance.objectiveID).objectiveType == VTObjective.ObjectiveTypes.Destroy)
-            {
-                Debug.Log("Making client not send kill objective packet.");
-                return;// clients should not send kill obj packets
-            }
-            Debug.Log("Client sent objective BeginMission " + __instance.objectiveID);
-            NetworkSenderThread.Instance.SendPacketToSpecificPlayer(Networker.hostID, objOutMessage, Steamworks.EP2PSend.k_EP2PSendUnreliableNoDelay);
+
+            bool shouldComplete = ObjectiveNetworker_Reciever.completeNextBegin;
+            Debug.Log($"Should complete is {shouldComplete}.");
+            ObjectiveNetworker_Reciever.completeNextBegin = false;
+            return shouldComplete;// clients should not send kill obj packets or have them complete
+            //NetworkSenderThread.Instance.SendPacketToSpecificPlayer(Networker.hostID, objOutMessage, Steamworks.EP2PSend.k_EP2PSendUnreliable);
         }
+        return true;
     }
 }*/
+
 
 //patch to grab all the events being loaded on creation this replaces original method
 [HarmonyPatch(typeof(MissionObjective), "CancelObjective")]
@@ -294,13 +297,13 @@ class Patch7
         {
 
             Debug.Log("Host sent objective CancelObjective " + __instance.objectiveID);
-            NetworkSenderThread.Instance.SendPacketAsHostToAllClients(objOutMessage, Steamworks.EP2PSend.k_EP2PSendUnreliable);
+            NetworkSenderThread.Instance.SendPacketAsHostToAllClients(objOutMessage, Steamworks.EP2PSend.k_EP2PSendReliable);
         }
         else
         { 
-            bool shouldComplete = ObjectiveNetworker_Reciever.completeNext;
+            bool shouldComplete = ObjectiveNetworker_Reciever.completeNextCancel;
             Debug.Log($"Should complete is {shouldComplete}.");
-            ObjectiveNetworker_Reciever.completeNext = false;
+            ObjectiveNetworker_Reciever.completeNextCancel = false;
             return shouldComplete;// clients should not send kill obj packets or have them complete
             //Debug.Log("Client sent objective CancelObjective " + __instance.objectiveID);
             // NetworkSenderThread.Instance.SendPacketToSpecificPlayer(Networker.hostID, objOutMessage, Steamworks.EP2PSend.k_EP2PSendUnreliable);
