@@ -160,6 +160,7 @@ class PlayerNetworker_Sender : MonoBehaviour
         }
 
         GameObject newPlayer = Instantiate(PilotSaveManager.currentVehicle.vehiclePrefab);
+        newPlayer.GetComponent<Actor>().designation = FlightSceneManager.instance.playerActor.designation;//reassigning designation
 
         FlightSceneManager.instance.playerActor = newPlayer.GetComponent<Actor>();
         FlightSceneManager.instance.playerActor.flightInfo.PauseGCalculations();
