@@ -84,7 +84,6 @@ public static class PlayerManager
         SetPrefabs();
 
         carrierStart = FlightSceneManager.instance.playerActor.unitSpawn.unitSpawner.linkedToCarrier;
-    
         if (!Networker.isHost)
         {
             FlightSceneManager.instance.playerActor.gameObject.transform.parent = null;
@@ -183,10 +182,10 @@ public static class PlayerManager
                 Transform hostTrans = localVehicle.transform;
                 ///uncomment to randomise host spawn//
                 ///
-                
+
                 localVehicle.transform.position = hostTrans.position;
-                
-                SpawnLocalVehicleAndInformOtherClients(localVehicle, hostTrans.transform.position, hostTrans.transform.rotation, localUID,0);
+
+                SpawnLocalVehicleAndInformOtherClients(localVehicle, hostTrans.transform.position, hostTrans.transform.rotation, localUID, 0);
             }
             else
                 Debug.Log("Local vehicle for host was null");
@@ -201,7 +200,7 @@ public static class PlayerManager
         }
         SpawnPlayersInPlayerSpawnQueue();
 
-       
+
         if (!Networker.isHost)
         {
             // If the player is not the host, they only need a receiver?
@@ -336,13 +335,13 @@ public static class PlayerManager
         PlayerVehicle currentVehiclet = PilotSaveManager.currentVehicle;
         localVehicle.transform.TransformPoint(currentVehiclet.playerSpawnOffset);
 
-        if(carrierStart)
-        if (!carrierFound)
-        {
-            storedSpawnMessage = packet;
-            return;
-        }
-        SpawnLocalVehicleAndInformOtherClients(localVehicle,  localVehicle.transform.position, localVehicle.transform.rotation, result.vehicleUID,result.playerCount);
+        if (carrierStart)
+            if (!carrierFound)
+            {
+                storedSpawnMessage = packet;
+                return;
+            }
+        SpawnLocalVehicleAndInformOtherClients(localVehicle, localVehicle.transform.position, localVehicle.transform.rotation, result.vehicleUID, result.playerCount);
         localUID = result.vehicleUID;
 
         Time.timeScale = 1.0f;
@@ -354,7 +353,7 @@ public static class PlayerManager
     /// <param name="localVehicle">The local clients gameobject</param>
     public static void Update()
     {
-       if (!firstSpawnDone) 
+        if (!firstSpawnDone)
         {
 
             if (carrierStart)
@@ -381,16 +380,16 @@ public static class PlayerManager
                 {
                     if (rep.team == Teams.Allied)
                     {
-                        if ( rep.radius < 19.0f)
+                        if (rep.radius < 19.0f)
                         {
                             rearmPoint = rep;
                         }
                     }
                 }
             }
-            if(rearmPoint != null && carrierFound && carrierStart)
+            if (rearmPoint != null && carrierFound && carrierStart)
                 RequestSpawn_Result(storedSpawnMessage);
-       
+
 
 
         }
@@ -402,7 +401,7 @@ public static class PlayerManager
         PlayerManager.SpawnPlayersInPlayerSpawnQueue();//addmitedly, this probably isnt the best place to put this, feel free to move it somewhere els
 
     }
-    public static void SpawnLocalVehicleAndInformOtherClients(GameObject localVehicle, Vector3 pos, Quaternion rot, ulong UID,int playercount = 0 ) //Both
+    public static void SpawnLocalVehicleAndInformOtherClients(GameObject localVehicle, Vector3 pos, Quaternion rot, ulong UID, int playercount = 0) //Both
     {
         Debug.Log("Sending our location to spawn our vehicle");
         VTOLVehicles currentVehicle = VTOLAPI.GetPlayersVehicleEnum();
@@ -410,7 +409,7 @@ public static class PlayerManager
         Player localPlayer = new Player(SteamUser.GetSteamID(), localVehicle, currentVehicle, UID, PlayerManager.teamLeftie);
         AddToPlayerList(localPlayer);
 
-       
+
         ReArmingPoint[] rearmPoints = GameObject.FindObjectsOfType<ReArmingPoint>();
         ReArmingPoint rearmPoint = rearmPoints[UnityEngine.Random.Range(0, rearmPoints.Length - 1)];
         int rand = UnityEngine.Random.Range(0, rearmPoints.Length - 1);
@@ -435,49 +434,49 @@ public static class PlayerManager
         }
         else
             foreach (ReArmingPoint rep in rearmPoints)
-        {
-            if (rep.team == Teams.Allied && rep.CheckIsClear(actor))
             {
-
-                if (rep.radius > lastRadius)
+                if (rep.team == Teams.Allied && rep.CheckIsClear(actor))
                 {
-                    rearmPoint = rep;
-                    lastRadius = rep.radius;
+
+                    if (rep.radius > lastRadius)
+                    {
+                        rearmPoint = rep;
+                        lastRadius = rep.radius;
+                    }
                 }
             }
-        }
- 
-        if(Networker.isHost && firstSpawnDone == false)
+
+        if (Networker.isHost && firstSpawnDone == false)
         {
-            if(firstSpawnDone)
-            rearmPoint.BeginReArm();
+            if (firstSpawnDone)
+                rearmPoint.BeginReArm();
             rb.velocity = Vector3.zero;
 
         }
         else
         {
-            if(teamLeftie)
+            if (teamLeftie)
             {
                 rearmPoint.BeginReArm();
                 rb.velocity = Vector3.zero;
             }
             else
             {
-                if(firstSpawnDone == false)
+                if (firstSpawnDone == false)
                 {
-                    PlayerSpawn ps =  GameObject.FindObjectOfType<PlayerSpawn>();
-                    if(ps.initialSpeed < 5.0f)
+                    PlayerSpawn ps = GameObject.FindObjectOfType<PlayerSpawn>();
+                    if (ps.initialSpeed < 5.0f)
                     {
                         rearmPoint.BeginReArm();
                         rb.velocity = Vector3.zero;
                     }
-                        
+
                 }
-                    
+
             }
         }
 
-       
+
         //prevent fall through ground
         if ((bool)VTMapGenerator.fetch)
         {
@@ -486,7 +485,7 @@ public static class PlayerManager
         //rb.detectCollisions = true;
         SetupLocalAircraft(localVehicle, pos, rot, UID);
 
-     
+
         firstSpawnDone = true;
         /*if(!firstSpawn)
         if (!Networker.isHost) {
@@ -494,7 +493,7 @@ public static class PlayerManager
                 localVehicle.transform.position = new Vector3(1000000, 10000, 10000);
             }
       */
-       
+
 
         /// * //bad code we ran this before in  SetupLocalAircraft(localVehicle, pos, rot, UID);
         /*List<HPInfo> hpInfos = PlaneEquippableManager.generateLocalHpInfoList(UID);
@@ -533,7 +532,7 @@ public static class PlayerManager
 
         //ignore damage message from same player
         //if (lastMissileDamageMessage.networkUID == PlayerManager.localUID)
-            //return;
+        //return;
 
         ulong actorTodamage = lastMissileDamageMessage.actorTobeDamaged;
         Debug.Log("applying missile damage");
@@ -600,7 +599,7 @@ public static class PlayerManager
             HealthNetworker_Sender healthNetworker = localVehicle.AddComponent<HealthNetworker_Sender>();
             PlayerNetworker_Sender playerNetworker = localVehicle.AddComponent<PlayerNetworker_Sender>();
 
-            
+
 
             healthNetworker.networkUID = UID;
             playerNetworker.networkUID = UID;
@@ -630,12 +629,10 @@ public static class PlayerManager
             LockingRadarNetworker_Sender radarSender = localVehicle.AddComponent<LockingRadarNetworker_Sender>();
             radarSender.networkUID = UID;
         }
-
         if (currentVehicle == VTOLVehicles.AV42C)
             AvatarManager.SetupAircraftRoundels(localVehicle.transform, currentVehicle, GetPlayerCSteamID(localUID), av42Offset);
         else
             AvatarManager.SetupAircraftRoundels(localVehicle.transform, currentVehicle, GetPlayerCSteamID(localUID), Vector3.zero);
-
         if (Multiplayer.SoloTesting)
             pos += new Vector3(20, 0, 0);
 
@@ -949,19 +946,25 @@ public static class PlayerManager
 
         AvatarManager.SetupAircraftRoundels(newVehicle.transform, player.vehicleType, player.cSteamID, Vector3.zero);
 
-        GameObject parent = new GameObject("Name Tag Holder");
-        GameObject nameTag = new GameObject("Name Tag");
-        parent.transform.SetParent(newVehicle.transform);
-        parent.transform.localRotation = Quaternion.Euler(0, 180, 0);
-        nameTag.transform.SetParent(parent.transform);
-        nameTag.AddComponent<Nametag>().SetText(
-            SteamFriends.GetFriendPersonaName(player.cSteamID),
-            newVehicle.transform, VRHead.instance.transform);
+        if (!Multiplayer._instance.hidePlayerNameTags)
+        {
+            GameObject parent = new GameObject("Name Tag Holder");
+            GameObject nameTag = new GameObject("Name Tag");
+            parent.transform.SetParent(newVehicle.transform);
+            parent.transform.localRotation = Quaternion.Euler(0, 180, 0);
+            nameTag.transform.SetParent(parent.transform);
+            nameTag.AddComponent<Nametag>().SetText(
+                SteamFriends.GetFriendPersonaName(player.cSteamID),
+                newVehicle.transform, VRHead.instance.transform);
+        }
+        else
+        {
+            Debug.Log("Player has disabled name tags.");
+        }
         if (isLeft != PlayerManager.teamLeftie)
         {
             aIPilot.actor.team = Teams.Enemy;
         }
-
         TargetManager.instance.RegisterActor(aIPilot.actor);
         player.leftie = isLeft;
         player.vehicle = newVehicle;
@@ -1031,8 +1034,8 @@ public static class PlayerManager
         //If the player starts on the ground
         Debug.Log($"The player's velocity is {curPlayer.velocity.magnitude}");
 
-      bool carrier  = curPlayer.unitSpawn.unitSpawner.linkedToCarrier;
-      
+        bool carrier = curPlayer.unitSpawn.unitSpawner.linkedToCarrier;
+
         if (curPlayer.velocity.magnitude < .5f || carrier)
         {
             var rearmPoints = GameObject.FindObjectsOfType<ReArmingPoint>();
@@ -1042,16 +1045,16 @@ public static class PlayerManager
             {
 
                 if (rep.team == Teams.Allied)
-                if(spawnPoints.Count < spawnsCount)
-                {
-                    lastSpawn = new GameObject("MP Spawn "+ rep.GetInstanceID());
-                    lastSpawn.AddComponent<FloatingOriginTransform>();
-                    lastSpawn.transform.position = rep.transform.position;
-                    lastSpawn.transform.rotation = rep.transform.rotation;
-                    spawnPoints.Add(lastSpawn.transform);
-                          
-                    Debug.Log($"Created ground Spawn at {lastSpawn.transform.position}");
-                }
+                    if (spawnPoints.Count < spawnsCount)
+                    {
+                        lastSpawn = new GameObject("MP Spawn " + rep.GetInstanceID());
+                        lastSpawn.AddComponent<FloatingOriginTransform>();
+                        lastSpawn.transform.position = rep.transform.position;
+                        lastSpawn.transform.rotation = rep.transform.rotation;
+                        spawnPoints.Add(lastSpawn.transform);
+
+                        Debug.Log($"Created ground Spawn at {lastSpawn.transform.position}");
+                    }
 
             }
 
@@ -1059,7 +1062,7 @@ public static class PlayerManager
         }
 
         float height = 0;
-     
+
         Debug.Log($"Creating remaining spawn points ({spawnsCount - spawnPoints.Count}) next to player.");
         int remainingSpawns = spawnsCount - spawnPoints.Count;
         if (remainingSpawns > 0)
@@ -1067,7 +1070,7 @@ public static class PlayerManager
             {
                 lastSpawn = new GameObject("MP Spawn " + i);
                 lastSpawn.AddComponent<FloatingOriginTransform>();
-                lastSpawn.transform.position = startPosition.position + startPosition.TransformVector(new Vector3(spawnSpacing * (i+1), height, 0));
+                lastSpawn.transform.position = startPosition.position + startPosition.TransformVector(new Vector3(spawnSpacing * (i + 1), height, 0));
                 lastSpawn.transform.rotation = startPosition.rotation;
                 spawnPoints.Add(lastSpawn.transform);
                 Debug.Log($"Created MP Spawn {i} at {lastSpawn.transform.position}");
@@ -1184,7 +1187,7 @@ public static class PlayerManager
         carrierStart = false;
         airSpawn = false;
         carrierFound = false;
-}
+    }
 
     public static void OnDisconnect()
     {
