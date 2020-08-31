@@ -197,7 +197,7 @@ public static class AIManager
             aIPilot.kPlane.enabled = true;
             aIPilot.kPlane.SetVelocity(Vector3.zero);
             aIPilot.kPlane.SetToDynamic();
-
+            aIPilot.gameObject.GetComponentInChildren<AIAircraftSpawn>().SetRadioComms(message.canTalk);
             RotationToggle wingRotator = aIPilot.wingRotator;
             if (wingRotator != null)
             {
@@ -391,18 +391,13 @@ public static class AIManager
                 if (actor.name.Contains("Client"))
                     return;
                 bool Aggresion = false;
+                bool canTalk = false;
                 if (actor.gameObject.GetComponent<UIDNetworker_Sender>() != null)
                 {
                     Debug.Log("Try sending ai " + actor.name + " to client.");
                     HPInfo[] hPInfos2 = null;
                     int[] cmLoadout = null;
                     UIDNetworker_Sender uidSender = actor.gameObject.GetComponent<UIDNetworker_Sender>();
-                    if (actor.role == Actor.Roles.Air)
-                    {
-                        WeaponManager wm = actor.gameObject.GetComponent<WeaponManager>();
-                        if (wm != null)
-                            hPInfos2 = PlaneEquippableManager.generateHpInfoListFromWeaponManager(actor.weaponManager, PlaneEquippableManager.HPInfoListGenerateNetworkType.sender, uidSender.networkUID).ToArray();
-                    }
                     AIUnitSpawn aIUnitSpawn = actor.gameObject.GetComponent<AIUnitSpawn>();
                     if (aIUnitSpawn == null)
                     {
@@ -411,6 +406,17 @@ public static class AIManager
                     else
                     {
                         Aggresion = aIUnitSpawn.engageEnemies;
+                    }
+                    if (actor.role == Actor.Roles.Air)
+                    {
+                        WeaponManager wm = actor.gameObject.GetComponent<WeaponManager>();
+                        if (wm != null)
+                            hPInfos2 = PlaneEquippableManager.generateHpInfoListFromWeaponManager(actor.weaponManager, PlaneEquippableManager.HPInfoListGenerateNetworkType.sender, uidSender.networkUID).ToArray();
+                        AIAircraftSpawn aircraftSpawn = aIUnitSpawn as AIAircraftSpawn;
+                        if (aIUnitSpawn is AIAWACSSpawn)
+                            canTalk = ((AIAWACSSpawn)aircraftSpawn).commsEnabled;
+                        else
+                            canTalk = aircraftSpawn.aiPilot.doRadioComms;
                     }
                     bool canBreak = false;
                     PhoneticLetters letters = new PhoneticLetters();
@@ -461,7 +467,7 @@ public static class AIManager
                         {
                             NetworkSenderThread.Instance.SendPacketToSpecificPlayer(steamID, new Message_SpawnAIVehicle(actor.name, GetUnitNameFromCatalog(actor.unitSpawn.unitName),
                                 VTMapManager.WorldToGlobalPoint(actor.gameObject.transform.position),
-                                new Vector3D(actor.gameObject.transform.rotation.eulerAngles), uidSender.networkUID, hPInfos2, cmLoadout, 0.65f, Aggresion, actor.unitSpawn.unitSpawner.unitInstanceID, letters, ids.ToArray(), irIDS),
+                                new Vector3D(actor.gameObject.transform.rotation.eulerAngles), uidSender.networkUID, hPInfos2, cmLoadout, 0.65f, Aggresion, actor.unitSpawn.unitSpawner.unitInstanceID, letters, ids.ToArray(), irIDS, canTalk),
                                 EP2PSend.k_EP2PSendReliable);
                         }
                         else
@@ -469,7 +475,7 @@ public static class AIManager
                             // Debug.Log("It seems that " + actor.name + " is not in a unit group, sending anyways.");
                             NetworkSenderThread.Instance.SendPacketToSpecificPlayer(steamID, new Message_SpawnAIVehicle(actor.name, GetUnitNameFromCatalog(actor.unitSpawn.unitName),
                                 VTMapManager.WorldToGlobalPoint(actor.gameObject.transform.position),
-                                new Vector3D(actor.gameObject.transform.rotation.eulerAngles), uidSender.networkUID, hPInfos2, cmLoadout, 0.65f, Aggresion, actor.unitSpawn.unitSpawner.unitInstanceID, ids.ToArray(), irIDS),
+                                new Vector3D(actor.gameObject.transform.rotation.eulerAngles), uidSender.networkUID, hPInfos2, cmLoadout, 0.65f, Aggresion, actor.unitSpawn.unitSpawner.unitInstanceID, ids.ToArray(), irIDS, canTalk),
                                 EP2PSend.k_EP2PSendReliable);
                         }
                     }
@@ -480,7 +486,7 @@ public static class AIManager
                         {
                             NetworkSenderThread.Instance.SendPacketAsHostToAllClients(new Message_SpawnAIVehicle(actor.name, GetUnitNameFromCatalog(actor.unitSpawn.unitName),
                                 VTMapManager.WorldToGlobalPoint(actor.gameObject.transform.position),
-                                new Vector3D(actor.gameObject.transform.rotation.eulerAngles), uidSender.networkUID, hPInfos2, cmLoadout, 0.65f, Aggresion, actor.unitSpawn.unitSpawner.unitInstanceID, letters, ids.ToArray(), irIDS),
+                                new Vector3D(actor.gameObject.transform.rotation.eulerAngles), uidSender.networkUID, hPInfos2, cmLoadout, 0.65f, Aggresion, actor.unitSpawn.unitSpawner.unitInstanceID, letters, ids.ToArray(), irIDS, canTalk),
                                 EP2PSend.k_EP2PSendReliable);
                         }
                         else
@@ -488,7 +494,7 @@ public static class AIManager
                             // Debug.Log("It seems that " + actor.name + " is not in a unit group, sending anyways.");
                             NetworkSenderThread.Instance.SendPacketAsHostToAllClients(new Message_SpawnAIVehicle(actor.name, GetUnitNameFromCatalog(actor.unitSpawn.unitName),
                                 VTMapManager.WorldToGlobalPoint(actor.gameObject.transform.position),
-                                new Vector3D(actor.gameObject.transform.rotation.eulerAngles), uidSender.networkUID, hPInfos2, cmLoadout, 0.65f, Aggresion, actor.unitSpawn.unitSpawner.unitInstanceID, ids.ToArray(), irIDS),
+                                new Vector3D(actor.gameObject.transform.rotation.eulerAngles), uidSender.networkUID, hPInfos2, cmLoadout, 0.65f, Aggresion, actor.unitSpawn.unitSpawner.unitInstanceID, ids.ToArray(), irIDS, canTalk),
                                 EP2PSend.k_EP2PSendReliable);
                         }
                     }

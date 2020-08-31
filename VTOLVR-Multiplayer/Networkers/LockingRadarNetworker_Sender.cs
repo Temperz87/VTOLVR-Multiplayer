@@ -19,6 +19,8 @@ class LockingRadarNetworker_Sender : MonoBehaviour
     private bool lastWasNull = true;
     ulong lastID;
     TacticalSituationController controller;
+    private bool commsEnabled = false;
+    AIAWACSSpawn awacs = null;
     private void Awake()
     {
         Debug.Log("Radar sender awoken for object " + gameObject.name);
@@ -26,6 +28,8 @@ class LockingRadarNetworker_Sender : MonoBehaviour
         if (lr == null)
         {
             Debug.LogError($"LockingRadar on networkUID {networkUID} is null");
+            awacs = gameObject.GetComponentInChildren<AIAWACSSpawn>();
+            Networker.RequestAWACSComms += sendCommsState;
             return;
         }
         lr.radar = gameObject.GetComponentInChildren<Radar>();
@@ -51,10 +55,22 @@ class LockingRadarNetworker_Sender : MonoBehaviour
     {
         if (lr == null)
         {
+            
             Debug.LogError($"LockingRadar is null for object {gameObject.name} with an uid of {networkUID}.");
             lr = gameObject.GetComponentInChildren<LockingRadar>();
         }
-        if (lr == null) return;
+        if (lr == null)
+        {
+            if (commsEnabled != awacs.commsEnabled)
+            {
+                commsEnabled = awacs.commsEnabled; 
+                /*if (Networker.isHost)
+                    NetworkSenderThread.Instance.SendPacketAsHostToAllClients(new Message_AWACSComms(commsEnabled, networkUID), EP2PSend.k_EP2PSendReliable);
+                else
+                    NetworkSenderThread.Instance.SendPacketToSpecificPlayer(Networker.hostID, new Message_AWACSComms(commsEnabled, networkUID), EP2PSend.k_EP2PSendReliable);*/
+            }
+            return; 
+        }
         if (lr.radar == null)
         {
             //Debug.LogError("This radar.radar shouldn't be null. If this error pops up a second time then be worried. Null on " + gameObject.name);
@@ -212,5 +228,10 @@ class LockingRadarNetworker_Sender : MonoBehaviour
             NetworkSenderThread.Instance.SendPacketAsHostToAllClients(lastLockingMessage, EP2PSend.k_EP2PSendReliable);
         else
             NetworkSenderThread.Instance.SendPacketToSpecificPlayer(Networker.hostID, lastLockingMessage, EP2PSend.k_EP2PSendReliable);
+    }
+    private void sendCommsState()
+    {
+        //if (Networker.isHost)
+          //  NetworkSenderThread.Instance.SendPacketAsHostToAllClients(new Message_AWACSComms(commsEnabled, networkUID), EP2PSend.k_EP2PSendReliable);
     }
 }

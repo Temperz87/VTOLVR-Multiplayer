@@ -6,6 +6,6 @@ using System.Threading.Tasks;
 
 static class ModVersionString
 {
-    public static string ReleaseBranch = "Release";
+    public static string ReleaseBranch = "awacs-comms";
     public static string ModVersionNumber = "1.6.0";
 }

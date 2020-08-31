@@ -11,11 +11,13 @@ class LockingRadarNetworker_Receiver : MonoBehaviour
     public ulong networkUID;
     private Message_RadarUpdate lastRadarMessage;
     private Message_LockingRadarUpdate lastLockingMessage;
+    //private Message_AWACSComms lastAWACSCommsMessage;
     private LockingRadar lockingRadar;
     private RadarLockData radarLockData;
     private ulong lastLock;
     private bool lastLocked;
     private Actor lastActor;
+    private AIAWACSSpawn awacs;
     private void Awake()
     {
         lockingRadar = gameObject.GetComponentInChildren<LockingRadar>();
@@ -30,9 +32,18 @@ class LockingRadarNetworker_Receiver : MonoBehaviour
             Debug.Log($"Radar was null on network uID {networkUID}");
         }
         // lockingRadar.debugRadar = true;
-        lastRadarMessage = new Message_RadarUpdate(false, 0, networkUID);
-        Networker.RadarUpdate += RadarUpdate;
-        Networker.LockingRadarUpdate += LockingRadarUpdate;
+        awacs = gameObject.GetComponentInChildren<AIAWACSSpawn>();
+        if (awacs == null)
+        {
+            lastRadarMessage = new Message_RadarUpdate(false, 0, networkUID);
+            Networker.RadarUpdate += RadarUpdate;
+            Networker.LockingRadarUpdate += LockingRadarUpdate;
+        }
+        else
+        {
+            Networker.UpdateAWACSComms += AWACSCommsUpdates;
+            //NetworkSenderThread.Instance.SendPacketToSpecificPlayer(Networker.hostID, new Message_AWACSCommsRequest(), EP2PSend.k_EP2PSendReliable);
+        }
     }
 
     public void RadarUpdate(Packet packet)
@@ -99,6 +110,13 @@ class LockingRadarNetworker_Receiver : MonoBehaviour
             }
         }
     }
+    private void AWACSCommsUpdates(Packet packet)
+    {
+        /*lastAWACSCommsMessage = (Message_AWACSComms)((PacketSingle)packet).message;
+        if (lastAWACSCommsMessage.networkUID != networkUID)
+            return;
+        awacs.SetRadioComms(lastAWACSCommsMessage.isActive);
+    }
     /*private void FixedUpdate()
     {
         if (lastLocked && !lockingRadar.IsLocked() && lastLock != 0)
@@ -115,8 +133,8 @@ class LockingRadarNetworker_Receiver : MonoBehaviour
         {
             Debug.Log($"Radar is locked when it shouldn't be, unlocking. LastLocked: {lastLocked}, lockingRadar.IsLocked() {lockingRadar.IsLocked()}");
             lockingRadar.Unlock();
-        }
-    }*/
+        }*/
+    }
     public void OnDestroy()
     {
         Networker.RadarUpdate -= RadarUpdate;

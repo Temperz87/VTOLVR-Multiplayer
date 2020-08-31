@@ -270,6 +270,8 @@ public class Networker : MonoBehaviour
     public static event UnityAction<Packet> SAMUpdate;
     public static event UnityAction<Packet> AAAUpdate;
     public static event UnityAction<Packet> BulletHit;
+    public static event UnityAction<Packet> UpdateAWACSComms;
+    public static event UnityAction RequestAWACSComms;
     #endregion
     #region Host Forwarding Suppress By Message Type List
     private List<MessageType> hostMessageForwardingSuppressList = new List<MessageType> {
@@ -990,6 +992,16 @@ public class Networker : MonoBehaviour
                     }
 
                     break;
+                /*case MessageType.AWACSComms:
+                    Debug.Log("case awacs");
+                    if (UpdateAWACSComms != null)
+                        UpdateAWACSComms.Invoke(packet);
+                    break;
+                case MessageType.AWACSCommsRequest:
+                    Debug.Log("case awacs comms request");
+                    if (RequestAWACSComms != null)
+                        RequestAWACSComms.Invoke();
+                    break;*/
                 default:
                     Debug.Log("default case");
                     break;
