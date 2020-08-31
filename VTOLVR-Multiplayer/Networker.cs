@@ -717,6 +717,10 @@ public class Networker : MonoBehaviour
                     if (WorldDataUpdate != null)
                         WorldDataUpdate.Invoke(packet);
                     break;
+                case MessageType.GPSTarget:
+                    Debug.Log("case GPS data");
+                     PlayerManager.addGPSTarget(((PacketSingle)packet).message as Message_GPSData);
+                    break;
                 case MessageType.Disconnecting:
                     Debug.Log("case disconnecting");
                     if (isHost)
