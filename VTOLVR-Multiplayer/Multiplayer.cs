@@ -60,6 +60,7 @@ public class Multiplayer : VTOLMOD
 
     public bool hidePlayerNameTags = false;
     public UnityAction<bool> hidePlayerNameTags_changed;
+    public UnityAction<bool> hidePlayerRoundels_changed;
 
     public bool spawnRemainingPlayersAtAirBase = false;
     public UnityAction<bool> spawnRemainingPlayersAtAirBase_changed;
@@ -158,6 +159,8 @@ public class Multiplayer : VTOLMOD
         hidePlayerNameTags_changed += hidePlayerNameTags_Settings;
         settings.CreateCustomLabel("Hide player name tags.");
         settings.CreateBoolSetting("Default = False", hidePlayerNameTags_changed, hidePlayerNameTags);
+        settings.CreateCustomLabel("Hide players roundels.");
+        settings.CreateBoolSetting("Default = False", hidePlayerRoundels_changed, AvatarManager.hideAvatars);
 
         settings.CreateCustomLabel("Host Settings");
         /*spawnRemainingPlayersAtAirBase_changed += spawnRemainingPlayersAtAirBase_Setting;
