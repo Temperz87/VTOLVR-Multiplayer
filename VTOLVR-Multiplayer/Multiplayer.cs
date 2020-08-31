@@ -58,6 +58,9 @@ public class Multiplayer : VTOLMOD
     //Create a host setting for these instead of a variable!
     public Settings settings;
 
+    public bool hidePlayerNameTags = false;
+    public UnityAction<bool> hidePlayerNameTags_changed;
+
     public bool spawnRemainingPlayersAtAirBase = false;
     public UnityAction<bool> spawnRemainingPlayersAtAirBase_changed;
 
@@ -151,22 +154,11 @@ public class Multiplayer : VTOLMOD
     private void CreateSettingsPage()
     {
         settings = new Settings(this);
+        settings.CreateCustomLabel("General Settings");
+        hidePlayerNameTags_changed += hidePlayerNameTags_Settings;
+        settings.CreateCustomLabel("Hide player name tags.");
+        settings.CreateBoolSetting("Default = False", hidePlayerNameTags_changed, hidePlayerNameTags);
 
-
-        //public bool spawnRemainingPlayersAtAirBase = false;
-        //private bool spawnRemainingPlayersAtAirBase_changed;
-
-        //public bool replaceWingmenWithClients = true;
-        //private bool replaceWingmenWithClients_changed;
-
-        //public bool restrictToHostMods = true;
-        //private bool restrictToHostMods_changed;
-
-        //public bool forceWinds = false; // not implemented
-        //private bool forceWinds_changed;
-
-        //public bool FreeForAllMode = false; // not implemented
-        //private bool FreeForAllMode_changed;
         settings.CreateCustomLabel("Host Settings");
         /*spawnRemainingPlayersAtAirBase_changed += spawnRemainingPlayersAtAirBase_Setting;
         settings.CreateCustomLabel("Spawn players at airbase if there are no wingmen available.");
@@ -198,6 +190,11 @@ public class Multiplayer : VTOLMOD
         settings.CreateBoolSetting("Default = False", DisplayPing_changed, displayPing);
 
         VTOLAPI.CreateSettingsMenu(settings);
+    }
+
+    public void hidePlayerNameTags_Settings(bool newval)
+    {
+        hidePlayerNameTags = newval;
     }
 
     public void spawnRemainingPlayersAtAirBase_Setting(bool newval)

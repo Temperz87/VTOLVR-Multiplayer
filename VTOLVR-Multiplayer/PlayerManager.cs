@@ -920,19 +920,25 @@ public static class PlayerManager
 
         AvatarManager.SetupAircraftRoundels(newVehicle.transform, player.vehicleType, player.cSteamID, Vector3.zero);
 
-        GameObject parent = new GameObject("Name Tag Holder");
-        GameObject nameTag = new GameObject("Name Tag");
-        parent.transform.SetParent(newVehicle.transform);
-        parent.transform.localRotation = Quaternion.Euler(0, 180, 0);
-        nameTag.transform.SetParent(parent.transform);
-        nameTag.AddComponent<Nametag>().SetText(
-            SteamFriends.GetFriendPersonaName(player.cSteamID),
-            newVehicle.transform, VRHead.instance.transform);
+        if (!Multiplayer._instance.hidePlayerNameTags)
+        {
+            GameObject parent = new GameObject("Name Tag Holder");
+            GameObject nameTag = new GameObject("Name Tag");
+            parent.transform.SetParent(newVehicle.transform);
+            parent.transform.localRotation = Quaternion.Euler(0, 180, 0);
+            nameTag.transform.SetParent(parent.transform);
+            nameTag.AddComponent<Nametag>().SetText(
+                SteamFriends.GetFriendPersonaName(player.cSteamID),
+                newVehicle.transform, VRHead.instance.transform);
+        }
+        else
+        {
+            Debug.Log("Player has disabled name tags.");
+        }
         if (isLeft != PlayerManager.teamLeftie)
         {
             aIPilot.actor.team = Teams.Enemy;
         }
-
         TargetManager.instance.RegisterActor(aIPilot.actor);
         player.leftie = isLeft;
         player.vehicle = newVehicle;
