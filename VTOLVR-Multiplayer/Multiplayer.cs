@@ -157,6 +157,7 @@ public class Multiplayer : VTOLMOD
         settings = new Settings(this);
         settings.CreateCustomLabel("General Settings");
         hidePlayerNameTags_changed += hidePlayerNameTags_Settings;
+        hidePlayerRoundels_changed += (set) => { AvatarManager.hideAvatars = set; };
         settings.CreateCustomLabel("Hide player name tags.");
         settings.CreateBoolSetting("Default = False", hidePlayerNameTags_changed, hidePlayerNameTags);
         settings.CreateCustomLabel("Hide players roundels.");
