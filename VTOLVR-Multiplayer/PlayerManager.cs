@@ -55,14 +55,15 @@ public static class PlayerManager
         public bool leftie;
         public float ping;
         public float timeSinceLastResponse;
-        public Player(CSteamID cSteamID, GameObject vehicle, VTOLVehicles vehicleType, ulong vehicleUID, bool leftTeam)
+        public string nameTag;
+        public Player(CSteamID cSteamID, GameObject vehicle, VTOLVehicles vehicleType, ulong vehicleUID, bool leftTeam, string tagName)
         {
             this.cSteamID = cSteamID;
             this.vehicle = vehicle;
             this.vehicleType = vehicleType;
             this.vehicleUID = vehicleUID;
             this.leftie = leftTeam;
-
+            this.nameTag = tagName;
             timeSinceLastResponse = 0.0f;
         }
     }
@@ -406,7 +407,7 @@ public static class PlayerManager
         Debug.Log("Sending our location to spawn our vehicle");
         VTOLVehicles currentVehicle = VTOLAPI.GetPlayersVehicleEnum();
         Actor actor = localVehicle.GetComponent<Actor>();
-        Player localPlayer = new Player(SteamUser.GetSteamID(), localVehicle, currentVehicle, UID, PlayerManager.teamLeftie);
+        Player localPlayer = new Player(SteamUser.GetSteamID(), localVehicle, currentVehicle, UID, PlayerManager.teamLeftie,SteamFriends.GetPersonaName());
         AddToPlayerList(localPlayer);
 
 
@@ -654,7 +655,7 @@ public static class PlayerManager
                     UID,
                     hpInfos.ToArray(),
                     cm.ToArray(),
-                    fuel, PlayerManager.teamLeftie),
+                    fuel, PlayerManager.teamLeftie,SteamFriends.GetPersonaName()),
                 EP2PSend.k_EP2PSendReliable);
         }
         else
@@ -667,7 +668,7 @@ public static class PlayerManager
                     UID,
                     hpInfos.ToArray(),
                     cm.ToArray(),
-                    fuel, PlayerManager.teamLeftie),
+                    fuel, PlayerManager.teamLeftie, SteamFriends.GetPersonaName()),
                 EP2PSend.k_EP2PSendReliable);
         } 
         WeaponManager localWManager = localVehicle.GetComponent<WeaponManager>();
@@ -760,7 +761,7 @@ public static class PlayerManager
                             players[i].vehicleUID,
                             hpInfos.ToArray(),
                             cm.ToArray(),
-                            fuel, players[i].leftie),
+                            fuel, players[i].leftie, players[i].nameTag),
                         EP2PSend.k_EP2PSendReliable);
 
                     //Debug.Log($"We have told the new player about the host and NOT the other way around.");
@@ -783,7 +784,7 @@ public static class PlayerManager
                             players[i].vehicleUID,
                             existingPlayersPR.GenerateHPInfo(),
                             existingPlayersPR.GetCMS(),
-                            existingPlayersPR.GetFuel(), players[i].leftie),
+                            existingPlayersPR.GetFuel(), players[i].leftie, players[i].nameTag),
                         EP2PSend.k_EP2PSendReliable);
                     //Debug.Log($"We have told {players[i].cSteamID.m_SteamID} about the new player ({message.csteamID}) and the other way round.");
 
@@ -805,9 +806,9 @@ public static class PlayerManager
             Debug.Log("Telling connected client about AI units");
             AIManager.TellClientAboutAI(spawnerSteamId);
         }
-        AddToPlayerList(new Player(spawnerSteamId, null, message.vehicle, message.networkID, message.leftie));
+        AddToPlayerList(new Player(spawnerSteamId, null, message.vehicle, message.networkID, message.leftie,message.nameTag));
 
-        GameObject puppet = SpawnRepresentation(message.networkID, message.position, message.rotation, message.leftie);
+        GameObject puppet = SpawnRepresentation(message.networkID, message.position, message.rotation, message.leftie, message.nameTag);
         if (puppet != null)
         {
             PlaneEquippableManager.SetLoadout(puppet, message.networkID, message.normalizedFuel, message.hpLoadout, message.cmLoadout);
@@ -835,7 +836,7 @@ public static class PlayerManager
         sendGPS = true;
         //NetworkSenderThread.Instance.SendPacketToSpecificPlayer(Networker.hostID, msg, EP2PSend.k_EP2PSendReliable);
     }
-    public static GameObject SpawnRepresentation(ulong networkID, Vector3D position, Quaternion rotation, bool isLeft)
+    public static GameObject SpawnRepresentation(ulong networkID, Vector3D position, Quaternion rotation, bool isLeft,string nameTagString)
     {
         if (networkID == localUID)
             return null;
@@ -954,7 +955,7 @@ public static class PlayerManager
             parent.transform.localRotation = Quaternion.Euler(0, 180, 0);
             nameTag.transform.SetParent(parent.transform);
             nameTag.AddComponent<Nametag>().SetText(
-                SteamFriends.GetFriendPersonaName(player.cSteamID),
+                nameTagString,
                 newVehicle.transform, VRHead.instance.transform);
         }
         else
