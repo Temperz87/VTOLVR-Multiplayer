@@ -30,7 +30,7 @@ class PlayerNetworker_Sender : MonoBehaviour
 
     void Awake()
     {
-        lastMessage = new Message_Respawn(networkUID, new Vector3D(), new Quaternion(), false);
+        lastMessage = new Message_Respawn(networkUID, new Vector3D(), new Quaternion(), false, Steamworks.SteamFriends.GetPersonaName());
 
         health = GetComponent<Health>();
         actor = GetComponent<Actor>();
@@ -181,11 +181,11 @@ class PlayerNetworker_Sender : MonoBehaviour
 
         lastMessage.UID = networkUID;
         lastMessage.isLeftie = PlayerManager.teamLeftie;
-
+        lastMessage.tagName = Steamworks.SteamFriends.GetPersonaName();
         if (Networker.isHost)
-            NetworkSenderThread.Instance.SendPacketAsHostToAllClients(lastMessage, Steamworks.EP2PSend.k_EP2PSendUnreliableNoDelay);
+            NetworkSenderThread.Instance.SendPacketAsHostToAllClients(lastMessage, Steamworks.EP2PSend.k_EP2PSendReliable);
         else
-            NetworkSenderThread.Instance.SendPacketToSpecificPlayer(Networker.hostID, lastMessage, Steamworks.EP2PSend.k_EP2PSendUnreliableNoDelay);
+            NetworkSenderThread.Instance.SendPacketToSpecificPlayer(Networker.hostID, lastMessage, Steamworks.EP2PSend.k_EP2PSendReliable);
     }
 
     void UnEject()

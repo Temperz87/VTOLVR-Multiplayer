@@ -807,7 +807,7 @@ public class Networker : MonoBehaviour
                 case MessageType.Respawn:
                     Debug.Log("case respawn");
                     Message_Respawn respawnMessage = ((PacketSingle)packet).message as Message_Respawn;
-                    PlayerManager.SpawnRepresentation(respawnMessage.UID, respawnMessage.position, respawnMessage.rotation, respawnMessage.isLeftie);
+                    PlayerManager.SpawnRepresentation(respawnMessage.UID, respawnMessage.position, respawnMessage.rotation, respawnMessage.isLeftie, respawnMessage.tagName);
                     break;
                 case MessageType.WingFold:
                     Debug.Log("case wingfold");
@@ -1209,7 +1209,10 @@ public class Networker : MonoBehaviour
         if (players.Contains(csteamID))
         {
             Debug.LogError("The player seemed to send two join requests");
-            return;
+            players.Remove(csteamID);
+            readyDic.Remove(csteamID);
+            playerStatusDic.Remove(csteamID);//future people, please implement PlayerStatus.Loadout so we can see who is customising still
+             
         }
 
         // Check version match
