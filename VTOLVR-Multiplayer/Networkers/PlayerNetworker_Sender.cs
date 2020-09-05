@@ -172,10 +172,10 @@ class PlayerNetworker_Sender : MonoBehaviour
         PilotSaveManager.currentScenario.inFlightSpending = 0;
         PilotSaveManager.currentScenario.equipConfigurable = true;
         Rigidbody rb = newPlayer.GetComponent<Rigidbody>();
-        rb.detectCollisions = false;
+        //rb.detectCollisions = false;
         rearmPoint.BeginReArm();
-        rb.velocity = Vector3.zero;
-        rb.detectCollisions = true;
+        //rb.velocity = Vector3.zero;
+        //rb.detectCollisions = true;
    
         PlayerManager.SetupLocalAircraft(newPlayer, newPlayer.transform.position, newPlayer.transform.rotation, networkUID);
 
@@ -183,9 +183,9 @@ class PlayerNetworker_Sender : MonoBehaviour
         lastMessage.isLeftie = PlayerManager.teamLeftie;
         lastMessage.tagName = Steamworks.SteamFriends.GetPersonaName();
         if (Networker.isHost)
-            NetworkSenderThread.Instance.SendPacketAsHostToAllClients(lastMessage, Steamworks.EP2PSend.k_EP2PSendReliable);
+            NetworkSenderThread.Instance.SendPacketAsHostToAllClients(lastMessage, Steamworks.EP2PSend.k_EP2PSendUnreliableNoDelay);
         else
-            NetworkSenderThread.Instance.SendPacketToSpecificPlayer(Networker.hostID, lastMessage, Steamworks.EP2PSend.k_EP2PSendReliable);
+            NetworkSenderThread.Instance.SendPacketToSpecificPlayer(Networker.hostID, lastMessage, Steamworks.EP2PSend.k_EP2PSendUnreliableNoDelay);
     }
 
     void UnEject()

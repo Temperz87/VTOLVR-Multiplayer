@@ -142,6 +142,7 @@ public static class AIManager
         TargetManager.instance.RegisterActor(actor);
 
         Traverse.Create(actor.unitSpawn.unitSpawner).Field("_unitInstanceID").SetValue(message.unitInstanceID); // To make objectives work.
+        VTScenario.current.units.AddSpawner(actor.unitSpawn.unitSpawner);
         if (message.hasGroup)
         {
             VTScenario.current.groups.AddUnitToGroup(unitSpawn, message.unitGroup);

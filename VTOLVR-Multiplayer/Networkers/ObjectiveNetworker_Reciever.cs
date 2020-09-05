@@ -1,5 +1,7 @@
-﻿using System.Collections.Generic;
+﻿using Steamworks;
+using System.Collections.Generic;
 using System.Linq;
+using System.Security.Policy;
 using System.Text;
 using System.Threading.Tasks;
 using UnityEngine;
@@ -9,30 +11,70 @@ class ObjectiveNetworker_Reciever
 {
     private static MissionManager mManager = MissionManager.instance;
     public static Dictionary<int, VTEventTarget> scenarioActionsList = new Dictionary<int, VTEventTarget>();
+    public static Dictionary<VTEventTarget,int> reverseScenarioActionsList = new Dictionary<VTEventTarget, int>();
     public static Dictionary<int, float> scenarioActionsListCoolDown = new Dictionary<int, float>();
+
+    public static Dictionary<int, MissionObjective> objectiveHashTable = new Dictionary<int, MissionObjective>();
+    public static Dictionary<MissionObjective, int> reverseObjectiveHashTable = new Dictionary<MissionObjective, int>();
     public static bool completeNext = false;
     public static bool completeNextEvent = false;
     public static bool completeNextFailed = false;
     public static bool completeNextBegin = false;
     public static bool completeNextCancel = false;
-    public static void objectiveUpdate(int id, ObjSyncType status)
+    public static MissionObjective[] objectivesList;
+    public static List<Message_ObjectiveSync> ObjectiveHistory = new List<Message_ObjectiveSync>();
+
+    public static int getObjectiveHash(MissionObjective obj)
     {
-        Debug.Log($"Doing objective update for id {id}.");
-        if (mManager == null)
+        string hashStr = obj.objectiveName + obj.info + obj.required;
+        int hashCode = hashStr.GetHashCode();
+        return hashCode;
+    }
+    public static void loadObjectives()
+    {
+        objectivesList = GameObject.FindObjectsOfType<MissionObjective>();
+
+        foreach (var obj in objectivesList)
         {
-            mManager = MissionManager.instance;
-            if (mManager == null)
+            int hashCode = getObjectiveHash(obj);
+
+            if (!objectiveHashTable.ContainsKey(hashCode))
             {
-                Debug.Log("MissionManager manager Null");
-                return;
+                objectiveHashTable[hashCode] = obj;
+            }
+            if (!reverseObjectiveHashTable.ContainsKey(obj))
+            {
+                reverseObjectiveHashTable[obj] = hashCode;
             }
         }
-        if (id == -1)
+        Debug.Log($"compiled objective hashes");
+    }
+    public static void sendObjectiveHistory(CSteamID id)
+    {
+        if(Networker.isHost)
+        foreach(var msg in ObjectiveHistory)
         {
-            Debug.Log("Got a -1 ID, not doing it.");
+            NetworkSenderThread.Instance.SendPacketToSpecificPlayer(id, msg, Steamworks.EP2PSend.k_EP2PSendReliable);
+        }
+    }
+    public static void objectiveUpdate(int hashCode, ObjSyncType status)
+    {
+        Debug.Log($"Doing objective update for id {hashCode}.");
+
+
+        if (!objectiveHashTable.ContainsKey(hashCode))
+        {
+            loadObjectives();
+        }
+
+        if (!objectiveHashTable.ContainsKey(hashCode))
+        {
+            Debug.Log("cant find objective in hashTable");
             return;
         }
-        MissionObjective obj = mManager.GetObjective(id);
+      
+
+        MissionObjective obj = objectiveHashTable[hashCode];
         if (obj == null)
         {
             Debug.Log("obj was Null");
@@ -45,8 +87,11 @@ class ObjectiveNetworker_Reciever
             Debug.Log("Completeing mission complete locally");
             completeNext = true;
             if (!obj.started)
+            {
                 obj.BeginMission();
+            }
             obj.CompleteObjective();
+            loadObjectives();
         }
 
         if (status == ObjSyncType.EMissionFailed && !obj.failed)
@@ -55,7 +100,9 @@ class ObjectiveNetworker_Reciever
             completeNextFailed = true;
             if (!obj.started)
                 obj.BeginMission();
+
             obj.FailObjective();
+            loadObjectives();
         }
 
         if (status == ObjSyncType.EMissionBegin && !obj.started)
@@ -63,6 +110,7 @@ class ObjectiveNetworker_Reciever
             Debug.Log("starting mission begin locally");
             completeNextBegin = true;
             obj.BeginMission();
+            loadObjectives();
         }
 
         if (status == ObjSyncType.EMissionCanceled && !obj.cancelled)
@@ -72,6 +120,7 @@ class ObjectiveNetworker_Reciever
             if (!obj.started)
                 obj.BeginMission();
             obj.CancelObjective();
+            loadObjectives();
         }
     }
     public static void runScenarioAction(int hash)
@@ -109,5 +158,22 @@ class ObjectiveNetworker_Reciever
                 Debug.Log("secanrio error doesnt exsist");
         }
 
+    }
+
+    public static void cleanUp()
+    {
+
+        scenarioActionsList.Clear();
+     reverseScenarioActionsList.Clear();
+        scenarioActionsListCoolDown.Clear();
+
+      objectiveHashTable.Clear();
+     reverseObjectiveHashTable.Clear();
+     completeNext = false;
+     completeNextEvent = false;
+     completeNextFailed = false;
+     completeNextBegin = false;
+     completeNextCancel = false;
+        ObjectiveHistory.Clear();
     }
 }
