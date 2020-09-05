@@ -22,9 +22,16 @@ class ObjectiveNetworker_Reciever
     public static bool completeNextBegin = false;
     public static bool completeNextCancel = false;
     public static MissionObjective[] objectivesList;
+    public static List<VTObjective> VTobjectivesList;
     public static List<Message_ObjectiveSync> ObjectiveHistory = new List<Message_ObjectiveSync>();
 
-    public static int getObjectiveHash(MissionObjective obj)
+    public static int getVTObjectiveHash(VTObjective VTobj)
+    {
+        string hashStr = VTobj.objectiveName + VTobj.objectiveInfo + VTobj.required;
+        int hashCode = hashStr.GetHashCode();
+        return hashCode;
+    }
+    public static int getMissionHash(MissionObjective obj)
     {
         string hashStr = obj.objectiveName + obj.info + obj.required;
         int hashCode = hashStr.GetHashCode();
@@ -36,7 +43,7 @@ class ObjectiveNetworker_Reciever
 
         foreach (var obj in objectivesList)
         {
-            int hashCode = getObjectiveHash(obj);
+            int hashCode = getMissionHash(obj);
 
             if (!objectiveHashTable.ContainsKey(hashCode))
             {
@@ -61,6 +68,11 @@ class ObjectiveNetworker_Reciever
     {
         Debug.Log($"Doing objective update for id {hashCode}.");
 
+        if(status == ObjSyncType.EVTBegin)
+        {
+            //VTScenario.current.objectives.GetObjective(hashCode).Dispose();
+            VTScenario.current.objectives.GetObjective(hashCode).BeginObjective();
+        }
 
         if (!objectiveHashTable.ContainsKey(hashCode))
         {

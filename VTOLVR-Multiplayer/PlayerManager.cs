@@ -858,7 +858,7 @@ public static class PlayerManager
         GameObject localVehicle = VTOLAPI.GetPlayersVehicleGameObject();
         WeaponManager localWManager = localVehicle.GetComponent<WeaponManager>();
         if (teamLeftie == msg.teamLeft)
-
+        { 
             sendGPS = false;
 
         if (localWManager.gpsSystem.groupNames.Count == 0)
@@ -868,6 +868,8 @@ public static class PlayerManager
         {
             localWManager.gpsSystem.AddTarget(VTMapManager.GlobalToWorldPoint(msg.pos), msg.prefix);
             localWManager.gpsSystem.TargetsChanged();
+        }
+       
         }
         sendGPS = true;
         //NetworkSenderThread.Instance.SendPacketToSpecificPlayer(Networker.hostID, msg, EP2PSend.k_EP2PSendReliable);

@@ -81,7 +81,8 @@ public static class AIManager
         Actor actor = newAI.GetComponent<Actor>();
         if (actor == null)
             Debug.LogError("actor is null on object " + newAI.name);
-        UnitSpawner unitSpawn = actor.unitSpawn.unitSpawner = new UnitSpawner();
+        UnitSpawner unitSpawn = new UnitSpawner();
+        actor.unitSpawn.unitSpawner = unitSpawn;
 
         unitSpawn.team = actor.team;
         unitSpawn.unitName = actor.unitSpawn.unitName;
@@ -140,9 +141,9 @@ public static class AIManager
 
         TargetManager.instance.UnregisterActor(actor);
         TargetManager.instance.RegisterActor(actor);
-
         Traverse.Create(actor.unitSpawn.unitSpawner).Field("_unitInstanceID").SetValue(message.unitInstanceID); // To make objectives work.
         VTScenario.current.units.AddSpawner(actor.unitSpawn.unitSpawner);
+        
         if (message.hasGroup)
         {
             VTScenario.current.groups.AddUnitToGroup(unitSpawn, message.unitGroup);
@@ -387,10 +388,11 @@ public static class AIManager
         {
             if (actor == null)
                 continue;
-            if (!actor.isPlayer)
+            Debug.Log("Trying sending new stage 1");
+            if(!actor.isPlayer)
+            if(actor.name.Contains("Client [") == false)
             {
-                if (actor.name.Contains("Client"))
-                    return;
+                Debug.Log("Trying sending new stage 2");
                 bool Aggresion = false;
                 if (actor.gameObject.GetComponent<UIDNetworker_Sender>() != null)
                 {
@@ -506,6 +508,7 @@ public static class AIManager
     {
         if (actor.role == Actor.Roles.Missile || actor.isPlayer)
             return;
+
         if (actor.parentActor == null)
         {
             ulong networkUID = Networker.GenerateNetworkUID();

@@ -12,7 +12,8 @@ public enum ObjSyncType
     EMissionCompleted,
     EMissionFailed,
     EMissionBegin,
-    EMissionCanceled
+    EMissionCanceled,
+    EVTBegin
 }
 [Serializable]
 public class Message_ObjectiveSync : Message

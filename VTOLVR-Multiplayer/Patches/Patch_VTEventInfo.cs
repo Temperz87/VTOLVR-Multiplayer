@@ -112,14 +112,11 @@ class Patch22
         else
         {
 
-            if (__instance.targetType == VTEventTarget.TargetTypes.Objective || __instance.targetType == VTEventTarget.TargetTypes.System)
+            if (__instance.targetType == VTEventTarget.TargetTypes.System)
             {
                 bool shouldComplete = ObjectiveNetworker_Reciever.completeNextEvent;
                 Debug.Log($"Should complete is {shouldComplete}.");
                 ObjectiveNetworker_Reciever.completeNextEvent = false;
-                if (__instance.targetType == VTEventTarget.TargetTypes.Objective)
-                    return true;
-
                 return shouldComplete;// clients should not send kill obj packets or have them complete
 
             }
@@ -216,7 +213,7 @@ class Patch4
     
         Debug.Log("A mission got completed we need to send it");
 
-        int hashCode = ObjectiveNetworker_Reciever.getObjectiveHash(__instance);
+        int hashCode = ObjectiveNetworker_Reciever.getMissionHash(__instance);
      
         Message_ObjectiveSync objOutMessage = new Message_ObjectiveSync(PlayerManager.localUID,hashCode, ObjSyncType.EMissionCompleted);
         if (Networker.isHost)
@@ -250,7 +247,7 @@ class Patch5
     { 
         Debug.Log("A mission got failed we need to send it");
 
-  int hashCode = ObjectiveNetworker_Reciever.getObjectiveHash(__instance);
+  int hashCode = ObjectiveNetworker_Reciever.getMissionHash(__instance);
 
     Message_ObjectiveSync objOutMessage = new Message_ObjectiveSync(PlayerManager.localUID, hashCode, ObjSyncType.EMissionFailed);
         if (Networker.isHost)
@@ -273,18 +270,17 @@ class Patch5
 }
   
 //patch to grab all the events being loaded on creation this replaces original method
-[HarmonyPatch(typeof(MissionObjective), "BeginMission")]
+[HarmonyPatch(typeof(VTObjective), "BeginObjective")]
 class Patch6
 {
-    static bool Prefix(MissionObjective __instance)
+    static void Postfix(VTObjective __instance)
     {
-        Debug.Log("A mission got begin we need to send it");
-
-        int hashCode = ObjectiveNetworker_Reciever.getObjectiveHash(__instance);
-        Message_ObjectiveSync objOutMessage = new Message_ObjectiveSync(PlayerManager.localUID, hashCode, ObjSyncType.EMissionBegin);
+        Debug.Log("A VTObjective got begin we need to send it");
+ 
+        Message_ObjectiveSync objOutMessage = new Message_ObjectiveSync(PlayerManager.localUID, __instance.objectiveID, ObjSyncType.EVTBegin);
         if (Networker.isHost)
         {
-            Debug.Log("Host sent objective begin " + __instance.objectiveID);
+            Debug.Log("Host sent VTObjective begin " + __instance.objectiveID);
             ObjectiveNetworker_Reciever.ObjectiveHistory.Add(objOutMessage);
             NetworkSenderThread.Instance.SendPacketAsHostToAllClients(objOutMessage, Steamworks.EP2PSend.k_EP2PSendReliable);
         }
@@ -297,7 +293,7 @@ class Patch6
             //return shouldComplete;// clients should not send kill obj packets or have them complete
             //NetworkSenderThread.Instance.SendPacketToSpecificPlayer(Networker.hostID, objOutMessage, Steamworks.EP2PSend.k_EP2PSendUnreliable);
         }
-        return true;
+       // return true;
     }
 }  
 
@@ -311,7 +307,7 @@ class Patch7
        
         Debug.Log("A mission got CancelObjective we need to send it");
 
-        int hashCode = ObjectiveNetworker_Reciever.getObjectiveHash(__instance);
+        int hashCode = ObjectiveNetworker_Reciever.getMissionHash(__instance);
 
         Message_ObjectiveSync objOutMessage = new Message_ObjectiveSync(PlayerManager.localUID, hashCode, ObjSyncType.EMissionCanceled);
         if (Networker.isHost && objOutMessage.objID != -1)
