@@ -82,6 +82,10 @@ public static class AIManager
         if (actor == null)
             Debug.LogError("actor is null on object " + newAI.name);
 
+        if (message.redfor)
+            actor.team = Teams.Enemy;
+        else
+            actor.team = Teams.Allied;
         UnitSpawn unitSP = newAI.GetComponent<UnitSpawn>();
         GameObject.Destroy(unitSP);
         newAI.AddComponent<UnitSpawn>();
@@ -467,12 +471,16 @@ public static class AIManager
                     {
                         irIDS = irs.irIDs;
                     }
+                        bool redfor = false;
+
+                        if (actor.team == Teams.Enemy)
+                            redfor = true;
                     if (steamID != new CSteamID(0))
                     {
                         Debug.Log("Finally sending AI " + actor.name + " to client " + steamID);
                         if (canBreak)
                         {
-                            NetworkSenderThread.Instance.SendPacketToSpecificPlayer(steamID, new Message_SpawnAIVehicle(actor.name, GetUnitNameFromCatalog(actor.unitSpawn.unitName),
+                            NetworkSenderThread.Instance.SendPacketToSpecificPlayer(steamID, new Message_SpawnAIVehicle(actor.name, GetUnitNameFromCatalog(actor.unitSpawn.unitName), redfor,
                                 VTMapManager.WorldToGlobalPoint(actor.gameObject.transform.position),
                                 actor.gameObject.transform.rotation, uidSender.networkUID, hPInfos2, cmLoadout, 0.65f, Aggresion, actor.unitSpawn.unitSpawner.unitInstanceID, letters, ids.ToArray(), irIDS),
                                 EP2PSend.k_EP2PSendReliable);
@@ -480,7 +488,7 @@ public static class AIManager
                         else
                         {
                             // Debug.Log("It seems that " + actor.name + " is not in a unit group, sending anyways.");
-                            NetworkSenderThread.Instance.SendPacketToSpecificPlayer(steamID, new Message_SpawnAIVehicle(actor.name, GetUnitNameFromCatalog(actor.unitSpawn.unitName),
+                            NetworkSenderThread.Instance.SendPacketToSpecificPlayer(steamID, new Message_SpawnAIVehicle(actor.name, GetUnitNameFromCatalog(actor.unitSpawn.unitName), redfor,
                                 VTMapManager.WorldToGlobalPoint(actor.gameObject.transform.position),
                                 actor.gameObject.transform.rotation, uidSender.networkUID, hPInfos2, cmLoadout, 0.65f, Aggresion, actor.unitSpawn.unitSpawner.unitInstanceID, ids.ToArray(), irIDS),
                                 EP2PSend.k_EP2PSendReliable);
@@ -491,7 +499,7 @@ public static class AIManager
                         Debug.Log("Finally sending AI " + actor.name + " to client all clients.");
                         if (canBreak)
                         {
-                            NetworkSenderThread.Instance.SendPacketAsHostToAllClients(new Message_SpawnAIVehicle(actor.name, GetUnitNameFromCatalog(actor.unitSpawn.unitName),
+                            NetworkSenderThread.Instance.SendPacketAsHostToAllClients(new Message_SpawnAIVehicle(actor.name, GetUnitNameFromCatalog(actor.unitSpawn.unitName), redfor,
                                 VTMapManager.WorldToGlobalPoint(actor.gameObject.transform.position),
                                 actor.gameObject.transform.rotation, uidSender.networkUID, hPInfos2, cmLoadout, 0.65f, Aggresion, actor.unitSpawn.unitSpawner.unitInstanceID, letters, ids.ToArray(), irIDS),
                                 EP2PSend.k_EP2PSendReliable);
@@ -499,7 +507,7 @@ public static class AIManager
                         else
                         {
                             // Debug.Log("It seems that " + actor.name + " is not in a unit group, sending anyways.");
-                            NetworkSenderThread.Instance.SendPacketAsHostToAllClients(new Message_SpawnAIVehicle(actor.name, GetUnitNameFromCatalog(actor.unitSpawn.unitName),
+                            NetworkSenderThread.Instance.SendPacketAsHostToAllClients(new Message_SpawnAIVehicle(actor.name, GetUnitNameFromCatalog(actor.unitSpawn.unitName), redfor,
                                 VTMapManager.WorldToGlobalPoint(actor.gameObject.transform.position),
                                 actor.gameObject.transform.rotation, uidSender.networkUID, hPInfos2, cmLoadout, 0.65f, Aggresion, actor.unitSpawn.unitSpawner.unitInstanceID, ids.ToArray(), irIDS),
                                 EP2PSend.k_EP2PSendReliable);

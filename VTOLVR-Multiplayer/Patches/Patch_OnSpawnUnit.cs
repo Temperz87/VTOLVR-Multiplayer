@@ -133,6 +133,8 @@ class Patch90
         {
 
             UnitSpawn sp = (UnitSpawn)Traverse.Create(__instance).Field("_spawnedUnit").GetValue();
+            if(sp == null)
+                 return;
                 Actor actor = sp.actor;
             if (actor.isPlayer)
                     return;

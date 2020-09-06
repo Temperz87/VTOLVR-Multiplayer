@@ -61,7 +61,7 @@ class ObjectiveNetworker_Reciever
         if(Networker.isHost)
         foreach(var msg in ObjectiveHistory)
         {
-            NetworkSenderThread.Instance.SendPacketToSpecificPlayer(id, msg, Steamworks.EP2PSend.k_EP2PSendReliable);
+            NetworkSenderThread.Instance.SendPacketToSpecificPlayer(id, msg, Steamworks.EP2PSend.k_EP2PSendReliableWithBuffering);
         }
     }
     public static void objectiveUpdate(int hashCode, ObjSyncType status)
