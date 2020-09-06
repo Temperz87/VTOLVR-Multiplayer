@@ -185,9 +185,9 @@ class PlayerNetworker_Sender : MonoBehaviour
         lastMessage.isLeftie = PlayerManager.teamLeftie;
         lastMessage.tagName = Steamworks.SteamFriends.GetPersonaName();
         if (Networker.isHost)
-            NetworkSenderThread.Instance.SendPacketAsHostToAllClients(lastMessage, Steamworks.EP2PSend.k_EP2PSendUnreliableNoDelay);
+            NetworkSenderThread.Instance.SendPacketAsHostToAllClients(lastMessage, Steamworks.EP2PSend.k_EP2PSendUnreliable);
         else
-            NetworkSenderThread.Instance.SendPacketToSpecificPlayer(Networker.hostID, lastMessage, Steamworks.EP2PSend.k_EP2PSendUnreliableNoDelay);
+            NetworkSenderThread.Instance.SendPacketToSpecificPlayer(Networker.hostID, lastMessage, Steamworks.EP2PSend.k_EP2PSendUnreliable);
     }
 
     void UnEject()

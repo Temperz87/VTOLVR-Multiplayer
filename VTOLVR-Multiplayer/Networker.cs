@@ -1095,7 +1095,7 @@ public class Networker : MonoBehaviour
     {
         if (!isHost)
         {
-            NetworkSenderThread.Instance.SendPacketToSpecificPlayer(hostID, new Message_RequestNetworkUID(clientsID), EP2PSend.k_EP2PSendUnreliableNoDelay);
+            NetworkSenderThread.Instance.SendPacketToSpecificPlayer(hostID, new Message_RequestNetworkUID(clientsID), EP2PSend.k_EP2PSendReliable);
             Debug.Log("Requetsed UID from host");
         }
         else

@@ -107,6 +107,11 @@ class LockingRadarNetworker_Receiver : MonoBehaviour
             return;
         if (VTOLVR_Multiplayer.AIDictionaries.allActors.TryGetValue(message.detectedUID, out Actor actor))
         {
+            if (actor == null)
+            {
+                Debug.LogError("Actor is null.");
+                return;
+            }
             lockingRadar.radar.ForceDetect(actor);
         }
     }
