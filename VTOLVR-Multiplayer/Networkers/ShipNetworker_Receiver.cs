@@ -2,17 +2,18 @@
 using System.Text;
 using System.Threading.Tasks;
 using UnityEngine;
+using Harmony;
 
 class ShipNetworker_Receiver : MonoBehaviour
 {
     public ulong networkUID;
     private Message_ShipUpdate lastMessage;
     public ShipMover ship;
-    public Waypoint waypoint;
+    public Traverse shipTraverse;
 
     public float smoothTime = 5f;
     public float rotSmoothTime = 5f;
-    public Vector3 targetPositionGlobal;
+    public Vector3D targetPositionGlobal;
     public Vector3 targetPosition;
     public Vector3 targetVelocity;
     public Quaternion targetRotation;
@@ -22,19 +23,17 @@ class ShipNetworker_Receiver : MonoBehaviour
         lastMessage = new Message_ShipUpdate(new Vector3D(), new Quaternion(), new Vector3D(), networkUID);
         Networker.ShipUpdate += ShipUpdate;
 
-        waypoint = new Waypoint();
-        GameObject wptTransform = new GameObject();
-        waypoint.SetTransform(wptTransform.transform);
-
         ship = GetComponent<ShipMover>();
         ship.enabled = false;
+        shipTraverse = Traverse.Create(ship);
     }
 
     void FixedUpdate() {
         targetPositionGlobal += targetVelocity * Time.fixedDeltaTime;
-        targetPosition = VTMapManager.GlobalToWorldPoint(new Vector3D(targetPositionGlobal));
+        targetPosition = VTMapManager.GlobalToWorldPoint(targetPositionGlobal);
         ship.rb.MovePosition(ship.transform.position + targetVelocity * Time.fixedDeltaTime + ((targetPosition - ship.transform.position) * Time.fixedDeltaTime) / smoothTime);
         ship.rb.velocity = targetVelocity + (targetPosition - ship.transform.position)/smoothTime;
+        shipTraverse.Field("_velocity").SetValue(ship.rb.velocity);//makes the wake emit partical
         ship.rb.MoveRotation(Quaternion.Lerp(ship.transform.rotation, targetRotation, Time.fixedDeltaTime/rotSmoothTime));
     }
 
@@ -44,7 +43,7 @@ class ShipNetworker_Receiver : MonoBehaviour
         if (lastMessage.UID != networkUID)
             return;
 
-        targetPositionGlobal = lastMessage.position.toVector3 + lastMessage.velocity.toVector3 * Networker.pingToHost;
+        targetPositionGlobal = lastMessage.position + lastMessage.velocity * Networker.pingToHost;
         targetVelocity = lastMessage.velocity.toVector3;
         targetRotation =  lastMessage.rotation;
 

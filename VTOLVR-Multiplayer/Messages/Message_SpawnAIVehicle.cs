@@ -10,7 +10,7 @@ public class Message_SpawnAIVehicle : Message
     public string aiVehicleName;
     public string unitName;
     public Vector3D position;
-    public Vector3D rotation;
+    public SerializableQuaternion rotation;
     // public ulong csteamID;
     public ulong networkID;
     public HPInfo[] hpLoadout;
@@ -24,7 +24,7 @@ public class Message_SpawnAIVehicle : Message
     public bool hasGroup { get; private set; }
     // public int playerCount;
 
-    public Message_SpawnAIVehicle(string aiVehicleName, string unitName, Vector3D position, Vector3D rotation, ulong networkID, HPInfo[] hpLoadout, int[] cmLoadout, float normalizedFuel, bool Aggresive, int unitInstanceID, PhoneticLetters unitGroup, ulong[] radarIDs, ulong[] IRSAMissiles)
+    public Message_SpawnAIVehicle(string aiVehicleName, string unitName, Vector3D position, Quaternion rotation, ulong networkID, HPInfo[] hpLoadout, int[] cmLoadout, float normalizedFuel, bool Aggresive, int unitInstanceID, PhoneticLetters unitGroup, ulong[] radarIDs, ulong[] IRSAMissiles)
     {
         this.aiVehicleName = aiVehicleName;
         this.unitName = unitName;
@@ -43,7 +43,7 @@ public class Message_SpawnAIVehicle : Message
         // this.playerCount = playerCount;
         type = MessageType.SpawnAiVehicle;
     }
-    public Message_SpawnAIVehicle(string aiVehicleName, string unitName, Vector3D position, Vector3D rotation, ulong networkID, HPInfo[] hpLoadout, int[] cmLoadout, float normalizedFuel, bool Aggresive, int unitInstanceID, ulong[] radarIDs, ulong[] IRSAMissiles)
+    public Message_SpawnAIVehicle(string aiVehicleName, string unitName, Vector3D position, Quaternion rotation, ulong networkID, HPInfo[] hpLoadout, int[] cmLoadout, float normalizedFuel, bool Aggresive, int unitInstanceID, ulong[] radarIDs, ulong[] IRSAMissiles)
     {
         this.aiVehicleName = aiVehicleName;
         this.unitName = unitName;
