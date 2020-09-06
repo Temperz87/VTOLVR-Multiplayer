@@ -71,7 +71,7 @@ public class Multiplayer : VTOLMOD
     public bool restrictToHostMods = true;
     private UnityAction<bool> restrictToHostMods_changed;
 
-    public bool debugLogs = false;
+    public bool debugLogs = true;
     private UnityAction<bool> debugLogs_changed;
 
     public bool forceWinds = false; // not implemented
@@ -118,7 +118,7 @@ public class Multiplayer : VTOLMOD
         base.ModLoaded();
         CreateUI();
         gameObject.AddComponent<Networker>();
-        debugLog_Settings(false);
+        debugLog_Settings(debugLogs);
     }
     public void CheckUpToDate()
     {
