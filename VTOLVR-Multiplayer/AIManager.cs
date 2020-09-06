@@ -516,7 +516,8 @@ public static class AIManager
     {
         if (actor.role == Actor.Roles.Missile || actor.isPlayer)
             return;
-
+        if(actor.name.Contains("Rearm/Refuel"))
+            return;
         if (actor.parentActor == null)
         {
             ulong networkUID = Networker.GenerateNetworkUID();
@@ -559,6 +560,10 @@ public static class AIManager
                 lastRigidSender.networkUID = networkUID;
                 //reduced tick rate for ground Units
                 if (actor.role == Actor.Roles.Ground)
+                {
+                    lastRigidSender.tickRate = 0.01f;
+                }
+                if (actor.role == Actor.Roles.GroundArmor)
                 {
                     lastRigidSender.tickRate = 1.0f;
                 }
