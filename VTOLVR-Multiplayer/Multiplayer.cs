@@ -219,7 +219,7 @@ public class Multiplayer : VTOLMOD
     public void debugLog_Settings(bool newval)
     {
         debugLogs = newval;
-        if (ModVersionString.ReleaseBranch != "Release")
+        if (ModVersionString.ReleaseBranch == "Release")
             Debug.logger.logEnabled = newval;
         else
         {
