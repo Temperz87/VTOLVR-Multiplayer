@@ -23,7 +23,7 @@ class GroundNetworker_Receiver : MonoBehaviour
     {
         lastMessage = new Message_ShipUpdate(new Vector3D(), new Quaternion(), new Vector3D(), networkUID);//it uses ship update, cause the information really isnt all that different
         Networker.ShipUpdate += GroundUpdate;
-
+         
         groundUnitMover = GetComponent<GroundUnitMover>();
         groundUnitMover.enabled = false;
         rb = GetComponent<Rigidbody>();
@@ -54,7 +54,7 @@ class GroundNetworker_Receiver : MonoBehaviour
             if (surfaceForward != Vector3.zero && surfaceNormal != Vector3.zero);
             adjustedRotation = Quaternion.LookRotation(surfaceForward, surfaceNormal);
         }
-
+        adjustedRotation = adjustedRotation.normalized;
         rb.MovePosition(adjustedPos);
         rb.MoveRotation(adjustedRotation);//move rotation was throwing "Rotation quaternions must be unit length"
     }
@@ -76,7 +76,9 @@ class GroundNetworker_Receiver : MonoBehaviour
         if ((VTMapManager.GlobalToWorldPoint(lastMessage.position) - groundUnitMover.transform.position).magnitude > 100) {
             Debug.Log("Ground mover is too far, teleporting.");
             groundUnitMover.transform.position = VTMapManager.GlobalToWorldPoint(lastMessage.position);
-            groundUnitMover.transform.rotation = lastMessage.rotation;
+            Quaternion qs = lastMessage.rotation;
+            qs = qs.normalized;
+            groundUnitMover.transform.rotation = qs;
             smoothedPosition = lastMessage.position;
             if (targetVelocity.sqrMagnitude > 1)
             {
