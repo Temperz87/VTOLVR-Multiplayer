@@ -37,8 +37,8 @@ class GroundNetworker_Receiver : MonoBehaviour
         targetPositionGlobal += targetVelocity * Time.fixedDeltaTime;
 
         smoothedPosition = smoothedPosition + targetVelocity * Time.fixedDeltaTime + ((targetPositionGlobal - smoothedPosition) * Time.fixedDeltaTime) / smoothTime;
-        smoothedRotation = Quaternion.Lerp(smoothedRotation, targetRotation, Time.fixedDeltaTime / rotSmoothTime);
-
+        smoothedRotation = Quaternion.Slerp(smoothedRotation, targetRotation, Time.fixedDeltaTime / rotSmoothTime);
+        smoothedRotation = smoothedRotation.normalized;
         Vector3 adjustedPos = VTMapManager.GlobalToWorldPoint(smoothedPosition);
         Vector3 surfaceNormal = smoothedRotation * Vector3.up;
         Vector3 surfaceRight = smoothedRotation * Vector3.right;
