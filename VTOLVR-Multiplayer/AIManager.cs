@@ -473,7 +473,7 @@ public static class AIManager
                             NetworkSenderThread.Instance.SendPacketToSpecificPlayer(steamID, new Message_SpawnAIVehicle(actor.name, GetUnitNameFromCatalog(actor.unitSpawn.unitName),
                                 VTMapManager.WorldToGlobalPoint(actor.gameObject.transform.position),
                                 new Vector3D(actor.gameObject.transform.rotation.eulerAngles), uidSender.networkUID, hPInfos2, cmLoadout, 0.65f, Aggresion, actor.unitSpawn.unitSpawner.unitInstanceID, letters, ids.ToArray(), irIDS),
-                                EP2PSend.k_EP2PSendReliable);
+                                EP2PSend.k_EP2PSendReliableWithBuffering);
                         }
                         else
                         {
@@ -481,7 +481,7 @@ public static class AIManager
                             NetworkSenderThread.Instance.SendPacketToSpecificPlayer(steamID, new Message_SpawnAIVehicle(actor.name, GetUnitNameFromCatalog(actor.unitSpawn.unitName),
                                 VTMapManager.WorldToGlobalPoint(actor.gameObject.transform.position),
                                 new Vector3D(actor.gameObject.transform.rotation.eulerAngles), uidSender.networkUID, hPInfos2, cmLoadout, 0.65f, Aggresion, actor.unitSpawn.unitSpawner.unitInstanceID, ids.ToArray(), irIDS),
-                                EP2PSend.k_EP2PSendReliable);
+                                EP2PSend.k_EP2PSendReliableWithBuffering);
                         }
                     }
                     else
@@ -492,7 +492,7 @@ public static class AIManager
                             NetworkSenderThread.Instance.SendPacketAsHostToAllClients(new Message_SpawnAIVehicle(actor.name, GetUnitNameFromCatalog(actor.unitSpawn.unitName),
                                 VTMapManager.WorldToGlobalPoint(actor.gameObject.transform.position),
                                 new Vector3D(actor.gameObject.transform.rotation.eulerAngles), uidSender.networkUID, hPInfos2, cmLoadout, 0.65f, Aggresion, actor.unitSpawn.unitSpawner.unitInstanceID, letters, ids.ToArray(), irIDS),
-                                EP2PSend.k_EP2PSendReliable);
+                                EP2PSend.k_EP2PSendReliableWithBuffering);
                         }
                         else
                         {
@@ -500,7 +500,7 @@ public static class AIManager
                             NetworkSenderThread.Instance.SendPacketAsHostToAllClients(new Message_SpawnAIVehicle(actor.name, GetUnitNameFromCatalog(actor.unitSpawn.unitName),
                                 VTMapManager.WorldToGlobalPoint(actor.gameObject.transform.position),
                                 new Vector3D(actor.gameObject.transform.rotation.eulerAngles), uidSender.networkUID, hPInfos2, cmLoadout, 0.65f, Aggresion, actor.unitSpawn.unitSpawner.unitInstanceID, ids.ToArray(), irIDS),
-                                EP2PSend.k_EP2PSendReliable);
+                                EP2PSend.k_EP2PSendReliableWithBuffering);
                         }
                     }
                 }
