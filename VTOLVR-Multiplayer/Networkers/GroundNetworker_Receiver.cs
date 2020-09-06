@@ -10,7 +10,7 @@ class GroundNetworker_Receiver : MonoBehaviour
     public GroundUnitMover groundUnitMover;
     public Rigidbody rb;
 
-    public float smoothTime = 2f;
+    public float smoothTime = 1f;
     public float rotSmoothTime = 0.5f;
     public Vector3D targetPositionGlobal;
     public Vector3 targetVelocity;
@@ -46,8 +46,8 @@ class GroundNetworker_Receiver : MonoBehaviour
         Quaternion adjustedRotation = smoothedRotation;
 
         RaycastHit hit;
-        if (Physics.Raycast(transform.position + 500 * Vector3.up, Vector3.down, out hit, 1000, 1, QueryTriggerInteraction.Ignore) && false) {
-            adjustedPos = hit.point;
+        if (Physics.Raycast(adjustedPos + 500 * Vector3.up, Vector3.down, out hit, 1000, 1, QueryTriggerInteraction.Ignore)) {
+            adjustedPos = hit.point + hit.normal * groundUnitMover.height;
             surfaceNormal = hit.normal;
             surfaceRight = Vector3.Cross(surfaceNormal, smoothedRotation * Vector3.forward);
             surfaceForward = Vector3.Cross(surfaceRight, surfaceNormal);
@@ -73,13 +73,17 @@ class GroundNetworker_Receiver : MonoBehaviour
 
         Debug.Log("Ground reciever rotation is: " + lastMessage.rotation.ToString());
 
-        if ((VTMapManager.GlobalToWorldPoint(lastMessage.position) - groundUnitMover.transform.position).magnitude > 100 || true) {
+        if ((VTMapManager.GlobalToWorldPoint(lastMessage.position) - groundUnitMover.transform.position).magnitude > 100) {
             Debug.Log("Ground mover is too far, teleporting.");
             groundUnitMover.transform.position = VTMapManager.GlobalToWorldPoint(lastMessage.position);
             groundUnitMover.transform.rotation = lastMessage.rotation;
             smoothedPosition = lastMessage.position;
-            smoothedRotation = lastMessage.rotation;
-            smoothedRotation = smoothedRotation.normalized;
+            if (targetVelocity.magnitude > 1)
+            {
+                smoothedRotation = Quaternion.LookRotation(targetVelocity);
+            }
+            //smoothedRotation = lastMessage.rotation;
+            //smoothedRotation = smoothedRotation.normalized;
         }
     }
 
