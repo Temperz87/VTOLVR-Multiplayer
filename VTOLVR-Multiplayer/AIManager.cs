@@ -75,15 +75,24 @@ public static class AIManager
             Debug.LogError(message.unitName + " was not found.");
             return;
         }
-        GameObject newAI = GameObject.Instantiate(prefab, VTMapManager.GlobalToWorldPoint(message.position), Quaternion.Euler(message.rotation.toVector3));
+        GameObject newAI = GameObject.Instantiate(prefab, VTMapManager.GlobalToWorldPoint(message.position), message.rotation);
         //Debug.Log("Setting vehicle name");
         newAI.name = message.aiVehicleName;
         Actor actor = newAI.GetComponent<Actor>();
         if (actor == null)
             Debug.LogError("actor is null on object " + newAI.name);
-        UnitSpawner unitSpawn = new UnitSpawner();
-        actor.unitSpawn.unitSpawner = unitSpawn;
 
+        UnitSpawn unitSP = newAI.GetComponent<UnitSpawn>();
+        GameObject.Destroy(unitSP);
+        newAI.AddComponent<UnitSpawn>();
+        unitSP = newAI.GetComponent<UnitSpawn>();
+
+        UnitSpawner unitSpawn = new UnitSpawner();
+        actor.unitSpawn = unitSP;
+        actor.unitSpawn.unitSpawner = unitSpawn;
+        unitSP.actor = actor;
+        Traverse.Create(actor.unitSpawn.unitSpawner).Field("_spawnedUnit").SetValue(unitSP);
+        Traverse.Create(actor.unitSpawn.unitSpawner).Field("_unitInstanceID").SetValue(message.unitInstanceID); // To make objectives work.
         unitSpawn.team = actor.team;
         unitSpawn.unitName = actor.unitSpawn.unitName;
 
@@ -141,7 +150,6 @@ public static class AIManager
 
         TargetManager.instance.UnregisterActor(actor);
         TargetManager.instance.RegisterActor(actor);
-        Traverse.Create(actor.unitSpawn.unitSpawner).Field("_unitInstanceID").SetValue(message.unitInstanceID); // To make objectives work.
         VTScenario.current.units.AddSpawner(actor.unitSpawn.unitSpawner);
         
         if (message.hasGroup)
@@ -170,20 +178,22 @@ public static class AIManager
         {
             Debug.Log(message.aiVehicleName + " has no health?");
         }
+
+        newAI.transform.position = VTMapManager.GlobalToWorldPoint(message.position);
+        newAI.transform.rotation = message.rotation;
+
         if (newAI.GetComponent<ShipMover>() != null)
         {
             ShipNetworker_Receiver shipNetworker = newAI.AddComponent<ShipNetworker_Receiver>();
             shipNetworker.networkUID = message.networkID;
         }
+        else if (newAI.GetComponent<GroundUnitMover>() != null) {
+            GroundNetworker_Receiver groundNetworker = newAI.AddComponent<GroundNetworker_Receiver>();
+            groundNetworker.networkUID = message.networkID;
+        }
         else if (newAI.GetComponent<Rigidbody>() != null)
         {
             Rigidbody rb = newAI.GetComponent<Rigidbody>();
-            Debug.Log($"Changing {newAI.name}'s position and rotation\nPos:{rb.position} Rotation:{rb.rotation.eulerAngles}");
-            rb.interpolation = RigidbodyInterpolation.None;
-            rb.position = message.position.toVector3;
-            rb.rotation = Quaternion.Euler(message.rotation.toVector3);
-            rb.interpolation = RigidbodyInterpolation.Interpolate;
-            Debug.Log($"Finished changing {newAI.name}\n Pos:{rb.position} Rotation:{rb.rotation.eulerAngles}");
             RigidbodyNetworker_Receiver rbNetworker = newAI.AddComponent<RigidbodyNetworker_Receiver>();
             rbNetworker.networkUID = message.networkID;
         }
@@ -464,7 +474,7 @@ public static class AIManager
                         {
                             NetworkSenderThread.Instance.SendPacketToSpecificPlayer(steamID, new Message_SpawnAIVehicle(actor.name, GetUnitNameFromCatalog(actor.unitSpawn.unitName),
                                 VTMapManager.WorldToGlobalPoint(actor.gameObject.transform.position),
-                                new Vector3D(actor.gameObject.transform.rotation.eulerAngles), uidSender.networkUID, hPInfos2, cmLoadout, 0.65f, Aggresion, actor.unitSpawn.unitSpawner.unitInstanceID, letters, ids.ToArray(), irIDS),
+                                actor.gameObject.transform.rotation, uidSender.networkUID, hPInfos2, cmLoadout, 0.65f, Aggresion, actor.unitSpawn.unitSpawner.unitInstanceID, letters, ids.ToArray(), irIDS),
                                 EP2PSend.k_EP2PSendReliable);
                         }
                         else
@@ -472,7 +482,7 @@ public static class AIManager
                             // Debug.Log("It seems that " + actor.name + " is not in a unit group, sending anyways.");
                             NetworkSenderThread.Instance.SendPacketToSpecificPlayer(steamID, new Message_SpawnAIVehicle(actor.name, GetUnitNameFromCatalog(actor.unitSpawn.unitName),
                                 VTMapManager.WorldToGlobalPoint(actor.gameObject.transform.position),
-                                new Vector3D(actor.gameObject.transform.rotation.eulerAngles), uidSender.networkUID, hPInfos2, cmLoadout, 0.65f, Aggresion, actor.unitSpawn.unitSpawner.unitInstanceID, ids.ToArray(), irIDS),
+                                actor.gameObject.transform.rotation, uidSender.networkUID, hPInfos2, cmLoadout, 0.65f, Aggresion, actor.unitSpawn.unitSpawner.unitInstanceID, ids.ToArray(), irIDS),
                                 EP2PSend.k_EP2PSendReliable);
                         }
                     }
@@ -483,7 +493,7 @@ public static class AIManager
                         {
                             NetworkSenderThread.Instance.SendPacketAsHostToAllClients(new Message_SpawnAIVehicle(actor.name, GetUnitNameFromCatalog(actor.unitSpawn.unitName),
                                 VTMapManager.WorldToGlobalPoint(actor.gameObject.transform.position),
-                                new Vector3D(actor.gameObject.transform.rotation.eulerAngles), uidSender.networkUID, hPInfos2, cmLoadout, 0.65f, Aggresion, actor.unitSpawn.unitSpawner.unitInstanceID, letters, ids.ToArray(), irIDS),
+                                actor.gameObject.transform.rotation, uidSender.networkUID, hPInfos2, cmLoadout, 0.65f, Aggresion, actor.unitSpawn.unitSpawner.unitInstanceID, letters, ids.ToArray(), irIDS),
                                 EP2PSend.k_EP2PSendReliable);
                         }
                         else
@@ -491,7 +501,7 @@ public static class AIManager
                             // Debug.Log("It seems that " + actor.name + " is not in a unit group, sending anyways.");
                             NetworkSenderThread.Instance.SendPacketAsHostToAllClients(new Message_SpawnAIVehicle(actor.name, GetUnitNameFromCatalog(actor.unitSpawn.unitName),
                                 VTMapManager.WorldToGlobalPoint(actor.gameObject.transform.position),
-                                new Vector3D(actor.gameObject.transform.rotation.eulerAngles), uidSender.networkUID, hPInfos2, cmLoadout, 0.65f, Aggresion, actor.unitSpawn.unitSpawner.unitInstanceID, ids.ToArray(), irIDS),
+                                actor.gameObject.transform.rotation, uidSender.networkUID, hPInfos2, cmLoadout, 0.65f, Aggresion, actor.unitSpawn.unitSpawner.unitInstanceID, ids.ToArray(), irIDS),
                                 EP2PSend.k_EP2PSendReliable);
                         }
                     }
@@ -508,7 +518,8 @@ public static class AIManager
     {
         if (actor.role == Actor.Roles.Missile || actor.isPlayer)
             return;
-
+        if(actor.name.Contains("Rearm/Refuel"))
+            return;
         if (actor.parentActor == null)
         {
             ulong networkUID = Networker.GenerateNetworkUID();
@@ -545,12 +556,21 @@ public static class AIManager
                 ShipNetworker_Sender shipNetworker = actor.gameObject.AddComponent<ShipNetworker_Sender>();
                 shipNetworker.networkUID = networkUID;
             }
+            else if (actor.gameObject.GetComponent<GroundUnitMover>() != null)
+            {
+                GroundNetworker_Sender lastGroundSender = actor.gameObject.AddComponent<GroundNetworker_Sender>();
+                lastGroundSender.networkUID = networkUID;
+            }
             else if (actor.gameObject.GetComponent<Rigidbody>() != null)
             {
                 RigidbodyNetworker_Sender lastRigidSender = actor.gameObject.AddComponent<RigidbodyNetworker_Sender>();
                 lastRigidSender.networkUID = networkUID;
                 //reduced tick rate for ground Units
                 if (actor.role == Actor.Roles.Ground)
+                {
+                    lastRigidSender.tickRate = 0.01f;
+                }
+                if (actor.role == Actor.Roles.GroundArmor)
                 {
                     lastRigidSender.tickRate = 1.0f;
                 }

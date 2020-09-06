@@ -110,7 +110,8 @@ public class RigidbodyNetworker_Receiver : MonoBehaviour
         actor.SetCustomVelocity(rb.velocity);
        
         rb.MovePosition(transform.position + targetVelocity * Time.fixedDeltaTime + ((localTargetPosition - transform.position) * Time.fixedDeltaTime) / smoothingTime);
-        rb.MoveRotation(Quaternion.Slerp(currentRotation, targetRotation, Time.fixedDeltaTime / rotSmoothingTime));
+        Quaternion quat = Quaternion.Slerp(currentRotation, targetRotation, Time.fixedDeltaTime / rotSmoothingTime);
+        rb.MoveRotation(quat.normalized);
     }
 
     public void RigidbodyUpdate(Packet packet)

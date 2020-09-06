@@ -118,7 +118,7 @@ public class Multiplayer : VTOLMOD
         base.ModLoaded();
         CreateUI();
         gameObject.AddComponent<Networker>();
-        debugLog_Settings(false);
+        debugLog_Settings(debugLogs);
     }
     public void CheckUpToDate()
     {

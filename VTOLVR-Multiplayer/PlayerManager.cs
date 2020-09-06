@@ -397,10 +397,10 @@ public static class PlayerManager
 
 
         }
-
+        /*if(0)
         if (gameLoaded)
         {
-
+             
             foreach (Actor act in invisibleActorList)
             {
                 if (act.role == Actor.Roles.Air)
@@ -433,7 +433,7 @@ public static class PlayerManager
                 }
                
             } 
-        }
+        }*/
         PlayerManager.SpawnPlayersInPlayerSpawnQueue();//addmitedly, this probably isnt the best place to put this, feel free to move it somewhere els
 
     }
@@ -485,7 +485,12 @@ public static class PlayerManager
         if (Networker.isHost && firstSpawnDone == false)
         {
             if (firstSpawnDone)
+            {
+                rb.interpolation = RigidbodyInterpolation.None;
+                rb.isKinematic = true;
                 rearmPoint.BeginReArm();
+            }
+                
             //rb.velocity = Vector3.zero;
 
         }
@@ -493,6 +498,8 @@ public static class PlayerManager
         {
             if (teamLeftie)
             {
+                rb.interpolation = RigidbodyInterpolation.None;
+                rb.isKinematic = true;
                 rearmPoint.BeginReArm();
                 //rb.velocity = Vector3.zero;
             }
@@ -503,6 +510,8 @@ public static class PlayerManager
                     PlayerSpawn ps = GameObject.FindObjectOfType<PlayerSpawn>();
                     if (ps.initialSpeed < 5.0f)
                     {
+                        rb.interpolation = RigidbodyInterpolation.None;
+                        rb.isKinematic = true;
                         rearmPoint.BeginReArm();
                         //rb.velocity = Vector3.zero;
                     }
@@ -840,7 +849,6 @@ public static class PlayerManager
         {
             Debug.Log("Telling connected client about AI units");
             AIManager.TellClientAboutAI(spawnerSteamId);
-            ObjectiveNetworker_Reciever.sendObjectiveHistory(spawnerSteamId);
         }
         AddToPlayerList(new Player(spawnerSteamId, null, message.vehicle, message.networkID, message.leftie,message.nameTag));
 

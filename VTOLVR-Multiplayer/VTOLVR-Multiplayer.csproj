@@ -143,6 +143,8 @@
     <Compile Include="Networkers\ExtLightNetworker_Sender.cs" />
     <Compile Include="ModVersionString.cs" />
     <Compile Include="Networkers\ExtNPCLight_Networker_Sender.cs" />
+    <Compile Include="Networkers\GroundNetworker_Receiver.cs" />
+    <Compile Include="Networkers\GroundNetworker_Sender.cs" />
     <Compile Include="Networkers\HealthNetworker_Receiver.cs" />
     <Compile Include="Networkers\HealthNetworker_Sender.cs" />
     <Compile Include="Networkers\HealthNetworker_ReceiverHostEnforced.cs" />
