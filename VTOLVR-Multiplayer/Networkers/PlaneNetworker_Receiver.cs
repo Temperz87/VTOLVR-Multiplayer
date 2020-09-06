@@ -357,6 +357,7 @@ public class PlaneNetworker_Receiver : MonoBehaviour
                             noAmmo = false;
                         }
                     }
+                    if(!noAmmo)
                     weaponManager.StartFire();
                 }
             }
@@ -420,7 +421,7 @@ public class PlaneNetworker_Receiver : MonoBehaviour
     
     private System.Collections.IEnumerator colliderTimer()
     {
-        yield return new WaitForSeconds(10.5f);
+        yield return new WaitForSeconds(120.5f);
 
         if (ownerActor != null)
         {

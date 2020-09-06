@@ -50,5 +50,6 @@ public enum MessageType
     SamUpdate, // To sync sams
     AAAUpdate, // To sync A's x 3
     BulletHit,
-    MissileDamage
+    MissileDamage,
+    GPSTarget
 }

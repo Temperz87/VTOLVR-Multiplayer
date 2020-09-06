@@ -81,8 +81,18 @@ public static class AIManager
         Actor actor = newAI.GetComponent<Actor>();
         if (actor == null)
             Debug.LogError("actor is null on object " + newAI.name);
-        UnitSpawner unitSpawn = actor.unitSpawn.unitSpawner = new UnitSpawner();
 
+        UnitSpawn unitSP = newAI.GetComponent<UnitSpawn>();
+        GameObject.Destroy(unitSP);
+        newAI.AddComponent<UnitSpawn>();
+        unitSP = newAI.GetComponent<UnitSpawn>();
+
+        UnitSpawner unitSpawn = new UnitSpawner();
+        actor.unitSpawn = unitSP;
+        actor.unitSpawn.unitSpawner = unitSpawn;
+        unitSP.actor = actor;
+        Traverse.Create(actor.unitSpawn.unitSpawner).Field("_spawnedUnit").SetValue(unitSP);
+        Traverse.Create(actor.unitSpawn.unitSpawner).Field("_unitInstanceID").SetValue(message.unitInstanceID); // To make objectives work.
         unitSpawn.team = actor.team;
         unitSpawn.unitName = actor.unitSpawn.unitName;
 
@@ -140,8 +150,8 @@ public static class AIManager
 
         TargetManager.instance.UnregisterActor(actor);
         TargetManager.instance.RegisterActor(actor);
-
-        Traverse.Create(actor.unitSpawn.unitSpawner).Field("_unitInstanceID").SetValue(message.unitInstanceID); // To make objectives work.
+        VTScenario.current.units.AddSpawner(actor.unitSpawn.unitSpawner);
+        
         if (message.hasGroup)
         {
             VTScenario.current.groups.AddUnitToGroup(unitSpawn, message.unitGroup);
@@ -388,10 +398,11 @@ public static class AIManager
         {
             if (actor == null)
                 continue;
-            if (!actor.isPlayer)
+            Debug.Log("Trying sending new stage 1");
+            if(!actor.isPlayer)
+            if(actor.name.Contains("Client [") == false)
             {
-                if (actor.name.Contains("Client"))
-                    return;
+                Debug.Log("Trying sending new stage 2");
                 bool Aggresion = false;
                 if (actor.gameObject.GetComponent<UIDNetworker_Sender>() != null)
                 {
@@ -507,6 +518,8 @@ public static class AIManager
     {
         if (actor.role == Actor.Roles.Missile || actor.isPlayer)
             return;
+        if(actor.name.Contains("Rearm/Refuel"))
+            return;
         if (actor.parentActor == null)
         {
             ulong networkUID = Networker.GenerateNetworkUID();
@@ -554,6 +567,10 @@ public static class AIManager
                 lastRigidSender.networkUID = networkUID;
                 //reduced tick rate for ground Units
                 if (actor.role == Actor.Roles.Ground)
+                {
+                    lastRigidSender.tickRate = 0.01f;
+                }
+                if (actor.role == Actor.Roles.GroundArmor)
                 {
                     lastRigidSender.tickRate = 1.0f;
                 }

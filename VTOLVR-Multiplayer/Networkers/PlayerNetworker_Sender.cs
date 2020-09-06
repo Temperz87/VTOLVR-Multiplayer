@@ -30,7 +30,7 @@ class PlayerNetworker_Sender : MonoBehaviour
 
     void Awake()
     {
-        lastMessage = new Message_Respawn(networkUID, new Vector3D(), new Quaternion(), false);
+        lastMessage = new Message_Respawn(networkUID, new Vector3D(), new Quaternion(), false, Steamworks.SteamFriends.GetPersonaName());
 
         health = GetComponent<Health>();
         actor = GetComponent<Actor>();
@@ -172,16 +172,18 @@ class PlayerNetworker_Sender : MonoBehaviour
         PilotSaveManager.currentScenario.inFlightSpending = 0;
         PilotSaveManager.currentScenario.equipConfigurable = true;
         Rigidbody rb = newPlayer.GetComponent<Rigidbody>();
-        rb.detectCollisions = false;
+         
+        rb.interpolation = RigidbodyInterpolation.None;
+        rb.isKinematic = true;
         rearmPoint.BeginReArm();
-        rb.velocity = Vector3.zero;
-        rb.detectCollisions = true;
+        //rb.velocity = Vector3.zero;
+        //rb.detectCollisions = true;
    
         PlayerManager.SetupLocalAircraft(newPlayer, newPlayer.transform.position, newPlayer.transform.rotation, networkUID);
 
         lastMessage.UID = networkUID;
         lastMessage.isLeftie = PlayerManager.teamLeftie;
-
+        lastMessage.tagName = Steamworks.SteamFriends.GetPersonaName();
         if (Networker.isHost)
             NetworkSenderThread.Instance.SendPacketAsHostToAllClients(lastMessage, Steamworks.EP2PSend.k_EP2PSendUnreliableNoDelay);
         else
