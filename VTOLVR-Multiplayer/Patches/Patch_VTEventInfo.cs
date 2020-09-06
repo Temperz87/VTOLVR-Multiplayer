@@ -97,7 +97,24 @@ class deathmenu2
         return false;
     }
 }
+[HarmonyPatch(typeof(ProtectObjective), "Update")]
+class PatchPROTECC
+{
+    static bool Prefix()
+    {
 
+
+        if (Networker.isHost)
+        {
+            return true;
+        }
+        else
+        {
+            return false;
+        }
+        
+    }
+}
 [HarmonyPatch(typeof(VTEventTarget), "Invoke")]
 class Patch22
 {

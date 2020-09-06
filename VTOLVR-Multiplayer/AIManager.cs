@@ -81,9 +81,18 @@ public static class AIManager
         Actor actor = newAI.GetComponent<Actor>();
         if (actor == null)
             Debug.LogError("actor is null on object " + newAI.name);
+
+        UnitSpawn unitSP = newAI.GetComponent<UnitSpawn>();
+        GameObject.Destroy(unitSP);
+        newAI.AddComponent<UnitSpawn>();
+        unitSP = newAI.GetComponent<UnitSpawn>();
+
         UnitSpawner unitSpawn = new UnitSpawner();
+        actor.unitSpawn = unitSP;
         actor.unitSpawn.unitSpawner = unitSpawn;
 
+        Traverse.Create(actor.unitSpawn.unitSpawner).Field("_spawnedUnit").SetValue(unitSpawn);
+        Traverse.Create(actor.unitSpawn.unitSpawner).Field("_unitInstanceID").SetValue(message.unitInstanceID); // To make objectives work.
         unitSpawn.team = actor.team;
         unitSpawn.unitName = actor.unitSpawn.unitName;
 
@@ -141,7 +150,6 @@ public static class AIManager
 
         TargetManager.instance.UnregisterActor(actor);
         TargetManager.instance.RegisterActor(actor);
-        Traverse.Create(actor.unitSpawn.unitSpawner).Field("_unitInstanceID").SetValue(message.unitInstanceID); // To make objectives work.
         VTScenario.current.units.AddSpawner(actor.unitSpawn.unitSpawner);
         
         if (message.hasGroup)

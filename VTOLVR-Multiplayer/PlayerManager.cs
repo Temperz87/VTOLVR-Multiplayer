@@ -485,7 +485,12 @@ public static class PlayerManager
         if (Networker.isHost && firstSpawnDone == false)
         {
             if (firstSpawnDone)
+            {
+                rb.interpolation = RigidbodyInterpolation.None;
+                rb.isKinematic = true;
                 rearmPoint.BeginReArm();
+            }
+                
             //rb.velocity = Vector3.zero;
 
         }
@@ -493,6 +498,8 @@ public static class PlayerManager
         {
             if (teamLeftie)
             {
+                rb.interpolation = RigidbodyInterpolation.None;
+                rb.isKinematic = true;
                 rearmPoint.BeginReArm();
                 //rb.velocity = Vector3.zero;
             }
@@ -503,6 +510,8 @@ public static class PlayerManager
                     PlayerSpawn ps = GameObject.FindObjectOfType<PlayerSpawn>();
                     if (ps.initialSpeed < 5.0f)
                     {
+                        rb.interpolation = RigidbodyInterpolation.None;
+                        rb.isKinematic = true;
                         rearmPoint.BeginReArm();
                         //rb.velocity = Vector3.zero;
                     }
