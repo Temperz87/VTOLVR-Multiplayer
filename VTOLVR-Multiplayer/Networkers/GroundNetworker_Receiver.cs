@@ -30,7 +30,7 @@ class GroundNetworker_Receiver : MonoBehaviour
     }
 
     void FixedUpdate() {
-        if (targetVelocity.magnitude > 1) {
+        if (targetVelocity.sqrMagnitude > 1) {
             targetRotation = Quaternion.LookRotation(targetVelocity);
         }
 
@@ -51,7 +51,7 @@ class GroundNetworker_Receiver : MonoBehaviour
             surfaceNormal = hit.normal;
             surfaceRight = Vector3.Cross(surfaceNormal, smoothedRotation * Vector3.forward);
             surfaceForward = Vector3.Cross(surfaceRight, surfaceNormal);
-
+            if (surfaceForward != Vector3.zero && surfaceNormal != Vector3.zero);
             adjustedRotation = Quaternion.LookRotation(surfaceForward, surfaceNormal);
         }
 
@@ -78,7 +78,7 @@ class GroundNetworker_Receiver : MonoBehaviour
             groundUnitMover.transform.position = VTMapManager.GlobalToWorldPoint(lastMessage.position);
             groundUnitMover.transform.rotation = lastMessage.rotation;
             smoothedPosition = lastMessage.position;
-            if (targetVelocity.magnitude > 1)
+            if (targetVelocity.sqrMagnitude > 1)
             {
                 smoothedRotation = Quaternion.LookRotation(targetVelocity);
             }
