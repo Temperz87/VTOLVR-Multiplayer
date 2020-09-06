@@ -13,7 +13,6 @@ class GroundNetworker_Receiver : MonoBehaviour
     public float smoothTime = 2f;
     public float rotSmoothTime = 0.5f;
     public Vector3D targetPositionGlobal;
-    public Vector3 targetPosition;
     public Vector3 targetVelocity;
     public Quaternion targetRotation;
 
@@ -31,6 +30,10 @@ class GroundNetworker_Receiver : MonoBehaviour
     }
 
     void FixedUpdate() {
+        if (targetVelocity.magnitude > 1) {
+            targetRotation = Quaternion.LookRotation(targetVelocity);
+        }
+
         targetPositionGlobal += targetVelocity * Time.fixedDeltaTime;
 
         smoothedPosition = smoothedPosition + targetVelocity * Time.fixedDeltaTime + ((targetPositionGlobal - smoothedPosition) * Time.fixedDeltaTime) / smoothTime;
@@ -53,7 +56,7 @@ class GroundNetworker_Receiver : MonoBehaviour
         }
 
         rb.MovePosition(adjustedPos);
-        rb.transform.rotation = adjustedRotation;//move rotation was throwing "Rotation quaternions must be unit length"
+        rb.MoveRotation(adjustedRotation);//move rotation was throwing "Rotation quaternions must be unit length"
     }
 
     public void GroundUpdate(Packet packet)
@@ -64,18 +67,19 @@ class GroundNetworker_Receiver : MonoBehaviour
 
         targetPositionGlobal = lastMessage.position + lastMessage.velocity * Networker.pingToHost;
         targetVelocity = lastMessage.velocity.toVector3;
-        targetRotation = lastMessage.rotation;
-        targetRotation = targetRotation.normalized;
-        
+        //targetRotation = lastMessage.rotation;
+        //targetRotation = targetRotation.normalized;
+        //could not get the rotation to work for whatever reason, so ground moves face their velocity vector
 
         Debug.Log("Ground reciever rotation is: " + lastMessage.rotation.ToString());
 
-        if ((VTMapManager.GlobalToWorldPoint(lastMessage.position) - groundUnitMover.transform.position).magnitude > 100) {
+        if ((VTMapManager.GlobalToWorldPoint(lastMessage.position) - groundUnitMover.transform.position).magnitude > 100 || true) {
             Debug.Log("Ground mover is too far, teleporting.");
             groundUnitMover.transform.position = VTMapManager.GlobalToWorldPoint(lastMessage.position);
             groundUnitMover.transform.rotation = lastMessage.rotation;
             smoothedPosition = lastMessage.position;
             smoothedRotation = lastMessage.rotation;
+            smoothedRotation = smoothedRotation.normalized;
         }
     }
 

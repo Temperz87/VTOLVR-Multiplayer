@@ -23,7 +23,7 @@ class GroundNetworker_Sender : MonoBehaviour
             lastMessage.rotation = groundUnitMover.transform.rotation.normalized;
             lastMessage.velocity = new Vector3D(groundUnitMover.velocity);
 
-            Debug.Log("Ground sender rotation is: " + groundUnitMover.transform.rotation.ToString());
+            Debug.Log("Ground sender rotation is: " + lastMessage.rotation.ToString());
 
             lastMessage.UID = networkUID;
             if (Networker.isHost)
