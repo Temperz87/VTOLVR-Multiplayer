@@ -29,8 +29,10 @@ class GroundNetworker_Receiver : MonoBehaviour
         rb = GetComponent<Rigidbody>();
     }
 
-    void FixedUpdate() {
-        if (targetVelocity.sqrMagnitude > 1) {
+    void FixedUpdate()
+    {
+        if (targetVelocity.sqrMagnitude > 1)
+        {
             targetRotation = Quaternion.LookRotation(targetVelocity);
         }
 
@@ -46,13 +48,14 @@ class GroundNetworker_Receiver : MonoBehaviour
         Quaternion adjustedRotation = smoothedRotation;
 
         RaycastHit hit;
-        if (Physics.Raycast(adjustedPos + 500 * Vector3.up, Vector3.down, out hit, 1000, 1, QueryTriggerInteraction.Ignore)) {
+        if (Physics.Raycast(adjustedPos + 500 * Vector3.up, Vector3.down, out hit, 1000, 1, QueryTriggerInteraction.Ignore))
+        {
             adjustedPos = hit.point + hit.normal * groundUnitMover.height;
             surfaceNormal = hit.normal;
             surfaceRight = Vector3.Cross(surfaceNormal, smoothedRotation * Vector3.forward);
             surfaceForward = Vector3.Cross(surfaceRight, surfaceNormal);
-            if (surfaceForward != Vector3.zero && surfaceNormal != Vector3.zero);
-            adjustedRotation = Quaternion.LookRotation(surfaceForward, surfaceNormal);
+            if (surfaceForward != Vector3.zero && surfaceNormal != Vector3.zero)
+                adjustedRotation = Quaternion.LookRotation(surfaceForward, surfaceNormal);
         }
 
         rb.MovePosition(adjustedPos);
@@ -73,7 +76,8 @@ class GroundNetworker_Receiver : MonoBehaviour
 
         Debug.Log("Ground reciever rotation is: " + lastMessage.rotation.ToString());
 
-        if ((VTMapManager.GlobalToWorldPoint(lastMessage.position) - groundUnitMover.transform.position).magnitude > 100) {
+        if ((VTMapManager.GlobalToWorldPoint(lastMessage.position) - groundUnitMover.transform.position).magnitude > 100)
+        {
             Debug.Log("Ground mover is too far, teleporting.");
             groundUnitMover.transform.position = VTMapManager.GlobalToWorldPoint(lastMessage.position);
             groundUnitMover.transform.rotation = lastMessage.rotation;
