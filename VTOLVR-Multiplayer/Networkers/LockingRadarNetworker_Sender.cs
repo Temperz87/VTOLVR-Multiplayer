@@ -35,6 +35,7 @@ class LockingRadarNetworker_Sender : MonoBehaviour
         }
         else
         {
+            lr.radar.OnDetectedActor += RadarDetectedActor;
             // Debug.Log($"Radar sender successfully attached to object {gameObject.name}.");
         }
         controller = gameObject.GetComponentInChildren<TacticalSituationController>();
@@ -54,7 +55,8 @@ class LockingRadarNetworker_Sender : MonoBehaviour
             Debug.LogError($"LockingRadar is null for object {gameObject.name} with an uid of {networkUID}.");
             lr = gameObject.GetComponentInChildren<LockingRadar>();
         }
-        if (lr == null) return;
+        if (lr == null)
+            return;
         if (lr.radar == null)
         {
             //Debug.LogError("This radar.radar shouldn't be null. If this error pops up a second time then be worried. Null on " + gameObject.name);
@@ -213,4 +215,15 @@ class LockingRadarNetworker_Sender : MonoBehaviour
         else
             NetworkSenderThread.Instance.SendPacketToSpecificPlayer(Networker.hostID, lastLockingMessage, EP2PSend.k_EP2PSendReliable);
     }
+    private void RadarDetectedActor(Actor a)
+    {
+        if (VTOLVR_Multiplayer.AIDictionaries.reverseAllActors.TryGetValue(a, out ulong uID))
+        {
+            if (Networker.isHost)
+                NetworkSenderThread.Instance.SendPacketAsHostToAllClients(new Message_RadarDetectedActor(uID, networkUID), EP2PSend.k_EP2PSendReliable);
+            else
+                NetworkSenderThread.Instance.SendPacketToSpecificPlayer(Networker.hostID, new Message_RadarDetectedActor(uID, networkUID), EP2PSend.k_EP2PSendReliable);
+        }
+    }
 }
+

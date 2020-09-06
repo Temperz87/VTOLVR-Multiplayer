@@ -39,6 +39,7 @@ public enum MessageType
     ShipUpdate, //this is when a player changes their external lights
     RadarUpdate, //this is when the radar is turned on or off, or the fov is changed, make a messsage called LockingRadarUpdate in the future to deal with locks
     LockingRadarUpdate, //See above nerd
+    RadarDetectedActor, // This is when a radar has detected an actor
     TurretUpdate, //This is turret aiming data
     JettisonUpdate, // Used when weapons are jettisoned
     ServerHeartbeat, // Ping

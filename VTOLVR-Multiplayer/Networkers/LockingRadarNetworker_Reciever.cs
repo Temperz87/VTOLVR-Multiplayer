@@ -32,6 +32,7 @@ class LockingRadarNetworker_Receiver : MonoBehaviour
         // lockingRadar.debugRadar = true;
         lastRadarMessage = new Message_RadarUpdate(false, 0, networkUID);
         Networker.RadarUpdate += RadarUpdate;
+        Networker.RadarDetectedUpdate += OnRadarDetectedActor;
         Networker.LockingRadarUpdate += LockingRadarUpdate;
     }
 
@@ -97,6 +98,16 @@ class LockingRadarNetworker_Receiver : MonoBehaviour
             {
                 Debug.Log($"Could not resolve a lock on uID {lastLockingMessage.actorUID} from sender {lastLockingMessage.senderUID}.");
             }
+        }
+    }
+    public void OnRadarDetectedActor(Packet packet)
+    {
+        Message_RadarDetectedActor message = (Message_RadarDetectedActor)((PacketSingle)packet).message;
+        if (message.senderUID != networkUID)
+            return;
+        if (VTOLVR_Multiplayer.AIDictionaries.allActors.TryGetValue(message.detectedUID, out Actor actor))
+        {
+            lockingRadar.radar.ForceDetect(actor);
         }
     }
     /*private void FixedUpdate()

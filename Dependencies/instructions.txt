@@ -1,16 +1,15 @@
 Dependencies needed:
-	ModLoader.dll
 	0Harmony.dll (v1.2)
 	Assembly-CSharp-firstpass.dll
 	Assembly-CSharp.dll
+	ModLoader.dll
 	netstandard.dll
 	Unity.TextMeshPro.dll
 	UnityEngine.AudioModule.dll
 	UnityEngine.CoreModule.dll
 	UnityEngine.CrashReportingModule.dll
-	UnityEngine.IMGUI
+	UnityEngine.IMGUI.dll
 	UnityEngine.PhysicsModule.dll
 	UnityEngine.TextRenderingModule.dll
 	UnityEngine.UI.dll
 	UnityEngine.dll
-	Valve.Newtonsoft.Json.dll

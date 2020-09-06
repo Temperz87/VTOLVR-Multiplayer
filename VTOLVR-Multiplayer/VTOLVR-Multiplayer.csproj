@@ -92,9 +92,6 @@
     <Reference Include="UnityEngine.UI">
       <HintPath>..\Dependencies\UnityEngine.UI.dll</HintPath>
     </Reference>
-    <Reference Include="Valve.Newtonsoft.Json">
-      <HintPath>..\Dependencies\Valve.Newtonsoft.Json.dll</HintPath>
-    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AIDictionaries.cs" />
@@ -102,6 +99,7 @@
     <Compile Include="AvatarManager.cs" />
     <Compile Include="HPInfo.cs" />
     <Compile Include="Messages\Message_AAAUpdate.cs" />
+    <Compile Include="Messages\Message_RadarDetectedActor.cs" />
     <Compile Include="Messages\Quat.cs" />
     <Compile Include="Messages\Message.cs" />
     <Compile Include="Messages\MessageType.cs" />

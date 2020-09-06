@@ -255,7 +255,7 @@ public class Networker : MonoBehaviour
     public static event UnityAction<Packet> WeaponFiring;
     public static event UnityAction<Packet> WeaponStoppedFiring;
     public static event UnityAction<Packet> FireCountermeasure;
-    public static event UnityAction<Packet> Rearm;
+    //public static event UnityAction<Packet> Rearm;
     public static event UnityAction<Packet> Death;
     public static event UnityAction<Packet> WingFold;
     public static event UnityAction<Packet> ExtLight;
@@ -270,6 +270,7 @@ public class Networker : MonoBehaviour
     public static event UnityAction<Packet> SAMUpdate;
     public static event UnityAction<Packet> AAAUpdate;
     public static event UnityAction<Packet> BulletHit;
+    public static event UnityAction<Packet> RadarDetectedUpdate;
     #endregion
     #region Host Forwarding Suppress By Message Type List
     private List<MessageType> hostMessageForwardingSuppressList = new List<MessageType> {
@@ -831,6 +832,11 @@ public class Networker : MonoBehaviour
                     Debug.Log("case locking radar update");
                     if (LockingRadarUpdate != null)
                         LockingRadarUpdate.Invoke(packet);
+                    break;
+                case MessageType.RadarDetectedActor:
+                    Debug.Log("case radar detected actor");
+                    if (RadarDetectedUpdate != null)
+                        RadarDetectedUpdate.Invoke(packet);
                     break;
                 case MessageType.TurretUpdate:
                     //Debug.Log("turret update update");
