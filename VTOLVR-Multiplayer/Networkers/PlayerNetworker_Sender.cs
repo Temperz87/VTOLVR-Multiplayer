@@ -91,7 +91,7 @@ class PlayerNetworker_Sender : MonoBehaviour
                 Debug.Log("finding rearm pt");
                 if (rep.team == Teams.Allied && rep.CheckIsClear(actor))
                 {
-                    
+
                     if (rep.radius > lastRadius)
                     {
                         rearmPoint = rep;
@@ -121,11 +121,12 @@ class PlayerNetworker_Sender : MonoBehaviour
         Destroy(BlackoutEffect.instance);
         Destroy(GetComponent<PlayerSpawn>());
 
-        foreach (EngineEffects effect in effects) {
+        foreach (EngineEffects effect in effects)
+        {
             Destroy(effect);
         }
         //as much stuff as im destroying, some stuff is most likely getting through, future people, look into this
-        
+
         AudioController.instance.ClearAllOpenings();
 
         UnitIconManager.instance.UnregisterAll();
@@ -150,7 +151,7 @@ class PlayerNetworker_Sender : MonoBehaviour
                 {
                     actor.DetectActor(Teams.Allied);
                     actor.UpdateKnownPosition(actor.team);
-                 
+
                 }
 
                 //actor.DiscoverActor(); <----------------breaks and only works on every 2nd spawn
@@ -172,22 +173,28 @@ class PlayerNetworker_Sender : MonoBehaviour
         PilotSaveManager.currentScenario.inFlightSpending = 0;
         PilotSaveManager.currentScenario.equipConfigurable = true;
         Rigidbody rb = newPlayer.GetComponent<Rigidbody>();
-         
+        GearAnimator gearAnim = newPlayer.GetComponent<GearAnimator>();
+        if (gearAnim != null)
+        {
+            if (gearAnim.state != GearAnimator.GearStates.Extended)
+                gearAnim.ExtendImmediate();
+        }
         rb.interpolation = RigidbodyInterpolation.None;
         rb.isKinematic = true;
+
         rearmPoint.BeginReArm();
         //rb.velocity = Vector3.zero;
         //rb.detectCollisions = true;
-   
+
         PlayerManager.SetupLocalAircraft(newPlayer, newPlayer.transform.position, newPlayer.transform.rotation, networkUID);
 
         lastMessage.UID = networkUID;
         lastMessage.isLeftie = PlayerManager.teamLeftie;
         lastMessage.tagName = Steamworks.SteamFriends.GetPersonaName();
         if (Networker.isHost)
-            NetworkSenderThread.Instance.SendPacketAsHostToAllClients(lastMessage, Steamworks.EP2PSend.k_EP2PSendUnreliable);
+            NetworkSenderThread.Instance.SendPacketAsHostToAllClients(lastMessage, Steamworks.EP2PSend.k_EP2PSendReliable);
         else
-            NetworkSenderThread.Instance.SendPacketToSpecificPlayer(Networker.hostID, lastMessage, Steamworks.EP2PSend.k_EP2PSendUnreliable);
+            NetworkSenderThread.Instance.SendPacketToSpecificPlayer(Networker.hostID, lastMessage, Steamworks.EP2PSend.k_EP2PSendReliable);
     }
 
     void UnEject()
@@ -228,7 +235,7 @@ class PlayerNetworker_Sender : MonoBehaviour
 
         ModuleParachute parachute = ejection.GetComponentInChildren<ModuleParachute>();
         parachute.CutParachute();
-        
+
         Traverse.Create(ejection).Field("ejected").SetValue(false);//does nothing, cannot eject a seccond time
         //i dont think ejecting is necessary for now, but someone prob ought look into that
 
@@ -264,7 +271,8 @@ class PlayerNetworker_Sender : MonoBehaviour
         {
             flightAssist.assistEnabled = true;
         }
-        else {
+        else
+        {
             Debug.Log("Could not fix flight assists");
         }
 
@@ -333,7 +341,7 @@ class PlayerNetworker_Sender : MonoBehaviour
             return;
         FlightSceneManager.instance.playerActor.health.invincible = false;
         FlightSceneManager.instance.playerActor.health.Kill();
-       // health.invincible = false;
+        // health.invincible = false;
         //health.Kill();
 
     }

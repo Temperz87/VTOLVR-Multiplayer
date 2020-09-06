@@ -137,6 +137,7 @@ class LockingRadarNetworker_Receiver : MonoBehaviour
     {
         Networker.RadarUpdate -= RadarUpdate;
         Networker.LockingRadarUpdate -= LockingRadarUpdate;
+        Networker.RadarDetectedUpdate -= OnRadarDetectedActor;
         Debug.Log("Radar update and Locking Radar update destroyed");
         Debug.Log(gameObject.name);
     }
