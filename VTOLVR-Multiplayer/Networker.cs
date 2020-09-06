@@ -834,7 +834,7 @@ public class Networker : MonoBehaviour
                         LockingRadarUpdate.Invoke(packet);
                     break;
                 case MessageType.RadarDetectedActor:
-                    Debug.Log("case radar detected actor");
+                    // Debug.Log("case radar detected actor");
                     if (RadarDetectedUpdate != null)
                         RadarDetectedUpdate.Invoke(packet);
                     break;
