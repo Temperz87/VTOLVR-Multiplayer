@@ -849,7 +849,6 @@ public static class PlayerManager
         {
             Debug.Log("Telling connected client about AI units");
             AIManager.TellClientAboutAI(spawnerSteamId);
-            ObjectiveNetworker_Reciever.sendObjectiveHistory(spawnerSteamId);
         }
         AddToPlayerList(new Player(spawnerSteamId, null, message.vehicle, message.networkID, message.leftie,message.nameTag));
 
