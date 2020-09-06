@@ -90,7 +90,7 @@ public static class AIManager
         UnitSpawner unitSpawn = new UnitSpawner();
         actor.unitSpawn = unitSP;
         actor.unitSpawn.unitSpawner = unitSpawn;
-
+        unitSP.actor = actor;
         Traverse.Create(actor.unitSpawn.unitSpawner).Field("_spawnedUnit").SetValue(unitSP);
         Traverse.Create(actor.unitSpawn.unitSpawner).Field("_unitInstanceID").SetValue(message.unitInstanceID); // To make objectives work.
         unitSpawn.team = actor.team;
