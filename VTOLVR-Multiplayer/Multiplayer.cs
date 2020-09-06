@@ -173,13 +173,13 @@ public class Multiplayer : VTOLMOD
        settings.CreateCustomLabel("Replace AI wingmen (with the same flight designation) with clients.");
        settings.CreateBoolSetting("Default = True", replaceWingmenWithClients_changed, replaceWingmenWithClients);*/
 
-       restrictToHostMods_changed += restrictToHostMods_Settings;
-       settings.CreateCustomLabel("Require clients to use the same mods as host.");
-       settings.CreateBoolSetting("Default = True", restrictToHostMods_changed, restrictToHostMods);
+        restrictToHostMods_changed += restrictToHostMods_Settings;
+        settings.CreateCustomLabel("Require clients to use the same mods as host.");
+        settings.CreateBoolSetting("Default = True", restrictToHostMods_changed, restrictToHostMods);
 
-       /*forceWinds_changed += forceWinds_Settings;
-       settings.CreateCustomLabel("Force winds on for clients (Not functional).");
-       settings.CreateBoolSetting("Default = True", forceWinds_changed, forceWinds);*/
+        /*forceWinds_changed += forceWinds_Settings;
+        settings.CreateCustomLabel("Force winds on for clients (Not functional).");
+        settings.CreateBoolSetting("Default = True", forceWinds_changed, forceWinds);*/
 
         debugLogs_changed += debugLog_Settings;
         settings.CreateCustomLabel("Activate Debug Logs.");
@@ -219,7 +219,13 @@ public class Multiplayer : VTOLMOD
     public void debugLog_Settings(bool newval)
     {
         debugLogs = newval;
-        Debug.logger.logEnabled = newval;
+        if (ModVersionString.ReleaseBranch != "Release")
+            Debug.logger.logEnabled = newval;
+        else
+        {
+            if (Debug.logger.logEnabled != true)
+                Debug.logger.logEnabled = true;
+        }
     }
 
     public void forceWinds_Settings(bool newval)
@@ -239,14 +245,15 @@ public class Multiplayer : VTOLMOD
 
     void OnGUI()//the 2d ping display, feel free to move elsewhere
     {
-        if (displayPing) {
+        if (displayPing)
+        {
             string temp = "";
-            
-             foreach (PlayerManager.Player player in PlayerManager.players)
+
+            foreach (PlayerManager.Player player in PlayerManager.players)
             {
                 temp += player.cSteamID + ": " + Mathf.Round(player.ping * 1000f) + "\n";
-            } 
-            if(NetworkSenderThread.Instance != null)
+            }
+            if (NetworkSenderThread.Instance != null)
             {
                 int enumCount = MessageType.GetNames(typeof(MessageType)).Length;
                 for (int i = 0; i < enumCount; i++)
@@ -261,7 +268,7 @@ public class Multiplayer : VTOLMOD
 
                 }
             }
-           
+
             GUI.TextArea(new Rect(100, 100, 800, 1800), temp);
         }
     }
@@ -347,7 +354,8 @@ public class Multiplayer : VTOLMOD
     private void CreateUI()
     {
 
-        while (!SceneManager.GetActiveScene().isLoaded){
+        while (!SceneManager.GetActiveScene().isLoaded)
+        {
             Debug.Log("Waiting for scene to be loaded");
         }
         Log("Creating Multiplayer UI");
@@ -401,7 +409,7 @@ public class Multiplayer : VTOLMOD
         mpButton.GetComponentInChildren<Text>().text = "MP";
         mpButton.GetComponent<Image>().color = Color.cyan;
         mpButton.GetComponent<Button>().onClick = new Button.ButtonClickedEvent();
-        VRInteractable mpInteractable = mpButton.GetComponent<VRInteractable>(); 
+        VRInteractable mpInteractable = mpButton.GetComponent<VRInteractable>();
         if (UpToDate)
         {
             mpButton.GetComponent<Image>().color = Color.cyan;
@@ -551,16 +559,17 @@ public class Multiplayer : VTOLMOD
         int totalFriends = 0;
         Debug.Log($"UI List Item Count: {friendListItems.Count}");
 
-        foreach(GameObject uiItem in friendListItems)
+        foreach (GameObject uiItem in friendListItems)
         {
-            if (uiItem != null) {
+            if (uiItem != null)
+            {
                 Debug.Log($"Destroying {uiItem.name}");
             }
             else
             {
                 Debug.Log("UI Item is null");
             }
-            
+
             Destroy(uiItem);
         }
 
@@ -586,7 +595,7 @@ public class Multiplayer : VTOLMOD
         for (int i = 0; i < friendsCount; i++)
         {
             lastFriendID = SteamFriends.GetFriendByIndex(i, EFriendFlags.k_EFriendFlagImmediate);
-             if (SteamFriends.GetFriendGamePlayed(lastFriendID,out FriendGameInfo_t gameInfo))
+            if (SteamFriends.GetFriendGamePlayed(lastFriendID, out FriendGameInfo_t gameInfo))
             {
                 if (gameInfo.m_gameID.AppID().m_AppId == 667970)
                 {
@@ -608,7 +617,7 @@ public class Multiplayer : VTOLMOD
             totalFriends++;
             lastFriendGO = Instantiate(friendsTemplate, content.transform);
             lastFriendGO.name = SteamFriends.GetFriendPersonaName(vtolvrFriends[i]);
-            steamFriends.Add(new FriendItem(vtolvrFriends[i],lastFriendGO.transform));
+            steamFriends.Add(new FriendItem(vtolvrFriends[i], lastFriendGO.transform));
             lastFriendGO.transform.localPosition = new Vector3(0f, -totalFriends * buttonHeight);
             uiListItem = lastFriendGO.GetComponent<VRUIListItemTemplate>();
             uiListItem.Setup(SteamFriends.GetFriendPersonaName(vtolvrFriends[i]), totalFriends - 1, SelectFriend);
@@ -755,7 +764,8 @@ public class Multiplayer : VTOLMOD
         Networker.UpdateLoadingText();
     }
 
-    public void CleanUpOnDisconnect() {
+    public void CleanUpOnDisconnect()
+    {
         selectedFriend = new CSteamID(0);
         steamFriends?.Clear();
         playingMP = false;
