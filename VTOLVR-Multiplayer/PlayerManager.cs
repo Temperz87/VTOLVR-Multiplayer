@@ -397,10 +397,10 @@ public static class PlayerManager
 
 
         }
-
+        /*if(0)
         if (gameLoaded)
         {
-
+             
             foreach (Actor act in invisibleActorList)
             {
                 if (act.role == Actor.Roles.Air)
@@ -433,7 +433,7 @@ public static class PlayerManager
                 }
                
             } 
-        }
+        }*/
         PlayerManager.SpawnPlayersInPlayerSpawnQueue();//addmitedly, this probably isnt the best place to put this, feel free to move it somewhere els
 
     }
