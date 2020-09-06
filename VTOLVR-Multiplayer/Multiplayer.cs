@@ -71,7 +71,7 @@ public class Multiplayer : VTOLMOD
     public bool restrictToHostMods = true;
     private UnityAction<bool> restrictToHostMods_changed;
 
-    public bool debugLogs = true;
+    public bool debugLogs = false;
     private UnityAction<bool> debugLogs_changed;
 
     public bool forceWinds = false; // not implemented
