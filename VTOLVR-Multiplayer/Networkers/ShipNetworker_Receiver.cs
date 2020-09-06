@@ -2,13 +2,14 @@
 using System.Text;
 using System.Threading.Tasks;
 using UnityEngine;
+using Harmony;
 
 class ShipNetworker_Receiver : MonoBehaviour
 {
     public ulong networkUID;
     private Message_ShipUpdate lastMessage;
     public ShipMover ship;
-    public Waypoint waypoint;
+    public Traverse shipTraverse;
 
     public float smoothTime = 5f;
     public float rotSmoothTime = 5f;
@@ -22,12 +23,9 @@ class ShipNetworker_Receiver : MonoBehaviour
         lastMessage = new Message_ShipUpdate(new Vector3D(), new Quaternion(), new Vector3D(), networkUID);
         Networker.ShipUpdate += ShipUpdate;
 
-        waypoint = new Waypoint();
-        GameObject wptTransform = new GameObject();
-        waypoint.SetTransform(wptTransform.transform);
-
         ship = GetComponent<ShipMover>();
         ship.enabled = false;
+        shipTraverse = Traverse.Create(ship);
     }
 
     void FixedUpdate() {
@@ -35,6 +33,7 @@ class ShipNetworker_Receiver : MonoBehaviour
         targetPosition = VTMapManager.GlobalToWorldPoint(targetPositionGlobal);
         ship.rb.MovePosition(ship.transform.position + targetVelocity * Time.fixedDeltaTime + ((targetPosition - ship.transform.position) * Time.fixedDeltaTime) / smoothTime);
         ship.rb.velocity = targetVelocity + (targetPosition - ship.transform.position)/smoothTime;
+        shipTraverse.Field("_velocity").SetValue(ship.rb.velocity);//makes the wake emit partical
         ship.rb.MoveRotation(Quaternion.Lerp(ship.transform.rotation, targetRotation, Time.fixedDeltaTime/rotSmoothTime));
     }
 
