@@ -33,7 +33,7 @@ class ShipNetworker_Receiver : MonoBehaviour
         targetPosition = VTMapManager.GlobalToWorldPoint(targetPositionGlobal);
         ship.rb.MovePosition(ship.transform.position + targetVelocity * Time.fixedDeltaTime + ((targetPosition - ship.transform.position) * Time.fixedDeltaTime) / smoothTime);
         ship.rb.velocity = targetVelocity + (targetPosition - ship.transform.position)/smoothTime;
-        shipTraverse.Field("_velocity").SetValue(ship.rb.velocity);
+        shipTraverse.Field("_velocity").SetValue(ship.rb.velocity);//makes the wake emit partical
         ship.rb.MoveRotation(Quaternion.Lerp(ship.transform.rotation, targetRotation, Time.fixedDeltaTime/rotSmoothTime));
     }
 
