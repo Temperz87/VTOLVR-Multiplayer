@@ -2,12 +2,17 @@
 using System.Text;
 using System.Threading.Tasks;
 using UnityEngine;
+using Harmony;
 
 class GroundNetworker_Receiver : MonoBehaviour
 {
     public ulong networkUID;
     private Message_ShipUpdate lastMessage;
     public GroundUnitMover groundUnitMover;
+    public bool isSoldier;
+    public SoldierAnimator soldier;
+    public int walkingAnimation = Animator.StringToHash("moveSpeed");
+    //public Traverse groundTraverse;
     public Rigidbody rb;
 
     public float smoothTime = 1f;
@@ -25,8 +30,16 @@ class GroundNetworker_Receiver : MonoBehaviour
         Networker.ShipUpdate += GroundUpdate;
          
         groundUnitMover = GetComponent<GroundUnitMover>();
+        soldier = GetComponentInChildren<SoldierAnimator>();
         groundUnitMover.enabled = false;
         rb = GetComponent<Rigidbody>();
+
+        if (soldier != null) {
+            Debug.Log("uwu, i am a soldier!");
+            soldier.enabled = false;
+            isSoldier = true;
+        }
+        //groundTraverse = Traverse.Create(groundUnitMover);
     }
 
     void FixedUpdate()
@@ -58,8 +71,14 @@ class GroundNetworker_Receiver : MonoBehaviour
                 adjustedRotation = Quaternion.LookRotation(surfaceForward, surfaceNormal);
         }
         adjustedRotation = adjustedRotation.normalized;
+        //groundTraverse.Field("velocity").SetValue(targetVelocity + (targetPositionGlobal - smoothedPosition).toVector3 / smoothTime);
+        
         rb.MovePosition(adjustedPos);
         rb.MoveRotation(adjustedRotation);//move rotation was throwing "Rotation quaternions must be unit length"
+
+        if (isSoldier) {
+            soldier.animator.SetFloat(walkingAnimation, (targetVelocity + (targetPositionGlobal - smoothedPosition).toVector3 / smoothTime).magnitude);
+        }
     }
 
     public void GroundUpdate(Packet packet)
