@@ -36,7 +36,7 @@ class TurretNetworker_Sender : MonoBehaviour
             lastMessage.UID = networkUID;
             lastMessage.turretID = turretID;
             if (Networker.isHost)
-                Networker.addToUnreliableSendBuffer(lastMessage);
+                NetworkSenderThread.Instance.SendPacketAsHostToAllClients(lastMessage, Steamworks.EP2PSend.k_EP2PSendUnreliable);
             else
                 NetworkSenderThread.Instance.SendPacketToSpecificPlayer(Networker.hostID, lastMessage, Steamworks.EP2PSend.k_EP2PSendUnreliable);
         }

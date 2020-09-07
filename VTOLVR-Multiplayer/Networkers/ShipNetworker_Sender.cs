@@ -25,7 +25,7 @@ class ShipNetworker_Sender : MonoBehaviour
 
             lastMessage.UID = networkUID;
             if (Networker.isHost)
-                Networker.addToUnreliableSendBuffer(lastMessage);
+                NetworkSenderThread.Instance.SendPacketAsHostToAllClients(lastMessage, Steamworks.EP2PSend.k_EP2PSendUnreliable);
             else
                 NetworkSenderThread.Instance.SendPacketToSpecificPlayer(Networker.hostID, lastMessage, Steamworks.EP2PSend.k_EP2PSendUnreliable);
         }

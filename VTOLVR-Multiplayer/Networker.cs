@@ -358,19 +358,20 @@ public class Networker : MonoBehaviour
             }
         }*/
         PlayerManager.Update();
-      
-      
+       
+
     }
     private void FixedUpdate()
+    {
+       
+    }
+    private void LateUpdate()
     {
         if (isHost)
         {
             flushUnreliableBuffer();
             flushReliableBuffer();
         }
-    }
-    private void LateUpdate()
-    {
         if (disconnectForClientTimeout)
         {
             disconnectForClientTimeout = false;
@@ -533,9 +534,9 @@ public class Networker : MonoBehaviour
     }
     private static void flushUnreliableBuffer()
     {
-        MessageCompressedBatch bufferPK = new MessageCompressedBatch();
         if(MessageBatchingUnreliableBuffer.Count >0)
         {
+            MessageCompressedBatch bufferPK = new MessageCompressedBatch();
             foreach (var msg in MessageBatchingUnreliableBuffer)
             {
                 PacketSingle pk = new PacketSingle(msg, EP2PSend.k_EP2PSendUnreliable);
