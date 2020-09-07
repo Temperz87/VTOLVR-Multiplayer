@@ -248,7 +248,7 @@ public class Multiplayer : VTOLMOD
         if (displayPing)
         {
             string temp = "";
-
+            temp += ""+Networker.compressionRatio;
             foreach (PlayerManager.Player player in PlayerManager.players)
             {
                 temp += player.cSteamID + ": " + Mathf.Round(player.ping * 1000f) + "\n";

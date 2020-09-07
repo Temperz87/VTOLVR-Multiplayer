@@ -24,7 +24,7 @@ class WingFoldNetworker_Sender : MonoBehaviour
             lastMessage.UID = networkUID;
             lastMessage.folded = foldedState;
             if (Networker.isHost)
-                NetworkSenderThread.Instance.SendPacketAsHostToAllClients(lastMessage, Steamworks.EP2PSend.k_EP2PSendUnreliable);
+                Networker.addToUnreliableSendBuffer(lastMessage);
             else
                 NetworkSenderThread.Instance.SendPacketToSpecificPlayer(Networker.hostID, lastMessage, Steamworks.EP2PSend.k_EP2PSendUnreliable);
             

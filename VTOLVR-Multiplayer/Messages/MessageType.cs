@@ -52,5 +52,6 @@ public enum MessageType
     AAAUpdate, // To sync A's x 3
     BulletHit,
     MissileDamage,
-    GPSTarget
+    GPSTarget,
+    CompressedBatch
 }

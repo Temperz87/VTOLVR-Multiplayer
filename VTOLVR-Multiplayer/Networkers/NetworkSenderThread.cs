@@ -77,7 +77,7 @@ class NetworkSenderThread
     private readonly ConcurrentQueue<CSteamID> removePlayerQueue;
     private readonly List<CSteamID> internalPlayerList;
 
-    private BinaryFormatter binaryFormatter;
+    public BinaryFormatter binaryFormatter;
 
     private bool dumpAllExistingPlayers;
     private readonly object dumpAllExistingPlayersLock = new object();
