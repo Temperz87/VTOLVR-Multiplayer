@@ -85,6 +85,7 @@ public class MissileNetworker_Receiver : MonoBehaviour
                 if (radarLauncher != null)
                 {
                     Debug.Log("Guidance mode radar, firing it as a radar missile.");
+                    traverse.Field("missileIdx").SetValue(idx);
                     if (!radarLauncher.TryFireMissile())
                     {
                         Debug.LogError($"Could not fire radar missile, lock data is as follows: Locked: {lockData.locked}, Actor: {lockData.actor}");
