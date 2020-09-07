@@ -6,11 +6,9 @@ This is the repository for the modded multiplayer in VTOL VR. The multiplayer is
 The mod uses the steams networking library meaning players don't need to install additional dependencies to play multiplayer, just the mod loader and multiplayer mod is needed.
 
 ## Installation
-Once you have cloned the repository, you will need to head over to your VTOL VR games directory and copy the listed dlls from the `Steam\steamapps\common\VTOL VR\VTOLVR_Data\Managed` folder to the `Dependencies` folder. The list of what you need can be found inside of the `Dependencies` folder.
+The mod can be downloaded from [here](https://vtolvr-mods.com/mod/qs6jxkt2/) on the VTOLVR-Mods website, and that is recommended unless you want to make changes or build the dll yourself. However, to build the dll you first will need to clone the repository onto your computer. Once you have cloned the repository, you will need to head over to your VTOL VR games directory and copy the listed dlls from the `Steam\steamapps\common\VTOL VR\VTOLVR_Data\Managed` folder to the `Dependencies` folder. The list of what you need can be found inside of the `Dependencies` folder.
 
 You also need to have .Net 4.5 installed to build the mod.
-
-Because the mod is currently in pre-alpha testing phase, the dll is not provided directly. To get past the super basic tester check and try it out, you just need to build the mod in debug mode, this should go past the check I put in place just to stop people sharing the dll with their friends and then complaining that things are buggy or keep asking how to use it. 
 
 ## Contributors
 
