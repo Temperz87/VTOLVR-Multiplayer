@@ -8,7 +8,7 @@ using UnityEngine;
 public class MissileNetworker_Receiver : MonoBehaviour
 {
     public ulong networkUID;
-    private Missile thisMissile;
+    public Missile thisMissile;
     public MissileLauncher thisML;
     public int idx;
     private Message_MissileUpdate lastMessage;
@@ -19,7 +19,6 @@ public class MissileNetworker_Receiver : MonoBehaviour
 
     private void Start()
     {
-        thisMissile = GetComponent<Missile>();
         // rigidbody = GetComponent<Rigidbody>();
         Networker.MissileUpdate += MissileUpdate;
         thisMissile.OnDetonate.AddListener(new UnityEngine.Events.UnityAction(() => { Debug.Log("Missile detonated: " + thisMissile.name); }));
@@ -46,6 +45,12 @@ public class MissileNetworker_Receiver : MonoBehaviour
 
     public void MissileUpdate(Packet packet)
     {
+        lastMessage = ((PacketSingle)packet).message as Message_MissileUpdate;
+
+        if (lastMessage.networkUID != networkUID)
+        {
+            return;
+        }
         if (!thisMissile.gameObject.activeSelf)
         {
             Debug.LogError(thisMissile.gameObject.name + " isn't active in hiearchy, changing it to active.");
@@ -54,11 +59,6 @@ public class MissileNetworker_Receiver : MonoBehaviour
         if (traverse == null)
         {
             traverse = Traverse.Create(thisML);
-        }
-        lastMessage = ((PacketSingle)packet).message as Message_MissileUpdate;
-        if (lastMessage.networkUID != networkUID)
-        {
-            return;
         }
         if (!thisMissile.fired)
         {

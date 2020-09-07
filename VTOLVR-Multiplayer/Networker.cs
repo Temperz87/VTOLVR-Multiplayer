@@ -496,7 +496,7 @@ public class Networker : MonoBehaviour
     {
         MessageBatchingUnreliableBuffer.Add(msg);
 
-        if(MessageBatchingUnreliableBuffer.Count > 100)
+        if(MessageBatchingUnreliableBuffer.Count > 10)
         {
             flushUnreliableBuffer();
         }
@@ -506,7 +506,7 @@ public class Networker : MonoBehaviour
     {
         MessageBatchingReliableBuffer.Add(msg);
 
-        if (MessageBatchingReliableBuffer.Count > 50)
+        if (MessageBatchingReliableBuffer.Count > 10)
         {
             flushReliableBuffer();
         }
@@ -514,7 +514,7 @@ public class Networker : MonoBehaviour
 
     public static void sendCompressedMessage(CSteamID id,Message msg, EP2PSend sendType)
     {
-        PacketSingle finalPacket = new PacketSingle(msg, EP2PSend.k_EP2PSendUnreliable);
+        PacketSingle finalPacket = new PacketSingle(msg, sendType);
         MessageCompressedBatch bufferPK = new MessageCompressedBatch();
         bufferPK.addMessage(finalPacket);
         bufferPK.prepareForSend();
