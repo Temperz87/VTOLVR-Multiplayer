@@ -191,9 +191,13 @@ public static class AIManager
             ShipNetworker_Receiver shipNetworker = newAI.AddComponent<ShipNetworker_Receiver>();
             shipNetworker.networkUID = message.networkID;
         }
-        else if (newAI.GetComponent<GroundUnitMover>() != null) {
-            GroundNetworker_Receiver groundNetworker = newAI.AddComponent<GroundNetworker_Receiver>();
-            groundNetworker.networkUID = message.networkID;
+        else if (newAI.GetComponent<GroundUnitMover>() != null) 
+        {
+            if (actor.gameObject.GetComponent<Rigidbody>() != null)
+            {
+                GroundNetworker_Receiver groundNetworker = newAI.AddComponent<GroundNetworker_Receiver>();
+                groundNetworker.networkUID = message.networkID;
+            }
         }
         else if (newAI.GetComponent<Rigidbody>() != null)
         {
@@ -566,8 +570,11 @@ public static class AIManager
             }
             else if (actor.gameObject.GetComponent<GroundUnitMover>() != null)
             {
-                GroundNetworker_Sender lastGroundSender = actor.gameObject.AddComponent<GroundNetworker_Sender>();
-                lastGroundSender.networkUID = networkUID;
+                if (actor.gameObject.GetComponent<Rigidbody>() != null)
+                {
+                    GroundNetworker_Sender lastGroundSender = actor.gameObject.AddComponent<GroundNetworker_Sender>();
+                    lastGroundSender.networkUID = networkUID;
+                }
             }
             else if (actor.gameObject.GetComponent<Rigidbody>() != null)
             {
