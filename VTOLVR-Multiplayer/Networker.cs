@@ -496,7 +496,7 @@ public class Networker : MonoBehaviour
     {
         MessageBatchingUnreliableBuffer.Add(msg);
 
-        if(MessageBatchingUnreliableBuffer.Count > 10)
+        if(MessageBatchingUnreliableBuffer.Count > 20)
         {
             flushUnreliableBuffer();
         }
