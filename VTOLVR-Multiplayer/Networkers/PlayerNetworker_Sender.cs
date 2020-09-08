@@ -28,6 +28,7 @@ class PlayerNetworker_Sender : MonoBehaviour
     GameObject hud;
     GameObject hudWaypoint;
 
+
     void Awake()
     {
         lastMessage = new Message_Respawn(networkUID, new Vector3D(), new Quaternion(), false, Steamworks.SteamFriends.GetPersonaName());
@@ -63,8 +64,9 @@ class PlayerNetworker_Sender : MonoBehaviour
     IEnumerator RespawnTimer()
     {
         Debug.Log("Starting respawn timer.");
+         
+        yield return new WaitForSeconds(10);
 
-        yield return new WaitForSeconds(15);
 
         Debug.Log("Finished respawn timer.");
 
@@ -182,7 +184,7 @@ class PlayerNetworker_Sender : MonoBehaviour
         rb.interpolation = RigidbodyInterpolation.None;
         rb.isKinematic = true;
 
-        rearmPoint.BeginReArm();
+        PlayerManager.StartRearm(rearmPoint);
         //rb.velocity = Vector3.zero;
         //rb.detectCollisions = true;
 

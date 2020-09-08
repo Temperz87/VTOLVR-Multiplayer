@@ -43,6 +43,8 @@ public static class PlayerManager
     public static Multiplayer multiplayerInstance = null;
     public static bool teamLeftie = false;
 
+    public static ReArmingPoint rearmPoint;
+
     public static Vector3 av42Offset = new Vector3(0, 0.972f, -5.126f);//the difference between the origin of the ai and player AV-42s
     
     public static Hitbox lastBulletHit;
@@ -357,6 +359,7 @@ public static class PlayerManager
     /// <param name="localVehicle">The local clients gameobject</param>
     public static void Update()
     {
+        if(!Networker.isHost)
         if (!firstSpawnDone)
         {
 
@@ -391,8 +394,15 @@ public static class PlayerManager
                     }
                 }
             }
-            if (rearmPoint != null && carrierFound && carrierStart &&  Networker.rigidBodyUpdates>10)
-                RequestSpawn_Result(storedSpawnMessage);
+            if (rearmPoint != null && carrierFound && carrierStart &&  Networker.rigidBodyUpdates>100)
+                {
+                    if(storedSpawnMessage != null)
+                    {
+                         RequestSpawn_Result(storedSpawnMessage);
+                    }
+                   
+                }
+             
 
 
 
@@ -437,6 +447,33 @@ public static class PlayerManager
         PlayerManager.SpawnPlayersInPlayerSpawnQueue();//addmitedly, this probably isnt the best place to put this, feel free to move it somewhere els
 
     }
+    public static void StartRearm(ReArmingPoint rp)
+    {
+        Rigidbody rb = VTOLAPI.GetPlayersVehicleGameObject().GetComponent<Rigidbody>();
+        PlayerManager.rearmPoint = rp;
+        rb.interpolation = RigidbodyInterpolation.None;
+        rb.isKinematic = true;
+        
+
+        //rb.detectCollisions = false;
+        rearmPoint.OnEndRearm += finishRearm;
+        Actor act = VTOLAPI.GetPlayersVehicleGameObject().GetComponent<Actor>();
+        act.health.invincible = true;
+        rearmPoint.BeginReArm();
+    }
+    public static void finishRearm()
+    {
+        Rigidbody rb = VTOLAPI.GetPlayersVehicleGameObject().GetComponent<Rigidbody>();
+        if(!carrierStart)
+        rb.velocity = Vector3.zero;
+        rb.transform.position = VTOLAPI.GetPlayersVehicleGameObject().transform.position;
+        rb.transform.rotation = VTOLAPI.GetPlayersVehicleGameObject().transform.rotation;
+        Physics.SyncTransforms();
+        //rb.detectCollisions = true;
+        Actor act = VTOLAPI.GetPlayersVehicleGameObject().GetComponent<Actor>();
+        act.health.invincible = false;
+        rearmPoint.OnEndRearm -= finishRearm;
+    }
     public static void SpawnLocalVehicleAndInformOtherClients(GameObject localVehicle, Vector3 pos, Quaternion rot, ulong UID, int playercount = 0) //Both
     {
         Debug.Log("Sending our location to spawn our vehicle");
@@ -447,7 +484,7 @@ public static class PlayerManager
 
 
         ReArmingPoint[] rearmPoints = GameObject.FindObjectsOfType<ReArmingPoint>();
-        ReArmingPoint rearmPoint = rearmPoints[UnityEngine.Random.Range(0, rearmPoints.Length - 1)];
+         rearmPoint = rearmPoints[UnityEngine.Random.Range(0, rearmPoints.Length - 1)];
         int rand = UnityEngine.Random.Range(0, rearmPoints.Length - 1);
         int counter = 0;
 
@@ -486,9 +523,7 @@ public static class PlayerManager
         {
             if (firstSpawnDone)
             {
-                rb.interpolation = RigidbodyInterpolation.None;
-                rb.isKinematic = true;
-                rearmPoint.BeginReArm();
+                StartRearm(rearmPoint);
             }
                 
             //rb.velocity = Vector3.zero;
@@ -498,22 +533,16 @@ public static class PlayerManager
         {
             if (teamLeftie)
             {
-                rb.interpolation = RigidbodyInterpolation.None;
-                rb.isKinematic = true;
-                rearmPoint.BeginReArm();
-                //rb.velocity = Vector3.zero;
+                StartRearm(rearmPoint);
             }
             else
             {
                 if (firstSpawnDone == false)
                 {
                     PlayerSpawn ps = GameObject.FindObjectOfType<PlayerSpawn>();
-                    if (ps.initialSpeed < 5.0f)
+                    if (ps.initialSpeed < 5.0f || carrierStart)
                     {
-                        rb.interpolation = RigidbodyInterpolation.None;
-                        rb.isKinematic = true;
-                        rearmPoint.BeginReArm();
-                        //rb.velocity = Vector3.zero;
+                        StartRearm(rearmPoint);
                     }
 
                 }
@@ -865,19 +894,31 @@ public static class PlayerManager
     {
         GameObject localVehicle = VTOLAPI.GetPlayersVehicleGameObject();
         WeaponManager localWManager = localVehicle.GetComponent<WeaponManager>();
+
+        if (msg.uid == localUID)
+            return;
         if (teamLeftie == msg.teamLeft)
         { 
             sendGPS = false;
-
-        if (localWManager.gpsSystem.groupNames.Count == 0)
-            localWManager.gpsSystem.CreateGroup("MP");
-
-        if (localWManager != null)
-        {
+            bool groupFound = false;
+            foreach( var gp in localWManager.gpsSystem.groupNames)
+            {
+                if(gp == msg.GPName)
+                {
+                    groupFound = true;
+                }
+               
+            }
+            if(!groupFound)
+             localWManager.gpsSystem.CreateGroup(msg.GPName);
+                    
+            string oldGroup = localWManager.gpsSystem.currentGroup.groupName;
+            localWManager.gpsSystem.SetCurrentGroup(msg.GPName);
+        
             localWManager.gpsSystem.AddTarget(VTMapManager.GlobalToWorldPoint(msg.pos), msg.prefix);
             localWManager.gpsSystem.TargetsChanged();
-        }
-       
+            localWManager.gpsSystem.SetCurrentGroup(oldGroup);
+
         }
         sendGPS = true;
         //NetworkSenderThread.Instance.SendPacketToSpecificPlayer(Networker.hostID, msg, EP2PSend.k_EP2PSendReliable);

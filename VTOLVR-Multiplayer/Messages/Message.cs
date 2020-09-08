@@ -17,14 +17,12 @@ public class Message
 }
 public static class ByteArrayCompressionUtility
 {
-
-    private static int BUFFER_SIZE = 64 * 1024; //64kB
-
+     
 
     public static byte[] Compress(byte[] data)
     {
         using (var compressedStream = new MemoryStream())
-        using (var zipStream = new GZipStream(compressedStream, CompressionMode.Compress))
+        using (var zipStream = new DeflateStream(compressedStream, CompressionMode.Compress))
         {
             zipStream.Write(data, 0, data.Length);
             zipStream.Close();
@@ -35,7 +33,7 @@ public static class ByteArrayCompressionUtility
     public static byte[] Decompress(byte[] data)
     {
         using (var compressedStream = new MemoryStream(data))
-        using (var zipStream = new GZipStream(compressedStream, CompressionMode.Decompress))
+        using (var zipStream = new DeflateStream(compressedStream, CompressionMode.Decompress))
         using (var resultStream = new MemoryStream())
         {
             zipStream.CopyTo(resultStream);
@@ -48,18 +46,27 @@ public static class ByteArrayCompressionUtility
     public class MessageCompressedBatch : Message
     {
         public byte[] compressedData;
-        [NonSerialized] public List<Packet> packets;
+        [NonSerialized] public List<Message> packets;
         [NonSerialized] static BinaryFormatter binaryFormatter = new BinaryFormatter();
         [NonSerialized] public byte[] uncompressedData;
-    [NonSerialized] public long uncompressedSize;
-    [NonSerialized] public long compressedSize;
-    public void addMessage(PacketSingle packet)
+        [NonSerialized] public long uncompressedSize;
+        [NonSerialized] public long compressedSize;
+    public void addMessage(Message msg)
         {
-        packets.Add(packet);
+        packets.Add(msg);
 
         }
         
-        public void CompressMessages()
+    public List<Message> getHalfSizePart1()
+    {
+        return packets.GetRange(0, (packets.Count / 2)-1);
+    }
+
+    public List<Message> getHalfSizePart2()
+    {
+        return packets.GetRange((packets.Count / 2), packets.Count-1);
+    }
+    public void CompressMessages()
         {
             compressedData = ByteArrayCompressionUtility.Compress(uncompressedData);
         
@@ -80,7 +87,7 @@ public static class ByteArrayCompressionUtility
         public void deserializeBatchMessages()
         {
             MemoryStream serializationStream = new MemoryStream(uncompressedData);
-            packets = binaryFormatter.Deserialize(serializationStream) as List<Packet>;
+            packets = binaryFormatter.Deserialize(serializationStream) as List<Message>;
         }
 
         public void prepareForSend()
@@ -93,7 +100,7 @@ public static class ByteArrayCompressionUtility
         DeCompressMessages();
         deserializeBatchMessages();  
         }
-        public MessageCompressedBatch() { packets = new List<Packet>(); this.type = MessageType.CompressedBatch; }
+        public MessageCompressedBatch() { packets = new List<Message>(); this.type = MessageType.CompressedBatch; }
 
       
     }
