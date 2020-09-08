@@ -391,7 +391,7 @@ public static class PlayerManager
                     }
                 }
             }
-            if (rearmPoint != null && carrierFound && carrierStart)
+            if (rearmPoint != null && carrierFound && carrierStart &&  Networker.rigidBodyUpdates>10)
                 RequestSpawn_Result(storedSpawnMessage);
 
 

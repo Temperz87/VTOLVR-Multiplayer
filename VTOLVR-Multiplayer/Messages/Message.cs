@@ -20,40 +20,29 @@ public static class ByteArrayCompressionUtility
 
     private static int BUFFER_SIZE = 64 * 1024; //64kB
 
-    public static byte[] Compress(byte[] inputData)
-    {
-        if (inputData == null)
-            throw new ArgumentNullException("inputData must be non-null");
 
-        using (var compressIntoMs = new MemoryStream())
+    public static byte[] Compress(byte[] data)
+    {
+        using (var compressedStream = new MemoryStream())
+        using (var zipStream = new GZipStream(compressedStream, CompressionMode.Compress))
         {
-            using (var gzs = new BufferedStream(new GZipStream(compressIntoMs,
-             CompressionMode.Compress), BUFFER_SIZE))
-            {
-                gzs.Write(inputData, 0, inputData.Length);
-            }
-            return compressIntoMs.ToArray();
+            zipStream.Write(data, 0, data.Length);
+            zipStream.Close();
+            return compressedStream.ToArray();
+        }
+
+    }
+    public static byte[] Decompress(byte[] data)
+    {
+        using (var compressedStream = new MemoryStream(data))
+        using (var zipStream = new GZipStream(compressedStream, CompressionMode.Decompress))
+        using (var resultStream = new MemoryStream())
+        {
+            zipStream.CopyTo(resultStream);
+            return resultStream.ToArray();
         }
     }
-
-    public static byte[] Decompress(byte[] inputData)
-    {
-        if (inputData == null)
-            throw new ArgumentNullException("inputData must be non-null");
-
-        using (var compressedMs = new MemoryStream(inputData))
-        {
-            using (var decompressedMs = new MemoryStream())
-            {
-                using (var gzs = new BufferedStream(new GZipStream(compressedMs,
-                 CompressionMode.Decompress), BUFFER_SIZE))
-                {
-                    gzs.CopyTo(decompressedMs);
-                }
-                return decompressedMs.ToArray();
-            }
-        }
-    }
+     
 }
 [Serializable]
     public class MessageCompressedBatch : Message
@@ -64,9 +53,10 @@ public static class ByteArrayCompressionUtility
         [NonSerialized] public byte[] uncompressedData;
     [NonSerialized] public long uncompressedSize;
     [NonSerialized] public long compressedSize;
-    public void addMessage(Packet packet)
+    public void addMessage(PacketSingle packet)
         {
         packets.Add(packet);
+
         }
         
         public void CompressMessages()

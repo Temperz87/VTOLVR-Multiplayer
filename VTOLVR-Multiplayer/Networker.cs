@@ -252,7 +252,10 @@ public class Networker : MonoBehaviour
     public static List<Message> MessageBatchingUnreliableBuffer = new List<Message>();
 
     public static List<Message> MessageBatchingReliableBuffer = new List<Message>();
-    public static float compressionRatio =0.0f;
+    public static int compressionRatio =0;
+    public static int overflowedPacket = 0;
+    public static int overflowedPacketUNC = 0;
+    public static ulong rigidBodyUpdates = 0;
     #region Message Type Callbacks
     //These callbacks are use for other scripts to know when a network message has been
     //received for them. They should match the name of the message class they relate to.
@@ -497,7 +500,7 @@ public class Networker : MonoBehaviour
     {
         MessageBatchingUnreliableBuffer.Add(msg);
 
-        if(MessageBatchingUnreliableBuffer.Count > 20)
+        if(MessageBatchingUnreliableBuffer.Count > 5)
         {
             flushUnreliableBuffer();
         }
@@ -537,7 +540,9 @@ public class Networker : MonoBehaviour
         if(MessageBatchingUnreliableBuffer.Count >0)
         {
             MessageCompressedBatch bufferPK = new MessageCompressedBatch();
-            foreach (var msg in MessageBatchingUnreliableBuffer)
+
+            var sortedList = MessageBatchingUnreliableBuffer.OrderBy(x=>x.type);
+            foreach (var msg in sortedList)
             {
                 PacketSingle pk = new PacketSingle(msg, EP2PSend.k_EP2PSendUnreliable);
                 bufferPK.addMessage(pk);
@@ -548,9 +553,21 @@ public class Networker : MonoBehaviour
             //Debug.Log("Compressed packet size" + bufferPK.compressedSize);
             //compressionRatio = bufferPK.uncompressedData.Length / bufferPK.compressedSize;
             PacketSingle finalPacket = new PacketSingle(bufferPK, EP2PSend.k_EP2PSendUnreliable);
+            
+
             if (isHost)
             {
-                NetworkSenderThread.Instance.SendPacketAsHostToAllClients(finalPacket.message, finalPacket.sendType);
+                if (bufferPK.compressedData.Length < 1100)
+                {
+                    compressionRatio = bufferPK.compressedData.Length;
+                    NetworkSenderThread.Instance.SendPacketAsHostToAllClients(finalPacket.message, EP2PSend.k_EP2PSendUnreliable);
+                }
+                else
+                {
+                    NetworkSenderThread.Instance.SendPacketAsHostToAllClients(finalPacket.message, EP2PSend.k_EP2PSendUnreliable);
+                    overflowedPacket = bufferPK.compressedData.Length;
+                    overflowedPacketUNC = bufferPK.uncompressedData.Length;
+                }
             }
 
             MessageBatchingUnreliableBuffer.Clear();
@@ -600,7 +617,8 @@ public class Networker : MonoBehaviour
             if (packetS.message == null)
                 Debug.LogError("packetS.message null.");
 
-
+            if(!isHost)
+            { 
             if(packetS.message.type == MessageType.CompressedBatch)
             {
                 MessageCompressedBatch batchedMessage = packetS.message as MessageCompressedBatch;
@@ -615,7 +633,12 @@ public class Networker : MonoBehaviour
             {
                 processPacket(csteamID, packet, packetS);
             }
-           
+            }
+            else
+            {
+                processPacket(csteamID, packet, packetS);
+            }
+
         }
     }
 
@@ -832,6 +855,7 @@ public class Networker : MonoBehaviour
                     SpawnVehicle.Invoke(packet, csteamID);
                 break;
             case MessageType.RigidbodyUpdate:
+                rigidBodyUpdates += 1;
                 // Debug.Log("case rigid body update");
                 if (RigidbodyUpdate != null)
                     RigidbodyUpdate.Invoke(packet);
@@ -952,6 +976,7 @@ public class Networker : MonoBehaviour
                     ExtLight.Invoke(packet);
                 break;
             case MessageType.ShipUpdate:
+                rigidBodyUpdates += 1;
                 //Debug.Log("case ship update");
                 if (ShipUpdate != null)
                     ShipUpdate.Invoke(packet);
@@ -1551,6 +1576,7 @@ public class Networker : MonoBehaviour
         alreadyInGame = false;
         hostID = new CSteamID(0);
         pingToHost = 0;
+        rigidBodyUpdates = 0;
 
         AIManager.CleanUpOnDisconnect();
         multiplayerInstance?.CleanUpOnDisconnect();

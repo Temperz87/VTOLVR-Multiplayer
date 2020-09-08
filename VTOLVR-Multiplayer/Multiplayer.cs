@@ -248,7 +248,9 @@ public class Multiplayer : VTOLMOD
         if (displayPing)
         {
             string temp = "";
-            temp += ""+Networker.compressionRatio;
+            temp += "Normal Packet"+Networker.compressionRatio + "\n";
+            temp += "Overflowed NormalPacket " + Networker.overflowedPacket + "\n";
+            temp += "Overflowed NormalPacketUNC " + Networker.overflowedPacketUNC + "\n";
             foreach (PlayerManager.Player player in PlayerManager.players)
             {
                 temp += player.cSteamID + ": " + Mathf.Round(player.ping * 1000f) + "\n";
