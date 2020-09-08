@@ -250,7 +250,6 @@ public class Networker : MonoBehaviour
     public static float pingToHost = 0;
 
     public static List<Message> MessageBatchingUnreliableBuffer = new List<Message>();
-
     public static List<Message> MessageBatchingReliableBuffer = new List<Message>();
     public static int compressionRatio =0;
     public static int overflowedPacket = 0;

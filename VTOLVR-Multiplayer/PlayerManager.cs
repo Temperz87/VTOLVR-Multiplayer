@@ -468,7 +468,9 @@ public static class PlayerManager
         rb.velocity = Vector3.zero;
         rb.transform.position = VTOLAPI.GetPlayersVehicleGameObject().transform.position;
         rb.transform.rotation = VTOLAPI.GetPlayersVehicleGameObject().transform.rotation;
+
         Physics.SyncTransforms();
+        FloatingOrigin.instance.ShiftOrigin(rb.position,true);
         //rb.detectCollisions = true;
         Actor act = VTOLAPI.GetPlayersVehicleGameObject().GetComponent<Actor>();
         act.health.invincible = false;
