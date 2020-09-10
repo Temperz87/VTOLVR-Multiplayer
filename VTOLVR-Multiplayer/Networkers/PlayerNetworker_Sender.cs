@@ -174,6 +174,9 @@ class PlayerNetworker_Sender : MonoBehaviour
         PilotSaveManager.currentScenario.initialSpending = 0;
         PilotSaveManager.currentScenario.inFlightSpending = 0;
         PilotSaveManager.currentScenario.equipConfigurable = true;
+
+        PlayerVehicleSetup pvSetup = newPlayer.GetComponent<PlayerVehicleSetup>();
+        pvSetup.SetupForFlight();
         Rigidbody rb = newPlayer.GetComponent<Rigidbody>();
         GearAnimator gearAnim = newPlayer.GetComponent<GearAnimator>();
         if (gearAnim != null)

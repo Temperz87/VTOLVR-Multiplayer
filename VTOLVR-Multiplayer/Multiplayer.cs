@@ -218,14 +218,14 @@ public class Multiplayer : VTOLMOD
 
     public void debugLog_Settings(bool newval)
     {
-        debugLogs = newval;
+         debugLogs = newval;
         if (ModVersionString.ReleaseBranch == "Release")
             Debug.logger.logEnabled = newval;
         else
         {
             if (Debug.logger.logEnabled != true)
                 Debug.logger.logEnabled = true;
-        }
+        } 
     }
 
     public void forceWinds_Settings(bool newval)
@@ -248,9 +248,14 @@ public class Multiplayer : VTOLMOD
         if (displayPing)
         {
             string temp = "";
-            temp += "Normal Packet"+Networker.compressionRatio + "\n";
-            temp += "Overflowed NormalPacket " + Networker.overflowedPacket + "\n";
-            temp += "Overflowed NormalPacketUNC " + Networker.overflowedPacketUNC + "\n";
+            temp += "Compression Ratio "+Networker.compressionRatio + "\n";
+            temp += "Compression Buffer " + Networker.compressionBufferSize + "\n";
+            temp += "NormalPacketCompressed " + Networker.overflowedPacket + "\n";
+            temp += "NormalPacketUNCompressed " + Networker.overflowedPacketUNC + "\n";
+            temp += "compressedtotal " + Networker.totalCompressed + "\n";
+            temp += "sucess " + Networker.compressionSucess + "\n";
+            temp += "fail " + Networker.compressionFailure + "\n";
+            temp += "Compression failure Rate " + (float)Networker.compressionFailTotal/ (float)( Networker.compressionSucessTotal+ Networker.compressionFailTotal)*100.0f+ "\n";
             foreach (PlayerManager.Player player in PlayerManager.players)
             {
                 temp += player.cSteamID + ": " + Mathf.Round(player.ping * 1000f) + "\n";
@@ -652,6 +657,7 @@ public class Multiplayer : VTOLMOD
 
     public void OpenMP()
     {
+        //GameSettings.SetGameSettingValue("USE_OVERCLOUD", true, true);
         CampaignSelectorUI selectorUI = FindObjectOfType<CampaignSelectorUI>();
         int missionIdx = (int)Traverse.Create(selectorUI).Field("missionIdx").GetValue();
         PilotSaveManager.currentScenario = PilotSaveManager.currentCampaign.missions[missionIdx];

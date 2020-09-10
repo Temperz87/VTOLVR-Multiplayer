@@ -59,14 +59,12 @@ public class MissileNetworker_Sender : MonoBehaviour
                 if (thisMissile.radarLock != null && thisMissile.radarLock.actor != null)
                 {
                     lastMessage.targetPosition = VTMapManager.WorldToGlobalPoint(thisMissile.radarLock.actor.transform.position);
-                    foreach (var AI in AIManager.AIVehicles)
+
+                    if (VTOLVR_Multiplayer.AIDictionaries.reverseAllActors.ContainsKey(thisMissile.radarLock.actor))
                     {
-                        if (AI.actor == thisMissile.radarLock.actor)
-                        {
-                            lastMessage.radarLock = AI.vehicleUID;
-                            // Debug.Log($"Missile {gameObject.name} has found its lock {AI.actor.name} with an uID of {AI.vehicleUID} while trying to lock {thisMissile.radarLock.actor.name}");
-                        }
+                        lastMessage.radarLock = VTOLVR_Multiplayer.AIDictionaries.reverseAllActors[thisMissile.radarLock.actor];
                     }
+                   
                 }
             }
             else if (thisMissile.guidanceMode == Missile.GuidanceModes.Optical)
@@ -135,7 +133,7 @@ public class MissileNetworker_Sender : MonoBehaviour
                     {
                         Message_MissileDamage dmgMessage = new Message_MissileDamage(PlayerManager.localUID);
                         dmgMessage.actorTobeDamaged = AIDictionaries.reverseAllActors[act];
-                        dmgMessage.damage = missile.explodeDamage;
+                    dmgMessage.damage =  missile.explodeDamage;
 
                         Debug.Log("sending missile damage");
                         if (Networker.isHost)

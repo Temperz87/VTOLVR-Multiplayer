@@ -141,10 +141,18 @@ class LockingRadarNetworker_Sender : MonoBehaviour
                             lastLockingMessage.isLocked = true;
                             lastLockingMessage.senderUID = networkUID;
                             if (Networker.isHost)
+                            {
+                                NetworkSenderThread.Instance.SendPacketAsHostToAllClients(lastLockingMessage, EP2PSend.k_EP2PSendUnreliable);
                                 NetworkSenderThread.Instance.SendPacketAsHostToAllClients(lastLockingMessage, EP2PSend.k_EP2PSendReliable);
+                            }
+                          
                             else
-                                NetworkSenderThread.Instance.SendPacketToSpecificPlayer(Networker.hostID, lastLockingMessage, EP2PSend.k_EP2PSendReliable);
-                        }
+                                {
+
+                                    NetworkSenderThread.Instance.SendPacketAsHostToAllClients(lastLockingMessage, EP2PSend.k_EP2PSendUnreliable);
+                                    NetworkSenderThread.Instance.SendPacketToSpecificPlayer(Networker.hostID, lastLockingMessage, EP2PSend.k_EP2PSendReliable);
+                                }
+                            }
                         else
                         {
                             Debug.LogError("Could not resolve lock at actor " + lastRadarLockData.actor.name);
