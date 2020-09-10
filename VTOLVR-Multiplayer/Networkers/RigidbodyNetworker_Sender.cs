@@ -61,14 +61,15 @@ public class RigidbodyNetworker_Sender : MonoBehaviour
 
             lastMessage.position = VTMapManager.WorldToGlobalPoint(transform.TransformPoint(originOffset));
             lastMessage.rotation = transform.rotation;
-            if (Multiplayer.SoloTesting)
-                lastMessage.position += new Vector3D(-30, 0, 0);
+
             lastMessage.velocity = new Vector3D(rb.velocity);
             lastMessage.angularVelocity = new Vector3D(rb.angularVelocity * Mathf.Rad2Deg);
             lastMessage.networkUID = networkUID;
             lastMessage.sequenceNumber = ++updateNumber;
             if (Networker.isHost)
-                NetworkSenderThread.Instance.SendPacketAsHostToAllClients(lastMessage, Steamworks.EP2PSend.k_EP2PSendUnreliable);
+            {
+                Networker.addToUnreliableSendBuffer(lastMessage);
+            }
             else
                 NetworkSenderThread.Instance.SendPacketToSpecificPlayer(Networker.hostID, lastMessage, Steamworks.EP2PSend.k_EP2PSendUnreliable);
         }

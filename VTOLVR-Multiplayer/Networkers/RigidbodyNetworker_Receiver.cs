@@ -125,7 +125,7 @@ public class RigidbodyNetworker_Receiver : MonoBehaviour
             return;
         mostCurrentUpdateNumber = rigidbodyUpdate.sequenceNumber;
 
-        globalTargetPosition = rigidbodyUpdate.position + rigidbodyUpdate.velocity * latency;
+        globalTargetPosition = rigidbodyUpdate.position + rigidbodyUpdate.velocity.toVector3 * latency;
         localTargetPosition = VTMapManager.GlobalToWorldPoint(globalTargetPosition);
         targetVelocity = rigidbodyUpdate.velocity.toVector3;
         targetRotation = rigidbodyUpdate.rotation * Quaternion.Euler(rigidbodyUpdate.angularVelocity.toVector3 * latency);

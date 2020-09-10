@@ -532,6 +532,8 @@ public static class AIManager
             return;
         if(actor.name.Contains("Rearm/Refuel"))
             return;
+        if (actor.name.Contains("Rearm/Refuel"))
+            return;
         if (actor.parentActor == null)
         {
             ulong networkUID = Networker.GenerateNetworkUID();

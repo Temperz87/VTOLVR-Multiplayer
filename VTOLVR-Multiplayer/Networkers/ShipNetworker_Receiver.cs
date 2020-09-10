@@ -43,7 +43,7 @@ class ShipNetworker_Receiver : MonoBehaviour
         if (lastMessage.UID != networkUID)
             return;
 
-        targetPositionGlobal = lastMessage.position + lastMessage.velocity * Networker.pingToHost;
+        targetPositionGlobal = lastMessage.position + lastMessage.velocity.toVector3 * Networker.pingToHost;
         targetVelocity = lastMessage.velocity.toVector3;
         targetRotation =  lastMessage.rotation;
 

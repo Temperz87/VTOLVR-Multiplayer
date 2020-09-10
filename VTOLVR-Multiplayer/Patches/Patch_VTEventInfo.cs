@@ -39,7 +39,6 @@ class PatchBullet
                 ulong lastID;
                 if (VTOLVR_Multiplayer.AIDictionaries.reverseAllActors.TryGetValue(hitbox.actor, out lastID))
                 {
-
                     Debug.Log("hit player sending bullet packet");
                     Message_BulletHit hitmsg = new Message_BulletHit(PlayerManager.localUID, lastID, VTMapManager.WorldToGlobalPoint(pos), new Vector3D(vel), damage);
                     NetworkSenderThread.Instance.SendPacketToSpecificPlayer(Networker.hostID, hitmsg, Steamworks.EP2PSend.k_EP2PSendReliable);
@@ -62,7 +61,9 @@ class PatchGPS
         Vector3 pos = worldPosition;
         string msgp = prefix;
         Debug.Log("sending GPS");
-        Message_GPSData gpsm = new Message_GPSData(VTMapManager.WorldToGlobalPoint(pos), "MP", PlayerManager.teamLeftie);
+
+
+        Message_GPSData gpsm = new Message_GPSData(PlayerManager.localUID, VTMapManager.WorldToGlobalPoint(pos), "MP", PlayerManager.teamLeftie, __instance.currentGroup.groupName);
 
         if(PlayerManager.sendGPS)
         {
@@ -242,14 +243,28 @@ class Patch4
         }
         else
         {
-            //if (VTScenario.current.objectives.GetObjective(__instance.objectiveID).objectiveType == VTObjective.ObjectiveTypes.Destroy ||
-            //    VTScenario.current.objectives.GetObjective(__instance.objectiveID).objectiveType == VTObjective.ObjectiveTypes.Conditional)
-             
-                bool shouldComplete = ObjectiveNetworker_Reciever.completeNext;
+            bool shouldComplete = ObjectiveNetworker_Reciever.completeNext;
+            if (VTScenario.current.objectives.GetObjective(__instance.objectiveID).objectiveType == VTObjective.ObjectiveTypes.Fly_To ||
+                VTScenario.current.objectives.GetObjective(__instance.objectiveID).objectiveType == VTObjective.ObjectiveTypes.Refuel||
+                VTScenario.current.objectives.GetObjective(__instance.objectiveID).objectiveType == VTObjective.ObjectiveTypes.Join||
+                VTScenario.current.objectives.GetObjective(__instance.objectiveID).objectiveType == VTObjective.ObjectiveTypes.Land)
+            {
+                if(shouldComplete == false)
+                {
+                    //we havent been told to do this by host send it.
+                    NetworkSenderThread.Instance.SendPacketToSpecificPlayer(Networker.hostID,objOutMessage, Steamworks.EP2PSend.k_EP2PSendReliable);
+                }
+                return true;
+            }
+            else
+            {
+                //    VTScenario.current.objectives.GetObjective(__instance.objectiveID).objectiveType == VTObjective.ObjectiveTypes.Conditional)
+
+                
                 Debug.Log($"Should complete is {shouldComplete}.");
                 ObjectiveNetworker_Reciever.completeNext = false;
                 return shouldComplete;// clients should not send kill obj packets or have them complete
-            
+            }
             //NetworkSenderThread.Instance.SendPacketToSpecificPlayer(Networker.hostID, objOutMessage, Steamworks.EP2PSend.k_EP2PSendUnreliable);
         }
         return true;

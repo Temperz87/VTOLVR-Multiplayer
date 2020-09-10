@@ -1,7 +1,7 @@
 ﻿using Steamworks;
 using System;
 
-    public enum PacketType { Single,Multiple}
+    public enum PacketType { Single,Multiple,Batch}
     [Serializable]
     public class Packet
     {

@@ -7,7 +7,7 @@ using UnityEngine;
 [Serializable]
 public class Message_RigidbodyUpdate : Message
 {
-    public Vector3D velocity, angularVelocity;
+    public SerializableVector3 velocity, angularVelocity;
     public Vector3D position;
     public SerializableQuaternion rotation;
     public ulong sequenceNumber;

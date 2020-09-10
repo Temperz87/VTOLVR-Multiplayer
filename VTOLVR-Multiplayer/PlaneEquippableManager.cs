@@ -179,6 +179,7 @@ public static class PlaneEquippableManager
                 {
                     //Debug.Log("Adding missile reciever");
                     lastReciever = hpML.ml.missiles[j].gameObject.AddComponent<MissileNetworker_Receiver>();
+                    lastReciever.thisMissile = hpML.ml.missiles[j];
                     foreach (var thingy in hpLoadout) // it's a loop... because fuck you!
                     {
                         //Debug.Log("Try adding missile reciever uID");
