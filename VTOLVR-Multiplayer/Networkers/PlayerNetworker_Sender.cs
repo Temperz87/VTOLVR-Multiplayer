@@ -177,6 +177,7 @@ class PlayerNetworker_Sender : MonoBehaviour
 
         PlayerVehicleSetup pvSetup = newPlayer.GetComponent<PlayerVehicleSetup>();
         pvSetup.SetupForFlight();
+
         Rigidbody rb = newPlayer.GetComponent<Rigidbody>();
         GearAnimator gearAnim = newPlayer.GetComponent<GearAnimator>();
         if (gearAnim != null)

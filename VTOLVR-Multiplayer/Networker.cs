@@ -554,6 +554,7 @@ public class Networker : MonoBehaviour
             }
             
             bufferPK.prepareForSend();
+          
             if (bufferPK.compressedData.Length > 0)
             {
                 compressionRatio = bufferPK.uncompressedData.Count / bufferPK.compressedData.Length;

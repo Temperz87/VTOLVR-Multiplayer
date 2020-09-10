@@ -68,11 +68,11 @@ public static class ByteArrayCompressionUtility
         MemoryStream memoryStream = new MemoryStream();
         binaryFormatter.Serialize(memoryStream, msg);
         //UnityEngine.Debug.Log("buffer " + messagesNum);
-        foreach( byte b in memoryStream.ToArray())
+        /*foreach( byte b in memoryStream.ToArray())
         {
             uncompressedData.Add(b);
-        }
-      
+        }*/
+        uncompressedData.AddRange(memoryStream.ToArray());
         messagesSize[messagesNum]= (int)memoryStream.Length;
         //UnityEngine.Debug.Log("serlized size" + messagesSize[messagesNum]);
         messagesNum += 1;
@@ -116,19 +116,16 @@ public static class ByteArrayCompressionUtility
        // UnityEngine.Debug.Log("messagesNum " + messagesNum);
         int index = 0;
         for (int i = 0; i < messagesNum; i++)
-        {   List<byte> data = new List<byte>();
+        {   
 
-           // UnityEngine.Debug.Log("messagesSize decomp " + messagesSize[i]);
-            for (int j = 0; j < messagesSize[i]; j++)
-            {
-                data.Add(decomperessedBuffer[index]);
-                index++;
-            }
-            MemoryStream serializationStream = new MemoryStream(data.ToArray());
+         
+            MemoryStream serializationStream = new MemoryStream(decomperessedBuffer, index, messagesSize[i]);
           
            Message newMessage = binaryFormatter.Deserialize(serializationStream) as Message;
             if (newMessage != null)
                 messages.Add(newMessage);
+
+            index += messagesSize[i];
         }
       
     }

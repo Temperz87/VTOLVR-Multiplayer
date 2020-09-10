@@ -88,12 +88,20 @@ public static class PlayerManager
         gameLoaded = true;
         // As a client, when the map has loaded we are going to request a spawn point from the host
         SetPrefabs();
-
+      
 
         carrierStart = FlightSceneManager.instance.playerActor.unitSpawn.unitSpawner.linkedToCarrier;
+
+   
         ObjectiveNetworker_Reciever.loadObjectives();
         if (!Networker.isHost)
         {
+            if (carrierStart)
+            {
+                FloatingOriginShifter shift = VTOLAPI.GetPlayersVehicleGameObject().GetComponentInChildren<FloatingOriginShifter>();
+                shift.enabled = false;
+            }
+             
             FlightSceneManager.instance.playerActor.gameObject.transform.parent = null;
             Debug.Log($"Sending spawn request to host, host id: {Networker.hostID}, client id: {SteamUser.GetSteamID().m_SteamID}");
             Debug.Log("Killing all units currently on the map.");
@@ -492,7 +500,8 @@ public static class PlayerManager
         PlayerManager.rearmPoint = rp;
         rb.interpolation = RigidbodyInterpolation.None;
         rb.isKinematic = true;
-
+        FloatingOriginShifter shift = VTOLAPI.GetPlayersVehicleGameObject().GetComponentInChildren<FloatingOriginShifter>();
+        shift.enabled = false;
         unSubscribe = true;
         //rb.detectCollisions = false;
         rearmPoint.OnEndRearm += finishRearm;
@@ -511,6 +520,8 @@ public static class PlayerManager
 
             rb.transform.position = VTOLAPI.GetPlayersVehicleGameObject().transform.position;
             rb.transform.rotation = VTOLAPI.GetPlayersVehicleGameObject().transform.rotation;
+            FloatingOriginShifter shift = VTOLAPI.GetPlayersVehicleGameObject().GetComponentInChildren<FloatingOriginShifter>();
+            shift.enabled = true;
         }
         else
         {
@@ -523,11 +534,22 @@ public static class PlayerManager
             {
                 MovingPlatform plat = actor.gameObject.GetComponentInChildren<MovingPlatform>();
                 if (plat != null)
-                {
-                    rb.velocity = plat.GetVelocity(rb.transform.position);
+                { 
+                    Vector3 localPos = plat.transform.InverseTransformPoint(VTOLAPI.GetPlayersVehicleGameObject().transform.position);
+                    Vector3 localFwd = plat.transform.InverseTransformDirection(VTOLAPI.GetPlayersVehicleGameObject().transform.forward);
+                    Vector3 localUp = plat.transform.InverseTransformDirection(VTOLAPI.GetPlayersVehicleGameObject().transform.up);
+                    
+                        VTOLAPI.GetPlayersVehicleGameObject().transform.position = plat.transform.TransformPoint(localPos);
+                        Vector3 forward = plat.transform.TransformDirection(localFwd);
+                        Vector3 upwards = plat.transform.TransformDirection(localUp);
+                    VTOLAPI.GetPlayersVehicleGameObject().transform.rotation = Quaternion.LookRotation(forward, upwards);
+                    Debug.Log("attaching to carrier");
+                    rb.velocity = plat.rb.velocity;
                 }
             }
-
+            FloatingOriginShifter shift = VTOLAPI.GetPlayersVehicleGameObject().GetComponentInChildren<FloatingOriginShifter>();
+            shift.enabled = true;
+            Debug.Log("origin stuff to carrier");
 
         }
 
