@@ -5,6 +5,7 @@ Dependencies needed:
 	ModLoader.dll
 	netstandard.dll
 	Unity.TextMeshPro.dll
+	UnityEngine.AnimationModule.dll
 	UnityEngine.AudioModule.dll
 	UnityEngine.CoreModule.dll
 	UnityEngine.CrashReportingModule.dll
