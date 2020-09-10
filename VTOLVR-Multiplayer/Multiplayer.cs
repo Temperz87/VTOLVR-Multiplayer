@@ -83,6 +83,9 @@ public class Multiplayer : VTOLMOD
     public bool displayPing = false;
     private UnityAction<bool> DisplayPing_changed;
 
+    public bool displayClouds= false;
+    private UnityAction<bool> displayClouds_changed;
+
     private void Start()
     {
         if (_instance == null)
@@ -193,6 +196,10 @@ public class Multiplayer : VTOLMOD
         settings.CreateCustomLabel("Show ping on the screen. (Not vr)");
         settings.CreateBoolSetting("Default = False", DisplayPing_changed, displayPing);
 
+        displayClouds_changed += DisplayCloud_Settings;
+        settings.CreateCustomLabel("Show C");
+        settings.CreateBoolSetting("Default = False", displayClouds_changed, displayClouds);
+
         VTOLAPI.CreateSettingsMenu(settings);
     }
 
@@ -242,7 +249,11 @@ public class Multiplayer : VTOLMOD
     {
         displayPing = newval;
     }
-
+    public void DisplayCloud_Settings(bool newval)
+    {
+        displayClouds = newval;
+         GameSettings.SetGameSettingValue("USE_OVERCLOUD", newval, true);
+    }
     void OnGUI()//the 2d ping display, feel free to move elsewhere
     {
         if (displayPing)
@@ -657,7 +668,7 @@ public class Multiplayer : VTOLMOD
 
     public void OpenMP()
     {
-        //GameSettings.SetGameSettingValue("USE_OVERCLOUD", true, true);
+        
         CampaignSelectorUI selectorUI = FindObjectOfType<CampaignSelectorUI>();
         int missionIdx = (int)Traverse.Create(selectorUI).Field("missionIdx").GetValue();
         PilotSaveManager.currentScenario = PilotSaveManager.currentCampaign.missions[missionIdx];

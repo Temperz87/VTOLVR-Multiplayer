@@ -63,6 +63,7 @@ public static class ByteArrayCompressionUtility
 
     public void addMessage(Message msg)
         {
+
         messages.Add(msg);
         MemoryStream memoryStream = new MemoryStream();
         binaryFormatter.Serialize(memoryStream, msg);
@@ -87,7 +88,9 @@ public static class ByteArrayCompressionUtility
 
     public void prepareForRead()
     {
-        if(uncompressedData !=null) uncompressedData.Clear();
+        binaryFormatter = new BinaryFormatter(); uncompressedData = new List<byte>();
+        messages = new List<Message>();
+        if (uncompressedData !=null) uncompressedData.Clear();
         DeCompressMessages();
         /*for (int i = 0; i < messagesNum; i++)
         {
@@ -163,7 +166,9 @@ public static class ByteArrayCompressionUtility
       //DeCompressMessages();
       deserializeBatchMessages();  
       }*/
-    public PacketCompressedBatch() { messages = new List<Message>(); packetType = PacketType.Batch; messagesNum = 0; binaryFormatter = new BinaryFormatter(); uncompressedData = new List<byte>(); }
+    public PacketCompressedBatch() { messages = new List<Message>(); packetType = PacketType.Batch; messagesNum = 0; binaryFormatter = new BinaryFormatter(); uncompressedData = new List<byte>();
+        messages = new List<Message>();
+    }
     
 }
 
