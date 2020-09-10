@@ -243,6 +243,7 @@ class NetworkSenderThread
         length = (uint)memoryStream.Length;
 
         ulong count = 0;
+        if(Multiplayer._instance.displayPing)
         if (messageCounterTypes.ContainsKey(message.type))
         {
             count = messageCounterTypes[message.type];
