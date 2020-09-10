@@ -78,7 +78,7 @@ class GroundNetworker_Receiver : MonoBehaviour
 
         if (isSoldier) {
             soldier.animator.SetFloat(walkingAnimation, (targetVelocity + (targetPositionGlobal - smoothedPosition).toVector3 / smoothTime).magnitude);
-        }   
+        }
     }
 
     public void GroundUpdate(Packet packet)
