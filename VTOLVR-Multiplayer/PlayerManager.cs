@@ -369,9 +369,7 @@ public static class PlayerManager
             if (gameLoaded)
                 if (!firstSpawnDone)
                 {
-
                     if (carrierStart)
-
                     {
                         foreach (var actor in TargetManager.instance.allActors)
                         {

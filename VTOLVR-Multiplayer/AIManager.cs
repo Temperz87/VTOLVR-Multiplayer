@@ -45,7 +45,7 @@ public static class AIManager
         }
         Message_SpawnAIVehicle message = (Message_SpawnAIVehicle)((PacketSingle)packet).message;
 
-        if (!PlayerManager.gameLoaded && !PlayerManager.firstSpawnDone)
+        if (!PlayerManager.gameLoaded)
         {
             Debug.LogWarning("Our game isn't loaded, adding spawn vehicle to queue");
             AIsToSpawnQueue.Enqueue(packet);
@@ -532,8 +532,7 @@ public static class AIManager
             return;
         if(actor.name.Contains("Rearm/Refuel"))
             return;
-        if (actor.name.Contains("Rearm/Refuel"))
-            return;
+
         if (actor.parentActor == null)
         {
             ulong networkUID = Networker.GenerateNetworkUID();
