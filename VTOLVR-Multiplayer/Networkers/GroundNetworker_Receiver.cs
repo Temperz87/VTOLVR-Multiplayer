@@ -93,7 +93,7 @@ class GroundNetworker_Receiver : MonoBehaviour
         //targetRotation = targetRotation.normalized;
         //could not get the rotation to work for whatever reason, so ground moves face their velocity vector
 
-        Debug.Log("Ground reciever rotation is: " + lastMessage.rotation.ToString());
+        //Debug.Log("Ground reciever rotation is: " + lastMessage.rotation.ToString());
 
         if ((VTMapManager.GlobalToWorldPoint(lastMessage.position) - groundUnitMover.transform.position).magnitude > 100)
         {
