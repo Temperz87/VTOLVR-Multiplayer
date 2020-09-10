@@ -371,15 +371,15 @@ public class Networker : MonoBehaviour
     }
     private void FixedUpdate()
     {
-       
+        if (isHost)
+        {
+             flushUnreliableBuffer();
+             flushReliableBuffer();
+        }
     }
     private void LateUpdate()
     {
-        if (isHost)
-        {
-           // flushUnreliableBuffer();
-            //flushReliableBuffer();
-        }
+       
         if (disconnectForClientTimeout)
         {
             disconnectForClientTimeout = false;
@@ -517,29 +517,10 @@ public class Networker : MonoBehaviour
 
         if (MessageBatchingReliableBuffer.Count > 10)
         {
-          //  flushReliableBuffer();
+          flushReliableBuffer();
         }
     }
 
-   /* public static void sendCompressedMessage(CSteamID id,Message msg, EP2PSend sendType)
-    {
-        PacketSingle finalPacket = new PacketSingle(msg, sendType);
-        MessageCompressedBatch bufferPK = new MessageCompressedBatch();
-        bufferPK.addMessage(finalPacket);
-        bufferPK.prepareForSend();
-       
-        if (isHost)
-        {
-            if(id == new CSteamID(0))
-            {
-
-                NetworkSenderThread.Instance.SendPacketAsHostToAllClients(finalPacket.message, sendType);
-            }
-            else
-                NetworkSenderThread.Instance.SendPacketToSpecificPlayer(id,finalPacket.message, sendType);
-        }
-
-    }*/
     private static void flushUnreliableBuffer()
     {
         if(MessageBatchingUnreliableBuffer.Count >0 && MessageBatchingUnreliableBuffer.Count<20)
@@ -598,31 +579,29 @@ public class Networker : MonoBehaviour
         MessageBatchingUnreliableBuffer.Clear();
     }
 
-   /* private static void flushReliableBuffer()
+   private static void flushReliableBuffer()
     {
-        MessageCompressedBatch bufferPK = new MessageCompressedBatch();
-        if (MessageBatchingReliableBuffer.Count > 0)
+        if (MessageBatchingReliableBuffer.Count > 0 && MessageBatchingReliableBuffer.Count < 20)
         {
-            foreach (var msg in MessageBatchingReliableBuffer)
-            {
-                PacketSingle pk = new PacketSingle(msg, EP2PSend.k_EP2PSendReliable);
-                bufferPK.addMessage(pk);
-            }
+            PacketCompressedBatch bufferPK = new PacketCompressedBatch();
+            
+                foreach (var msg in MessageBatchingReliableBuffer)
+                {
+                    bufferPK.addMessage(msg);
+                }
 
-            bufferPK.prepareForSend();
-            //Debug.Log("unCompressed packet size" + bufferPK.uncompressedData.Length);
-            //Debug.Log("Compressed packet size" + bufferPK.compressedSize);
-            //compressionRatio = bufferPK.uncompressedData.Length / bufferPK.compressedSize;
-            PacketSingle finalPacket = new PacketSingle(bufferPK, EP2PSend.k_EP2PSendReliable);
-            if (isHost)
-            {
-                NetworkSenderThread.Instance.SendPacketAsHostToAllClients(finalPacket.message, finalPacket.sendType);
-            }
+                bufferPK.prepareForSend();
 
-            MessageBatchingReliableBuffer.Clear();
+                if (isHost)
+                {
+                    NetworkSenderThread.Instance.SendPacketAsHostToAllClients(bufferPK, EP2PSend.k_EP2PSendReliable);
+                }
+
+                MessageBatchingReliableBuffer.Clear();
+            
         }
 
-    }*/
+    } 
     private void ReadP2PPacket(byte[] array, uint num, uint num2, CSteamID csteamID)
     {
         if (csteamID == null)

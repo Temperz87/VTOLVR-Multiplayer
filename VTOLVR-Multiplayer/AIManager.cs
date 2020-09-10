@@ -503,18 +503,16 @@ public static class AIManager
                         Debug.Log("Finally sending AI " + actor.name + " to client all clients.");
                         if (canBreak)
                         {
-                            NetworkSenderThread.Instance.SendPacketAsHostToAllClients(new Message_SpawnAIVehicle(actor.name, GetUnitNameFromCatalog(actor.unitSpawn.unitName), redfor,
-                                VTMapManager.WorldToGlobalPoint(actor.gameObject.transform.position),
-                                actor.gameObject.transform.rotation, uidSender.networkUID, hPInfos2, cmLoadout, 0.65f, Aggresion, actor.unitSpawn.unitSpawner.unitInstanceID, letters, ids.ToArray(), irIDS),
-                                EP2PSend.k_EP2PSendReliableWithBuffering);
+                                Networker.addToReliableSendBuffer(new Message_SpawnAIVehicle(actor.name, GetUnitNameFromCatalog(actor.unitSpawn.unitName), redfor,
+                                    VTMapManager.WorldToGlobalPoint(actor.gameObject.transform.position),
+                                    actor.gameObject.transform.rotation, uidSender.networkUID, hPInfos2, cmLoadout, 0.65f, Aggresion, actor.unitSpawn.unitSpawner.unitInstanceID, letters, ids.ToArray(), irIDS));
                         }
                         else
                         {
-                            // Debug.Log("It seems that " + actor.name + " is not in a unit group, sending anyways.");
-                            NetworkSenderThread.Instance.SendPacketAsHostToAllClients(new Message_SpawnAIVehicle(actor.name, GetUnitNameFromCatalog(actor.unitSpawn.unitName), redfor,
+                                // Debug.Log("It seems that " + actor.name + " is not in a unit group, sending anyways.");
+                                Networker.addToReliableSendBuffer(new Message_SpawnAIVehicle(actor.name, GetUnitNameFromCatalog(actor.unitSpawn.unitName), redfor,
                                 VTMapManager.WorldToGlobalPoint(actor.gameObject.transform.position),
-                                actor.gameObject.transform.rotation, uidSender.networkUID, hPInfos2, cmLoadout, 0.65f, Aggresion, actor.unitSpawn.unitSpawner.unitInstanceID, ids.ToArray(), irIDS),
-                                EP2PSend.k_EP2PSendReliableWithBuffering);
+                                actor.gameObject.transform.rotation, uidSender.networkUID, hPInfos2, cmLoadout, 0.65f, Aggresion, actor.unitSpawn.unitSpawner.unitInstanceID, ids.ToArray(), irIDS));
                         }
                     }
                 }
