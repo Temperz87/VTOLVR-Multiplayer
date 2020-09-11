@@ -52,6 +52,10 @@ class HealthNetworker_Sender : MonoBehaviour
 
 
             }
+        }else
+        {
+            health.Damage(bulletMessage.damage, hitInfo.point, Health.DamageTypes.Impact, null, "lol");
+            BulletHitManager.instance.CreateBulletHit(hitInfo.point, -vel, true);
         }
     }
     void Death()

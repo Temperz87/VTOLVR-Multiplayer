@@ -101,7 +101,7 @@ public class Multiplayer : VTOLMOD
     {
         Log($"VTOL VR Multiplayer v{ ModVersionString.ModVersionNumber } - branch: { ModVersionString.ReleaseBranch }");
 
-
+        GameSettings.SetGameSettingValue("USE_OVERCLOUD", false, true);
 #if DEBUG
         Log("Running in Debug Mode");
 #else
@@ -251,8 +251,8 @@ public class Multiplayer : VTOLMOD
     }
     public void DisplayCloud_Settings(bool newval)
     {
-        displayClouds = newval;
-         GameSettings.SetGameSettingValue("USE_OVERCLOUD", newval, true);
+        //displayClouds = newval;
+         GameSettings.SetGameSettingValue("USE_OVERCLOUD", false, true);
     }
     void OnGUI()//the 2d ping display, feel free to move elsewhere
     {
