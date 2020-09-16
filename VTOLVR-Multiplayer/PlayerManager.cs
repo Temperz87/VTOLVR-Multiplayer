@@ -470,11 +470,10 @@ public static class PlayerManager
         {
 
             Actor  player = FlightSceneManager.instance.playerActor;
-
             if(player)
             {
 
-               if( (bool)player.flightInfo && !player.flightInfo.isLanded)
+              // if( (bool)player.flightInfo && !player.flightInfo.isLanded)
                 {
                     flyCounter += Time.fixedDeltaTime;
 
@@ -518,7 +517,13 @@ public static class PlayerManager
         foreach (var w in wepList)
             campaignSave.availableWeapons.Add(w);
     }
-    public static void StartRearm(ReArmingPoint rp)
+
+    public static void StartConfig(LoadoutConfigurator lc)
+    {
+        FloatingOriginShifter shift = VTOLAPI.GetPlayersVehicleGameObject().GetComponentInChildren<FloatingOriginShifter>();
+        shift.enabled = true;
+    }
+        public static void StartRearm(ReArmingPoint rp)
     {
         Rigidbody rb = VTOLAPI.GetPlayersVehicleGameObject().GetComponent<Rigidbody>();
         PlayerManager.rearmPoint = rp;
@@ -530,8 +535,14 @@ public static class PlayerManager
         //rb.detectCollisions = false;
         rearmPoint.OnEndRearm += finishRearm;
         Actor act = VTOLAPI.GetPlayersVehicleGameObject().GetComponent<Actor>();
+
+
         act.health.invincible = true;
         flyCounter = 0;
+        PlayerVehicleSetup pvSetup = act.gameObject.GetComponent<PlayerVehicleSetup>();
+        pvSetup.OnBeginUsingConfigurator += StartConfig;
+
+
         //hackSaveUnlockAllWeapons();
         rearmPoint.BeginReArm();
     }
@@ -574,12 +585,11 @@ public static class PlayerManager
                     rb.transform.SetParent(plat.transform);
                 }
             }
-            FloatingOriginShifter shift = VTOLAPI.GetPlayersVehicleGameObject().GetComponentInChildren<FloatingOriginShifter>();
-            shift.enabled = true;
+         
             Debug.Log("origin stuff to carrier");
-           
-            VTOLAPI.GetPlayersVehicleGameObject().AddComponent<KinematicPlane>();
-            
+
+          
+
         }
 
         Physics.SyncTransforms();
@@ -591,7 +601,8 @@ public static class PlayerManager
         {
             rearmPoint.OnEndRearm -= finishRearm;
         }
-
+        PlayerVehicleSetup pvSetup = act.gameObject.GetComponent<PlayerVehicleSetup>();
+        pvSetup.OnBeginUsingConfigurator -= StartConfig;
         unSubscribe = false;
     }
     public static void SpawnLocalVehicleAndInformOtherClients(GameObject localVehicle, Vector3 pos, Quaternion rot, ulong UID, int playercount = 0) //Both

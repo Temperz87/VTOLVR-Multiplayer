@@ -349,11 +349,13 @@ class PlayerNetworker_Sender : MonoBehaviour
 
         Actor killer = null;
 
-        if (FlightSceneManager.instance.playerActor.health.killedByActor != null)
+        if (FlightSceneManager.instance.playerActor.health.killMessage != null)
         {
-            killer = FlightSceneManager.instance.playerActor.health.killedByActor;
+            killer =  Traverse.Create(health).Field("lastSourceActor").GetValue<Actor>();
         }
 
+
+      
         string message = "";
 
         if (FlightSceneManager.instance.playerActor.health.killMessage != null)

@@ -24,17 +24,17 @@ class HealthNetworker_ReceiverHostEnforced : MonoBehaviour
         lastMessage = (Message_Death)((PacketSingle)packet).message;
         if (lastMessage.UID != networkUID)
             return;
+        FlightLogger.Log("trying to write kill feed");
+       // int player = PlayerManager.GetPlayerIDFromCSteamID(new Steamworks.CSteamID(PlayerManager.localUID));
 
-        int player = PlayerManager.GetPlayerIDFromCSteamID(new Steamworks.CSteamID(PlayerManager.localUID));
-
-        string name = PlayerManager.players[player].nameTag;
+        string name = Steamworks.SteamFriends.GetPersonaName();
 
         if (lastMessage.message.Contains(name))
         {
             PlayerManager.kills++;
             FlightLogger.Log("You got" + PlayerManager.kills + " Kill(s)");
         }
-        FlightLogger.Log("trying to write kill feed");
+     
         FlightLogger.Log(lastMessage.message);
 
         if (lastMessage.immediate)
