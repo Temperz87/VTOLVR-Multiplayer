@@ -48,7 +48,7 @@ class HealthNetworker_Sender : MonoBehaviour
 
                 Debug.Log("found  target bullet hit");
                 hitbox.Damage(bulletMessage.damage, hitInfo.point, Health.DamageTypes.Impact, hitbox.actor, "lol");
-                BulletHitManager.instance.CreateBulletHit(hitInfo.point, -vel, true);
+                BulletHitManager.instance.CreateBulletHit(base.transform.position, -vel, true);
 
 
             }

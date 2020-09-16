@@ -47,7 +47,7 @@ public static class PlayerManager
     public static bool teamLeftie = false;
     public static int carrierStartTimer = 0;
     public static ReArmingPoint rearmPoint;
-
+    public static float flyCounter = 0;
     public static Vector3 av42Offset = new Vector3(0, 0.972f, -5.126f);//the difference between the origin of the ai and player AV-42s
 
     public static Hitbox lastBulletHit;
@@ -464,7 +464,28 @@ public static class PlayerManager
             } 
         }*/
         if (gameLoaded)
+        {
+
+            Actor  player = FlightSceneManager.instance.playerActor;
+
+            if(player)
+            {
+
+               if( (bool)player.flightInfo && !player.flightInfo.isLanded)
+                {
+                    flyCounter += Time.fixedDeltaTime;
+
+                    if(flyCounter > 10.0f &&  flyCounter < 13.0f)
+                    {
+                        //FlightLogger.Log("Plane Unparented");
+                        player.gameObject.GetComponent<Rigidbody>().transform.SetParent(null);
+                        player.health.invincible = false;
+                    }
+                }
+            }
+                 
             PlayerManager.SpawnPlayersInPlayerSpawnQueue();//addmitedly, this probably isnt the best place to put this, feel free to move it somewhere els
+        }
 
     }
 
@@ -507,7 +528,7 @@ public static class PlayerManager
         rearmPoint.OnEndRearm += finishRearm;
         Actor act = VTOLAPI.GetPlayersVehicleGameObject().GetComponent<Actor>();
         act.health.invincible = true;
-
+        flyCounter = 0;
         //hackSaveUnlockAllWeapons();
         rearmPoint.BeginReArm();
     }
@@ -545,19 +566,24 @@ public static class PlayerManager
                     VTOLAPI.GetPlayersVehicleGameObject().transform.rotation = Quaternion.LookRotation(forward, upwards);
                     Debug.Log("attaching to carrier");
                     rb.velocity = plat.rb.velocity;
+                    rb.isKinematic = false;
+                    FlightLogger.Log("Plane Parented");
+                    rb.transform.SetParent(plat.transform);
                 }
             }
             FloatingOriginShifter shift = VTOLAPI.GetPlayersVehicleGameObject().GetComponentInChildren<FloatingOriginShifter>();
             shift.enabled = true;
             Debug.Log("origin stuff to carrier");
-
+           
+            VTOLAPI.GetPlayersVehicleGameObject().AddComponent<KinematicPlane>();
+            
         }
 
         Physics.SyncTransforms();
         //FloatingOrigin.instance.ShiftOrigin(rb.position,true);
         //rb.detectCollisions = true;
         Actor act = VTOLAPI.GetPlayersVehicleGameObject().GetComponent<Actor>();
-        act.health.invincible = false;
+        act.health.invincible = true;
         if (unSubscribe)
         {
             rearmPoint.OnEndRearm -= finishRearm;
@@ -801,8 +827,7 @@ public static class PlayerManager
             AvatarManager.SetupAircraftRoundels(localVehicle.transform, currentVehicle, GetPlayerCSteamID(localUID), av42Offset);
         else
             AvatarManager.SetupAircraftRoundels(localVehicle.transform, currentVehicle, GetPlayerCSteamID(localUID), Vector3.zero);
-        if (Multiplayer.SoloTesting)
-            pos += new Vector3(20, 0, 0);
+   
 
         List<HPInfo> hpInfos = PlaneEquippableManager.generateLocalHpInfoList(UID);
         CountermeasureManager cmManager = localVehicle.GetComponentInChildren<CountermeasureManager>();
@@ -823,7 +848,7 @@ public static class PlayerManager
                     hpInfos.ToArray(),
                     cm.ToArray(),
                     fuel, PlayerManager.teamLeftie, SteamFriends.GetPersonaName()),
-                EP2PSend.k_EP2PSendReliable);
+                    EP2PSend.k_EP2PSendReliable);
         }
         else
         {
@@ -836,7 +861,7 @@ public static class PlayerManager
                     hpInfos.ToArray(),
                     cm.ToArray(),
                     fuel, PlayerManager.teamLeftie, SteamFriends.GetPersonaName()),
-                EP2PSend.k_EP2PSendReliable);
+                    EP2PSend.k_EP2PSendReliable);
         }
         WeaponManager localWManager = localVehicle.GetComponent<WeaponManager>();
 
@@ -1372,6 +1397,7 @@ public static class PlayerManager
         carrierFound = false;
         sendGPS = true;
         carrierStartTimer = 0;
+        flyCounter = 0;
     }
 
     public static void OnDisconnect()

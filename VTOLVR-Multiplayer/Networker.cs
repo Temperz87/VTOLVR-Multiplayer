@@ -227,7 +227,7 @@ public class Networker : MonoBehaviour
 
    
     public static Dictionary<CSteamID, PlayerStatus> playerStatusDic { get; private set; } = new Dictionary<CSteamID, PlayerStatus>();
-
+    public static Dictionary<ulong, float> playerResponseDict { get; private set; } = new Dictionary<ulong, float>();
     public static bool allPlayersReadyHasBeenSentFirstTime;
     public static bool readySent;
     public static bool hostReady, alreadyInGame, hostLoaded;
@@ -350,20 +350,30 @@ public class Networker : MonoBehaviour
             }
         }
         ReadP2P();
-      /*foreach (PlayerManager.Player play in PlayerManager.players)
+       /* if(isHost)
+        { 
+        foreach (CSteamID  player in players)
         {
-            play.timeSinceLastResponse += Time.deltaTime;
-            if(play.vehicleUID != hostID.m_SteamID)
-            if(play.timeSinceLastResponse > 5.0f)
+            playerResponseDict[player.m_SteamID] += Time.deltaTime;
+            if(player != hostID)
+            if (playerResponseDict[player.m_SteamID] > 5.0f)
             {
-
-                playerStatusDic[play.cSteamID] = PlayerStatus.Disconected;
-                players.Remove(play.cSteamID);
-                NetworkSenderThread.Instance.RemovePlayer(play.cSteamID);
-
-                Message_Disconnecting disMessage = new Message_Disconnecting(play.cSteamID.m_SteamID, false);
+                playerStatusDic[player] = PlayerStatus.Disconected;
+                players.Remove(player);
+                playerResponseDict.Remove(player.m_SteamID);
+                NetworkSenderThread.Instance.RemovePlayer(player);
+                Message_Disconnecting disMessage = new Message_Disconnecting(player.m_SteamID, false);
                 NetworkSenderThread.Instance.SendPacketAsHostToAllClients(disMessage, EP2PSend.k_EP2PSendReliable);
             }
+            foreach(PlayerManager.Player p in PlayerManager.players)
+            {
+                if(p.vehicleUID == player.m_SteamID)
+                {
+                    PlayerManager.players.Remove(p);
+                }
+            }
+                UpdateLoadingText();
+        }
         }*/
         PlayerManager.Update();
        
@@ -1060,9 +1070,9 @@ public class Networker : MonoBehaviour
                     if (playerID != -1)
                     {
                         PlayerManager.players[playerID].ping = pingTime / 2.0f;
-                        PlayerManager.players[playerID].timeSinceLastResponse = 0;
+                        
                     }
-
+                    playerResponseDict[heartbeatResult.from] = 0.0f;
                     NetworkSenderThread.Instance.SendPacketAsHostToAllClients(new Message_ReportPingTime(pingTime / 2.0f, heartbeatResult.from), EP2PSend.k_EP2PSendUnreliableNoDelay);
                 }
                 break;
@@ -1363,8 +1373,9 @@ public class Networker : MonoBehaviour
             Debug.LogError("The player seemed to send two join requests");
             players.Remove(csteamID);
             readyDic.Remove(csteamID);
+            playerResponseDict.Remove(csteamID.m_SteamID);
             playerStatusDic.Remove(csteamID);//future people, please implement PlayerStatus.Loadout so we can see who is customising still
-             
+            NetworkSenderThread.Instance.RemovePlayer(csteamID);
         }
 
         // Check version match
@@ -1500,6 +1511,7 @@ public class Networker : MonoBehaviour
         // Made it past all checks, we can join
         Debug.Log($"Accepting {csteamID.m_SteamID}, adding to players list");
         players.Add(csteamID);
+        playerResponseDict.Add(csteamID.m_SteamID,0.0f);
         readyDic.Add(csteamID, false);
         Debug.Log($"Adding {csteamID} to status dict, with status of not ready");
         playerStatusDic.Add(csteamID, PlayerStatus.NotReady);//future people, please implement PlayerStatus.Loadout so we can see who is customising still
