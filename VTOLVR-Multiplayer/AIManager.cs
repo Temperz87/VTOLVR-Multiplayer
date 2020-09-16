@@ -134,23 +134,6 @@ public static class AIManager
                 SetUpCarrier(newAI, message.rootActorNetworkID, actor.team);
             }
         }
-        foreach (Actor subActor in newAI.GetComponentsInChildren<Actor>())
-        {
-            if (subActor.parentActor != null)
-            {
-                Debug.Log("This is a subunit, disabling AI to avoid desync");
-                if (subActor.gameObject.GetComponentInChildren<GunTurretAI>() != null)
-                {
-                    Debug.Log("Gunturret AI disabled");
-                    GameObject.Destroy(subActor.gameObject.GetComponentInChildren<GunTurretAI>());
-                }
-                if (subActor.gameObject.GetComponentInChildren<SAMLauncher>() != null)
-                {
-                    Debug.Log("SAM Launcher disabled");
-                    subActor.gameObject.GetComponentInChildren<SAMLauncher>().enabled = false;
-                }
-            }
-        }
 
         TargetManager.instance.UnregisterActor(actor);
         TargetManager.instance.RegisterActor(actor);
@@ -375,11 +358,28 @@ public static class AIManager
                     }
                 }
             }
-            if (actor.gameObject.GetComponentInChildren<LockingRadar>() != null)
+
+            Debug.Log("Checking for locking radars");
+            foreach (LockingRadar radar in child.GetComponentsInChildren<LockingRadar>())
             {
-                // Debug.Log($"Adding radar reciever to object {actor.name}.");
-                LockingRadarNetworker_Receiver lr = actor.gameObject.AddComponent<LockingRadarNetworker_Receiver>();
-                lr.networkUID = message.networkID[currentSubActorID];
+                if (radar.GetComponent<Actor>() == child)
+                {
+                    Debug.Log($"Adding radar receiver to object {child.name} as it is the same game object as this actor.");
+                    LockingRadarNetworker_Receiver lastLockingReceiver = child.gameObject.AddComponent<LockingRadarNetworker_Receiver>();
+                    lastLockingReceiver.networkUID = message.networkID[currentSubActorID];
+                    Debug.Log("Added locking radar!");
+                }
+                else if (radar.GetComponentInParent<Actor>() == child)
+                {
+                    Debug.Log($"Adding radar receiver to object {child.name} as it is a child of this actor.");
+                    LockingRadarNetworker_Receiver lastLockingReceiver = child.gameObject.AddComponent<LockingRadarNetworker_Receiver>();
+                    lastLockingReceiver.networkUID = message.networkID[currentSubActorID];
+                    Debug.Log("Added locking radar!");
+                }
+                else
+                {
+                    Debug.Log("This radar is not direct child of this actor, ignoring");
+                }
             }
             AIVehicles.Add(new AI(child.gameObject, message.aiVehicleName, actor, message.networkID[currentSubActorID]));
             Debug.Log("Spawned in AI " + child.gameObject.name);
