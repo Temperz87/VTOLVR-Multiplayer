@@ -12,9 +12,10 @@ using UnityEngine;
 class Patch_ActorExtensions_DebugName
 {
     [HarmonyPrefix]
-    static bool Prefix(ref string __result)
+    static bool Prefix(Actor a, ref string __result)
     {
-        __result = "string lmao";
+
+        __result = a.actorName + a.gameObject.name;
         Debug.Log("DebugName");
         return false;
     }

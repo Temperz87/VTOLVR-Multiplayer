@@ -12,12 +12,11 @@ class HealthNetworker_ReceiverHostEnforced : MonoBehaviour
     private Message_BulletHit bulletMessage;
     private void Awake()
     {
-        lastMessage = new Message_Death(networkUID,false);
+        lastMessage = new Message_Death(networkUID,false,"");
         Networker.Death += Death;
-
-        Networker.BulletHit += this.BulletHit;
+         
         health = GetComponent<Health>();
-        //health.invincible = true;
+        health.invincible = true;
     }
 
     public void Death(Packet packet)
@@ -26,57 +25,30 @@ class HealthNetworker_ReceiverHostEnforced : MonoBehaviour
         if (lastMessage.UID != networkUID)
             return;
 
-        Actor actor = GetComponent<Actor>();
-        if (actor == null)
+        int player = PlayerManager.GetPlayerIDFromCSteamID(new Steamworks.CSteamID(PlayerManager.localUID));
+
+        string name = PlayerManager.players[player].nameTag;
+
+        if (lastMessage.message.Contains(name))
         {
-            Debug.Log("actor was null");
+            PlayerManager.kills++;
+            FlightLogger.Log("You got" + PlayerManager.kills + " Kill(s)");
+        }
+        FlightLogger.Log("trying to write kill feed");
+        FlightLogger.Log(lastMessage.message);
+
+        if (lastMessage.immediate)
+        {
+            Destroy(gameObject);
         }
         else
         {
-            if (actor.unitSpawn != null)
-            {
-                if (actor.unitSpawn.unitSpawner == null)
-                {
-                    Debug.Log("unit spawner was null, adding one");
-                    actor.unitSpawn.unitSpawner = actor.gameObject.AddComponent<UnitSpawner>();
-                }
-            }
-        }
-
-        health.invincible = false;
-        health.Kill();
-    }
-
-    public void BulletHit(Packet packet)
-    {
-        bulletMessage = (Message_BulletHit)((PacketSingle)packet).message;
-
-        Debug.Log("handling bullet hit");
-
-        if (bulletMessage.destUID != networkUID)
-            return;
-        Vector3 pos = VTMapManager.GlobalToWorldPoint(bulletMessage.pos);
-        Vector3 vel = bulletMessage.dir.toVector3;
-
-        RaycastHit[] hits;
-        hits = Physics.RaycastAll(pos, vel, 100.0f, 1025);
-        Hitbox hitbox = null;
-        for (int i = 0; i < hits.Length; i++)
-        {
-            RaycastHit hit = hits[i];
-            hitbox = hit.collider.GetComponent<Hitbox>();
-            if ((bool)hitbox && (bool)hitbox.actor)
-            {
-
-                Debug.Log("found  target bullet hit");
-                hitbox.Damage(bulletMessage.damage, hit.point, Health.DamageTypes.Impact, hitbox.actor, "Bullet Hit Network");
-                BulletHitManager.instance.CreateBulletHit(hit.point, -vel, true);
-
-
-            }
-
+            health.invincible = false;
+            health.Kill();
         }
     }
+
+    
     public void OnDestroy()
     {
         Networker.Death -= Death;
