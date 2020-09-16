@@ -53,14 +53,14 @@ public static class AIManager
         }
         foreach (ulong id in spawnedAI)
         {
-            if (id == message.networkID)
+            if (id == message.rootActorNetworkID)
             {
                 Debug.Log("Got a spawnAI message for a vehicle we have already added! Name == " + message.unitName + " Returning...");
                 return;
             }
         }
 
-        spawnedAI.Add(message.networkID);
+        spawnedAI.Add(message.rootActorNetworkID);
         //Debug.Log("Got a new aiSpawn uID.");
         if (message.unitName == "Player")
         {
@@ -131,7 +131,7 @@ public static class AIManager
             if (airport != null)
             {
                 airport.team = actor.team;
-                SetUpCarrier(newAI, message.networkID, actor.team);
+                SetUpCarrier(newAI, message.rootActorNetworkID, actor.team);
             }
         }
         foreach (Actor subActor in newAI.GetComponentsInChildren<Actor>())
@@ -165,229 +165,235 @@ public static class AIManager
         Debug.Log($"Spawned new vehicle at {newAI.transform.position}");
 
         newAI.AddComponent<FloatingOriginTransform>();
-
-        UIDNetworker_Receiver uidReciever = newAI.AddComponent<UIDNetworker_Receiver>();
-        uidReciever.networkUID = message.networkID;
-
-        if (newAI.GetComponent<Health>() != null)
-        {
-            HealthNetworker_Receiver healthNetworker = newAI.AddComponent<HealthNetworker_Receiver>();
-            healthNetworker.networkUID = message.networkID;
-            //HealthNetworker_Sender healthNetworkerS = newAI.AddComponent<HealthNetworker_Sender>();
-            //healthNetworkerS.networkUID = message.networkID;
-            // Debug.Log("added health Sender to ai");
-            // Debug.Log("added health reciever to ai");
-        }
-        else
-        {
-            Debug.Log(message.aiVehicleName + " has no health?");
-        }
-
+        
         newAI.transform.position = VTMapManager.GlobalToWorldPoint(message.position);
         newAI.transform.rotation = message.rotation;
 
-        if (newAI.GetComponent<ShipMover>() != null)
+        int currentSubActorID = 0;
+        foreach (Actor child in newAI.GetComponentsInChildren<Actor>())
         {
-            ShipNetworker_Receiver shipNetworker = newAI.AddComponent<ShipNetworker_Receiver>();
-            shipNetworker.networkUID = message.networkID;
-        }
-        else if (newAI.GetComponent<GroundUnitMover>() != null) 
-        {
-            if (actor.gameObject.GetComponent<Rigidbody>() != null)
-            {
-                GroundNetworker_Receiver groundNetworker = newAI.AddComponent<GroundNetworker_Receiver>();
-                groundNetworker.networkUID = message.networkID;
-            }
-        }
-        else if (newAI.GetComponent<Rigidbody>() != null)
-        {
-            Rigidbody rb = newAI.GetComponent<Rigidbody>();
-            RigidbodyNetworker_Receiver rbNetworker = newAI.AddComponent<RigidbodyNetworker_Receiver>();
-            rbNetworker.networkUID = message.networkID;
-        }
-        if (actor.role == Actor.Roles.Air)
-        {
-            PlaneNetworker_Receiver planeReceiver = newAI.AddComponent<PlaneNetworker_Receiver>();
-            planeReceiver.networkUID = message.networkID;
-            AIPilot aIPilot = newAI.GetComponent<AIPilot>();
-            aIPilot.enabled = false;
-            aIPilot.kPlane.SetToKinematic();
-            aIPilot.kPlane.enabled = false;
-            aIPilot.commandState = AIPilot.CommandStates.Navigation;
-            aIPilot.kPlane.enabled = true;
-            aIPilot.kPlane.SetVelocity(Vector3.zero);
-            aIPilot.kPlane.SetToDynamic();
+            UIDNetworker_Receiver uidReciever = newAI.AddComponent<UIDNetworker_Receiver>();
+            uidReciever.networkUID = message.networkID[currentSubActorID];
 
-            RotationToggle wingRotator = aIPilot.wingRotator;
-            if (wingRotator != null)
+            if (newAI.GetComponent<Health>() != null)
             {
-                WingFoldNetworker_Receiver wingFoldReceiver = newAI.AddComponent<WingFoldNetworker_Receiver>();
-                wingFoldReceiver.networkUID = message.networkID;
-                wingFoldReceiver.wingController = wingRotator;
-            }
-            if (aIPilot.isVtol)
-            {
-                //Debug.Log("Adding Tilt Controller to this vehicle " + message.networkID);
-                EngineTiltNetworker_Receiver tiltReceiver = newAI.AddComponent<EngineTiltNetworker_Receiver>();
-                tiltReceiver.networkUID = message.networkID;
-            }
-
-            if (actor.gameObject.GetComponentInChildren<ExteriorLightsController>() != null)
-            {
-                ExtLight_Receiver extLight = actor.gameObject.AddComponent<ExtLight_Receiver>();
-                extLight.networkUID = message.networkID;
-            }
-
-            Rigidbody rb = newAI.GetComponent<Rigidbody>();
-
-            foreach (Collider collider in newAI.GetComponentsInChildren<Collider>())
-            {
-                if (collider)
-                {
-                    collider.gameObject.layer = 9;
-                }
-            }
-
-            Debug.Log("Doing weapon manager shit on " + newAI.name + ".");
-            WeaponManager weaponManager = newAI.GetComponent<WeaponManager>();
-            if (weaponManager == null)
-                Debug.LogError(newAI.name + " does not seem to have a weapon maanger on it.");
-            else
-            {
-                PlaneEquippableManager.SetLoadout(newAI, message.networkID, message.normalizedFuel, message.hpLoadout, message.cmLoadout);
-            }
-        }
-        else if (actor.role == Actor.Roles.Ground || actor.role == Actor.Roles.GroundArmor)
-        {
-            AIUnitSpawn aIUnitSpawn = newAI.GetComponent<AIUnitSpawn>();
-            if (aIUnitSpawn == null)
-                Debug.LogWarning("AI unit spawn is null on respawned unit " + aIUnitSpawn);
-            // else
-            // newAI.GetComponent<AIUnitSpawn>().SetEngageEnemies(message.Aggresive);
-            VehicleMover vehicleMover = newAI.GetComponent<VehicleMover>();
-            if (vehicleMover != null)
-            {
-                vehicleMover.enabled = false;
-                vehicleMover.behavior = GroundUnitMover.Behaviors.Parked;
+                HealthNetworker_Receiver healthNetworker = newAI.AddComponent<HealthNetworker_Receiver>();
+                healthNetworker.networkUID = message.networkID[currentSubActorID];
+                //HealthNetworker_Sender healthNetworkerS = newAI.AddComponent<HealthNetworker_Sender>();
+                //healthNetworkerS.networkUID = message.networkID;
+                // Debug.Log("added health Sender to ai");
+                // Debug.Log("added health reciever to ai");
             }
             else
             {
-                GroundUnitMover ground = newAI.GetComponent<GroundUnitMover>();
-                if (ground != null)
-                {
-                    ground.enabled = false;
-                    ground.behavior = GroundUnitMover.Behaviors.Parked;
-                }
+                Debug.Log(message.aiVehicleName + " has no health?");
             }
 
-            if (((AIUnitSpawn)actor.unitSpawn).subUnits.Count() == 0)
-            {//only run this code on units without subunits
-                ulong turretCount = 0;
-                foreach (ModuleTurret moduleTurret in newAI.GetComponentsInChildren<ModuleTurret>())
+            if (newAI.GetComponent<ShipMover>() != null)
+            {
+                ShipNetworker_Receiver shipNetworker = newAI.AddComponent<ShipNetworker_Receiver>();
+                shipNetworker.networkUID = message.networkID[currentSubActorID];
+            }
+            else if (newAI.GetComponent<GroundUnitMover>() != null)
+            {
+                if (actor.gameObject.GetComponent<Rigidbody>() != null)
                 {
-                    TurretNetworker_Receiver tRec = newAI.AddComponent<TurretNetworker_Receiver>();
-                    tRec.networkUID = message.networkID;
-                    tRec.turretID = turretCount;
-                    Debug.Log("Added turret " + turretCount + " to actor " + message.networkID + " uid");
-                    turretCount++;
-                }
-                ulong gunCount = 0;
-                foreach (GunTurretAI turretAI in newAI.GetComponentsInChildren<GunTurretAI>())
-                {
-                    turretAI.SetEngageEnemies(false);
-                    AAANetworker_Reciever aaaRec = newAI.AddComponent<AAANetworker_Reciever>();
-                    aaaRec.networkUID = message.networkID;
-                    aaaRec.gunID = gunCount;
-                    Debug.Log("Added gun " + gunCount + " to actor " + message.networkID + " uid");
-                    gunCount++;
+                    GroundNetworker_Receiver groundNetworker = newAI.AddComponent<GroundNetworker_Receiver>();
+                    groundNetworker.networkUID = message.networkID[currentSubActorID];
                 }
             }
-            IRSamLauncher iLauncher = newAI.GetComponent<IRSamLauncher>();
-            if (iLauncher != null)
+            else if (newAI.GetComponent<Rigidbody>() != null)
             {
-                //iLauncher.ml.RemoveAllMissiles();
-                iLauncher.ml.LoadAllMissiles();
-                iLauncher.SetEngageEnemies(false);
-                MissileNetworker_Receiver mlr;
-                //iLauncher.ml.LoadCount(message.IRSamMissiles.Length);
-                Debug.Log($"Adding IR id's on IR SAM, len = {message.IRSamMissiles.Length}.");
-                for (int i = 0; i < message.IRSamMissiles.Length; i++)
-                {
-                    mlr = iLauncher.ml.missiles[i]?.gameObject.AddComponent<MissileNetworker_Receiver>();
-                    mlr.thisML = iLauncher.ml;
-                    mlr.networkUID = message.IRSamMissiles[i];
-                }
-                Debug.Log("Added IR id's.");
+                Rigidbody rb = newAI.GetComponent<Rigidbody>();
+                RigidbodyNetworker_Receiver rbNetworker = newAI.AddComponent<RigidbodyNetworker_Receiver>();
+                rbNetworker.networkUID = message.networkID[currentSubActorID];
             }
-            Soldier soldier = newAI.GetComponent<Soldier>();
-            if (soldier != null)
+            if (actor.role == Actor.Roles.Air)
             {
-                soldier.SetEngageEnemies(false);
-                if (soldier.soldierType == Soldier.SoldierTypes.IRMANPAD)
+                PlaneNetworker_Receiver planeReceiver = newAI.AddComponent<PlaneNetworker_Receiver>();
+                planeReceiver.networkUID = message.networkID[currentSubActorID];
+                AIPilot aIPilot = newAI.GetComponent<AIPilot>();
+                aIPilot.enabled = false;
+                aIPilot.kPlane.SetToKinematic();
+                aIPilot.kPlane.enabled = false;
+                aIPilot.commandState = AIPilot.CommandStates.Navigation;
+                aIPilot.kPlane.enabled = true;
+                aIPilot.kPlane.SetVelocity(Vector3.zero);
+                aIPilot.kPlane.SetToDynamic();
+
+                RotationToggle wingRotator = aIPilot.wingRotator;
+                if (wingRotator != null)
+                {
+                    WingFoldNetworker_Receiver wingFoldReceiver = newAI.AddComponent<WingFoldNetworker_Receiver>();
+                    wingFoldReceiver.networkUID = message.networkID[currentSubActorID];
+                    wingFoldReceiver.wingController = wingRotator;
+                }
+                if (aIPilot.isVtol)
+                {
+                    //Debug.Log("Adding Tilt Controller to this vehicle " + message.networkID);
+                    EngineTiltNetworker_Receiver tiltReceiver = newAI.AddComponent<EngineTiltNetworker_Receiver>();
+                    tiltReceiver.networkUID = message.networkID[currentSubActorID];
+                }
+
+                if (actor.gameObject.GetComponentInChildren<ExteriorLightsController>() != null)
+                {
+                    ExtLight_Receiver extLight = actor.gameObject.AddComponent<ExtLight_Receiver>();
+                    extLight.networkUID = message.networkID[currentSubActorID];
+                }
+
+                Rigidbody rb = newAI.GetComponent<Rigidbody>();
+
+                foreach (Collider collider in newAI.GetComponentsInChildren<Collider>())
+                {
+                    if (collider)
+                    {
+                        collider.gameObject.layer = 9;
+                    }
+                }
+
+                Debug.Log("Doing weapon manager shit on " + newAI.name + ".");
+                WeaponManager weaponManager = newAI.GetComponent<WeaponManager>();
+                if (weaponManager == null)
+                    Debug.LogError(newAI.name + " does not seem to have a weapon maanger on it.");
+                else
+                {
+                    PlaneEquippableManager.SetLoadout(newAI, message.networkID[currentSubActorID], message.normalizedFuel, message.hpLoadout, message.cmLoadout);
+                }
+            }
+            else if (actor.role == Actor.Roles.Ground || actor.role == Actor.Roles.GroundArmor)
+            {
+                AIUnitSpawn aIUnitSpawn = newAI.GetComponent<AIUnitSpawn>();
+                if (aIUnitSpawn == null)
+                    Debug.LogWarning("AI unit spawn is null on respawned unit " + aIUnitSpawn);
+                // else
+                // newAI.GetComponent<AIUnitSpawn>().SetEngageEnemies(message.Aggresive);
+                VehicleMover vehicleMover = newAI.GetComponent<VehicleMover>();
+                if (vehicleMover != null)
+                {
+                    vehicleMover.enabled = false;
+                    vehicleMover.behavior = GroundUnitMover.Behaviors.Parked;
+                }
+                else
+                {
+                    GroundUnitMover ground = newAI.GetComponent<GroundUnitMover>();
+                    if (ground != null)
+                    {
+                        ground.enabled = false;
+                        ground.behavior = GroundUnitMover.Behaviors.Parked;
+                    }
+                }
+
+                if (((AIUnitSpawn)actor.unitSpawn).subUnits.Count() == 0)
+                {//only run this code on units without subunits
+                    ulong turretCount = 0;
+                    foreach (ModuleTurret moduleTurret in newAI.GetComponentsInChildren<ModuleTurret>())
+                    {
+                        TurretNetworker_Receiver tRec = newAI.AddComponent<TurretNetworker_Receiver>();
+                        tRec.networkUID = message.networkID[currentSubActorID];
+                        tRec.turretID = turretCount;
+                        Debug.Log("Added turret " + turretCount + " to actor " + message.networkID + " uid");
+                        turretCount++;
+                    }
+                    ulong gunCount = 0;
+                    foreach (GunTurretAI turretAI in newAI.GetComponentsInChildren<GunTurretAI>())
+                    {
+                        turretAI.SetEngageEnemies(false);
+                        AAANetworker_Reciever aaaRec = newAI.AddComponent<AAANetworker_Reciever>();
+                        aaaRec.networkUID = message.networkID[currentSubActorID];
+                        aaaRec.gunID = gunCount;
+                        Debug.Log("Added gun " + gunCount + " to actor " + message.networkID + " uid");
+                        gunCount++;
+                    }
+                }
+                IRSamLauncher iLauncher = newAI.GetComponent<IRSamLauncher>();
+                if (iLauncher != null)
+                {
+                    //iLauncher.ml.RemoveAllMissiles();
+                    iLauncher.ml.LoadAllMissiles();
+                    iLauncher.SetEngageEnemies(false);
+                    MissileNetworker_Receiver mlr;
+                    //iLauncher.ml.LoadCount(message.IRSamMissiles.Length);
+                    Debug.Log($"Adding IR id's on IR SAM, len = {message.IRSamMissiles.Length}.");
+                    for (int i = 0; i < message.IRSamMissiles.Length; i++)
+                    {
+                        mlr = iLauncher.ml.missiles[i]?.gameObject.AddComponent<MissileNetworker_Receiver>();
+                        mlr.thisML = iLauncher.ml;
+                        mlr.networkUID = message.IRSamMissiles[i];
+                    }
+                    Debug.Log("Added IR id's.");
+                }
+                Soldier soldier = newAI.GetComponent<Soldier>();
+                if (soldier != null)
                 {
                     soldier.SetEngageEnemies(false);
-                    IRMissileLauncher ir = soldier.irMissileLauncher;
-                    if (ir != null)
+                    if (soldier.soldierType == Soldier.SoldierTypes.IRMANPAD)
                     {
-                        //ir.RemoveAllMissiles();
-                        ir.LoadAllMissiles();
-                        MissileNetworker_Receiver mlr;
-                        //ir.LoadCount(message.IRSamMissiles.Length);
-                        Debug.Log($"Adding IR id's on manpads, len = {message.IRSamMissiles.Length}.");
-                        for (int i = 0; i < message.IRSamMissiles.Length; i++)
+                        soldier.SetEngageEnemies(false);
+                        IRMissileLauncher ir = soldier.irMissileLauncher;
+                        if (ir != null)
                         {
-                            mlr = ir.missiles[i]?.gameObject.AddComponent<MissileNetworker_Receiver>();
-                            mlr.thisML = ir;
-                            mlr.networkUID = message.IRSamMissiles[i];
+                            //ir.RemoveAllMissiles();
+                            ir.LoadAllMissiles();
+                            MissileNetworker_Receiver mlr;
+                            //ir.LoadCount(message.IRSamMissiles.Length);
+                            Debug.Log($"Adding IR id's on manpads, len = {message.IRSamMissiles.Length}.");
+                            for (int i = 0; i < message.IRSamMissiles.Length; i++)
+                            {
+                                mlr = ir.missiles[i]?.gameObject.AddComponent<MissileNetworker_Receiver>();
+                                mlr.thisML = ir;
+                                mlr.networkUID = message.IRSamMissiles[i];
+                            }
+                            Debug.Log("Added IR id's on manpads.");
                         }
-                        Debug.Log("Added IR id's on manpads.");
-                    }
-                    else
-                    {
-                        Debug.Log($"Manpad {message.networkID} forgot its rocket launcher pepega.");
+                        else
+                        {
+                            Debug.Log($"Manpad {message.networkID} forgot its rocket launcher pepega.");
+                        }
                     }
                 }
-            }
-            SAMLauncher launcher = newAI.GetComponent<SAMLauncher>();
-            if (launcher != null)
-            {
-                SamNetworker_Reciever samNetworker = launcher.gameObject.AddComponent<SamNetworker_Reciever>();
-                samNetworker.networkUID = message.networkID;
-                samNetworker.radarUIDS = message.radarIDs;
-                //Debug.Log($"Added samNetworker to uID {message.networkID}.");
-                launcher.SetEngageEnemies(false);
-                launcher.fireInterval = float.MaxValue;
-                launcher.lockingRadars = null;
-            }
-            IRSamLauncher ml = actor.gameObject.GetComponentInChildren<IRSamLauncher>();
-            if (ml != null)
-            {
-                ml.SetEngageEnemies(false);
-                MissileNetworker_Receiver lastRec;
-                for (int i = 0; i < ml.ml.missiles.Length; i++)
+                SAMLauncher launcher = newAI.GetComponent<SAMLauncher>();
+                if (launcher != null)
                 {
-                    lastRec = ml.ml.missiles[i].gameObject.AddComponent<MissileNetworker_Receiver>();
-                    lastRec.networkUID = message.IRSamMissiles[i];
-                    lastRec.thisML = ml.ml;
+                    SamNetworker_Reciever samNetworker = launcher.gameObject.AddComponent<SamNetworker_Reciever>();
+                    samNetworker.networkUID = message.networkID[currentSubActorID];
+                    samNetworker.radarUIDS = message.radarIDs;
+                    //Debug.Log($"Added samNetworker to uID {message.networkID}.");
+                    launcher.SetEngageEnemies(false);
+                    launcher.fireInterval = float.MaxValue;
+                    launcher.lockingRadars = null;
+                }
+                IRSamLauncher ml = actor.gameObject.GetComponentInChildren<IRSamLauncher>();
+                if (ml != null)
+                {
+                    ml.SetEngageEnemies(false);
+                    MissileNetworker_Receiver lastRec;
+                    for (int i = 0; i < ml.ml.missiles.Length; i++)
+                    {
+                        lastRec = ml.ml.missiles[i].gameObject.AddComponent<MissileNetworker_Receiver>();
+                        lastRec.networkUID = message.IRSamMissiles[i];
+                        lastRec.thisML = ml.ml;
+                    }
                 }
             }
-        }
-        if (actor.gameObject.GetComponentInChildren<LockingRadar>() != null)
-        {
-            // Debug.Log($"Adding radar reciever to object {actor.name}.");
-            LockingRadarNetworker_Receiver lr = actor.gameObject.AddComponent<LockingRadarNetworker_Receiver>();
-            lr.networkUID = message.networkID;
-        }
-        AIVehicles.Add(new AI(newAI, message.aiVehicleName, actor, message.networkID));
-        Debug.Log("Spawned in AI " + newAI.name);
+            if (actor.gameObject.GetComponentInChildren<LockingRadar>() != null)
+            {
+                // Debug.Log($"Adding radar reciever to object {actor.name}.");
+                LockingRadarNetworker_Receiver lr = actor.gameObject.AddComponent<LockingRadarNetworker_Receiver>();
+                lr.networkUID = message.networkID[currentSubActorID];
+            }
+            AIVehicles.Add(new AI(newAI, message.aiVehicleName, actor, message.networkID[currentSubActorID]));
+            Debug.Log("Spawned in AI " + newAI.name);
 
-        if (!VTOLVR_Multiplayer.AIDictionaries.allActors.ContainsKey(message.networkID))
-        {
-            VTOLVR_Multiplayer.AIDictionaries.allActors.Add(message.networkID, actor);
-        }
-        if (!VTOLVR_Multiplayer.AIDictionaries.reverseAllActors.ContainsKey(actor))
-        {
-            VTOLVR_Multiplayer.AIDictionaries.reverseAllActors.Add(actor, message.networkID);
+            if (!VTOLVR_Multiplayer.AIDictionaries.allActors.ContainsKey(message.networkID[currentSubActorID]))
+            {
+                VTOLVR_Multiplayer.AIDictionaries.allActors.Add(message.networkID[currentSubActorID], actor);
+            }
+            if (!VTOLVR_Multiplayer.AIDictionaries.reverseAllActors.ContainsKey(actor))
+            {
+                VTOLVR_Multiplayer.AIDictionaries.reverseAllActors.Add(actor, message.networkID[currentSubActorID]);
+            }
+
+            currentSubActorID++;
         }
     }
     /// <summary>
@@ -418,6 +424,11 @@ public static class AIManager
                     HPInfo[] hPInfos2 = null;
                     int[] cmLoadout = null;
                     UIDNetworker_Sender uidSender = actor.gameObject.GetComponent<UIDNetworker_Sender>();
+                    List<ulong> subUIDs = new List<ulong>();
+                    foreach (UIDNetworker_Sender subActor in actor.gameObject.GetComponentsInChildren<UIDNetworker_Sender>()) {
+                        subUIDs.Add(subActor.networkUID);
+                    }
+
                     if (actor.role == Actor.Roles.Air)
                     {
                         WeaponManager wm = actor.gameObject.GetComponent<WeaponManager>();
@@ -486,7 +497,7 @@ public static class AIManager
                         {
                             NetworkSenderThread.Instance.SendPacketToSpecificPlayer(steamID, new Message_SpawnAIVehicle(actor.name, GetUnitNameFromCatalog(actor.unitSpawn.unitName), redfor,
                                 VTMapManager.WorldToGlobalPoint(actor.gameObject.transform.position),
-                                actor.gameObject.transform.rotation, uidSender.networkUID, hPInfos2, cmLoadout, 0.65f, Aggresion, actor.unitSpawn.unitSpawner.unitInstanceID, letters, ids.ToArray(), irIDS),
+                                actor.gameObject.transform.rotation, uidSender.networkUID, subUIDs.ToArray(), hPInfos2, cmLoadout, 0.65f, Aggresion, actor.unitSpawn.unitSpawner.unitInstanceID, letters, ids.ToArray(), irIDS),
                                 EP2PSend.k_EP2PSendReliableWithBuffering);
                         }
                         else
@@ -494,7 +505,7 @@ public static class AIManager
                             // Debug.Log("It seems that " + actor.name + " is not in a unit group, sending anyways.");
                             NetworkSenderThread.Instance.SendPacketToSpecificPlayer(steamID, new Message_SpawnAIVehicle(actor.name, GetUnitNameFromCatalog(actor.unitSpawn.unitName), redfor,
                                 VTMapManager.WorldToGlobalPoint(actor.gameObject.transform.position),
-                                actor.gameObject.transform.rotation, uidSender.networkUID, hPInfos2, cmLoadout, 0.65f, Aggresion, actor.unitSpawn.unitSpawner.unitInstanceID, ids.ToArray(), irIDS),
+                                actor.gameObject.transform.rotation, uidSender.networkUID, subUIDs.ToArray(), hPInfos2, cmLoadout, 0.65f, Aggresion, actor.unitSpawn.unitSpawner.unitInstanceID, ids.ToArray(), irIDS),
                                 EP2PSend.k_EP2PSendReliableWithBuffering);
                         }
                     }
@@ -505,14 +516,14 @@ public static class AIManager
                         {
                                 Networker.addToReliableSendBuffer(new Message_SpawnAIVehicle(actor.name, GetUnitNameFromCatalog(actor.unitSpawn.unitName), redfor,
                                     VTMapManager.WorldToGlobalPoint(actor.gameObject.transform.position),
-                                    actor.gameObject.transform.rotation, uidSender.networkUID, hPInfos2, cmLoadout, 0.65f, Aggresion, actor.unitSpawn.unitSpawner.unitInstanceID, letters, ids.ToArray(), irIDS));
+                                    actor.gameObject.transform.rotation, uidSender.networkUID, subUIDs.ToArray(), hPInfos2, cmLoadout, 0.65f, Aggresion, actor.unitSpawn.unitSpawner.unitInstanceID, letters, ids.ToArray(), irIDS));
                         }
                         else
                         {
                                 // Debug.Log("It seems that " + actor.name + " is not in a unit group, sending anyways.");
                                 Networker.addToReliableSendBuffer(new Message_SpawnAIVehicle(actor.name, GetUnitNameFromCatalog(actor.unitSpawn.unitName), redfor,
                                 VTMapManager.WorldToGlobalPoint(actor.gameObject.transform.position),
-                                actor.gameObject.transform.rotation, uidSender.networkUID, hPInfos2, cmLoadout, 0.65f, Aggresion, actor.unitSpawn.unitSpawner.unitInstanceID, ids.ToArray(), irIDS));
+                                actor.gameObject.transform.rotation, uidSender.networkUID, subUIDs.ToArray(), hPInfos2, cmLoadout, 0.65f, Aggresion, actor.unitSpawn.unitSpawner.unitInstanceID, ids.ToArray(), irIDS));
                         }
                     }
                 }
@@ -533,150 +544,141 @@ public static class AIManager
 
         if (actor.parentActor == null)
         {
-            ulong networkUID = Networker.GenerateNetworkUID();
-            Debug.Log("Adding UID senders to " + actor.name + $", their uID will be {networkUID}.");
-            AIManager.AIVehicles.Add(new AIManager.AI(actor.gameObject, actor.unitSpawn.unitName, actor, networkUID));
-            if (!VTOLVR_Multiplayer.AIDictionaries.allActors.ContainsKey(networkUID))
-            {
-                VTOLVR_Multiplayer.AIDictionaries.allActors.Add(networkUID, actor);
-            }
-            if (!VTOLVR_Multiplayer.AIDictionaries.reverseAllActors.ContainsKey(actor))
-            {
-                VTOLVR_Multiplayer.AIDictionaries.reverseAllActors.Add(actor, networkUID);
-            }
-            UIDNetworker_Sender uidSender = actor.gameObject.AddComponent<UIDNetworker_Sender>();
-            uidSender.networkUID = networkUID;
-            if (actor.GetComponentInChildren<LockingRadar>() != null)
-            {
-                Debug.Log($"Adding radar sender to object {actor.name}.");
-                LockingRadarNetworker_Sender lastLockingSender = actor.gameObject.AddComponent<LockingRadarNetworker_Sender>();
-                lastLockingSender.networkUID = networkUID;
-            }
-            if (actor.gameObject.GetComponent<Health>() != null)
-            {
-                HealthNetworker_Sender healthNetworker = actor.gameObject.AddComponent<HealthNetworker_Sender>();
-                healthNetworker.networkUID = networkUID;
-                Debug.Log("added health sender to ai");
-            }
-            else
-            {
-                Debug.Log(actor.name + " has no health?");
-            }
-            if (actor.gameObject.GetComponent<ShipMover>() != null)
-            {
-                ShipNetworker_Sender shipNetworker = actor.gameObject.AddComponent<ShipNetworker_Sender>();
-                shipNetworker.networkUID = networkUID;
-            }
-            else if (actor.gameObject.GetComponent<GroundUnitMover>() != null)
-            {
-                if (actor.gameObject.GetComponent<Rigidbody>() != null)
+            foreach (Actor child in actor.gameObject.GetComponentsInChildren<Actor>()) {
+                ulong networkUID = Networker.GenerateNetworkUID();
+                Debug.Log("Adding UID senders to " + child.name + $", their uID will be {networkUID}.");
+                AIManager.AIVehicles.Add(new AIManager.AI(child.gameObject, child.unitSpawn.unitName, child, networkUID));
+                if (!VTOLVR_Multiplayer.AIDictionaries.allActors.ContainsKey(networkUID))
                 {
-                    GroundNetworker_Sender lastGroundSender = actor.gameObject.AddComponent<GroundNetworker_Sender>();
-                    lastGroundSender.networkUID = networkUID;
+                    VTOLVR_Multiplayer.AIDictionaries.allActors.Add(networkUID, child);
                 }
-            }
-            else if (actor.gameObject.GetComponent<Rigidbody>() != null)
-            {
-                RigidbodyNetworker_Sender lastRigidSender = actor.gameObject.AddComponent<RigidbodyNetworker_Sender>();
-                lastRigidSender.networkUID = networkUID;
-                //reduced tick rate for ground Units
-                if (actor.role == Actor.Roles.Ground)
+                if (!VTOLVR_Multiplayer.AIDictionaries.reverseAllActors.ContainsKey(child))
                 {
-                    lastRigidSender.tickRate = 0.01f;
+                    VTOLVR_Multiplayer.AIDictionaries.reverseAllActors.Add(child, networkUID);
                 }
-                if (actor.role == Actor.Roles.GroundArmor)
+                UIDNetworker_Sender uidSender = child.gameObject.AddComponent<UIDNetworker_Sender>();
+                uidSender.networkUID = networkUID;
+                if (child.GetComponentInChildren<LockingRadar>() != null)
                 {
-                    lastRigidSender.tickRate = 1.0f;
+                    Debug.Log($"Adding radar sender to object {child.name}.");
+                    LockingRadarNetworker_Sender lastLockingSender = child.gameObject.AddComponent<LockingRadarNetworker_Sender>();
+                    lastLockingSender.networkUID = networkUID;
                 }
-            }
-            if (!actor.isPlayer && actor.role == Actor.Roles.Air)
-            {
-                if (actor.weaponManager != null)
-                    PlaneEquippableManager.generateHpInfoListFromWeaponManager(actor.weaponManager, PlaneEquippableManager.HPInfoListGenerateNetworkType.generate, uidSender.networkUID);
-                PlaneNetworker_Sender lastPlaneSender = actor.gameObject.AddComponent<PlaneNetworker_Sender>();
-                lastPlaneSender.networkUID = networkUID;
-            }
+                if (child.gameObject.GetComponent<Health>() != null)
+                {
+                    HealthNetworker_Sender healthNetworker = child.gameObject.AddComponent<HealthNetworker_Sender>();
+                    healthNetworker.networkUID = networkUID;
+                    Debug.Log("added health sender to ai");
+                }
+                else
+                {
+                    Debug.Log(child.name + " has no health?");
+                }
+                if (child.gameObject.GetComponent<ShipMover>() != null)
+                {
+                    ShipNetworker_Sender shipNetworker = child.gameObject.AddComponent<ShipNetworker_Sender>();
+                    shipNetworker.networkUID = networkUID;
+                }
+                else if (child.gameObject.GetComponent<GroundUnitMover>() != null)
+                {
+                    if (child.gameObject.GetComponent<Rigidbody>() != null)
+                    {
+                        GroundNetworker_Sender lastGroundSender = child.gameObject.AddComponent<GroundNetworker_Sender>();
+                        lastGroundSender.networkUID = networkUID;
+                    }
+                }
+                else if (child.gameObject.GetComponent<Rigidbody>() != null)
+                {
+                    RigidbodyNetworker_Sender lastRigidSender = child.gameObject.AddComponent<RigidbodyNetworker_Sender>();
+                    lastRigidSender.networkUID = networkUID;
+                    //reduced tick rate for ground Units
+                    if (child.role == Actor.Roles.Ground)
+                    {
+                        lastRigidSender.tickRate = 0.01f;
+                    }
+                    if (child.role == Actor.Roles.GroundArmor)
+                    {
+                        lastRigidSender.tickRate = 1.0f;
+                    }
+                }
+                if (!child.isPlayer && child.role == Actor.Roles.Air)
+                {
+                    if (child.weaponManager != null)
+                        PlaneEquippableManager.generateHpInfoListFromWeaponManager(child.weaponManager, PlaneEquippableManager.HPInfoListGenerateNetworkType.generate, uidSender.networkUID);
+                    PlaneNetworker_Sender lastPlaneSender = child.gameObject.AddComponent<PlaneNetworker_Sender>();
+                    lastPlaneSender.networkUID = networkUID;
+                }
 
-            if (actor.gameObject.GetComponentInChildren<ExteriorLightsController>() != null)
-            {
-                //ExtNPCLight_Sender extLight = actor.gameObject.AddComponent<ExtNPCLight_Sender>();
-                //extLight.networkUID = networkUID;
-            }
+                if (child.gameObject.GetComponentInChildren<ExteriorLightsController>() != null)
+                {
+                    //ExtNPCLight_Sender extLight = actor.gameObject.AddComponent<ExtNPCLight_Sender>();
+                    //extLight.networkUID = networkUID;
+                }
 
-            if (((AIUnitSpawn)actor.unitSpawn).subUnits.Count() == 0)
-            {//only run this code on units without subunits
-                ulong turretCount = 0;
-                foreach (ModuleTurret moduleTurret in actor.gameObject.GetComponentsInChildren<ModuleTurret>())
-                {
-                    TurretNetworker_Sender tSender = moduleTurret.gameObject.AddComponent<TurretNetworker_Sender>();
-                    tSender.networkUID = networkUID;
-                    tSender.turretID = turretCount;
-                    Debug.Log("Added turret " + turretCount + " to actor " + networkUID + " uid");
-                    turretCount++;
+                if (((AIUnitSpawn)child.unitSpawn).subUnits.Count() == 0)
+                {//only run this code on units without subunits
+                    ulong turretCount = 0;
+                    foreach (ModuleTurret moduleTurret in child.gameObject.GetComponentsInChildren<ModuleTurret>())
+                    {
+                        TurretNetworker_Sender tSender = moduleTurret.gameObject.AddComponent<TurretNetworker_Sender>();
+                        tSender.networkUID = networkUID;
+                        tSender.turretID = turretCount;
+                        Debug.Log("Added turret " + turretCount + " to actor " + networkUID + " uid");
+                        turretCount++;
+                    }
+                    ulong gunCount = 0;
+                    foreach (GunTurretAI moduleTurret in child.gameObject.GetComponentsInChildren<GunTurretAI>())
+                    {
+                        AAANetworker_Sender gSender = moduleTurret.gameObject.AddComponent<AAANetworker_Sender>();
+                        gSender.networkUID = networkUID;
+                        gSender.gunID = gunCount;
+                        Debug.Log("Added gun " + gunCount + " to actor " + networkUID + " uid");
+                        gunCount++;
+                    }
                 }
-                ulong gunCount = 0;
-                foreach (GunTurretAI moduleTurret in actor.gameObject.GetComponentsInChildren<GunTurretAI>())
-                {
-                    AAANetworker_Sender gSender = moduleTurret.gameObject.AddComponent<AAANetworker_Sender>();
-                    gSender.networkUID = networkUID;
-                    gSender.gunID = gunCount;
-                    Debug.Log("Added gun " + gunCount + " to actor " + networkUID + " uid");
-                    gunCount++;
-                }
-            }
-            IRSamLauncher ml = actor.gameObject.GetComponentInChildren<IRSamLauncher>();
-            if (ml != null)
-            {
-                List<ulong> samIDS = new List<ulong>();
-                MissileNetworker_Sender lastSender;
-                for (int i = 0; i < ml.ml.missiles.Length; i++)
-                {
-                    lastSender = ml.ml.missiles[i].gameObject.AddComponent<MissileNetworker_Sender>();
-                    lastSender.networkUID = Networker.GenerateNetworkUID();
-                    samIDS.Add(lastSender.networkUID);
-                }
-                actor.gameObject.AddComponent<IRSAMNetworker_Sender>().irIDs = samIDS.ToArray();
-            }
-            Soldier soldier = actor.gameObject.GetComponentInChildren<Soldier>();
-            if (soldier != null)
-            {
-                if (soldier.soldierType == Soldier.SoldierTypes.IRMANPAD)
+                IRSamLauncher ml = child.gameObject.GetComponentInChildren<IRSamLauncher>();
+                if (ml != null)
                 {
                     List<ulong> samIDS = new List<ulong>();
                     MissileNetworker_Sender lastSender;
-                    for (int i = 0; i < soldier.irMissileLauncher.missiles.Length; i++)
+                    for (int i = 0; i < ml.ml.missiles.Length; i++)
                     {
-                        lastSender = soldier.irMissileLauncher.missiles[i].gameObject.AddComponent<MissileNetworker_Sender>();
+                        lastSender = ml.ml.missiles[i].gameObject.AddComponent<MissileNetworker_Sender>();
                         lastSender.networkUID = Networker.GenerateNetworkUID();
                         samIDS.Add(lastSender.networkUID);
                     }
-                    actor.gameObject.AddComponent<IRSAMNetworker_Sender>().irIDs = samIDS.ToArray();
+                    child.gameObject.AddComponent<IRSAMNetworker_Sender>().irIDs = samIDS.ToArray();
                 }
-            }
-            AirportManager airport = actor.gameObject.GetComponent<AirportManager>();
-            if (airport != null)
-            {
-                AIManager.SetUpCarrier(actor.gameObject, networkUID, actor.team);
-            }
-            if (!actor.unitSpawn.unitSpawner.spawned)
-            {
-                Debug.Log("Actor " + actor.name + " isn't spawned yet, still sending.");
+                Soldier soldier = child.gameObject.GetComponentInChildren<Soldier>();
+                if (soldier != null)
+                {
+                    if (soldier.soldierType == Soldier.SoldierTypes.IRMANPAD)
+                    {
+                        List<ulong> samIDS = new List<ulong>();
+                        MissileNetworker_Sender lastSender;
+                        for (int i = 0; i < soldier.irMissileLauncher.missiles.Length; i++)
+                        {
+                            lastSender = soldier.irMissileLauncher.missiles[i].gameObject.AddComponent<MissileNetworker_Sender>();
+                            lastSender.networkUID = Networker.GenerateNetworkUID();
+                            samIDS.Add(lastSender.networkUID);
+                        }
+                        child.gameObject.AddComponent<IRSAMNetworker_Sender>().irIDs = samIDS.ToArray();
+                    }
+                }
+                AirportManager airport = child.gameObject.GetComponent<AirportManager>();
+                if (airport != null)
+                {
+                    AIManager.SetUpCarrier(child.gameObject, networkUID, child.team);
+                }
+                if (!child.unitSpawn.unitSpawner.spawned)
+                {
+                    Debug.Log("Actor " + child.name + " isn't spawned yet, still sending.");
+                }
             }
         }
         else
         {
             Debug.Log(actor.name + " has a parent, not giving an uID sender.");
-            Debug.Log("This is a subunit, disabling AI to avoid desync");
-            if (actor.gameObject.GetComponentInChildren<GunTurretAI>() != null)
-            {
-                Debug.Log("Gunturret AI disabled");
-                GameObject.Destroy(actor.gameObject.GetComponentInChildren<GunTurretAI>());
-            }
-            if (actor.gameObject.GetComponentInChildren<SAMLauncher>() != null)
-            {
-                Debug.Log("SAM Launcher disabled");
-                actor.gameObject.GetComponentInChildren<SAMLauncher>().enabled = false;
-            }
         }
     }
 
