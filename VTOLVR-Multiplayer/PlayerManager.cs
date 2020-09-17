@@ -38,7 +38,7 @@ public static class PlayerManager
     private static Queue<Packet> playersToSpawnQueue = new Queue<Packet>();
     private static Queue<CSteamID> playersToSpawnIdQueue = new Queue<CSteamID>();
     public static bool gameLoaded;
-    private static GameObject av42cPrefab, fa26bPrefab, f45Prefab;
+    public static GameObject av42cPrefab, fa26bPrefab, f45Prefab;
     private static List<ulong> spawnedVehicles = new List<ulong>();
     public static ulong localUID;
     private static Packet storedSpawnMessage;
@@ -428,7 +428,7 @@ public static class PlayerManager
 
                 }
 
-        EndMission.instance.HideEndMission();
+     
         /*if(0)
         if (gameLoaded)
         {
@@ -468,7 +468,7 @@ public static class PlayerManager
         }*/
         if (gameLoaded)
         {
-
+            EndMission.instance.HideEndMission();
             Actor  player = FlightSceneManager.instance.playerActor;
             if(player)
             {

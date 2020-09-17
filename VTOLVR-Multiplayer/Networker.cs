@@ -350,14 +350,15 @@ public class Networker : MonoBehaviour
             }
         }
         ReadP2P();
-       
-        /*foreach (CSteamID  player in players)
+       /*if(isHost)
+         foreach (CSteamID  player in players)
         {
-            playerResponseDict[player.m_SteamID] += Time.deltaTime;
+          
             if(player != hostID)
 
             {
-                if (playerResponseDict[player.m_SteamID] > 5.0f)
+                playerResponseDict[player.m_SteamID] = playerResponseDict[player.m_SteamID]+Time.deltaTime;
+                if (playerResponseDict[player.m_SteamID] > 15.0f)
                 {
                     playerStatusDic[player] = PlayerStatus.Disconected;
                     players.Remove(player);
@@ -377,7 +378,7 @@ public class Networker : MonoBehaviour
                 }
             }
            
-        }*/
+        } */
         PlayerManager.Update();
     }
     private void FixedUpdate()
