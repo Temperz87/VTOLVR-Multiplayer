@@ -350,34 +350,35 @@ public class Networker : MonoBehaviour
             }
         }
         ReadP2P();
-       /* if(isHost)
-        { 
+       
         foreach (CSteamID  player in players)
         {
             playerResponseDict[player.m_SteamID] += Time.deltaTime;
             if(player != hostID)
-            if (playerResponseDict[player.m_SteamID] > 5.0f)
+
             {
-                playerStatusDic[player] = PlayerStatus.Disconected;
-                players.Remove(player);
-                playerResponseDict.Remove(player.m_SteamID);
-                NetworkSenderThread.Instance.RemovePlayer(player);
-                Message_Disconnecting disMessage = new Message_Disconnecting(player.m_SteamID, false);
-                NetworkSenderThread.Instance.SendPacketAsHostToAllClients(disMessage, EP2PSend.k_EP2PSendReliable);
-            }
-            foreach(PlayerManager.Player p in PlayerManager.players)
-            {
-                if(p.vehicleUID == player.m_SteamID)
+                if (playerResponseDict[player.m_SteamID] > 5.0f)
                 {
-                    PlayerManager.players.Remove(p);
+                    playerStatusDic[player] = PlayerStatus.Disconected;
+                    players.Remove(player);
+                    playerResponseDict.Remove(player.m_SteamID);
+                    NetworkSenderThread.Instance.RemovePlayer(player);
+                    Message_Disconnecting disMessage = new Message_Disconnecting(player.m_SteamID, false);
+                    NetworkSenderThread.Instance.SendPacketAsHostToAllClients(disMessage, EP2PSend.k_EP2PSendReliable);
+
+                    foreach (PlayerManager.Player p in PlayerManager.players)
+                    {
+                        if (p.vehicleUID == player.m_SteamID)
+                        {
+                            PlayerManager.players.Remove(p);
+                        }
+                    }
+                    UpdateLoadingText();
                 }
             }
-                UpdateLoadingText();
+           
         }
-        }*/
         PlayerManager.Update();
-       
-
     }
     private void FixedUpdate()
     {

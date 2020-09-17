@@ -84,9 +84,14 @@ class HealthNetworker_Sender : MonoBehaviour
                 killerName = killerNameImproved;
             }
         }
+        string selfName = PlayerManager.GetPlayerNameFromActor(ownerActor);
 
-        FlightLogger.Log(PlayerManager.GetPlayerNameFromActor(ownerActor) + " was killed by " + killerName + " with a " + health.killMessage);
-        lastMessage.message = PlayerManager.GetPlayerNameFromActor(ownerActor) + " was killed by " + killerName + " with a " + health.killMessage;
+        if(selfName.Length<2)
+        {
+            selfName = ownerActor.name;
+        }
+        FlightLogger.Log(selfName + " was killed by " + killerName + " with a " + health.killMessage);
+        lastMessage.message = selfName + " was killed by " + killerName + " with a " + health.killMessage;
 
         if (Networker.isHost)
             NetworkSenderThread.Instance.SendPacketAsHostToAllClients(lastMessage, Steamworks.EP2PSend.k_EP2PSendReliable);

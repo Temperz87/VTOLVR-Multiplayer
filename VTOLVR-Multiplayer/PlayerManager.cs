@@ -700,43 +700,6 @@ public static class PlayerManager
 
 
         firstSpawnDone = true;
-        /*if(!firstSpawn)
-        if (!Networker.isHost) {
-        actor.health.Kill();
-                localVehicle.transform.position = new Vector3(1000000, 10000, 10000);
-            }
-      */
-
-
-        /// * //bad code we ran this before in  SetupLocalAircraft(localVehicle, pos, rot, UID);
-        /*List<HPInfo> hpInfos = PlaneEquippableManager.generateLocalHpInfoList(UID);
-        CountermeasureManager cmManager = localVehicle.GetComponentInChildren<CountermeasureManager>();
-        List<int> cm = PlaneEquippableManager.generateCounterMeasuresFromCmManager(cmManager);
-        float fuel = PlaneEquippableManager.generateLocalFuelValue();
-
-
-        
-        
-        Debug.Log("Assembled our local vehicle");
-        if (!Networker.isHost || Multiplayer.SoloTesting)
-        {
-            // Not host, so send host the spawn vehicle message
-            Debug.Log($"Sending spawn vehicle message to: {Networker.hostID}");
-            NetworkSenderThread.Instance.SendPacketToSpecificPlayer(Networker.hostID,
-                new Message_SpawnPlayerVehicle(currentVehicle,
-                    new Vector3D(pos),
-                    rot,
-                    SteamUser.GetSteamID().m_SteamID,
-                    UID,
-                    hpInfos.ToArray(),
-                    cm.ToArray(),
-                    fuel, PlayerManager.teamLeftie),
-                EP2PSend.k_EP2PSendReliable);
-        }
-        else
-        {
-            Debug.Log("I am host, no need to immediately forward my assembled vehicle");
-        }*/
     }
 
     public static void MissileDamage(Packet packet)
@@ -758,8 +721,7 @@ public static class PlayerManager
             Actor act = VTOLVR_Multiplayer.AIDictionaries.allActors[actorTodamage];
             if (act != null)
                 act.health.Damage(lastMissileDamageMessage.damage, act.position, Health.DamageTypes.Impact, source, "Missile Impact");
-
-            Debug.Log("applied");
+             
         }
     }
 
@@ -780,7 +742,7 @@ public static class PlayerManager
 
         RigidbodyNetworker_Sender rbSender = localVehicle.AddComponent<RigidbodyNetworker_Sender>();
         rbSender.networkUID = UID;
-
+        rbSender.tickRate = 20;
         //rbSender.SetSpawn(pos, rot);
         if (currentVehicle == VTOLVehicles.AV42C)
         {
