@@ -44,7 +44,7 @@ class PatchBullet
                     {
 
                     }
-
+                    
                     Debug.Log("hit player sending bullet packet");
                     Message_BulletHit hitmsg = new Message_BulletHit(PlayerManager.localUID, lastID, sourceID, VTMapManager.WorldToGlobalPoint(pos), new Vector3D(vel), damage);
                     NetworkSenderThread.Instance.SendPacketToSpecificPlayer(Networker.hostID, hitmsg, Steamworks.EP2PSend.k_EP2PSendReliable);

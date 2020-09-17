@@ -428,7 +428,7 @@ public static class PlayerManager
 
                 }
 
-       
+        EndMission.instance.HideEndMission();
         /*if(0)
         if (gameLoaded)
         {
