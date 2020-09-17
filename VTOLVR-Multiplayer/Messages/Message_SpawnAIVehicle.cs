@@ -13,7 +13,7 @@ public class Message_SpawnAIVehicle : Message
     public SerializableQuaternion rotation;
     // public ulong csteamID;
     public ulong rootActorNetworkID;
-    public ulong[] networkID;
+    public ulong[] networkIDs;
     public HPInfo[] hpLoadout;
     public int[] cmLoadout;
     public float normalizedFuel;
@@ -26,14 +26,14 @@ public class Message_SpawnAIVehicle : Message
     public bool hasGroup { get; private set; }
     // public int playerCount;
 
-    public Message_SpawnAIVehicle(string aiVehicleName, string unitName, bool redforb, Vector3D position, Quaternion rotation, ulong rootActorNetworkID, ulong[] networkID, HPInfo[] hpLoadout, int[] cmLoadout, float normalizedFuel, bool Aggresive, int unitInstanceID, PhoneticLetters unitGroup, ulong[] radarIDs, ulong[] IRSAMissiles)
+    public Message_SpawnAIVehicle(string aiVehicleName, string unitName, bool redforb, Vector3D position, Quaternion rotation, ulong rootActorNetworkID, ulong[] networkIDs, HPInfo[] hpLoadout, int[] cmLoadout, float normalizedFuel, bool Aggresive, int unitInstanceID, PhoneticLetters unitGroup, ulong[] radarIDs, ulong[] IRSAMissiles)
     {
         this.aiVehicleName = aiVehicleName;
         this.unitName = unitName;
         this.position = position;
         this.rotation = rotation;
         this.rootActorNetworkID = rootActorNetworkID;
-        this.networkID = networkID;
+        this.networkIDs = networkIDs;
         this.hpLoadout = hpLoadout;
         this.cmLoadout = cmLoadout;
         this.normalizedFuel = normalizedFuel;
@@ -47,14 +47,14 @@ public class Message_SpawnAIVehicle : Message
         // this.playerCount = playerCount;
         type = MessageType.SpawnAiVehicle;
     }
-    public Message_SpawnAIVehicle(string aiVehicleName, string unitName, bool redforb, Vector3D position, Quaternion rotation, ulong rootActorNetworkID, ulong[] networkID, HPInfo[] hpLoadout, int[] cmLoadout, float normalizedFuel, bool Aggresive, int unitInstanceID, ulong[] radarIDs, ulong[] IRSAMissiles)
+    public Message_SpawnAIVehicle(string aiVehicleName, string unitName, bool redforb, Vector3D position, Quaternion rotation, ulong rootActorNetworkID, ulong[] networkIDs, HPInfo[] hpLoadout, int[] cmLoadout, float normalizedFuel, bool Aggresive, int unitInstanceID, ulong[] radarIDs, ulong[] IRSAMissiles)
     {
         this.aiVehicleName = aiVehicleName;
         this.unitName = unitName;
         this.position = position;
         this.rotation = rotation;
         this.rootActorNetworkID = rootActorNetworkID;
-        this.networkID = networkID;
+        this.networkIDs = networkIDs;
         this.hpLoadout = hpLoadout;
         this.cmLoadout = cmLoadout;
         this.normalizedFuel = normalizedFuel;
