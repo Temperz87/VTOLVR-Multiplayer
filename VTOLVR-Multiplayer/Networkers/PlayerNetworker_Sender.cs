@@ -28,7 +28,7 @@ class PlayerNetworker_Sender : MonoBehaviour
     GameObject hud;
     GameObject hudWaypoint;
 
-
+    public float respawnTimer = 10.0f;
     void Awake()
     {
         lastMessage = new Message_Respawn(networkUID, new Vector3D(), new Quaternion(), false, Steamworks.SteamFriends.GetPersonaName());
@@ -64,8 +64,8 @@ class PlayerNetworker_Sender : MonoBehaviour
     IEnumerator RespawnTimer()
     {
         Debug.Log("Starting respawn timer.");
-         
-        yield return new WaitForSeconds(10);
+
+        yield return new WaitForSeconds(respawnTimer);
 
 
         Debug.Log("Finished respawn timer.");
@@ -80,7 +80,7 @@ class PlayerNetworker_Sender : MonoBehaviour
             {
                 if (rep.team == Teams.Allied)
                 {
-                    if (rep.radius < 19.0f)
+                    if (rep.radius > 17.8f && rep.radius < 19.0f)
                     {
                         rearmPoint = rep;
                     }
@@ -185,14 +185,14 @@ class PlayerNetworker_Sender : MonoBehaviour
             if (gearAnim.state != GearAnimator.GearStates.Extended)
                 gearAnim.ExtendImmediate();
         }
-        rb.interpolation = RigidbodyInterpolation.None;
-        rb.isKinematic = true;
 
-        PlayerManager.StartRearm(rearmPoint);
+
+        //  PlayerManager.StartRearm(rearmPoint);
         //rb.velocity = Vector3.zero;
         //rb.detectCollisions = true;
+        PlayerManager.SpawnLocalVehicleAndInformOtherClients(newPlayer, newPlayer.transform.position, newPlayer.transform.rotation, networkUID);
 
-        PlayerManager.SetupLocalAircraft(newPlayer, newPlayer.transform.position, newPlayer.transform.rotation, networkUID);
+        //PlayerManager.SetupLocalAircraft(newPlayer, newPlayer.transform.position, newPlayer.transform.rotation, networkUID);
 
         lastMessage.UID = networkUID;
         lastMessage.isLeftie = PlayerManager.teamLeftie;
@@ -346,7 +346,29 @@ class PlayerNetworker_Sender : MonoBehaviour
         if (FlightSceneManager.instance.playerActor == null)
             return;
         FlightSceneManager.instance.playerActor.health.invincible = false;
-        FlightSceneManager.instance.playerActor.health.Kill();
+
+        Actor killer = null;
+
+        if (FlightSceneManager.instance.playerActor.health.killMessage != null)
+        {
+            killer =  Traverse.Create(health).Field("lastSourceActor").GetValue<Actor>();
+        }
+
+
+      
+        string message = "";
+
+        if (FlightSceneManager.instance.playerActor.health.killMessage != null)
+        {
+            message = FlightSceneManager.instance.playerActor.health.killMessage + " and cowardly ejected";
+
+        }
+        else
+        {
+            message = "cowardly ejection";
+
+        }
+        FlightSceneManager.instance.playerActor.health.Damage(10000.0f, FlightSceneManager.instance.playerActor.gameObject.transform.position, Health.DamageTypes.Impact, killer, message);
         // health.invincible = false;
         //health.Kill();
 

@@ -27,6 +27,7 @@ public class Message_MissileDamage : Message
     public Vector3D targetPosition;
     public ulong actorTobeDamaged;
     public float damage;
+    public ulong damageSourceActor;
 
     public Message_MissileDamage(ulong uid)
     {
