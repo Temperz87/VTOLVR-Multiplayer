@@ -28,9 +28,16 @@ public class MissileNetworker_Receiver : MonoBehaviour
             {
                 collider.gameObject.layer = 9;
             }
+        } 
+        if (thisMissile.guidanceMode == Missile.GuidanceModes.Optical)
+        {
+            foreach (var collider in thisMissile.GetComponentsInChildren<Collider>())
+            {
+                collider.gameObject.layer = 9;
+            }
         }
 
-        if (thisMissile.guidanceMode == Missile.GuidanceModes.Optical)
+        if (thisMissile.guidanceMode == Missile.GuidanceModes.GPS)
         {
             foreach (var collider in thisMissile.GetComponentsInChildren<Collider>())
             {

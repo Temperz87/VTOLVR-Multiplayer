@@ -22,6 +22,8 @@ public static class PlaneEquippableManager
         List<HPInfo> hpInfos = new List<HPInfo>();
         HPEquippable lastEquippable;
 
+        bool playerFlag = weaponManager.actor.isPlayer;
+
         for (int i = 0; i < weaponManager.equipCount; i++)
         {
             //Debug.Log("Weapon Manager, Equip " + i);
@@ -61,9 +63,13 @@ public static class PlaneEquippableManager
                             MissileNetworker_Sender mnSender = HPml.ml.missiles[j].gameObject.AddComponent<MissileNetworker_Sender>();
                             mnSender.networkUID = Networker.GenerateNetworkUID();
                             missileUIDS.Add(mnSender.networkUID);
+                            if (playerFlag)
+                                HPml.ml.missiles[j].gameObject.name = Steamworks.SteamFriends.GetPersonaName() + "'s " + HPml.ml.missiles[j].gameObject.name;
                             break;
                         case HPInfoListGenerateNetworkType.sender:
                             MissileNetworker_Sender sender = HPml.ml.missiles[j].gameObject.GetComponent<MissileNetworker_Sender>();
+                            if(playerFlag)
+                                HPml.ml.missiles[j].gameObject.name = Steamworks.SteamFriends.GetPersonaName() + "'s " + HPml.ml.missiles[j].gameObject.name;
                             if (sender != null)
                             {
                                 missileUIDS.Add(sender.networkUID);
@@ -145,6 +151,16 @@ public static class PlaneEquippableManager
 
     public static void SetLoadout(GameObject vehicle, ulong networkID, float fuel, HPInfo[] hpLoadout, int[] cmLoadout)
     {
+        int playerIDX = PlayerManager.GetPlayerIDFromCSteamID(new CSteamID(networkID));
+        bool playerFlag = false;
+        string playerName="";
+        if (playerIDX !=-1)
+        {
+            playerFlag = true;
+        }
+        if(playerFlag)
+            playerName=PlayerManager.players[playerIDX].nameTag +"'s ";
+
         WeaponManager weaponManager = vehicle.GetComponent<WeaponManager>();
         if (weaponManager == null)
             Debug.LogError("Failed to get weapon manager on " + vehicle.name);
@@ -190,6 +206,8 @@ public static class PlaneEquippableManager
                                 lastReciever.networkUID = thingy.missileUIDS[uIDidx];
                                 Debug.Log($"Missile ({lastReciever.gameObject.name}) has received their UID from the host. \n Missiles UID = {lastReciever.networkUID}");
                                 lastReciever.thisML = hpML.ml;
+                                if (playerFlag)
+                                    lastReciever.gameObject.name = playerName + lastReciever.gameObject.name;
                                 lastReciever.idx = j;
                                 uIDidx++;
                             }

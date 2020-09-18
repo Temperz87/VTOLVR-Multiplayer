@@ -326,7 +326,7 @@ public class PlaneNetworker_Receiver : MonoBehaviour
                 }
                 else*/ if (weaponManager.currentEquip is RocketLauncher)
                 {
-                    weaponManager.SingleFire();
+                    weaponManager.StartFire();
                 }
                 else
                 {

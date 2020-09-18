@@ -29,6 +29,7 @@ public static class PlayerManager
     public static bool carrierFound = false;
     public static bool unSubscribe = true;
     public static float timeAlive = 0.0f;
+    public static int kills=0;
     /// <summary>
     /// This is the queue for people waiting to get a spawn point,
     /// incase the host hasn't loaded in, in time.
@@ -37,7 +38,7 @@ public static class PlayerManager
     private static Queue<Packet> playersToSpawnQueue = new Queue<Packet>();
     private static Queue<CSteamID> playersToSpawnIdQueue = new Queue<CSteamID>();
     public static bool gameLoaded;
-    private static GameObject av42cPrefab, fa26bPrefab, f45Prefab;
+    public static GameObject av42cPrefab, fa26bPrefab, f45Prefab;
     private static List<ulong> spawnedVehicles = new List<ulong>();
     public static ulong localUID;
     private static Packet storedSpawnMessage;
@@ -47,7 +48,7 @@ public static class PlayerManager
     public static bool teamLeftie = false;
     public static int carrierStartTimer = 0;
     public static ReArmingPoint rearmPoint;
-
+    public static float flyCounter = 0;
     public static Vector3 av42Offset = new Vector3(0, 0.972f, -5.126f);//the difference between the origin of the ai and player AV-42s
 
     public static Hitbox lastBulletHit;
@@ -55,16 +56,18 @@ public static class PlayerManager
     {
         public CSteamID cSteamID;
         public GameObject vehicle;
+        public Actor actor;
         public VTOLVehicles vehicleType;
         public ulong vehicleUID;
         public bool leftie;
         public float ping;
         public float timeSinceLastResponse;
         public string nameTag;
-        public Player(CSteamID cSteamID, GameObject vehicle, VTOLVehicles vehicleType, ulong vehicleUID, bool leftTeam, string tagName)
+        public Player(CSteamID cSteamID, GameObject vehicle, Actor aactor, VTOLVehicles vehicleType, ulong vehicleUID, bool leftTeam, string tagName)
         {
             this.cSteamID = cSteamID;
             this.vehicle = vehicle;
+            this.actor = aactor;
             this.vehicleType = vehicleType;
             this.vehicleUID = vehicleUID;
             this.leftie = leftTeam;
@@ -425,7 +428,7 @@ public static class PlayerManager
 
                 }
 
-       
+     
         /*if(0)
         if (gameLoaded)
         {
@@ -464,7 +467,27 @@ public static class PlayerManager
             } 
         }*/
         if (gameLoaded)
+        {
+            EndMission.instance.HideEndMission();
+            Actor  player = FlightSceneManager.instance.playerActor;
+            if(player)
+            {
+
+              // if( (bool)player.flightInfo && !player.flightInfo.isLanded)
+                {
+                    flyCounter += Time.fixedDeltaTime;
+
+                    if(flyCounter > 10.0f &&  flyCounter < 13.0f)
+                    {
+                        //FlightLogger.Log("Plane Unparented");
+                        player.gameObject.GetComponent<Rigidbody>().transform.SetParent(null);
+                        player.health.invincible = false;
+                    }
+                }
+            }
+                 
             PlayerManager.SpawnPlayersInPlayerSpawnQueue();//addmitedly, this probably isnt the best place to put this, feel free to move it somewhere els
+        }
 
     }
 
@@ -494,7 +517,13 @@ public static class PlayerManager
         foreach (var w in wepList)
             campaignSave.availableWeapons.Add(w);
     }
-    public static void StartRearm(ReArmingPoint rp)
+
+    public static void StartConfig(LoadoutConfigurator lc)
+    {
+        FloatingOriginShifter shift = VTOLAPI.GetPlayersVehicleGameObject().GetComponentInChildren<FloatingOriginShifter>();
+        shift.enabled = true;
+    }
+        public static void StartRearm(ReArmingPoint rp)
     {
         Rigidbody rb = VTOLAPI.GetPlayersVehicleGameObject().GetComponent<Rigidbody>();
         PlayerManager.rearmPoint = rp;
@@ -506,7 +535,13 @@ public static class PlayerManager
         //rb.detectCollisions = false;
         rearmPoint.OnEndRearm += finishRearm;
         Actor act = VTOLAPI.GetPlayersVehicleGameObject().GetComponent<Actor>();
+
+
         act.health.invincible = true;
+        flyCounter = 0;
+        PlayerVehicleSetup pvSetup = act.gameObject.GetComponent<PlayerVehicleSetup>();
+        pvSetup.OnBeginUsingConfigurator += StartConfig;
+
 
         //hackSaveUnlockAllWeapons();
         rearmPoint.BeginReArm();
@@ -545,11 +580,15 @@ public static class PlayerManager
                     VTOLAPI.GetPlayersVehicleGameObject().transform.rotation = Quaternion.LookRotation(forward, upwards);
                     Debug.Log("attaching to carrier");
                     rb.velocity = plat.rb.velocity;
+                    rb.isKinematic = false;
+                    FlightLogger.Log("Plane Parented");
+                    rb.transform.SetParent(plat.transform);
                 }
             }
-            FloatingOriginShifter shift = VTOLAPI.GetPlayersVehicleGameObject().GetComponentInChildren<FloatingOriginShifter>();
-            shift.enabled = true;
+         
             Debug.Log("origin stuff to carrier");
+
+          
 
         }
 
@@ -557,12 +596,13 @@ public static class PlayerManager
         //FloatingOrigin.instance.ShiftOrigin(rb.position,true);
         //rb.detectCollisions = true;
         Actor act = VTOLAPI.GetPlayersVehicleGameObject().GetComponent<Actor>();
-        act.health.invincible = false;
+        act.health.invincible = true;
         if (unSubscribe)
         {
             rearmPoint.OnEndRearm -= finishRearm;
         }
-
+        PlayerVehicleSetup pvSetup = act.gameObject.GetComponent<PlayerVehicleSetup>();
+        pvSetup.OnBeginUsingConfigurator -= StartConfig;
         unSubscribe = false;
     }
     public static void SpawnLocalVehicleAndInformOtherClients(GameObject localVehicle, Vector3 pos, Quaternion rot, ulong UID, int playercount = 0) //Both
@@ -570,7 +610,7 @@ public static class PlayerManager
         Debug.Log("Sending our location to spawn our vehicle");
         VTOLVehicles currentVehicle = VTOLAPI.GetPlayersVehicleEnum();
         Actor actor = localVehicle.GetComponent<Actor>();
-        Player localPlayer = new Player(SteamUser.GetSteamID(), localVehicle, currentVehicle, UID, PlayerManager.teamLeftie, SteamFriends.GetPersonaName());
+        Player localPlayer = new Player(SteamUser.GetSteamID(), localVehicle,actor, currentVehicle, UID, PlayerManager.teamLeftie, SteamFriends.GetPersonaName());
         AddToPlayerList(localPlayer);
 
 
@@ -640,9 +680,14 @@ public static class PlayerManager
                     }
 
                 }
+                else
+                {
+                    StartRearm(rearmPoint);
+                }
+            }
 
             }
-        }
+        
 
 
         //prevent fall through ground
@@ -655,43 +700,6 @@ public static class PlayerManager
 
 
         firstSpawnDone = true;
-        /*if(!firstSpawn)
-        if (!Networker.isHost) {
-        actor.health.Kill();
-                localVehicle.transform.position = new Vector3(1000000, 10000, 10000);
-            }
-      */
-
-
-        /// * //bad code we ran this before in  SetupLocalAircraft(localVehicle, pos, rot, UID);
-        /*List<HPInfo> hpInfos = PlaneEquippableManager.generateLocalHpInfoList(UID);
-        CountermeasureManager cmManager = localVehicle.GetComponentInChildren<CountermeasureManager>();
-        List<int> cm = PlaneEquippableManager.generateCounterMeasuresFromCmManager(cmManager);
-        float fuel = PlaneEquippableManager.generateLocalFuelValue();
-
-
-        
-        
-        Debug.Log("Assembled our local vehicle");
-        if (!Networker.isHost || Multiplayer.SoloTesting)
-        {
-            // Not host, so send host the spawn vehicle message
-            Debug.Log($"Sending spawn vehicle message to: {Networker.hostID}");
-            NetworkSenderThread.Instance.SendPacketToSpecificPlayer(Networker.hostID,
-                new Message_SpawnPlayerVehicle(currentVehicle,
-                    new Vector3D(pos),
-                    rot,
-                    SteamUser.GetSteamID().m_SteamID,
-                    UID,
-                    hpInfos.ToArray(),
-                    cm.ToArray(),
-                    fuel, PlayerManager.teamLeftie),
-                EP2PSend.k_EP2PSendReliable);
-        }
-        else
-        {
-            Debug.Log("I am host, no need to immediately forward my assembled vehicle");
-        }*/
     }
 
     public static void MissileDamage(Packet packet)
@@ -703,15 +711,17 @@ public static class PlayerManager
         //return;
 
         ulong actorTodamage = lastMissileDamageMessage.actorTobeDamaged;
+        ulong damageSource = lastMissileDamageMessage.damageSourceActor;
         Debug.Log("applying missile damage");
         if (VTOLVR_Multiplayer.AIDictionaries.allActors.ContainsKey(actorTodamage))
         {
-
+            Actor source = null;
+            if (VTOLVR_Multiplayer.AIDictionaries.allActors.ContainsKey(damageSource))
+                source = VTOLVR_Multiplayer.AIDictionaries.allActors[damageSource];
             Actor act = VTOLVR_Multiplayer.AIDictionaries.allActors[actorTodamage];
             if (act != null)
-                act.health.Damage(lastMissileDamageMessage.damage, act.position, Health.DamageTypes.Impact, null);
-
-            Debug.Log("applied");
+                act.health.Damage(lastMissileDamageMessage.damage, act.position, Health.DamageTypes.Impact, source, "Missile Impact");
+             
         }
     }
 
@@ -732,7 +742,7 @@ public static class PlayerManager
 
         RigidbodyNetworker_Sender rbSender = localVehicle.AddComponent<RigidbodyNetworker_Sender>();
         rbSender.networkUID = UID;
-
+        rbSender.tickRate = 20;
         //rbSender.SetSpawn(pos, rot);
         if (currentVehicle == VTOLVehicles.AV42C)
         {
@@ -801,8 +811,7 @@ public static class PlayerManager
             AvatarManager.SetupAircraftRoundels(localVehicle.transform, currentVehicle, GetPlayerCSteamID(localUID), av42Offset);
         else
             AvatarManager.SetupAircraftRoundels(localVehicle.transform, currentVehicle, GetPlayerCSteamID(localUID), Vector3.zero);
-        if (Multiplayer.SoloTesting)
-            pos += new Vector3(20, 0, 0);
+   
 
         List<HPInfo> hpInfos = PlaneEquippableManager.generateLocalHpInfoList(UID);
         CountermeasureManager cmManager = localVehicle.GetComponentInChildren<CountermeasureManager>();
@@ -823,7 +832,7 @@ public static class PlayerManager
                     hpInfos.ToArray(),
                     cm.ToArray(),
                     fuel, PlayerManager.teamLeftie, SteamFriends.GetPersonaName()),
-                EP2PSend.k_EP2PSendReliable);
+                    EP2PSend.k_EP2PSendReliable);
         }
         else
         {
@@ -836,7 +845,7 @@ public static class PlayerManager
                     hpInfos.ToArray(),
                     cm.ToArray(),
                     fuel, PlayerManager.teamLeftie, SteamFriends.GetPersonaName()),
-                EP2PSend.k_EP2PSendReliable);
+                    EP2PSend.k_EP2PSendReliable);
         }
         WeaponManager localWManager = localVehicle.GetComponent<WeaponManager>();
 
@@ -973,7 +982,7 @@ public static class PlayerManager
             Debug.Log("Telling connected client about AI units");
             AIManager.TellClientAboutAI(spawnerSteamId);
         }
-        AddToPlayerList(new Player(spawnerSteamId, null, message.vehicle, message.networkID, message.leftie, message.nameTag));
+        AddToPlayerList(new Player(spawnerSteamId, null, null, message.vehicle, message.networkID, message.leftie, message.nameTag));
 
         GameObject puppet = SpawnRepresentation(message.networkID, message.position, message.rotation, message.leftie, message.nameTag);
         if (puppet != null)
@@ -1148,8 +1157,10 @@ public static class PlayerManager
             aIPilot.actor.team = Teams.Enemy;
         }
         TargetManager.instance.RegisterActor(aIPilot.actor);
+        aIPilot.actor.hideDeathLog = true;
         player.leftie = isLeft;
         player.vehicle = newVehicle;
+        player.actor = aIPilot.actor;
 
         if (!VTOLVR_Multiplayer.AIDictionaries.allActors.ContainsKey(networkID))
         {
@@ -1348,6 +1359,17 @@ public static class PlayerManager
         }
         players.Add(player);
     }
+    public static string GetPlayerNameFromActor(Actor act)
+    {
+        for (int i = 0; i < players.Count; i++)
+        {
+            if (players[i].actor == act)
+            {
+                return players[i].nameTag;
+            }
+        }
+        return "";
+    }
 
     public static void CleanUpPlayerManagerStaticVariables()
     {
@@ -1372,6 +1394,8 @@ public static class PlayerManager
         carrierFound = false;
         sendGPS = true;
         carrierStartTimer = 0;
+        flyCounter = 0;
+        kills = 0;
     }
 
     public static void OnDisconnect()
