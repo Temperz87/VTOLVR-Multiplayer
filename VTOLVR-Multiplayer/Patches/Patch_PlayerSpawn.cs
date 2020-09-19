@@ -18,3 +18,15 @@ class Patch_OnPreSpawnUnit
         return true;
     }
 }
+[HarmonyPatch(typeof(LoadoutConfigurator), "EquipCompatibilityMask")]
+public static class Patch_DrawButton
+{
+    public static bool Prefix(HPEquippable equip)
+    {
+        if (!Multiplayer._instance.buttonMade)
+        {
+            Multiplayer._instance.CreateVehicleButton();
+        }
+        return true;
+    }
+}

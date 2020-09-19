@@ -31,7 +31,7 @@ class PlayerNetworker_Sender : MonoBehaviour
     public float respawnTimer = 10.0f;
     void Awake()
     {
-        lastMessage = new Message_Respawn(networkUID, new Vector3D(), new Quaternion(), false, Steamworks.SteamFriends.GetPersonaName());
+        lastMessage = new Message_Respawn(networkUID, new Vector3D(), new Quaternion(), false, Steamworks.SteamFriends.GetPersonaName(), VTOLAPI.GetPlayersVehicleEnum());
 
         health = GetComponent<Health>();
         actor = GetComponent<Actor>();

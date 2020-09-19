@@ -984,7 +984,7 @@ public static class PlayerManager
         }
         AddToPlayerList(new Player(spawnerSteamId, null, null, message.vehicle, message.networkID, message.leftie, message.nameTag));
 
-        GameObject puppet = SpawnRepresentation(message.networkID, message.position, message.rotation, message.leftie, message.nameTag);
+        GameObject puppet = SpawnRepresentation(message.networkID, message.position, message.rotation, message.leftie, message.nameTag, message.vehicle);
         if (puppet != null)
         {
             PlaneEquippableManager.SetLoadout(puppet, message.networkID, message.normalizedFuel, message.hpLoadout, message.cmLoadout);
@@ -1026,7 +1026,7 @@ public static class PlayerManager
         sendGPS = true;
         //NetworkSenderThread.Instance.SendPacketToSpecificPlayer(Networker.hostID, msg, EP2PSend.k_EP2PSendReliable);
     }
-    public static GameObject SpawnRepresentation(ulong networkID, Vector3D position, Quaternion rotation, bool isLeft, string nameTagString)
+    public static GameObject SpawnRepresentation(ulong networkID, Vector3D position, Quaternion rotation, bool isLeft, string nameTagString, VTOLVehicles vehicle)
     {
         if (networkID == localUID)
             return null;
@@ -1042,7 +1042,7 @@ public static class PlayerManager
             GameObject.Destroy(player.vehicle);
 
         GameObject newVehicle = null;
-        switch (player.vehicleType)
+        switch (vehicle)
         {
             case VTOLVehicles.None:
                 Debug.LogError("Vehcile Enum seems to be none, couldn't spawn player vehicle");

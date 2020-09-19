@@ -17,12 +17,13 @@ using System.IO;
 
 public class Multiplayer : VTOLMOD
 {
-    private static string TesterURL = "http://marsh.vtolvr-mods.com/?id=";
     public static bool SoloTesting = true;
     public static Multiplayer _instance = null;
     public bool UpToDate = true;
     public string selectedVehicle = "";
+    public bool buttonMade = false;
     private bool checkedToDate = false;
+    private static string TesterURL = "http://marsh.vtolvr-mods.com/?id=";
     private struct FriendItem
     {
         public CSteamID steamID;
@@ -832,7 +833,7 @@ public class Multiplayer : VTOLMOD
                     {
                         PilotSaveManager.currentVehicle = VTResources.GetPlayerVehicle("F/A-26B");
                     }
-                    else if (PilotSaveManager.currentVehicle.name == "F/A-26B")
+                    else if (PilotSaveManager.currentVehicle.name == "FA-26B")
                     {
                         PilotSaveManager.currentVehicle = VTResources.GetPlayerVehicle("F-45A");
                     }
@@ -845,6 +846,7 @@ public class Multiplayer : VTOLMOD
                 });
             }
         }
+        buttonMade = true;
     }
 
     public void OnDestroy()
