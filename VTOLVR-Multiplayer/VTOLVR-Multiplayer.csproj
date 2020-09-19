@@ -183,6 +183,7 @@
     <Compile Include="Patches\Patch_ActorExtensions.cs" />
     <Compile Include="Patches\Patch_LoadingSceneController.cs" />
     <Compile Include="Patches\Patch_OnSpawnUnit.cs" />
+    <Compile Include="Patches\Patch_PlayerSpawn.cs" />
     <Compile Include="Patches\Patch_SAMLauncher.cs" />
     <Compile Include="Patches\Patch_VTEventInfo.cs" />
     <Compile Include="Patches\Patch_VTMapManager.cs" />

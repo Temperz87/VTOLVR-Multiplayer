@@ -21,6 +21,7 @@ public class Multiplayer : VTOLMOD
     public static bool SoloTesting = true;
     public static Multiplayer _instance = null;
     public bool UpToDate = true;
+    public string selectedVehicle = "";
     private bool checkedToDate = false;
     private struct FriendItem
     {
@@ -83,7 +84,7 @@ public class Multiplayer : VTOLMOD
     public bool displayPing = false;
     private UnityAction<bool> DisplayPing_changed;
 
-    public bool displayClouds= false;
+    public bool displayClouds = false;
     private UnityAction<bool> displayClouds_changed;
 
     private void Start()
@@ -225,14 +226,14 @@ public class Multiplayer : VTOLMOD
 
     public void debugLog_Settings(bool newval)
     {
-         debugLogs = newval;
+        debugLogs = newval;
         if (ModVersionString.ReleaseBranch == "Release")
             Debug.logger.logEnabled = newval;
         else
         {
             if (Debug.logger.logEnabled != true)
                 Debug.logger.logEnabled = true;
-        } 
+        }
     }
 
     public void forceWinds_Settings(bool newval)
@@ -252,21 +253,21 @@ public class Multiplayer : VTOLMOD
     public void DisplayCloud_Settings(bool newval)
     {
         //displayClouds = newval;
-         GameSettings.SetGameSettingValue("USE_OVERCLOUD", false, true);
+        GameSettings.SetGameSettingValue("USE_OVERCLOUD", false, true);
     }
     void OnGUI()//the 2d ping display, feel free to move elsewhere
     {
         if (displayPing)
         {
             string temp = "";
-            temp += "Compression Ratio "+Networker.compressionRatio + "\n";
+            temp += "Compression Ratio " + Networker.compressionRatio + "\n";
             temp += "Compression Buffer " + Networker.compressionBufferSize + "\n";
             temp += "NormalPacketCompressed " + Networker.overflowedPacket + "\n";
             temp += "NormalPacketUNCompressed " + Networker.overflowedPacketUNC + "\n";
             temp += "compressedtotal " + Networker.totalCompressed + "\n";
             temp += "sucess " + Networker.compressionSucess + "\n";
             temp += "fail " + Networker.compressionFailure + "\n";
-            temp += "Compression failure Rate " + (float)Networker.compressionFailTotal/ (float)( Networker.compressionSucessTotal+ Networker.compressionFailTotal)*100.0f+ "\n";
+            temp += "Compression failure Rate " + (float)Networker.compressionFailTotal / (float)(Networker.compressionSucessTotal + Networker.compressionFailTotal) * 100.0f + "\n";
             foreach (PlayerManager.Player player in PlayerManager.players)
             {
                 temp += player.cSteamID + ": " + Mathf.Round(player.ping * 1000f) + "\n";
@@ -320,6 +321,9 @@ public class Multiplayer : VTOLMOD
                     CreateLoadingSceneObjects();
                     break;
                 }
+                break;
+            case VTOLScenes.VehicleConfiguration:
+                CreateVehicleButton();
                 break;
         }
     }
@@ -668,7 +672,7 @@ public class Multiplayer : VTOLMOD
 
     public void OpenMP()
     {
-        
+
         CampaignSelectorUI selectorUI = FindObjectOfType<CampaignSelectorUI>();
         int missionIdx = (int)Traverse.Create(selectorUI).Field("missionIdx").GetValue();
         PilotSaveManager.currentScenario = PilotSaveManager.currentCampaign.missions[missionIdx];
@@ -804,7 +808,46 @@ public class Multiplayer : VTOLMOD
         }
     }
 
-    public void OnDestory()
+    public void CreateVehicleButton()
+    {
+        foreach (var controller in GameObject.FindObjectsOfType<VRHandController>())
+        {
+            GameObject button = GameObject.Instantiate(GameObject.Find("RecenterCanvas"));
+            if (!controller.isLeft)
+            {
+                button.transform.SetParent(controller.transform);
+                button.transform.localPosition = new Vector3(0.101411f, 0.02100047f, -0.128024f);
+                button.transform.localRotation = Quaternion.Euler(-5.834f, 283.583f, 328.957f);
+                button.transform.localScale = new Vector3(button.transform.localScale.x * -1, button.transform.localScale.y * -1, button.transform.localScale.z);
+                VRInteractable bInteractable = button.GetComponentInChildren<VRInteractable>();
+                Text text = button.GetComponentInChildren<Text>();
+                text.transform.localScale = text.transform.localScale * 0.75f;
+                text.text = PilotSaveManager.currentVehicle.name;
+                bInteractable.interactableName = "Switch Vehicles.";
+                bInteractable.OnInteract = new UnityEngine.Events.UnityEvent();
+                selectedVehicle = PilotSaveManager.currentVehicle.name;
+                bInteractable.OnInteract.AddListener(delegate
+                {
+                    if (PilotSaveManager.currentVehicle.name == "AV-42C")
+                    {
+                        PilotSaveManager.currentVehicle = VTResources.GetPlayerVehicle("F/A-26B");
+                    }
+                    else if (PilotSaveManager.currentVehicle.name == "F/A-26B")
+                    {
+                        PilotSaveManager.currentVehicle = VTResources.GetPlayerVehicle("F-45A");
+                    }
+                    else
+                    {
+                        PilotSaveManager.currentVehicle = VTResources.GetPlayerVehicle("AV-42C");
+                    }
+                    text.text = PilotSaveManager.currentVehicle.name;
+                    selectedVehicle = text.text;
+                });
+            }
+        }
+    }
+
+    public void OnDestroy()
     {
         VTOLAPI.SceneLoaded -= SceneLoaded;
         Networker.OnMultiplayerDestroy();
