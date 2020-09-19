@@ -55,14 +55,14 @@ class HealthNetworker_Sender : MonoBehaviour
             {
 
                 Debug.Log("found  target bullet hit");
-                hitbox.Damage(bulletMessage.damage*4.0f, hitInfo.point, Health.DamageTypes.Impact, source, "Bullet Impact");
+                hitbox.Damage(bulletMessage.damage*3.0f, hitInfo.point, Health.DamageTypes.Impact, source, "Bullet Impact");
                 BulletHitManager.instance.CreateBulletHit(hitInfo.point, -vel, true);
                
             }
         }
         else
         {
-            health.Damage(bulletMessage.damage * 4.0f, ownerActor.gameObject.transform.position,  Health.DamageTypes.Impact, source, "Bullet Impact");
+            health.Damage(bulletMessage.damage * 3.0f, ownerActor.gameObject.transform.position,  Health.DamageTypes.Impact, source, "Bullet Impact");
             BulletHitManager.instance.CreateBulletHit(ownerActor.gameObject.transform.position, -vel, true);
         }
     }
