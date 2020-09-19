@@ -391,16 +391,16 @@ public static class AIManager
                     Debug.Log("This radar is not direct child of this actor, ignoring");
                 }
             }
-            AIVehicles.Add(new AI(child.gameObject, message.aiVehicleName, actor, message.networkIDs[currentSubActorID]));
+            AIVehicles.Add(new AI(child.gameObject, message.aiVehicleName, child, message.networkIDs[currentSubActorID]));
             Debug.Log("Spawned in AI " + child.gameObject.name);
 
             if (!VTOLVR_Multiplayer.AIDictionaries.allActors.ContainsKey(message.networkIDs[currentSubActorID]))
             {
-                VTOLVR_Multiplayer.AIDictionaries.allActors.Add(message.networkIDs[currentSubActorID], actor);
+                VTOLVR_Multiplayer.AIDictionaries.allActors.Add(message.networkIDs[currentSubActorID], child);
             }
             if (!VTOLVR_Multiplayer.AIDictionaries.reverseAllActors.ContainsKey(actor))
             {
-                VTOLVR_Multiplayer.AIDictionaries.reverseAllActors.Add(actor, message.networkIDs[currentSubActorID]);
+                VTOLVR_Multiplayer.AIDictionaries.reverseAllActors.Add(child, message.networkIDs[currentSubActorID]);
             }
 
             currentSubActorID++;
