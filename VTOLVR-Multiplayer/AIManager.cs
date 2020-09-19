@@ -422,7 +422,11 @@ public static class AIManager
         {
             if (actor == null)
                 continue;
-            Debug.Log("Trying sending new stage 1");
+            if (actor.parentActor != null)
+            {
+                continue;
+            }
+                Debug.Log("Trying sending new stage 1");
             if(!actor.isPlayer)
             if(actor.name.Contains("Client [") == false)
             {
@@ -461,6 +465,7 @@ public static class AIManager
                     {
                         foreach (var ID in Group.unitIDs)
                         {
+                            if(aIUnitSpawn != null)
                             if (ID == actor.unitSpawn.unitID)
                             {
                                 letters = Group.groupID;
@@ -471,7 +476,9 @@ public static class AIManager
                         if (canBreak)
                             break;
                     }
-                    List<ulong> ids = new List<ulong>();
+
+                        Debug.LogWarning("passed group stuff");
+                        List<ulong> ids = new List<ulong>();
                     ulong lastID;
                     SAMLauncher launcher = actor.gameObject.GetComponentInChildren<SAMLauncher>();
                     if (launcher != null)

@@ -225,9 +225,9 @@ public class Networker : MonoBehaviour
         Disconected
     }
 
-   
+
     public static Dictionary<CSteamID, PlayerStatus> playerStatusDic { get; private set; } = new Dictionary<CSteamID, PlayerStatus>();
-    public static Dictionary<ulong, float> playerResponseDict = new Dictionary<ulong, float>();
+    //public static Dictionary<ulong, float> playerResponseDict = new Dictionary<ulong, float>();
     public static bool allPlayersReadyHasBeenSentFirstTime;
     public static bool readySent;
     public static bool hostReady, alreadyInGame, hostLoaded;
@@ -239,7 +239,7 @@ public class Networker : MonoBehaviour
     public static CSteamID hostID { get; private set; }
     private Callback<P2PSessionRequest_t> _p2PSessionRequestCallback;
     //networkUID is used as an identifer for all network object, we are just adding onto this to get a new one
-    private static ulong networkUID = 0;
+    public static ulong networkUID = 0;
     public static TextMeshPro loadingText;
 
     public static Multiplayer multiplayerInstance = null;
@@ -251,7 +251,7 @@ public class Networker : MonoBehaviour
 
     public static List<Message> MessageBatchingUnreliableBuffer = new List<Message>();
     public static List<Message> MessageBatchingReliableBuffer = new List<Message>();
-    public static float compressionRatio =0;
+    public static float compressionRatio = 0;
     public static int overflowedPacket = 0;
     public static int overflowedPacketUNC = 0;
     public static int compressionBufferSize = 0;
@@ -390,13 +390,13 @@ public class Networker : MonoBehaviour
     {
         if (isHost)
         {
-             flushUnreliableBuffer();
-             flushReliableBuffer();
+            flushUnreliableBuffer();
+            flushReliableBuffer();
         }
     }
     private void LateUpdate()
     {
-       
+
         if (disconnectForClientTimeout)
         {
             disconnectForClientTimeout = false;
@@ -518,11 +518,11 @@ public class Networker : MonoBehaviour
         }
         return (true);
     }
-    public static void addToUnreliableSendBuffer( Message msg)
+    public static void addToUnreliableSendBuffer(Message msg)
     {
         MessageBatchingUnreliableBuffer.Add(msg);
 
-        if(MessageBatchingUnreliableBuffer.Count > compressionBufferSize-1)
+        if (MessageBatchingUnreliableBuffer.Count > compressionBufferSize - 1)
         {
             flushUnreliableBuffer();
         }
@@ -534,13 +534,13 @@ public class Networker : MonoBehaviour
 
         if (MessageBatchingReliableBuffer.Count > 10)
         {
-          flushReliableBuffer();
+            flushReliableBuffer();
         }
     }
 
     private static void flushUnreliableBuffer()
     {
-        if(MessageBatchingUnreliableBuffer.Count >0 && MessageBatchingUnreliableBuffer.Count<20)
+        if (MessageBatchingUnreliableBuffer.Count > 0 && MessageBatchingUnreliableBuffer.Count < 20)
         {
             PacketCompressedBatch bufferPK = new PacketCompressedBatch();
 
@@ -550,33 +550,33 @@ public class Networker : MonoBehaviour
                 //PacketSingle pk = new PacketSingle(msg, EP2PSend.k_EP2PSendUnreliable);
                 bufferPK.addMessage(msg);
             }
-            
+
             bufferPK.prepareForSend();
-          
+
             if (bufferPK.compressedData.Length > 0)
             {
                 compressionRatio = bufferPK.uncompressedData.Count / bufferPK.compressedData.Length;
             }
             overflowedPacket = bufferPK.compressedData.Length;
             overflowedPacketUNC = bufferPK.uncompressedData.Count;
-           
-         if (isHost)
+
+            if (isHost)
             {
                 if (bufferPK.compressedData.Length < 900)
                 {
                     compressionSucess += 1;
                     compressionSucessTotal += 1;
                     totalCompressed += 1;
-                    if(compressionSucess>2)
+                    if (compressionSucess > 2)
                     {
-                        compressionBufferSize = Math.Min(compressionBufferSize + 1,19);
+                        compressionBufferSize = Math.Min(compressionBufferSize + 1, 19);
                         compressionFailure = 0;
                     }
                     NetworkSenderThread.Instance.SendPacketAsHostToAllClients(bufferPK, EP2PSend.k_EP2PSendUnreliable);
                 }
                 else
                 {
-                    compressionFailure+= 1;
+                    compressionFailure += 1;
                     compressionFailTotal += 1;
                     if (compressionFailure > 1)
                     {
@@ -587,37 +587,37 @@ public class Networker : MonoBehaviour
                     {
                         NetworkSenderThread.Instance.SendPacketAsHostToAllClients(msg, EP2PSend.k_EP2PSendUnreliable);
                     }
-                 
+
                 }
             }
 
-           
+
         }
         MessageBatchingUnreliableBuffer.Clear();
     }
 
-   private static void flushReliableBuffer()
+    private static void flushReliableBuffer()
     {
         if (MessageBatchingReliableBuffer.Count > 0 && MessageBatchingReliableBuffer.Count < 20)
         {
             PacketCompressedBatch bufferPK = new PacketCompressedBatch();
-            
-                foreach (var msg in MessageBatchingReliableBuffer)
-                {
-                    bufferPK.addMessage(msg);
-                }
 
-                bufferPK.prepareForSend();
+            foreach (var msg in MessageBatchingReliableBuffer)
+            {
+                bufferPK.addMessage(msg);
+            }
 
-                if (isHost)
-                {
-                    NetworkSenderThread.Instance.SendPacketAsHostToAllClients(bufferPK, EP2PSend.k_EP2PSendReliable);
-                }
+            bufferPK.prepareForSend();
 
-                MessageBatchingReliableBuffer.Clear();
+            if (isHost)
+            {
+                NetworkSenderThread.Instance.SendPacketAsHostToAllClients(bufferPK, EP2PSend.k_EP2PSendReliable);
+            }
+
+            MessageBatchingReliableBuffer.Clear();
         }
 
-    } 
+    }
     private void ReadP2PPacket(byte[] array, uint num, uint num2, CSteamID csteamID)
     {
         if (csteamID == null)
@@ -637,19 +637,19 @@ public class Networker : MonoBehaviour
 
             processPacket(csteamID, packet, packetS);
         }
-        if(!Networker.isHost)
-        if (packet.packetType == PacketType.Batch)
-        {
-           PacketCompressedBatch batchedPacket = packet as PacketCompressedBatch;
-            batchedPacket.prepareForRead();
-            batchedPacket.generateMessageList();
-            foreach (Message msg in batchedPacket.messages)
+        if (!Networker.isHost)
+            if (packet.packetType == PacketType.Batch)
             {
-                PacketSingle ps = new PacketSingle(msg, batchedPacket.sendType);
-                processPacket(csteamID, ps, ps);
+                PacketCompressedBatch batchedPacket = packet as PacketCompressedBatch;
+                batchedPacket.prepareForRead();
+                batchedPacket.generateMessageList();
+                foreach (Message msg in batchedPacket.messages)
+                {
+                    PacketSingle ps = new PacketSingle(msg, batchedPacket.sendType);
+                    processPacket(csteamID, ps, ps);
+                }
             }
-        }
-            
+
     }
 
     public void processPacket(CSteamID csteamID, Packet packet, PacketSingle packetS)
@@ -904,8 +904,8 @@ public class Networker : MonoBehaviour
                     {
                         if (player.cSteamID == csteamID)
                         {
-                                Destroy(player.vehicle);
-                                PlayerManager.players.Remove(player);
+                            Destroy(player.vehicle);
+                            PlayerManager.players.Remove(player);
                         }
                     }
                     NetworkSenderThread.Instance.RemovePlayer(csteamID);
@@ -1076,12 +1076,10 @@ public class Networker : MonoBehaviour
                     if (playerID != -1)
                     {
                         PlayerManager.players[playerID].ping = pingTime / 2.0f;
-                        
+
                     }
 
-                    FlightLogger.Log("heartbeatResult from player"+ playerResponseDict[heartbeatResult.from]);
-                    playerResponseDict[heartbeatResult.from] = 0.0f;
-                    FlightLogger.Log("heartbeatResult from player" + playerResponseDict[heartbeatResult.from]);
+                    
                     NetworkSenderThread.Instance.SendPacketAsHostToAllClients(new Message_ReportPingTime(pingTime / 2.0f, heartbeatResult.from), EP2PSend.k_EP2PSendUnreliable);
                 }
                 break;
@@ -1382,7 +1380,7 @@ public class Networker : MonoBehaviour
             Debug.LogError("The player seemed to send two join requests");
             players.Remove(csteamID);
             readyDic.Remove(csteamID);
-            playerResponseDict.Remove(csteamID.m_SteamID);
+            //playerResponseDict.Remove(csteamID.m_SteamID);
             playerStatusDic.Remove(csteamID);//future people, please implement PlayerStatus.Loadout so we can see who is customising still
             NetworkSenderThread.Instance.RemovePlayer(csteamID);
         }
@@ -1520,7 +1518,7 @@ public class Networker : MonoBehaviour
         // Made it past all checks, we can join
         Debug.Log($"Accepting {csteamID.m_SteamID}, adding to players list");
         players.Add(csteamID);
-        playerResponseDict.Add(csteamID.m_SteamID,0.0f);
+        //playerResponseDict.Add(csteamID.m_SteamID, 0.0f);
         readyDic.Add(csteamID, false);
         Debug.Log($"Adding {csteamID} to status dict, with status of not ready");
         playerStatusDic.Add(csteamID, PlayerStatus.NotReady);//future people, please implement PlayerStatus.Loadout so we can see who is customising still
