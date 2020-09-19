@@ -162,6 +162,19 @@ class PlayerNetworker_Sender : MonoBehaviour
             }
         }
 
+        VTCampaignInfo[] list = VTResources.GetBuiltInCampaigns().ToArray();
+        string campID =" ";
+        foreach( var camp in list)
+        {
+            if(camp.vehicle == "F-45A")
+            {
+                campID = camp.campaignID;
+            }
+        }
+
+        Campaign campref = VTResources.GetBuiltInCampaign(campID).ToIngameCampaign();
+        PilotSaveManager.currentVehicle = VTResources.GetPlayerVehicle("F-45A");
+        PilotSaveManager.currentCampaign = campref;
         GameObject newPlayer = Instantiate(PilotSaveManager.currentVehicle.vehiclePrefab);
         newPlayer.GetComponent<Actor>().designation = FlightSceneManager.instance.playerActor.designation;//reassigning designation
 
