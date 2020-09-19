@@ -16,34 +16,25 @@ public class MissileNetworker_Receiver : MonoBehaviour
     private RadarLockData lockData;
     // private Rigidbody rigidbody; see missileSender for why i not using rigidbody
     private bool hasFired = false;
-
+    private List<int> colliderLayers = new List<int>();
     private void Start()
     {
+        if (thisMissile == null) {
+            thisMissile = GetComponent<Missile>();
+        }
+
         // rigidbody = GetComponent<Rigidbody>();
         Networker.MissileUpdate += MissileUpdate;
         thisMissile.OnDetonate.AddListener(new UnityEngine.Events.UnityAction(() => { Debug.Log("Missile detonated: " + thisMissile.name); }));
-        if (thisMissile.guidanceMode == Missile.GuidanceModes.Bomb)
+        if (thisMissile.guidanceMode == Missile.GuidanceModes.Bomb || thisMissile.guidanceMode == Missile.GuidanceModes.Optical || thisMissile.guidanceMode == Missile.GuidanceModes.GPS)
         {
             foreach (var collider in thisMissile.GetComponentsInChildren<Collider>())
             {
+                colliderLayers.Add(collider.gameObject.layer);
                 collider.gameObject.layer = 9;
             }
         } 
-        if (thisMissile.guidanceMode == Missile.GuidanceModes.Optical)
-        {
-            foreach (var collider in thisMissile.GetComponentsInChildren<Collider>())
-            {
-                collider.gameObject.layer = 9;
-            }
-        }
-
-        if (thisMissile.guidanceMode == Missile.GuidanceModes.GPS)
-        {
-            foreach (var collider in thisMissile.GetComponentsInChildren<Collider>())
-            {
-                collider.gameObject.layer = 9;
-            }
-        }
+        
 
         thisMissile.explodeRadius *= 1.8f; thisMissile.explodeDamage *= 0.7f;
         traverse = Traverse.Create(thisML);
@@ -123,6 +114,12 @@ public class MissileNetworker_Receiver : MonoBehaviour
                     newTransform.position = VTMapManager.GlobalToWorldPoint(lastMessage.targetPosition);
                     thisMissile.SetOpticalTarget(newTransform);
                     //thisMissile.heatSeeker.SetHardLock();
+
+                    if (thisMissile.opticalLOAL)
+                    {
+                        thisMissile.SetLOALInitialTarget(VTMapManager.GlobalToWorldPoint(lastMessage.targetPosition));
+
+                    }
                 }
                 Debug.Log("Try fire missile clientside");
                 traverse.Field("missileIdx").SetValue(idx);
@@ -134,6 +131,7 @@ public class MissileNetworker_Receiver : MonoBehaviour
             {
                 Debug.Log("Missile fired " + thisMissile.name);
                 hasFired = true;
+                StartCoroutine(colliderTimer());
             }
         }
 
@@ -158,8 +156,18 @@ public class MissileNetworker_Receiver : MonoBehaviour
 
     }
 
- 
 
+    private System.Collections.IEnumerator colliderTimer()
+    {
+        yield return new WaitForSeconds(2.5f);
+        int count = 0;
+        foreach (var collider in thisMissile.GetComponentsInChildren<Collider>())
+        {
+            collider.gameObject.layer = colliderLayers[count];
+            count++;
+        }
+
+    }
 
     public void OnDestroy()
     {

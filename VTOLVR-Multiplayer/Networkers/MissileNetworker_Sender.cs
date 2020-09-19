@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Harmony;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -69,7 +70,16 @@ public class MissileNetworker_Sender : MonoBehaviour
             }
             else if (thisMissile.guidanceMode == Missile.GuidanceModes.Optical)
             {
+                 
+                if (thisMissile.opticalTargetActor !=null)
                 lastMessage.targetPosition = VTMapManager.WorldToGlobalPoint(thisMissile.opticalTargetActor.transform.position);
+                     else
+                {
+                    lastMessage.targetPosition = Traverse.Create(thisMissile).Field("staticOpticalTargetLock").GetValue<FixedPoint>().globalPoint;
+
+                }
+                 
+
                 //lastMessage.seekerRotation = thisMissile.heatSeeker.transform.rotation;
             }
             else if (thisMissile.guidanceMode == Missile.GuidanceModes.Heat)

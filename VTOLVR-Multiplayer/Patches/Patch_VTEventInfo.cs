@@ -26,12 +26,13 @@ class PatchBullet
 
 
 
-        RaycastHit[] hits;
-        hits = Physics.RaycastAll(pos, vel, 100.0f, 1025);
-        for (int i = 0; i < hits.Length; i++)
+        Collider[] ColliderHits;
+        ColliderHits = Physics.OverlapSphere(pos, 5.0f, 1025);
+        for (int i = 0; i < ColliderHits.Length; i++)
         {
-            RaycastHit hit = hits[i];
-            hitbox = hit.collider.GetComponent<Hitbox>();
+
+            Collider coll = ColliderHits[i];
+                hitbox= coll.GetComponent<Hitbox>();
             if ((bool)hitbox && (bool)hitbox.actor)
             {
                 PlayerManager.lastBulletHit = hitbox;
