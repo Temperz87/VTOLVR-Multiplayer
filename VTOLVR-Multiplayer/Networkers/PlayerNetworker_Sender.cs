@@ -391,5 +391,6 @@ class PlayerNetworker_Sender : MonoBehaviour
     void Death()
     {
         repspawnTimer = StartCoroutine("RespawnTimer");
+        Multiplayer.CreateVehicleButton();
     }
 }

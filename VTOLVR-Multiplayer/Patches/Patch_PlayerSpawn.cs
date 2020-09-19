@@ -20,7 +20,15 @@ class Patch_OnPreSpawnUnit
         }
         if (PlayerManager.selectedVehicle == "FA-26B")
             PlayerManager.selectedVehicle = "F/A-26B";
-        VTScenario.current.vehicle = VTResources.GetPlayerVehicle(PlayerManager.selectedVehicle);
+        VTScenario.current.vehicle = VTResources.GetPlayerVehicle(PlayerManager.selectedVehicle); VTCampaignInfo[] list = VTResources.GetBuiltInCampaigns().ToArray(); string campID = " "; 
+        foreach (var camp in list) { 
+            if (camp.vehicle == PlayerManager.selectedVehicle) 
+            { campID = camp.campaignID; } 
+        }
+        Campaign campref = VTResources.GetBuiltInCampaign(campID).ToIngameCampaign();
+        PilotSaveManager.currentVehicle = VTResources.GetPlayerVehicle(PlayerManager.selectedVehicle); 
+        PilotSaveManager.currentCampaign = campref;
+        Multiplayer._instance.buttonMade = false;
         return true;
     }
 }
@@ -31,8 +39,17 @@ public static class Patch_DrawButton
     {
         if (!Multiplayer._instance.buttonMade)
         {
-            Multiplayer._instance.CreateVehicleButton();
+            Multiplayer.CreateVehicleButton();
         }
+        return true;
+    }
+}
+[HarmonyPatch(typeof(VehicleConfigSceneSetup), "LaunchMission")]
+public static class Patch_LaunchMIssion
+{
+    public static bool Prefix()
+    {
+        PilotSaveManager.currentCampaign = Networker._instance.pilotSaveManagerControllerCampaign;
         return true;
     }
 }

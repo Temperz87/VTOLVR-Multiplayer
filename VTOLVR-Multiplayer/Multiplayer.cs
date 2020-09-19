@@ -23,6 +23,7 @@ public class Multiplayer : VTOLMOD
     public bool buttonMade = false;
     private bool checkedToDate = false;
     private static string TesterURL = "http://marsh.vtolvr-mods.com/?id=";
+    public static GameObject canvasButtonPrefab = null;
     private struct FriendItem
     {
         public CSteamID steamID;
@@ -808,11 +809,19 @@ public class Multiplayer : VTOLMOD
         }
     }
 
-    public void CreateVehicleButton()
+    public static void CreateVehicleButton()
     {
         foreach (var controller in GameObject.FindObjectsOfType<VRHandController>())
         {
-            GameObject button = GameObject.Instantiate(GameObject.Find("RecenterCanvas"));
+            GameObject button;
+            if (canvasButtonPrefab == null)
+            {
+                button = GameObject.Instantiate(GameObject.Find("RecenterCanvas"));
+            }
+            else
+            {
+                button = canvasButtonPrefab;
+            }
             if (!controller.isLeft)
             {
                 button.transform.SetParent(controller.transform);
@@ -824,7 +833,7 @@ public class Multiplayer : VTOLMOD
                 text.transform.localScale = text.transform.localScale * 0.75f;
                 text.text = PilotSaveManager.currentVehicle.name;
                 bInteractable.interactableName = "Switch Vehicles.";
-                bInteractable.OnInteract = new UnityEngine.Events.UnityEvent();
+                bInteractable.OnInteract = new UnityEvent();
                 PlayerManager.selectedVehicle = PilotSaveManager.currentVehicle.name;
                 bInteractable.OnInteract.AddListener(delegate
                 {
@@ -842,10 +851,26 @@ public class Multiplayer : VTOLMOD
                     }
                     text.text = PilotSaveManager.currentVehicle.name;
                     PlayerManager.selectedVehicle = text.text;
+                    if (VTOLAPI.currentScene == VTOLScenes.VehicleConfiguration)
+                    {
+                        VTCampaignInfo[] list = VTResources.GetBuiltInCampaigns().ToArray();
+                        string campID = " ";
+                        foreach (var camp in list)
+                        {
+                            if (camp.vehicle == PlayerManager.selectedVehicle)
+                            {
+                                campID = camp.campaignID;
+                            }
+                        }
+                        Campaign campref = VTResources.GetBuiltInCampaign(campID).ToIngameCampaign();
+                        PilotSaveManager.currentVehicle = VTResources.GetPlayerVehicle(PlayerManager.selectedVehicle);
+                        PilotSaveManager.currentCampaign = campref;
+                        SceneManager.LoadScene("VehicleConfiguration");
+                    }
                 });
             }
         }
-        buttonMade = true;
+        PlayerManager.buttonMade = true;
     }
 
     public void OnDestroy()
