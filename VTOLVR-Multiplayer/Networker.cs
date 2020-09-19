@@ -227,7 +227,7 @@ public class Networker : MonoBehaviour
 
    
     public static Dictionary<CSteamID, PlayerStatus> playerStatusDic { get; private set; } = new Dictionary<CSteamID, PlayerStatus>();
-    public static Dictionary<ulong, float> playerResponseDict { get; private set; } = new Dictionary<ulong, float>();
+    public static Dictionary<ulong, float> playerResponseDict = new Dictionary<ulong, float>();
     public static bool allPlayersReadyHasBeenSentFirstTime;
     public static bool readySent;
     public static bool hostReady, alreadyInGame, hostLoaded;
@@ -350,34 +350,39 @@ public class Networker : MonoBehaviour
             }
         }
         ReadP2P();
-       /*if(isHost)
-         foreach (CSteamID  player in players)
+        /*if (isHost)
         {
-          
-            if(player != hostID)
-
+            foreach (CSteamID player in players)
             {
-                playerResponseDict[player.m_SteamID] = playerResponseDict[player.m_SteamID]+Time.deltaTime;
-                if (playerResponseDict[player.m_SteamID] > 15.0f)
-                {
-                    playerStatusDic[player] = PlayerStatus.Disconected;
-                    players.Remove(player);
-                    playerResponseDict.Remove(player.m_SteamID);
-                    NetworkSenderThread.Instance.RemovePlayer(player);
-                    Message_Disconnecting disMessage = new Message_Disconnecting(player.m_SteamID, false);
-                    NetworkSenderThread.Instance.SendPacketAsHostToAllClients(disMessage, EP2PSend.k_EP2PSendReliable);
 
-                    foreach (PlayerManager.Player p in PlayerManager.players)
+                if (player != hostID)
+
+                {
+                    float timeR = playerResponseDict[player.m_SteamID];
+                    playerResponseDict[player.m_SteamID] = timeR + Time.deltaTime;
+                    
+                    if (timeR > 15.0f)
                     {
-                        if (p.vehicleUID == player.m_SteamID)
+                        FlightLogger.Log("Disconnecting player");
+                        playerStatusDic[player] = PlayerStatus.Disconected;
+                        players.Remove(player);
+                        playerResponseDict.Remove(player.m_SteamID);
+                        NetworkSenderThread.Instance.RemovePlayer(player);
+                        Message_Disconnecting disMessage = new Message_Disconnecting(player.m_SteamID, false);
+                        NetworkSenderThread.Instance.SendPacketAsHostToAllClients(disMessage, EP2PSend.k_EP2PSendReliable);
+
+                        foreach (PlayerManager.Player p in PlayerManager.players)
                         {
-                            PlayerManager.players.Remove(p);
+                            if (p.vehicleUID == player.m_SteamID)
+                            {
+                                PlayerManager.players.Remove(p);
+                            }
                         }
+                        UpdateLoadingText();
                     }
-                    UpdateLoadingText();
                 }
+
             }
-           
         } */
         PlayerManager.Update();
     }
@@ -610,7 +615,6 @@ public class Networker : MonoBehaviour
                 }
 
                 MessageBatchingReliableBuffer.Clear();
-            
         }
 
     } 
@@ -1058,7 +1062,7 @@ public class Networker : MonoBehaviour
                     Message_Heartbeat heartbeatMessage = ((PacketSingle)packet).message as Message_Heartbeat;
 
                     TimeoutCounter = 0;
-                    NetworkSenderThread.Instance.SendPacketToSpecificPlayer(hostID, new Message_Heartbeat_Result(heartbeatMessage.TimeOnServerGame, PlayerManager.localUID), EP2PSend.k_EP2PSendUnreliableNoDelay);
+                    NetworkSenderThread.Instance.SendPacketToSpecificPlayer(hostID, new Message_Heartbeat_Result(heartbeatMessage.TimeOnServerGame, PlayerManager.localUID), EP2PSend.k_EP2PSendUnreliable);
                 }
                 break;
             case MessageType.ServerHeartbeat_Response:
@@ -1074,8 +1078,11 @@ public class Networker : MonoBehaviour
                         PlayerManager.players[playerID].ping = pingTime / 2.0f;
                         
                     }
+
+                    FlightLogger.Log("heartbeatResult from player"+ playerResponseDict[heartbeatResult.from]);
                     playerResponseDict[heartbeatResult.from] = 0.0f;
-                    NetworkSenderThread.Instance.SendPacketAsHostToAllClients(new Message_ReportPingTime(pingTime / 2.0f, heartbeatResult.from), EP2PSend.k_EP2PSendUnreliableNoDelay);
+                    FlightLogger.Log("heartbeatResult from player" + playerResponseDict[heartbeatResult.from]);
+                    NetworkSenderThread.Instance.SendPacketAsHostToAllClients(new Message_ReportPingTime(pingTime / 2.0f, heartbeatResult.from), EP2PSend.k_EP2PSendUnreliable);
                 }
                 break;
             case MessageType.ServerReportingPingTime:

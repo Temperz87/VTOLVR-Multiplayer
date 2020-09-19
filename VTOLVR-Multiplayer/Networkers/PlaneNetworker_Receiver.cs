@@ -421,7 +421,7 @@ public class PlaneNetworker_Receiver : MonoBehaviour
     
     private System.Collections.IEnumerator colliderTimer()
     {
-        yield return new WaitForSeconds(120.5f);
+        yield return new WaitForSeconds(20.5f);
 
         if (ownerActor != null)
         {

@@ -542,7 +542,12 @@ public static class PlayerManager
         PlayerVehicleSetup pvSetup = act.gameObject.GetComponent<PlayerVehicleSetup>();
         pvSetup.OnBeginUsingConfigurator += StartConfig;
 
-
+        GearAnimator gearAnim = VTOLAPI.GetPlayersVehicleGameObject().GetComponent<GearAnimator>();
+        if (gearAnim != null)
+        {
+            if (gearAnim.state != GearAnimator.GearStates.Extended)
+                gearAnim.ExtendImmediate();
+        }
         //hackSaveUnlockAllWeapons();
         rearmPoint.BeginReArm();
     }
@@ -661,12 +666,7 @@ public static class PlayerManager
         {
             if (teamLeftie)
             {
-                GearAnimator gearAnim = localVehicle.GetComponent<GearAnimator>();
-                if (gearAnim != null)
-                {
-                    if (gearAnim.state != GearAnimator.GearStates.Extended)
-                        gearAnim.ExtendImmediate();
-                }
+                 
                 StartRearm(rearmPoint);
             }
             else
