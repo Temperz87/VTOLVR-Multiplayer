@@ -341,9 +341,12 @@ public static class AIManager
                     }
                 }
             }
+
+            Debug.Log("Checking for SAM launchers");
             SAMLauncher launcher = child.gameObject.GetComponent<SAMLauncher>();
             if (launcher != null)
             {
+                Debug.Log("I found a sam launcher!");
                 SamNetworker_Reciever samNetworker = launcher.gameObject.AddComponent<SamNetworker_Reciever>();
                 samNetworker.networkUID = message.networkIDs[currentSubActorID];
                 samNetworker.radarUIDS = message.radarIDs;

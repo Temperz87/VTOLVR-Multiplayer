@@ -19,6 +19,10 @@ public class MissileNetworker_Receiver : MonoBehaviour
 
     private void Start()
     {
+        if (thisMissile == null) {
+            thisMissile = GetComponent<Missile>();
+        }
+
         // rigidbody = GetComponent<Rigidbody>();
         Networker.MissileUpdate += MissileUpdate;
         thisMissile.OnDetonate.AddListener(new UnityEngine.Events.UnityAction(() => { Debug.Log("Missile detonated: " + thisMissile.name); }));
