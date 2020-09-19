@@ -338,6 +338,7 @@ public class Networker : MonoBehaviour
 
     private void Update()
     {
+        ReadP2P();
         if (VTOLAPI.currentScene == VTOLScenes.VehicleConfiguration)
             return;
         if (PilotSaveManager.currentScenario != null)
@@ -351,7 +352,6 @@ public class Networker : MonoBehaviour
                 pilotSaveManagerControllerCampaignScenario = PilotSaveManager.currentScenario;
             }
         }
-        ReadP2P();
         /*if (isHost)
         {
             foreach (CSteamID player in players)
