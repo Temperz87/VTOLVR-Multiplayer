@@ -239,7 +239,7 @@ public class Networker : MonoBehaviour
     public static CSteamID hostID { get; private set; }
     private Callback<P2PSessionRequest_t> _p2PSessionRequestCallback;
     //networkUID is used as an identifer for all network object, we are just adding onto this to get a new one
-    public static ulong networkUID = 0;
+    private static ulong networkUID = 0;
     public static TextMeshPro loadingText;
 
     public static Multiplayer multiplayerInstance = null;
@@ -1079,9 +1079,9 @@ public class Networker : MonoBehaviour
                         
                     }
 
-                    //FlightLogger.Log("heartbeatResult from player"+ playerResponseDict[heartbeatResult.from]);
-                    //playerResponseDict[heartbeatResult.from] = 0.0f;
-                    //FlightLogger.Log("heartbeatResult from player" + playerResponseDict[heartbeatResult.from]);
+                    FlightLogger.Log("heartbeatResult from player"+ playerResponseDict[heartbeatResult.from]);
+                    playerResponseDict[heartbeatResult.from] = 0.0f;
+                    FlightLogger.Log("heartbeatResult from player" + playerResponseDict[heartbeatResult.from]);
                     NetworkSenderThread.Instance.SendPacketAsHostToAllClients(new Message_ReportPingTime(pingTime / 2.0f, heartbeatResult.from), EP2PSend.k_EP2PSendUnreliable);
                 }
                 break;
@@ -1382,7 +1382,7 @@ public class Networker : MonoBehaviour
             Debug.LogError("The player seemed to send two join requests");
             players.Remove(csteamID);
             readyDic.Remove(csteamID);
-            //playerResponseDict.Remove(csteamID.m_SteamID);
+            playerResponseDict.Remove(csteamID.m_SteamID);
             playerStatusDic.Remove(csteamID);//future people, please implement PlayerStatus.Loadout so we can see who is customising still
             NetworkSenderThread.Instance.RemovePlayer(csteamID);
         }
@@ -1520,7 +1520,7 @@ public class Networker : MonoBehaviour
         // Made it past all checks, we can join
         Debug.Log($"Accepting {csteamID.m_SteamID}, adding to players list");
         players.Add(csteamID);
-        //playerResponseDict.Add(csteamID.m_SteamID,0.0f);
+        playerResponseDict.Add(csteamID.m_SteamID,0.0f);
         readyDic.Add(csteamID, false);
         Debug.Log($"Adding {csteamID} to status dict, with status of not ready");
         playerStatusDic.Add(csteamID, PlayerStatus.NotReady);//future people, please implement PlayerStatus.Loadout so we can see who is customising still
