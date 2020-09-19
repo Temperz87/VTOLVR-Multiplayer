@@ -239,7 +239,7 @@ public class Networker : MonoBehaviour
     public static CSteamID hostID { get; private set; }
     private Callback<P2PSessionRequest_t> _p2PSessionRequestCallback;
     //networkUID is used as an identifer for all network object, we are just adding onto this to get a new one
-    private static ulong networkUID = 0;
+    public static ulong networkUID = 0;
     public static TextMeshPro loadingText;
 
     public static Multiplayer multiplayerInstance = null;
