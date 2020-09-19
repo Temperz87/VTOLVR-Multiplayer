@@ -1422,7 +1422,7 @@ public class Networker : MonoBehaviour
             Debug.Log($"Player {csteamID} attempted to join with {joinRequest.currentVehicle}, server is {PilotSaveManager.currentVehicle.vehicleName}");
             NetworkSenderThread.Instance.SendPacketToSpecificPlayer(csteamID, new Message_JoinRequestRejected_Result(wrongVehicle), EP2PSend.k_EP2PSendReliable);
             return;
-        }*/
+        }
 
         if (joinRequest.builtInCampaign != MapAndScenarioVersionChecker.builtInCampaign)
         {
@@ -1430,7 +1430,7 @@ public class Networker : MonoBehaviour
             Debug.Log($"Player {csteamID} had the wrong campaign type");
             NetworkSenderThread.Instance.SendPacketToSpecificPlayer(csteamID, new Message_JoinRequestRejected_Result(wrongCampaignType), EP2PSend.k_EP2PSendReliable);
             return;
-        }
+        }*/
 
         if (joinRequest.builtInCampaign)
         {
