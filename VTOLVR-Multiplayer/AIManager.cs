@@ -430,6 +430,7 @@ public static class AIManager
                     List<ulong> subUIDs = new List<ulong>();
                     foreach (UIDNetworker_Sender subActor in actor.gameObject.GetComponentsInChildren<UIDNetworker_Sender>()) {
                         subUIDs.Add(subActor.networkUID);
+                        Debug.Log("Found ID sender with ID " + subActor.networkUID);
                     }
 
                     if (actor.role == Actor.Roles.Air)
