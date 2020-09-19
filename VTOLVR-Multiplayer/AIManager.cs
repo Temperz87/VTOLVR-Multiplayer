@@ -246,121 +246,125 @@ public static class AIManager
                     PlaneEquippableManager.SetLoadout(child.gameObject, message.networkIDs[currentSubActorID], message.normalizedFuel, message.hpLoadout, message.cmLoadout);
                 }
             }
-            else if (actor.role == Actor.Roles.Ground || actor.role == Actor.Roles.GroundArmor)
-            {
-                AIUnitSpawn aIUnitSpawn = child.gameObject.GetComponent<AIUnitSpawn>();
-                if (aIUnitSpawn == null)
-                    Debug.LogWarning("AI unit spawn is null on respawned unit " + aIUnitSpawn);
-                // else
-                // newAI.GetComponent<AIUnitSpawn>().SetEngageEnemies(message.Aggresive);
-                VehicleMover vehicleMover = child.gameObject.GetComponent<VehicleMover>();
-                if (vehicleMover != null)
-                {
-                    vehicleMover.enabled = false;
-                    vehicleMover.behavior = GroundUnitMover.Behaviors.Parked;
-                }
-                else
-                {
-                    GroundUnitMover ground = child.gameObject.GetComponent<GroundUnitMover>();
-                    if (ground != null)
-                    {
-                        ground.enabled = false;
-                        ground.behavior = GroundUnitMover.Behaviors.Parked;
-                    }
-                }
 
-                if (((AIUnitSpawn)actor.unitSpawn).subUnits.Count() == 0)
-                {//only run this code on units without subunits
-                    ulong turretCount = 0;
-                    foreach (ModuleTurret moduleTurret in child.gameObject.GetComponentsInChildren<ModuleTurret>())
-                    {
-                        TurretNetworker_Receiver tRec = child.gameObject.AddComponent<TurretNetworker_Receiver>();
-                        tRec.networkUID = message.networkIDs[currentSubActorID];
-                        tRec.turretID = turretCount;
-                        Debug.Log("Added turret " + turretCount + " to actor " + message.networkIDs + " uid");
-                        turretCount++;
-                    }
-                    ulong gunCount = 0;
-                    foreach (GunTurretAI turretAI in child.gameObject.GetComponentsInChildren<GunTurretAI>())
-                    {
-                        turretAI.SetEngageEnemies(false);
-                        AAANetworker_Reciever aaaRec = child.gameObject.AddComponent<AAANetworker_Reciever>();
-                        aaaRec.networkUID = message.networkIDs[currentSubActorID];
-                        aaaRec.gunID = gunCount;
-                        Debug.Log("Added gun " + gunCount + " to actor " + message.networkIDs + " uid");
-                        gunCount++;
-                    }
-                }
-                IRSamLauncher iLauncher = child.gameObject.GetComponent<IRSamLauncher>();
-                if (iLauncher != null)
+            AIUnitSpawn aIUnitSpawn = child.gameObject.GetComponent<AIUnitSpawn>();
+            if (aIUnitSpawn == null)
+                Debug.LogWarning("AI unit spawn is null on respawned unit " + aIUnitSpawn);
+            // else
+            // newAI.GetComponent<AIUnitSpawn>().SetEngageEnemies(message.Aggresive);
+            VehicleMover vehicleMover = child.gameObject.GetComponent<VehicleMover>();
+            if (vehicleMover != null)
+            {
+                vehicleMover.enabled = false;
+                vehicleMover.behavior = GroundUnitMover.Behaviors.Parked;
+            }
+            else
+            {
+                GroundUnitMover ground = child.gameObject.GetComponent<GroundUnitMover>();
+                if (ground != null)
                 {
-                    //iLauncher.ml.RemoveAllMissiles();
-                    iLauncher.ml.LoadAllMissiles();
-                    iLauncher.SetEngageEnemies(false);
-                    MissileNetworker_Receiver mlr;
-                    //iLauncher.ml.LoadCount(message.IRSamMissiles.Length);
-                    Debug.Log($"Adding IR id's on IR SAM, len = {message.IRSamMissiles.Length}.");
-                    for (int i = 0; i < message.IRSamMissiles.Length; i++)
-                    {
-                        mlr = iLauncher.ml.missiles[i]?.gameObject.AddComponent<MissileNetworker_Receiver>();
-                        mlr.thisML = iLauncher.ml;
-                        mlr.networkUID = message.IRSamMissiles[i];
-                    }
-                    Debug.Log("Added IR id's.");
+                    ground.enabled = false;
+                    ground.behavior = GroundUnitMover.Behaviors.Parked;
                 }
-                Soldier soldier = child.gameObject.GetComponent<Soldier>();
-                if (soldier != null)
+            }
+
+            Debug.Log("Checking for gun turrets on child " + child.name);
+            if (child.gameObject.GetComponentsInChildren<Actor>().Length <= 1)
+            {//only run this code on units without subunits
+                Debug.Log("This is a child, with " + child.gameObject.GetComponentsInChildren<Actor>().Length + " actors, so it could have guns!");
+                ulong turretCount = 0;
+                foreach (ModuleTurret moduleTurret in child.gameObject.GetComponentsInChildren<ModuleTurret>())
+                {
+                    TurretNetworker_Receiver tRec = child.gameObject.AddComponent<TurretNetworker_Receiver>();
+                    tRec.networkUID = message.networkIDs[currentSubActorID];
+                    tRec.turretID = turretCount;
+                    Debug.Log("Added turret " + turretCount + " to actor " + message.networkIDs[currentSubActorID] + " uid");
+                    turretCount++;
+                }
+                ulong gunCount = 0;
+                foreach (GunTurretAI turretAI in child.gameObject.GetComponentsInChildren<GunTurretAI>())
+                {
+                    turretAI.SetEngageEnemies(false);
+                    AAANetworker_Reciever aaaRec = child.gameObject.AddComponent<AAANetworker_Reciever>();
+                    aaaRec.networkUID = message.networkIDs[currentSubActorID];
+                    aaaRec.gunID = gunCount;
+                    Debug.Log("Added gun " + gunCount + " to actor " + message.networkIDs[currentSubActorID] + " uid");
+                    gunCount++;
+                }
+            }
+            else {
+                Debug.Log("This isnt a child leaf thing, it has " + child.gameObject.GetComponentsInChildren<Actor>().Length + " actors");
+            }
+            IRSamLauncher iLauncher = child.gameObject.GetComponent<IRSamLauncher>();
+            if (iLauncher != null)
+            {
+                //iLauncher.ml.RemoveAllMissiles();
+                iLauncher.ml.LoadAllMissiles();
+                iLauncher.SetEngageEnemies(false);
+                MissileNetworker_Receiver mlr;
+                //iLauncher.ml.LoadCount(message.IRSamMissiles.Length);
+                Debug.Log($"Adding IR id's on IR SAM, len = {message.IRSamMissiles.Length}.");
+                for (int i = 0; i < message.IRSamMissiles.Length; i++)
+                {
+                    mlr = iLauncher.ml.missiles[i]?.gameObject.AddComponent<MissileNetworker_Receiver>();
+                    mlr.thisML = iLauncher.ml;
+                    mlr.networkUID = message.IRSamMissiles[i];
+                }
+                Debug.Log("Added IR id's.");
+            }
+            Soldier soldier = child.gameObject.GetComponent<Soldier>();
+            if (soldier != null)
+            {
+                soldier.SetEngageEnemies(false);
+                if (soldier.soldierType == Soldier.SoldierTypes.IRMANPAD)
                 {
                     soldier.SetEngageEnemies(false);
-                    if (soldier.soldierType == Soldier.SoldierTypes.IRMANPAD)
+                    IRMissileLauncher ir = soldier.irMissileLauncher;
+                    if (ir != null)
                     {
-                        soldier.SetEngageEnemies(false);
-                        IRMissileLauncher ir = soldier.irMissileLauncher;
-                        if (ir != null)
+                        //ir.RemoveAllMissiles();
+                        ir.LoadAllMissiles();
+                        MissileNetworker_Receiver mlr;
+                        //ir.LoadCount(message.IRSamMissiles.Length);
+                        Debug.Log($"Adding IR id's on manpads, len = {message.IRSamMissiles.Length}.");
+                        for (int i = 0; i < message.IRSamMissiles.Length; i++)
                         {
-                            //ir.RemoveAllMissiles();
-                            ir.LoadAllMissiles();
-                            MissileNetworker_Receiver mlr;
-                            //ir.LoadCount(message.IRSamMissiles.Length);
-                            Debug.Log($"Adding IR id's on manpads, len = {message.IRSamMissiles.Length}.");
-                            for (int i = 0; i < message.IRSamMissiles.Length; i++)
-                            {
-                                mlr = ir.missiles[i]?.gameObject.AddComponent<MissileNetworker_Receiver>();
-                                mlr.thisML = ir;
-                                mlr.networkUID = message.IRSamMissiles[i];
-                            }
-                            Debug.Log("Added IR id's on manpads.");
+                            mlr = ir.missiles[i]?.gameObject.AddComponent<MissileNetworker_Receiver>();
+                            mlr.thisML = ir;
+                            mlr.networkUID = message.IRSamMissiles[i];
                         }
-                        else
-                        {
-                            Debug.Log($"Manpad {message.networkIDs} forgot its rocket launcher pepega.");
-                        }
+                        Debug.Log("Added IR id's on manpads.");
                     }
-                }
-                SAMLauncher launcher = child.gameObject.GetComponent<SAMLauncher>();
-                if (launcher != null)
-                {
-                    SamNetworker_Reciever samNetworker = launcher.gameObject.AddComponent<SamNetworker_Reciever>();
-                    samNetworker.networkUID = message.networkIDs[currentSubActorID];
-                    samNetworker.radarUIDS = message.radarIDs;
-                    //Debug.Log($"Added samNetworker to uID {message.networkID}.");
-                    launcher.SetEngageEnemies(false);
-                    launcher.fireInterval = float.MaxValue;
-                    launcher.lockingRadars = null;
-                }
-                IRSamLauncher ml = actor.gameObject.GetComponentInChildren<IRSamLauncher>();
-                if (ml != null)
-                {
-                    ml.SetEngageEnemies(false);
-                    MissileNetworker_Receiver lastRec;
-                    for (int i = 0; i < ml.ml.missiles.Length; i++)
+                    else
                     {
-                        lastRec = ml.ml.missiles[i].gameObject.AddComponent<MissileNetworker_Receiver>();
-                        lastRec.networkUID = message.IRSamMissiles[i];
-                        lastRec.thisML = ml.ml;
+                        Debug.Log($"Manpad {message.networkIDs} forgot its rocket launcher pepega.");
                     }
                 }
             }
+            SAMLauncher launcher = child.gameObject.GetComponent<SAMLauncher>();
+            if (launcher != null)
+            {
+                SamNetworker_Reciever samNetworker = launcher.gameObject.AddComponent<SamNetworker_Reciever>();
+                samNetworker.networkUID = message.networkIDs[currentSubActorID];
+                samNetworker.radarUIDS = message.radarIDs;
+                //Debug.Log($"Added samNetworker to uID {message.networkID}.");
+                launcher.SetEngageEnemies(false);
+                launcher.fireInterval = float.MaxValue;
+                launcher.lockingRadars = null;
+            }
+            /*IRSamLauncher ml = actor.gameObject.GetComponentInChildren<IRSamLauncher>();
+            if (ml != null)
+            {
+                ml.SetEngageEnemies(false);
+                MissileNetworker_Receiver lastRec;
+                for (int i = 0; i < ml.ml.missiles.Length; i++)
+                {
+                    lastRec = ml.ml.missiles[i].gameObject.AddComponent<MissileNetworker_Receiver>();
+                    lastRec.networkUID = message.IRSamMissiles[i];
+                    lastRec.thisML = ml.ml;
+                }
+            }*/
+            //this code for ir missiles was here twice, so i dissable the seccond copy
 
             Debug.Log("Checking for locking radars");
             foreach (LockingRadar radar in child.GetComponentsInChildren<LockingRadar>())
@@ -547,7 +551,11 @@ public static class AIManager
             return;
         if(actor.name.Contains("Rearm/Refuel"))
             return;
-
+        foreach(AI ai in AIManager.AIVehicles)
+        {
+            if (ai.actor == actor)
+                return;
+        }
         if (actor.parentActor == null)
         {
             AIManager.AIVehicles.Add(new AIManager.AI(actor.gameObject, actor.unitSpawn.unitName, actor, Networker.networkUID + 1));
@@ -649,7 +657,7 @@ public static class AIManager
                 }
 
                 Debug.Log("checking for guns");
-                if (child.gameObject.GetComponentsInChildren<Actor>().Count() == 0)
+                if (child.gameObject.GetComponentsInChildren<Actor>().Count() <= 1)
                 {//only run this code on units without subunits
                     ulong turretCount = 0;
                     foreach (ModuleTurret moduleTurret in child.gameObject.GetComponentsInChildren<ModuleTurret>())

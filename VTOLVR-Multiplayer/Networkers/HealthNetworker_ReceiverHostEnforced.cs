@@ -24,17 +24,17 @@ class HealthNetworker_ReceiverHostEnforced : MonoBehaviour
         lastMessage = (Message_Death)((PacketSingle)packet).message;
         if (lastMessage.UID != networkUID)
             return;
-        FlightLogger.Log("trying to write kill feed");
-       // int player = PlayerManager.GetPlayerIDFromCSteamID(new Steamworks.CSteamID(PlayerManager.localUID));
+
+        // int player = PlayerManager.GetPlayerIDFromCSteamID(new Steamworks.CSteamID(PlayerManager.localUID));
 
         string name = Steamworks.SteamFriends.GetPersonaName();
 
         if (lastMessage.message.Contains(name))
         {
             PlayerManager.kills++;
-            FlightLogger.Log("You got" + PlayerManager.kills + " Kill(s)");
+            FlightLogger.Log("You got " + PlayerManager.kills + " Kill(s)");
         }
-     
+
         FlightLogger.Log(lastMessage.message);
 
         if (lastMessage.immediate)
@@ -46,9 +46,10 @@ class HealthNetworker_ReceiverHostEnforced : MonoBehaviour
             health.invincible = false;
             health.Kill();
         }
+
     }
 
-    
+
     public void OnDestroy()
     {
         Networker.Death -= Death;
