@@ -14,7 +14,13 @@ class Patch_OnPreSpawnUnit
 {
     public static bool Prefix(PlayerSpawn __instance)
     {
-        VTScenario.current.vehicle = VTResources.GetPlayerVehicle(Multiplayer._instance.selectedVehicle);
+        if (PlayerManager.selectedVehicle == "")
+        {
+            Debug.LogError("selected vehicle is empty");
+        }
+        if (PlayerManager.selectedVehicle == "FA-26B")
+            PlayerManager.selectedVehicle = "F/A-26B";
+        VTScenario.current.vehicle = VTResources.GetPlayerVehicle(PlayerManager.selectedVehicle);
         return true;
     }
 }

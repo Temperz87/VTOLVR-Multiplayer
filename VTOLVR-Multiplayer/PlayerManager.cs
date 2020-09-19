@@ -16,6 +16,7 @@ public static class PlayerManager
 {
     public static List<Transform> spawnPoints { private set; get; }
     public static List<ReArmingPoint> reaArms;
+    public static string selectedVehicle = "";
     private static float spawnSpacing = 20;
     private static int spawnsCount = 20;
     private static int spawnTicker = 1;

@@ -1414,13 +1414,13 @@ public class Networker : MonoBehaviour
         {
             joinRequest.currentVehicle = "F/A-26B";
         }
-        if (joinRequest.currentVehicle != PilotSaveManager.currentVehicle.vehicleName)
+        /*if (joinRequest.currentVehicle != PilotSaveManager.currentVehicle.vehicleName)
         {
             string wrongVehicle = "Failed to Join Player, host vehicle is )" + PilotSaveManager.currentVehicle.vehicleName + ", client is " + joinRequest.currentVehicle;
             Debug.Log($"Player {csteamID} attempted to join with {joinRequest.currentVehicle}, server is {PilotSaveManager.currentVehicle.vehicleName}");
             NetworkSenderThread.Instance.SendPacketToSpecificPlayer(csteamID, new Message_JoinRequestRejected_Result(wrongVehicle), EP2PSend.k_EP2PSendReliable);
             return;
-        }
+        }*/
 
         if (joinRequest.builtInCampaign != MapAndScenarioVersionChecker.builtInCampaign)
         {

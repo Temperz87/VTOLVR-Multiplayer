@@ -20,7 +20,6 @@ public class Multiplayer : VTOLMOD
     public static bool SoloTesting = true;
     public static Multiplayer _instance = null;
     public bool UpToDate = true;
-    public string selectedVehicle = "";
     public bool buttonMade = false;
     private bool checkedToDate = false;
     private static string TesterURL = "http://marsh.vtolvr-mods.com/?id=";
@@ -826,7 +825,7 @@ public class Multiplayer : VTOLMOD
                 text.text = PilotSaveManager.currentVehicle.name;
                 bInteractable.interactableName = "Switch Vehicles.";
                 bInteractable.OnInteract = new UnityEngine.Events.UnityEvent();
-                selectedVehicle = PilotSaveManager.currentVehicle.name;
+                PlayerManager.selectedVehicle = PilotSaveManager.currentVehicle.name;
                 bInteractable.OnInteract.AddListener(delegate
                 {
                     if (PilotSaveManager.currentVehicle.name == "AV-42C")
@@ -842,7 +841,7 @@ public class Multiplayer : VTOLMOD
                         PilotSaveManager.currentVehicle = VTResources.GetPlayerVehicle("AV-42C");
                     }
                     text.text = PilotSaveManager.currentVehicle.name;
-                    selectedVehicle = text.text;
+                    PlayerManager.selectedVehicle = text.text;
                 });
             }
         }
