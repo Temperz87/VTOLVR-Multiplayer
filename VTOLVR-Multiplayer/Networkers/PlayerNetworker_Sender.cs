@@ -378,12 +378,17 @@ class PlayerNetworker_Sender : MonoBehaviour
         FlightSceneManager.instance.playerActor.health.invincible = false;
 
         Actor killer = null;
-        killer = Traverse.Create(health).Field("lastSourceActor").GetValue<Actor>();
-        if (killer != null)
+        Actor fkiller = null;
+        foreach (var heal in GetComponentsInChildren<Health>())
         {
-            
-            Traverse.Create(health).Field("killedByActor").SetValue(killer);
+            killer = Traverse.Create(heal).Field("lastSourceActor").GetValue<Actor>();
+            if (killer != null)
+            {
+
+                fkiller = killer;
+            }
         }
+      
 
 
       
@@ -397,9 +402,8 @@ class PlayerNetworker_Sender : MonoBehaviour
         else
         {
             message = "cowardly ejection";
-
         }
-        FlightSceneManager.instance.playerActor.health.Damage(10000.0f, FlightSceneManager.instance.playerActor.gameObject.transform.position, Health.DamageTypes.Impact, null, message);
+        FlightSceneManager.instance.playerActor.health.Damage(10000.0f, FlightSceneManager.instance.playerActor.gameObject.transform.position, Health.DamageTypes.Impact, fkiller, message);
         // health.invincible = false;
         //health.Kill();
 

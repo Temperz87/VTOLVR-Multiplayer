@@ -84,7 +84,8 @@ public static class PlayerManager
     public static IEnumerator MapLoaded()
     {
         Debug.Log("map loading started");
-        while (VTMapManager.fetch == null || !VTMapManager.fetch.scenarioReady || FlightSceneManager.instance.switchingScene)
+        
+        while (VTMapManager.fetch == null || !VTMapManager.fetch.scenarioReady || FlightSceneManager.instance.switchingScene || !PlayerSpawn.playerVehicleReady)
         {
             yield return null;
         }
@@ -102,8 +103,8 @@ public static class PlayerManager
         {
             if (carrierStart)
             {
-                FloatingOriginShifter shift = VTOLAPI.GetPlayersVehicleGameObject().GetComponentInChildren<FloatingOriginShifter>();
-                shift.enabled = false;
+              //  FloatingOriginShifter shift = VTOLAPI.GetPlayersVehicleGameObject().GetComponentInChildren<FloatingOriginShifter>();
+               // shift.enabled = false;
             }
              
             FlightSceneManager.instance.playerActor.gameObject.transform.parent = null;
@@ -168,7 +169,7 @@ public static class PlayerManager
                     }
                 }
 
-
+            SpawnPlayersInPlayerSpawnQueue();
             Message_RequestSpawn msg = new Message_RequestSpawn(teamLeftie, SteamUser.GetSteamID().m_SteamID);
             NetworkSenderThread.Instance.SendPacketToSpecificPlayer(Networker.hostID, msg, EP2PSend.k_EP2PSendReliable);
 
@@ -429,7 +430,7 @@ public static class PlayerManager
                 }
 
      
-        /*if(0)
+       /*
         if (gameLoaded)
         {
              
@@ -456,6 +457,7 @@ public static class PlayerManager
                 {
                     if (act != FlightSceneManager.instance.playerActor)
                     {
+                        foreach 
                         foreach (var comp in act.gameObject.GetComponentsInChildren<Renderer>())
                         {
                             comp.enabled = false;
@@ -464,8 +466,8 @@ public static class PlayerManager
                     }
                 }
                
-            } 
-        }*/
+            } */
+         
         if (gameLoaded)
         {
             EndMission.instance.HideEndMission();
@@ -550,7 +552,7 @@ public static class PlayerManager
         }
         //hackSaveUnlockAllWeapons();
 
-        hackSaveUnlockAllWeapons();
+       // hackSaveUnlockAllWeapons();
         rearmPoint.BeginReArm();
     }
     public static void finishRearm()
