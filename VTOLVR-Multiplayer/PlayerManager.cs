@@ -236,7 +236,6 @@ public static class PlayerManager
             worldData.AddComponent<WorldDataNetworker_Sender>();
         }
 
-        hackSaveUnlockAllWeapons();
     }
 
     public static void SpawnPlayersInPlayerSpawnQueue()
@@ -550,6 +549,8 @@ public static class PlayerManager
                 gearAnim.ExtendImmediate();
         }
         //hackSaveUnlockAllWeapons();
+
+        hackSaveUnlockAllWeapons();
         rearmPoint.BeginReArm();
     }
     public static void finishRearm()
