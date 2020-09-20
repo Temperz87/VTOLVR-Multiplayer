@@ -6,6 +6,6 @@ using System.Threading.Tasks;
 
 static class ModVersionString
 {
-    public static string ReleaseBranch = "Wrong vehicle";
-    public static string ModVersionNumber = "2.0.0";
+    public static string ReleaseBranch = "Release";
+    public static string ModVersionNumber = "2.1.0";
 }
