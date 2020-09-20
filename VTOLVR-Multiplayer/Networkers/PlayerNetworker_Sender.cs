@@ -66,9 +66,9 @@ class PlayerNetworker_Sender : MonoBehaviour
     IEnumerator RespawnTimer()
     {
         Debug.Log("Starting respawn timer.");
-
+        GameObject button = Multiplayer.CreateVehicleButton();
         yield return new WaitForSeconds(respawnTimer);
-
+        Destroy(button);
 
         Debug.Log("Finished respawn timer.");
 
@@ -164,6 +164,9 @@ class PlayerNetworker_Sender : MonoBehaviour
             }
         }
 
+        if (PlayerManager.selectedVehicle == "FA-26B")
+            PlayerManager.selectedVehicle = "F/A-26B";
+        PilotSaveManager.currentVehicle = VTResources.GetPlayerVehicle(PlayerManager.selectedVehicle);
         VTCampaignInfo[] list = VTResources.GetBuiltInCampaigns().ToArray();
         string campID =" ";
         foreach( var camp in list)
@@ -175,9 +178,16 @@ class PlayerNetworker_Sender : MonoBehaviour
         }
 
         Campaign campref = VTResources.GetBuiltInCampaign(campID).ToIngameCampaign();
-        PilotSaveManager.currentVehicle = VTResources.GetPlayerVehicle(PlayerManager.selectedVehicle);
         PilotSaveManager.currentCampaign = campref;
+        if (PilotSaveManager.currentVehicle == null)
+        {
+            Debug.LogError("current vehicle is null");
+        }
         GameObject newPlayer = Instantiate(PilotSaveManager.currentVehicle.vehiclePrefab);
+        if (newPlayer == null)
+        {
+            Debug.LogError("new vehicle is null");
+        }
         newPlayer.GetComponent<Actor>().designation = FlightSceneManager.instance.playerActor.designation;//reassigning designation
 
         FlightSceneManager.instance.playerActor = newPlayer.GetComponent<Actor>();
@@ -393,11 +403,6 @@ class PlayerNetworker_Sender : MonoBehaviour
     void Death()
     {
         repspawnTimer = StartCoroutine("RespawnTimer");
-        Debug.Log("interact");
-
-        PlaneButton butt = FlightSceneManager.instance.playerActor.gameObject.AddComponent<PlaneButton>();
-
-        butt.text = "F45";
     }
 }
 class PlaneButton : MonoBehaviour

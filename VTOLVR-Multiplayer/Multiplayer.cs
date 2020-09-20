@@ -809,7 +809,7 @@ public class Multiplayer : VTOLMOD
         }
     }
 
-    public static void CreateVehicleButton()
+    public static GameObject CreateVehicleButton()
     {
         foreach (var controller in GameObject.FindObjectsOfType<VRHandController>())
         {
@@ -820,7 +820,8 @@ public class Multiplayer : VTOLMOD
             }
             else
             {
-                button = canvasButtonPrefab;
+                button = GameObject.Instantiate(canvasButtonPrefab);
+                button.SetActive(true);
             }
             if (!controller.isLeft)
             {
@@ -865,12 +866,21 @@ public class Multiplayer : VTOLMOD
                         Campaign campref = VTResources.GetBuiltInCampaign(campID).ToIngameCampaign();
                         PilotSaveManager.currentVehicle = VTResources.GetPlayerVehicle(PlayerManager.selectedVehicle);
                         PilotSaveManager.currentCampaign = campref;
+                        PlayerManager.buttonMade = false;
                         SceneManager.LoadScene("VehicleConfiguration");
                     }
                 });
             }
+            if (canvasButtonPrefab == null)
+            {
+                canvasButtonPrefab = Instantiate(GameObject.Find("RecenterCanvas"));
+                canvasButtonPrefab.SetActive(false);
+                DontDestroyOnLoad(canvasButtonPrefab);
+            }
+            PlayerManager.buttonMade = true;
+            return button;
         }
-        PlayerManager.buttonMade = true;
+        return null;
     }
 
     public void OnDestroy()
