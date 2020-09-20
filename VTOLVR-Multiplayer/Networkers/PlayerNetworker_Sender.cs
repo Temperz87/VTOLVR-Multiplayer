@@ -1,6 +1,8 @@
 ﻿using System.Collections;
 using UnityEngine;
 using Harmony;
+using TMPro;
+using UnityEngine.UI;
 
 class PlayerNetworker_Sender : MonoBehaviour
 {
@@ -387,10 +389,71 @@ class PlayerNetworker_Sender : MonoBehaviour
         //health.Kill();
 
     }
-
+   
     void Death()
     {
         repspawnTimer = StartCoroutine("RespawnTimer");
-        Multiplayer.CreateVehicleButton();
+        Debug.Log("interact");
+
+        PlaneButton butt = FlightSceneManager.instance.playerActor.gameObject.AddComponent<PlaneButton>();
+
+        butt.text = "F45";
     }
+}
+class PlaneButton : MonoBehaviour
+{
+    TextMeshPro textMesh;
+    GameObject obj;
+    public string text ="";
+    void buttonFunc(string intext)
+    {
+        PlayerManager.selectedVehicle = intext;
+    }
+    void Awake()
+    {
+        foreach (var controller in GameObject.FindObjectsOfType<VRHandController>())
+        {
+            if (controller.isLeft)
+            {
+                obj = new GameObject();
+        textMesh = obj.AddComponent<TextMeshPro>();
+        textMesh.alignment = TextAlignmentOptions.Center;
+        textMesh.overflowMode = TextOverflowModes.Overflow;
+        textMesh.enableWordWrapping = false;
+        
+        obj.transform.SetParent(controller.transform);
+        obj.transform.localPosition = new Vector3(0, 0.2f, 0);
+        obj.transform.localScale = new Vector3(0.05f, 0.05f, 0.05f);
+            }
+        }
+    }
+
+    private void Start()
+    {
+        textMesh.SetText(text);
+    }
+    private void LateUpdate()
+    {
+        
+        foreach (var controller in GameObject.FindObjectsOfType<VRHandController>())
+        {
+            if (!controller.isLeft)
+            {
+
+                Vector3 dist = controller.transform.position - obj.transform.position;
+
+                if(dist.magnitude<0.05f)
+                {
+                    buttonFunc("F-45A");
+                    obj.transform.localScale = new Vector3(0.07f, 0.07f, 0.07f);
+                }
+                else
+                {
+                    obj.transform.localScale = new Vector3(0.05f, 0.05f, 0.05f);
+                }
+
+            }
+        }
+    }
+
 }

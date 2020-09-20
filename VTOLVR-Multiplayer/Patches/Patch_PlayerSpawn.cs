@@ -38,7 +38,8 @@ public static class Patch_DrawButton
 {
     public static bool Prefix(HPEquippable equip)
     {
-        if (!Multiplayer._instance.buttonMade)
+        if (VTOLAPI.currentScene == VTOLScenes.VehicleConfiguration)
+            if (!Multiplayer._instance.buttonMade)
         {
             Multiplayer.CreateVehicleButton();
         }

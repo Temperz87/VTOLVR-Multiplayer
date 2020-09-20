@@ -341,7 +341,7 @@ public class Networker : MonoBehaviour
         ReadP2P();
         if (VTOLAPI.currentScene == VTOLScenes.VehicleConfiguration)
             return;
-        if (PilotSaveManager.currentScenario != null)
+        if (VTOLAPI.currentScene == VTOLScenes.ReadyRoom)
         {
             if (pilotSaveManagerControllerCampaign != PilotSaveManager.currentCampaign)
             {
