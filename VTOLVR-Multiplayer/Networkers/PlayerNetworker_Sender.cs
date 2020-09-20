@@ -378,10 +378,10 @@ class PlayerNetworker_Sender : MonoBehaviour
         FlightSceneManager.instance.playerActor.health.invincible = false;
 
         Actor killer = null;
-
-        if (FlightSceneManager.instance.playerActor.health.killMessage != null)
+        killer = Traverse.Create(health).Field("lastSourceActor").GetValue<Actor>();
+        if (killer != null)
         {
-            killer =  Traverse.Create(health).Field("lastSourceActor").GetValue<Actor>();
+            
             Traverse.Create(health).Field("killedByActor").SetValue(killer);
         }
 

@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 using VTOLVR_Multiplayer;
-
+using Harmony;
 class HealthNetworker_Sender : MonoBehaviour
 {
     public ulong networkUID;
@@ -12,15 +12,15 @@ class HealthNetworker_Sender : MonoBehaviour
     private void Awake()
     {
         lastMessage = new Message_Death(networkUID, false,"empty");
-
-        health = GetComponent<Health>();
+        ownerActor = GetComponentInParent<Actor>();
+        health = ownerActor.health;
 
         if (health == null)
             Debug.LogError("health was null on vehicle " + gameObject.name);
         else
             health.OnDeath.AddListener(Death);
         Debug.LogError("found health on " + gameObject.name);
-        ownerActor = GetComponentInParent<Actor>();
+       
         ownerActor.hideDeathLog = true;
         Networker.BulletHit += this.BulletHit;
     }
@@ -72,6 +72,14 @@ class HealthNetworker_Sender : MonoBehaviour
         lastMessage.immediate = immediateFlag;
 
         string killerName = "themselves";
+        Actor killer = null;
+
+        killer = Traverse.Create(health).Field("lastSourceActor").GetValue<Actor>();
+        if (killer != null)
+        {
+
+            Traverse.Create(health).Field("killedByActor").SetValue(killer);
+        }
 
         if (health.killedByActor != null)
         {
