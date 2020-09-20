@@ -927,20 +927,36 @@ public static class PlayerManager
                     {
                         i = 0;
                     }
+                    if (i == -1)
+                    {
+                        i = allTargeters.Count;
+                    }
                     if (allTargeters.Count != 0)
                     {
-                        while (allTargeters[i] == null)
+                        while (i > allTargeters.Count)
                         {
                             if (i > allTargeters.Count)
                             {
                                 i -= 1;
                                 continue;
                             }
-                            allTargeters.Remove(allTargeters[i]);
-                            if (i > allTargeters.Count)
+                        }
+                        while (allTargeters[i] == null)
+                        {
+                            allTargeters.RemoveAt(i);
+                            if (i == -1)
                             {
-                                i -= 1;
+                                i = 0;
                             }
+                            while (i > allTargeters.Count)
+                            {
+                                if (i > allTargeters.Count)
+                                {
+                                    i -= 1;
+                                    continue;
+                                }
+                            }
+                            continue;
                         }
                         wm.SetOpticalTargeter(allTargeters[i]);
                         newButton.label = wm.opticalTargeter.transform.parent.name;
@@ -961,28 +977,32 @@ public static class PlayerManager
                     {
                         i = allTargeters.Count;
                     }
-                    if (i > allTargeters.Count)
-                    {
-                        i = 0;
-                    }
                     if (allTargeters.Count != 0)
                     {
-                        while (allTargeters[i] == null)
+                        while (i > allTargeters.Count)
                         {
                             if (i > allTargeters.Count)
                             {
                                 i -= 1;
                                 continue;
                             }
-                            allTargeters.Remove(allTargeters[i]);
-                            if (i > allTargeters.Count)
+                        }
+                        while (allTargeters[i] == null)
+                        {
+                            allTargeters.RemoveAt(i);
+                            if (i == -1)
                             {
-                                i -= 1;
+                                i = 0;
                             }
-                            if (i < 0)
+                            while (i > allTargeters.Count)
                             {
-                                i = allTargeters.Count;
+                                if (i > allTargeters.Count)
+                                {
+                                    i -= 1;
+                                    continue;
+                                }
                             }
+                            continue;
                         }
                         wm.SetOpticalTargeter(allTargeters[i]);
                         newButton2.label = wm.opticalTargeter.transform.parent.name;
