@@ -881,7 +881,7 @@ public class Multiplayer : VTOLMOD
                 canvasButtonPrefab.SetActive(false);
                 DontDestroyOnLoad(canvasButtonPrefab);
             }
-            PlayerManager.buttonMade = true;
+            
             return button;
         }
         return null;
