@@ -854,6 +854,7 @@ public class Multiplayer : VTOLMOD
                     PlayerManager.selectedVehicle = text.text;
                     if (VTOLAPI.currentScene == VTOLScenes.VehicleConfiguration)
                     {
+                        // BPilotSaveManager.currentVehicle = VTResources.GetPlayerVehicle(PlayerManager.selectedVehicle);
                         VTCampaignInfo[] list = VTResources.GetBuiltInCampaigns().ToArray();
                         string campID = " ";
                         foreach (var camp in list)
@@ -863,8 +864,11 @@ public class Multiplayer : VTOLMOD
                                 campID = camp.campaignID;
                             }
                         }
+                        if (PlayerManager.selectedVehicle == "AV-42C")
+                        {
+                            campID = "av42cQuickFlight";
+                        }
                         Campaign campref = VTResources.GetBuiltInCampaign(campID).ToIngameCampaign();
-                        PilotSaveManager.currentVehicle = VTResources.GetPlayerVehicle(PlayerManager.selectedVehicle);
                         PilotSaveManager.currentCampaign = campref;
                         PlayerManager.buttonMade = false;
                         SceneManager.LoadScene("VehicleConfiguration");
