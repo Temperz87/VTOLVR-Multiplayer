@@ -6,6 +6,6 @@ using System.Threading.Tasks;
 
 static class ModVersionString
 {
-    public static string ReleaseBranch = "Release";
+    public static string ReleaseBranch = "Wrong Plane";
     public static string ModVersionNumber = "2.1.0";
 }

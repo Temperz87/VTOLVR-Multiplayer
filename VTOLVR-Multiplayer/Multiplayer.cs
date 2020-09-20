@@ -297,7 +297,7 @@ public class Multiplayer : VTOLMOD
     {
         UnityEngine.CrashReportHandler.CrashReportHandler.enableCaptureExceptions = false;
         Debug.Log($"Scene Switch! { scene.ToString() }");
-
+        Multiplayer._instance.buttonMade = false;
         switch (scene)
         {
             case VTOLScenes.ReadyRoom:
@@ -825,6 +825,7 @@ public class Multiplayer : VTOLMOD
             }
             if (!controller.isLeft)
             {
+                Debug.Log("Current vehicle name is " + PilotSaveManager.currentVehicle.name);
                 button.transform.SetParent(controller.transform);
                 button.transform.localPosition = new Vector3(0.101411f, 0.02100047f, -0.128024f);
                 button.transform.localRotation = Quaternion.Euler(-5.834f, 283.583f, 328.957f);
@@ -836,6 +837,11 @@ public class Multiplayer : VTOLMOD
                 bInteractable.interactableName = "Switch Vehicles.";
                 bInteractable.OnInteract = new UnityEvent();
                 PlayerManager.selectedVehicle = PilotSaveManager.currentVehicle.name;
+                foreach (var vehicle in VTResources.GetPlayerVehicles())
+                {
+                    Debug.Log(vehicle.name);
+                    Debug.Log(vehicle.vehicleName);
+                }
                 bInteractable.OnInteract.AddListener(delegate
                 {
                     if (PilotSaveManager.currentVehicle.name == "AV-42C")
@@ -857,20 +863,21 @@ public class Multiplayer : VTOLMOD
                         // BPilotSaveManager.currentVehicle = VTResources.GetPlayerVehicle(PlayerManager.selectedVehicle);
                         VTCampaignInfo[] list = VTResources.GetBuiltInCampaigns().ToArray();
                         string campID = " ";
-                        foreach (var camp in list)
-                        {
-                            if (camp.vehicle == PlayerManager.selectedVehicle)
-                            {
-                                campID = camp.campaignID;
-                            }
-                        }
                         if (PlayerManager.selectedVehicle == "AV-42C")
                         {
                             campID = "av42cQuickFlight";
                         }
+                        else if (PlayerManager.selectedVehicle == "FA-26B")
+                        {
+                            campID = "fa26bFreeFlight";
+                        }
+                        else
+                        {
+                            campID = "f45-quickFlight";
+                        }
                         Campaign campref = VTResources.GetBuiltInCampaign(campID).ToIngameCampaign();
                         PilotSaveManager.currentCampaign = campref;
-                        PlayerManager.buttonMade = false;
+                        Multiplayer._instance.buttonMade = false;
                         SceneManager.LoadScene("VehicleConfiguration");
                     }
                 });
@@ -881,7 +888,7 @@ public class Multiplayer : VTOLMOD
                 canvasButtonPrefab.SetActive(false);
                 DontDestroyOnLoad(canvasButtonPrefab);
             }
-            PlayerManager.buttonMade = true;
+            Multiplayer._instance.buttonMade = true;
             return button;
         }
         return null;
