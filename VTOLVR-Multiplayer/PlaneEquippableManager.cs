@@ -65,9 +65,12 @@ public static class PlaneEquippableManager
                                 if (weaponManager.opticalTargeter.GetComponent<TurretNetworker_Sender>() == null)
                                 {
                                     weaponManager.opticalTargeter.sensorTurret.gameObject.AddComponent<TurretNetworker_Sender>().networkUID = Networker.GenerateNetworkUID();
-                                    if (!PlayerManager.allTargeters.Contains(weaponManager.opticalTargeter))
+                                    if (weaponManager.actor.team != Teams.Enemy)
                                     {
-                                        PlayerManager.allTargeters.Add(weaponManager.opticalTargeter);
+                                        if (!PlayerManager.allTargeters.Contains(weaponManager.opticalTargeter))
+                                        {
+                                            PlayerManager.allTargeters.Add(weaponManager.opticalTargeter);
+                                        }
                                     }
                                 }
                             }
@@ -83,9 +86,12 @@ public static class PlaneEquippableManager
                                 if (weaponManager.opticalTargeter.GetComponent<TurretNetworker_Sender>() == null)
                                 {
                                     weaponManager.opticalTargeter.sensorTurret.gameObject.AddComponent<TurretNetworker_Sender>().networkUID = Networker.GenerateNetworkUID();
-                                    if (!PlayerManager.allTargeters.Contains(weaponManager.opticalTargeter))
+                                    if (weaponManager.actor.team != Teams.Enemy)
                                     {
-                                        PlayerManager.allTargeters.Add(weaponManager.opticalTargeter);
+                                        if (!PlayerManager.allTargeters.Contains(weaponManager.opticalTargeter))
+                                        {
+                                            PlayerManager.allTargeters.Add(weaponManager.opticalTargeter);
+                                        }
                                     }
                                 }
                             }
@@ -108,9 +114,12 @@ public static class PlaneEquippableManager
                                 {
                                     weaponManager.opticalTargeter.sensorTurret.gameObject.AddComponent<TurretNetworker_Sender>().networkUID = Networker.GenerateNetworkUID();
                                     weaponManager.opticalTargeter.powered = true;
-                                    if (!PlayerManager.allTargeters.Contains(weaponManager.opticalTargeter))
+                                    if (weaponManager.actor.team != Teams.Enemy)
                                     {
-                                        PlayerManager.allTargeters.Add(weaponManager.opticalTargeter);
+                                        if (!PlayerManager.allTargeters.Contains(weaponManager.opticalTargeter))
+                                        {
+                                            PlayerManager.allTargeters.Add(weaponManager.opticalTargeter);
+                                        }
                                     }
                                 }
                             }

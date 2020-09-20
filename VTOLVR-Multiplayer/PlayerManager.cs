@@ -31,7 +31,7 @@ public static class PlayerManager
     public static bool carrierFound = false;
     public static bool unSubscribe = true;
     public static float timeAlive = 0.0f;
-    public static int kills=0;
+    public static int kills = 0;
     public static List<OpticalTargeter> allTargeters = new List<OpticalTargeter>();
     /// <summary>
     /// This is the queue for people waiting to get a spawn point,
@@ -94,11 +94,11 @@ public static class PlayerManager
         gameLoaded = true;
         // As a client, when the map has loaded we are going to request a spawn point from the host
         SetPrefabs();
-      
+
 
         carrierStart = FlightSceneManager.instance.playerActor.unitSpawn.unitSpawner.linkedToCarrier;
 
-   
+
         ObjectiveNetworker_Reciever.loadObjectives();
         if (!Networker.isHost)
         {
@@ -107,7 +107,7 @@ public static class PlayerManager
                 FloatingOriginShifter shift = VTOLAPI.GetPlayersVehicleGameObject().GetComponentInChildren<FloatingOriginShifter>();
                 shift.enabled = false;
             }
-             
+
             FlightSceneManager.instance.playerActor.gameObject.transform.parent = null;
             Debug.Log($"Sending spawn request to host, host id: {Networker.hostID}, client id: {SteamUser.GetSteamID().m_SteamID}");
             Debug.Log("Killing all units currently on the map.");
@@ -412,7 +412,7 @@ public static class PlayerManager
                             }
                         }
                     }
-                    if(carrierFound)
+                    if (carrierFound)
                     {
                         carrierStartTimer += 1;
                     }
@@ -430,7 +430,7 @@ public static class PlayerManager
 
                 }
 
-     
+
         /*if(0)
         if (gameLoaded)
         {
@@ -471,15 +471,15 @@ public static class PlayerManager
         if (gameLoaded)
         {
             EndMission.instance.HideEndMission();
-            Actor  player = FlightSceneManager.instance.playerActor;
-            if(player)
+            Actor player = FlightSceneManager.instance.playerActor;
+            if (player)
             {
 
-              // if( (bool)player.flightInfo && !player.flightInfo.isLanded)
+                // if( (bool)player.flightInfo && !player.flightInfo.isLanded)
                 {
                     flyCounter += Time.fixedDeltaTime;
 
-                    if(flyCounter > 10.0f &&  flyCounter < 13.0f)
+                    if (flyCounter > 10.0f && flyCounter < 13.0f)
                     {
                         //FlightLogger.Log("Plane Unparented");
                         player.gameObject.GetComponent<Rigidbody>().transform.SetParent(null);
@@ -487,7 +487,7 @@ public static class PlayerManager
                     }
                 }
             }
-                 
+
             PlayerManager.SpawnPlayersInPlayerSpawnQueue();//addmitedly, this probably isnt the best place to put this, feel free to move it somewhere els
         }
 
@@ -530,7 +530,7 @@ public static class PlayerManager
         FloatingOriginShifter shift = VTOLAPI.GetPlayersVehicleGameObject().GetComponentInChildren<FloatingOriginShifter>();
         shift.enabled = true;
     }
-        public static void StartRearm(ReArmingPoint rp)
+    public static void StartRearm(ReArmingPoint rp)
     {
         if (PlayerManager.selectedVehicle == "FA-26B")
             PlayerManager.selectedVehicle = "F/A-26B";
@@ -602,14 +602,14 @@ public static class PlayerManager
             {
                 MovingPlatform plat = actor.gameObject.GetComponentInChildren<MovingPlatform>();
                 if (plat != null)
-                { 
+                {
                     Vector3 localPos = plat.transform.InverseTransformPoint(VTOLAPI.GetPlayersVehicleGameObject().transform.position);
                     Vector3 localFwd = plat.transform.InverseTransformDirection(VTOLAPI.GetPlayersVehicleGameObject().transform.forward);
                     Vector3 localUp = plat.transform.InverseTransformDirection(VTOLAPI.GetPlayersVehicleGameObject().transform.up);
-                    
-                        VTOLAPI.GetPlayersVehicleGameObject().transform.position = plat.transform.TransformPoint(localPos);
-                        Vector3 forward = plat.transform.TransformDirection(localFwd);
-                        Vector3 upwards = plat.transform.TransformDirection(localUp);
+
+                    VTOLAPI.GetPlayersVehicleGameObject().transform.position = plat.transform.TransformPoint(localPos);
+                    Vector3 forward = plat.transform.TransformDirection(localFwd);
+                    Vector3 upwards = plat.transform.TransformDirection(localUp);
                     VTOLAPI.GetPlayersVehicleGameObject().transform.rotation = Quaternion.LookRotation(forward, upwards);
                     Debug.Log("attaching to carrier");
                     rb.velocity = plat.rb.velocity;
@@ -618,10 +618,10 @@ public static class PlayerManager
                     rb.transform.SetParent(plat.transform);
                 }
             }
-         
+
             Debug.Log("origin stuff to carrier");
 
-          
+
 
         }
 
@@ -643,7 +643,7 @@ public static class PlayerManager
         Debug.Log("Sending our location to spawn our vehicle");
         VTOLVehicles currentVehicle = VTOLAPI.GetPlayersVehicleEnum();
         Actor actor = localVehicle.GetComponent<Actor>();
-        Player localPlayer = new Player(SteamUser.GetSteamID(), localVehicle,actor, currentVehicle, UID, PlayerManager.teamLeftie, SteamFriends.GetPersonaName());
+        Player localPlayer = new Player(SteamUser.GetSteamID(), localVehicle, actor, currentVehicle, UID, PlayerManager.teamLeftie, SteamFriends.GetPersonaName());
         AddToPlayerList(localPlayer);
 
 
@@ -685,16 +685,16 @@ public static class PlayerManager
 
         if (Networker.isHost && firstSpawnDone == false)
         {
-          
-               // StartRearm(rearmPoint);
-           
+
+            // StartRearm(rearmPoint);
+
 
         }
         else
         {
             if (teamLeftie)
             {
-                 
+
                 StartRearm(rearmPoint);
             }
             else
@@ -714,8 +714,8 @@ public static class PlayerManager
                 }
             }
 
-            }
-        
+        }
+
 
 
         //prevent fall through ground
@@ -749,7 +749,7 @@ public static class PlayerManager
             Actor act = VTOLVR_Multiplayer.AIDictionaries.allActors[actorTodamage];
             if (act != null)
                 act.health.Damage(lastMissileDamageMessage.damage, act.position, Health.DamageTypes.Impact, source, "Missile Impact");
-             
+
         }
     }
 
@@ -839,48 +839,6 @@ public static class PlayerManager
             AvatarManager.SetupAircraftRoundels(localVehicle.transform, currentVehicle, GetPlayerCSteamID(localUID), av42Offset);
         else
             AvatarManager.SetupAircraftRoundels(localVehicle.transform, currentVehicle, GetPlayerCSteamID(localUID), Vector3.zero);
-
-        if (currentVehicle != VTOLVehicles.F45A)
-        {
-            MFDPage mfdPage = localVehicle.GetComponentInChildren<MFDManager>().GetPage("target");
-            mfdPage.OnActivatePage.AddListener(delegate { 
-                Debug.Log("=");
-                MFDPage.MFDButtonInfo[] allButtons = mfdPage.buttons;
-                MFDPage.MFDButtonInfo newButton = new MFDPage.MFDButtonInfo();
-                newButton.button = MFD.MFDButtons.T4;
-                newButton.toolTip = "Change Laser Codes";
-                int i = 0;
-                WeaponManager wm = localVehicle.GetComponent<WeaponManager>();
-                newButton.label = "Current Code: " + wm.name;
-                newButton.OnPress.AddListener(delegate {
-                    i++;
-                    if (i > allTargeters.Count)
-                    {
-                        i = 0;
-                    }
-                    while (allTargeters[i] == null)
-                    {
-                        if (i > allTargeters.Count)
-                        {
-                            i -= 1;
-                            continue;
-                        }
-                        allTargeters.Remove(allTargeters[i]);
-                        if (i > allTargeters.Count)
-                        {
-                            i -= 1;
-                        }
-                    }
-                    wm.SetOpticalTargeter(allTargeters[i]);
-                    newButton.label = "CurrentCode: " + wm.name;
-                });
-                if (mfdPage.mfd == null)
-                {
-                    Debug.LogError("mfdPage.mfd null!");
-                }
-                mfdPage.SetPageButton(newButton);
-            });
-        }
         List<HPInfo> hpInfos = PlaneEquippableManager.generateLocalHpInfoList(UID);
         CountermeasureManager cmManager = localVehicle.GetComponentInChildren<CountermeasureManager>();
         List<int> cm = PlaneEquippableManager.generateCounterMeasuresFromCmManager(cmManager);
@@ -919,6 +877,130 @@ public static class PlayerManager
 
         localWManager.gpsSystem.CreateGroup("MP");
         localWManager.gpsSystem.UpdateRemotelyModifiedGroups();
+
+        if (currentVehicle != VTOLVehicles.F45A)
+        {
+            MFDPage mfdPage = null;
+            MFDManager manager = localVehicle.GetComponentInChildren<MFDManager>();
+            if (manager == null)
+            {
+                Debug.LogError("mfdManager is null");
+                return;
+            }
+            Debug.Log("Ensure ready");
+            manager.EnsureReady();
+            foreach (var page in manager.mfdPages)
+            {
+                if (page.name == "TargetingPage" || page.pageName == "target")
+                {
+                    mfdPage = page;
+                    break;
+                }
+                else
+                {
+                    Debug.Log(page.name + " " + page.pageName + " is not the page we are looking for.");
+                }
+            }
+            if (mfdPage == null)
+            {
+                Debug.LogError("mfdPage null");
+                return;
+            }
+            if (mfdPage == null)
+                Debug.LogError("mfdPage is null");
+            Debug.Log("making button");
+            WeaponManager wm = localVehicle.GetComponent<WeaponManager>();
+            OpticalTargeter originalTarget = wm.opticalTargeter;
+            mfdPage.OnActivatePage.AddListener(delegate
+            {
+                Debug.Log("=");
+                MFDPage.MFDButtonInfo[] allButtons = mfdPage.buttons;
+                MFDPage.MFDButtonInfo newButton = new MFDPage.MFDButtonInfo();
+                newButton.button = MFD.MFDButtons.R1;
+                newButton.toolTip = "Laser Code Right";
+                int i = 0;
+                newButton.label = localVehicle.GetComponent<WeaponManager>().opticalTargeter.transform.parent.name;
+                newButton.OnPress.AddListener(delegate
+                {
+                    i++;
+                    if (i > allTargeters.Count)
+                    {
+                        i = 0;
+                    }
+                    if (allTargeters.Count != 0)
+                    {
+                        while (allTargeters[i] == null)
+                        {
+                            if (i > allTargeters.Count)
+                            {
+                                i -= 1;
+                                continue;
+                            }
+                            allTargeters.Remove(allTargeters[i]);
+                            if (i > allTargeters.Count)
+                            {
+                                i -= 1;
+                            }
+                        }
+                        wm.SetOpticalTargeter(allTargeters[i]);
+                        newButton.label = wm.opticalTargeter.transform.parent.name;
+                    }
+                    else
+                    {
+                        wm.SetOpticalTargeter(originalTarget);
+                    }
+                });
+                MFDPage.MFDButtonInfo newButton2 = new MFDPage.MFDButtonInfo();
+                newButton2.button = MFD.MFDButtons.L1;
+                newButton2.toolTip = "Laser Code Left";
+                newButton2.label = localVehicle.GetComponent<WeaponManager>().opticalTargeter.transform.parent.name;
+                newButton2.OnPress.AddListener(delegate
+                {
+                    i--;
+                    if (i == -1)
+                    {
+                        i = allTargeters.Count;
+                    }
+                    if (i > allTargeters.Count)
+                    {
+                        i = 0;
+                    }
+                    if (allTargeters.Count != 0)
+                    {
+                        while (allTargeters[i] == null)
+                        {
+                            if (i > allTargeters.Count)
+                            {
+                                i -= 1;
+                                continue;
+                            }
+                            allTargeters.Remove(allTargeters[i]);
+                            if (i > allTargeters.Count)
+                            {
+                                i -= 1;
+                            }
+                            if (i < 0)
+                            {
+                                i = allTargeters.Count;
+                            }
+                        }
+                        wm.SetOpticalTargeter(allTargeters[i]);
+                        newButton2.label = wm.opticalTargeter.transform.parent.name;
+                    }
+                    else
+                    {
+                        wm.SetOpticalTargeter(originalTarget);
+                    }
+                });
+                Debug.Log("set button");
+                mfdPage.SetPageButton(newButton);
+                mfdPage.SetPageButton(newButton2);
+            });
+            if (!allTargeters.Contains(localWManager.opticalTargeter))
+            {
+                allTargeters.Add(localWManager.opticalTargeter);
+            }
+        }
     }
     /// <summary>
     /// When the user has received a message of spawn player vehicle, 
