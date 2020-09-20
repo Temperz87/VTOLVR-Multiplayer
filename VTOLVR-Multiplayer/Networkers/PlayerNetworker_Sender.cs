@@ -167,18 +167,18 @@ class PlayerNetworker_Sender : MonoBehaviour
         if (PlayerManager.selectedVehicle == "FA-26B")
             PlayerManager.selectedVehicle = "F/A-26B";
         PilotSaveManager.currentVehicle = VTResources.GetPlayerVehicle(PlayerManager.selectedVehicle);
-        VTCampaignInfo[] list = VTResources.GetBuiltInCampaigns().ToArray();
-        string campID =" ";
-        foreach ( var camp in list)
-        {
-            if(camp.vehicle == PlayerManager.selectedVehicle)
-            {
-                campID = camp.campaignID;
-            }
-        }
+        string campID;
         if (PlayerManager.selectedVehicle == "AV-42C")
         {
             campID = "av42cQuickFlight";
+        }
+        else if (PlayerManager.selectedVehicle == "FA-26B")
+        {
+            campID = "fa26bFreeFlight";
+        }
+        else
+        {
+            campID = "f45-quickFlight";
         }
 
         Campaign campref = VTResources.GetBuiltInCampaign(campID).ToIngameCampaign();

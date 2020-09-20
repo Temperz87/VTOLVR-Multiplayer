@@ -861,8 +861,7 @@ public class Multiplayer : VTOLMOD
                     if (VTOLAPI.currentScene == VTOLScenes.VehicleConfiguration)
                     {
                         // BPilotSaveManager.currentVehicle = VTResources.GetPlayerVehicle(PlayerManager.selectedVehicle);
-                        VTCampaignInfo[] list = VTResources.GetBuiltInCampaigns().ToArray();
-                        string campID = " ";
+                        string campID;
                         if (PlayerManager.selectedVehicle == "AV-42C")
                         {
                             campID = "av42cQuickFlight";
