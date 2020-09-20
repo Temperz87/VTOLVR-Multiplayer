@@ -11,6 +11,7 @@ using System.Reflection;
 using UnityEngine.SceneManagement;
 using System.Text.RegularExpressions;
 using UnityEngine.UI;
+using UnityEngine.Events;
 
 public static class PlayerManager
 {
@@ -31,6 +32,7 @@ public static class PlayerManager
     public static bool unSubscribe = true;
     public static float timeAlive = 0.0f;
     public static int kills=0;
+    public static List<OpticalTargeter> allTargeters = new List<OpticalTargeter>();
     /// <summary>
     /// This is the queue for people waiting to get a spawn point,
     /// incase the host hasn't loaded in, in time.
@@ -837,8 +839,35 @@ public static class PlayerManager
             AvatarManager.SetupAircraftRoundels(localVehicle.transform, currentVehicle, GetPlayerCSteamID(localUID), av42Offset);
         else
             AvatarManager.SetupAircraftRoundels(localVehicle.transform, currentVehicle, GetPlayerCSteamID(localUID), Vector3.zero);
-   
 
+        if (currentVehicle != VTOLVehicles.F45A)
+        {
+            MFDPage mfdPage = localVehicle.GetComponentInChildren<MFDManager>().GetPage("target");
+            mfdPage.OnActivatePage.AddListener(delegate { 
+                Debug.Log("=");
+                MFDPage.MFDButtonInfo[] allButtons = mfdPage.buttons;
+                MFDPage.MFDButtonInfo newButton = new MFDPage.MFDButtonInfo();
+                newButton.button = MFD.MFDButtons.T4;
+                newButton.toolTip = "Change Laser Codes";
+                int i = 0;
+                WeaponManager wm = localVehicle.GetComponent<WeaponManager>();
+                newButton.label = "Current Code: " + wm.name;
+                newButton.OnPress.AddListener(delegate {
+                    i++;
+                    if (i > allTargeters.Count)
+                    {
+                        i = 0;
+                    }
+                    wm.SetOpticalTargeter(allTargeters[i]);
+                    newButton.label = "CurrentCode: " + wm.name;
+                });
+                if (mfdPage.mfd == null)
+                {
+                    Debug.LogError("mfdPage.mfd null!");
+                }
+                mfdPage.SetPageButton(newButton);
+            });
+        }
         List<HPInfo> hpInfos = PlaneEquippableManager.generateLocalHpInfoList(UID);
         CountermeasureManager cmManager = localVehicle.GetComponentInChildren<CountermeasureManager>();
         List<int> cm = PlaneEquippableManager.generateCounterMeasuresFromCmManager(cmManager);
