@@ -494,7 +494,7 @@ public static class PlayerManager
     public static void hackSaveUnlockAllWeapons()
     {
         string weaponList = "";
-        VTOLVehicles currentVehicle = VTOLAPI.GetPlayersVehicleEnum();
+        VTOLVehicles currentVehicle = PlayerManager.GetVehicleFromString();
         //rbSender.SetSpawn(pos, rot);
         if (currentVehicle == VTOLVehicles.AV42C)
         {
@@ -612,10 +612,31 @@ public static class PlayerManager
         pvSetup.OnBeginUsingConfigurator -= StartConfig;
         unSubscribe = false;
     }
+
+    public static VTOLVehicles GetVehicleFromString()
+    {
+        if (PlayerManager.selectedVehicle == "AV-42C")
+        {
+            return VTOLVehicles.AV42C;
+        }
+         
+        if (PlayerManager.selectedVehicle == "FA-26B" || PlayerManager.selectedVehicle == "F/A-26B")
+        {
+            return VTOLVehicles.FA26B;
+        }
+
+        if (PlayerManager.selectedVehicle == "F-45A")
+        {
+            return VTOLVehicles.F45A;
+        }
+
+        return VTOLVehicles.FA26B;
+
+    }
     public static void SpawnLocalVehicleAndInformOtherClients(GameObject localVehicle, Vector3 pos, Quaternion rot, ulong UID, int playercount = 0) //Both
     {
         Debug.Log("Sending our location to spawn our vehicle");
-        VTOLVehicles currentVehicle = VTOLAPI.GetPlayersVehicleEnum();
+        VTOLVehicles currentVehicle = PlayerManager.GetVehicleFromString();
         Actor actor = localVehicle.GetComponent<Actor>();
         Player localPlayer = new Player(SteamUser.GetSteamID(), localVehicle,actor, currentVehicle, UID, PlayerManager.teamLeftie, SteamFriends.GetPersonaName());
         AddToPlayerList(localPlayer);
@@ -730,7 +751,7 @@ public static class PlayerManager
 
     public static void SetupLocalAircraft(GameObject localVehicle, Vector3 pos, Quaternion rot, ulong UID)
     {
-        VTOLVehicles currentVehicle = VTOLAPI.GetPlayersVehicleEnum();
+        VTOLVehicles currentVehicle = PlayerManager.GetVehicleFromString();
         Actor actor = localVehicle.GetComponent<Actor>();
 
         if (VTOLVR_Multiplayer.AIDictionaries.allActors.ContainsKey(UID))

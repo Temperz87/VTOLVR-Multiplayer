@@ -226,6 +226,7 @@ class PlayerNetworker_Sender : MonoBehaviour
         lastMessage.UID = networkUID;
         lastMessage.isLeftie = PlayerManager.teamLeftie;
         lastMessage.tagName = Steamworks.SteamFriends.GetPersonaName();
+        lastMessage.vehicle = PlayerManager.GetVehicleFromString();
         if (Networker.isHost)
             NetworkSenderThread.Instance.SendPacketAsHostToAllClients(lastMessage, Steamworks.EP2PSend.k_EP2PSendReliable);
         else

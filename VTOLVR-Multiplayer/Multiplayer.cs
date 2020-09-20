@@ -870,7 +870,7 @@ public class Multiplayer : VTOLMOD
                         }
                         Campaign campref = VTResources.GetBuiltInCampaign(campID).ToIngameCampaign();
                         PilotSaveManager.currentCampaign = campref;
-                        PlayerManager.buttonMade = false;
+                        //PlayerManager.buttonMade = false;
                         SceneManager.LoadScene("VehicleConfiguration");
                     }
                 });
