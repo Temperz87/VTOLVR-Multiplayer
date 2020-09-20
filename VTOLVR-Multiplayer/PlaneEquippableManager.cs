@@ -60,6 +60,10 @@ public static class PlaneEquippableManager
                     switch (networkType)
                     {
                         case HPInfoListGenerateNetworkType.generate:
+                            if (weaponManager.opticalTargeter != null)
+                            {
+                                weaponManager.opticalTargeter.sensorTurret.gameObject.AddComponent<TurretNetworker_Sender>().networkUID = Networker.GenerateNetworkUID();
+                            }
                             MissileNetworker_Sender mnSender = HPml.ml.missiles[j].gameObject.AddComponent<MissileNetworker_Sender>();
                             mnSender.networkUID = Networker.GenerateNetworkUID();
                             missileUIDS.Add(mnSender.networkUID);
@@ -67,6 +71,10 @@ public static class PlaneEquippableManager
                                 HPml.ml.missiles[j].gameObject.name = Steamworks.SteamFriends.GetPersonaName() + "'s " + HPml.ml.missiles[j].gameObject.name;
                             break;
                         case HPInfoListGenerateNetworkType.sender:
+                            if (weaponManager.opticalTargeter != null)
+                            {
+                                weaponManager.opticalTargeter.sensorTurret.gameObject.AddComponent<TurretNetworker_Sender>().networkUID = Networker.GenerateNetworkUID();
+                            }
                             MissileNetworker_Sender sender = HPml.ml.missiles[j].gameObject.GetComponent<MissileNetworker_Sender>();
                             if(playerFlag)
                                 HPml.ml.missiles[j].gameObject.name = Steamworks.SteamFriends.GetPersonaName() + "'s " + HPml.ml.missiles[j].gameObject.name;
@@ -80,6 +88,11 @@ public static class PlaneEquippableManager
                             }
                             break;
                         case HPInfoListGenerateNetworkType.receiver:
+                            if (weaponManager.opticalTargeter != null)
+                            {
+                                weaponManager.opticalTargeter.sensorTurret.gameObject.AddComponent<TurretNetworker_Receiver>().networkUID = Networker.GenerateNetworkUID();
+                                weaponManager.opticalTargeter.powered = true;
+                            }
                             MissileNetworker_Receiver reciever = HPml.ml.missiles[j].gameObject.GetComponent<MissileNetworker_Receiver>();
                             if (reciever != null)
                             {
@@ -114,7 +127,6 @@ public static class PlaneEquippableManager
                     lastEquippable.weaponType,
                     missileUIDS.ToArray()));
         }
-
         return hpInfos;
     }
 

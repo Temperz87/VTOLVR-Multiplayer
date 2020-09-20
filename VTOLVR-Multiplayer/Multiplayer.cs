@@ -130,6 +130,11 @@ public class Multiplayer : VTOLMOD
         if (checkedToDate)
             return;
         checkedToDate = false;
+        if (ModVersionString.ReleaseBranch != "Release")
+        {
+            checkedToDate = true;
+            return;
+        }
         HttpWebRequest request = (HttpWebRequest)WebRequest.Create("https://vtolvr-mods.com/api/mods/qs6jxkt2/?format=json");
         request.AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate;
 
