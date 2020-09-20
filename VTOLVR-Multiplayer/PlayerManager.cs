@@ -511,6 +511,11 @@ public static class PlayerManager
         }
 
         CampaignSave campaignSave = PilotSaveManager.current.GetVehicleSave(PilotSaveManager.currentVehicle.vehicleName).GetCampaignSave(PilotSaveManager.currentCampaign.campaignID);
+        if (campaignSave == null)
+        {
+            Debug.LogError("Campaign save is null");
+            return;
+        }
         char[] delimiterChars = { ';' };
         string[] wepList = weaponList.Split(delimiterChars);
         campaignSave.availableWeapons.Clear();
@@ -525,6 +530,25 @@ public static class PlayerManager
     }
         public static void StartRearm(ReArmingPoint rp)
     {
+        if (PlayerManager.selectedVehicle == "FA-26B")
+            PlayerManager.selectedVehicle = "F/A-26B";
+        PilotSaveManager.currentVehicle = VTResources.GetPlayerVehicle(PlayerManager.selectedVehicle);
+        string campID;
+        if (PlayerManager.selectedVehicle == "AV-42C")
+        {
+            campID = "av42cQuickFlight";
+        }
+        else if (PlayerManager.selectedVehicle == "F/A-26B")
+        {
+            campID = "fa26bFreeFlight";
+        }
+        else
+        {
+            campID = "f45-quickFlight";
+        }
+
+        Campaign campref = VTResources.GetBuiltInCampaign(campID).ToIngameCampaign();
+        PilotSaveManager.currentCampaign = campref;
         Rigidbody rb = VTOLAPI.GetPlayersVehicleGameObject().GetComponent<Rigidbody>();
         PlayerManager.rearmPoint = rp;
         rb.interpolation = RigidbodyInterpolation.None;
