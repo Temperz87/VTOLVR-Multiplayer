@@ -247,6 +247,10 @@ public class PlaneNetworker_Sender : MonoBehaviour
     public void OnDestroy()
     {
         Networker.WeaponSet -= WeaponSet;
+        if (PlayerManager.allTargeters.Contains(weaponManager.opticalTargeter))
+        {
+            PlayerManager.allTargeters.Remove(weaponManager.opticalTargeter);
+        }
         PlayerVehicleSetup pv = gameObject.GetComponent<PlayerVehicleSetup>();
         if (pv != null)
             pv.OnEndRearming.RemoveListener(Rearm);

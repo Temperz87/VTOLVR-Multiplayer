@@ -407,6 +407,10 @@ public class PlaneNetworker_Receiver : MonoBehaviour
     }
     public void OnDestroy()
     {
+        if (PlayerManager.allTargeters.Contains(weaponManager.opticalTargeter))
+        {
+            PlayerManager.allTargeters.Remove(weaponManager.opticalTargeter);
+        }
         firstMessageReceived = false;
         Networker.PlaneUpdate -= PlaneUpdate;
         Networker.Disconnecting -= OnDisconnect;

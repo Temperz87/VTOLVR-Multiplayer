@@ -858,6 +858,19 @@ public static class PlayerManager
                     {
                         i = 0;
                     }
+                    while (allTargeters[i] == null)
+                    {
+                        if (i > allTargeters.Count)
+                        {
+                            i -= 1;
+                            continue;
+                        }
+                        allTargeters.Remove(allTargeters[i]);
+                        if (i > allTargeters.Count)
+                        {
+                            i -= 1;
+                        }
+                    }
                     wm.SetOpticalTargeter(allTargeters[i]);
                     newButton.label = "CurrentCode: " + wm.name;
                 });
