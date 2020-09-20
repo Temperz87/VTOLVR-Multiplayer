@@ -74,13 +74,7 @@ class HealthNetworker_Sender : MonoBehaviour
         string killerName = "themselves";
         Actor killer = null;
 
-        killer = Traverse.Create(health).Field("lastSourceActor").GetValue<Actor>();
-        if (killer != null)
-        {
-
-            Traverse.Create(health).Field("killedByActor").SetValue(killer);
-        }
-
+        
         if (health.killedByActor != null)
         {
             killerName = health.killedByActor.name;

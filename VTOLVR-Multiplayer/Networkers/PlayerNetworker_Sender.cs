@@ -34,9 +34,9 @@ class PlayerNetworker_Sender : MonoBehaviour
     void Awake()
     {
         lastMessage = new Message_Respawn(networkUID, new Vector3D(), new Quaternion(), false, Steamworks.SteamFriends.GetPersonaName(), VTOLAPI.GetPlayersVehicleEnum());
-
-        health = GetComponent<Health>();
         actor = GetComponent<Actor>();
+        health = actor.health;
+        
 
         if (health == null)
             Debug.LogError("health was null on player " + gameObject.name);
@@ -399,7 +399,7 @@ class PlayerNetworker_Sender : MonoBehaviour
             message = "cowardly ejection";
 
         }
-        FlightSceneManager.instance.playerActor.health.Damage(10000.0f, FlightSceneManager.instance.playerActor.gameObject.transform.position, Health.DamageTypes.Impact, killer, message);
+        FlightSceneManager.instance.playerActor.health.Damage(10000.0f, FlightSceneManager.instance.playerActor.gameObject.transform.position, Health.DamageTypes.Impact, null, message);
         // health.invincible = false;
         //health.Kill();
 
