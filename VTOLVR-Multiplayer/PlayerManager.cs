@@ -44,7 +44,7 @@ public static class PlayerManager
     public static ulong localUID;
     private static Packet storedSpawnMessage;
     public static GameObject worldData;
-    public static List<Actor> invisibleActorList = new List<Actor>();
+    public static List<GameObject> invisibleActorList = new List<GameObject>();
     public static Multiplayer multiplayerInstance = null;
     public static bool teamLeftie = false;
     public static int carrierStartTimer = 0;
@@ -430,43 +430,48 @@ public static class PlayerManager
                 }
 
      
-       /*
+       
         if (gameLoaded)
         {
              
-            foreach (Actor act in invisibleActorList)
+            foreach (GameObject act in invisibleActorList)
             {
-                if (act.role == Actor.Roles.Air)
-                {
+                
 
-                    foreach (var comp in act.gameObject.GetComponentsInChildren<Renderer>())
+                    foreach (var comp in act.GetComponentsInChildren<Renderer>())
                     {
                         comp.enabled = true;
                     }
                     
                      
-                }
+                
 
             }
             invisibleActorList.Clear();
-            List<Actor> alist = new List<Actor>();
-            Actor.GetActorsInRadius(FlightSceneManager.instance.playerActor.transform.position, 15.0f, Teams.Allied, TeamOptions.BothTeams, alist);
-            foreach (Actor act in alist)
+
+            Vector3D plane = VTMapManager.WorldToGlobalPoint(FlightSceneManager.instance.playerActor.gameObject.transform.position);
+
+            foreach (Player play in players)
             {
-                if (act.role==Actor.Roles.Air)
+
+                Vector3D plane2 = VTMapManager.WorldToGlobalPoint(play.vehicle.transform.position);
+                Vector3D dist = plane - plane2;
+
+                double dists = dist.magnitude;
+                if(dists<10.0f && play.vehicleUID != localUID)
                 {
-                    if (act != FlightSceneManager.instance.playerActor)
+                    foreach (var comp in play.vehicle.GetComponentsInChildren<Renderer>())
                     {
-                        foreach 
-                        foreach (var comp in act.gameObject.GetComponentsInChildren<Renderer>())
-                        {
-                            comp.enabled = false;
-                        }
-                        invisibleActorList.Add(act);
+                        comp.enabled = false;
                     }
+                    invisibleActorList.Add(play.vehicle);
                 }
+            }
+
+
+              
                
-            } */
+            }  
          
         if (gameLoaded)
         {
@@ -527,8 +532,8 @@ public static class PlayerManager
 
     public static void StartConfig(LoadoutConfigurator lc)
     {
-        FloatingOriginShifter shift = VTOLAPI.GetPlayersVehicleGameObject().GetComponentInChildren<FloatingOriginShifter>();
-        shift.enabled = true;
+       // FloatingOriginShifter shift = VTOLAPI.GetPlayersVehicleGameObject().GetComponentInChildren<FloatingOriginShifter>();
+      //  shift.enabled = true;
     }
         public static void StartRearm(ReArmingPoint rp)
     {
@@ -556,7 +561,7 @@ public static class PlayerManager
         rb.interpolation = RigidbodyInterpolation.None;
         rb.isKinematic = true;
         FloatingOriginShifter shift = VTOLAPI.GetPlayersVehicleGameObject().GetComponentInChildren<FloatingOriginShifter>();
-        shift.enabled = false;
+        //shift.enabled = false;
         unSubscribe = true;
         //rb.detectCollisions = false;
         rearmPoint.OnEndRearm += finishRearm;
@@ -589,7 +594,7 @@ public static class PlayerManager
             rb.transform.position = VTOLAPI.GetPlayersVehicleGameObject().transform.position;
             rb.transform.rotation = VTOLAPI.GetPlayersVehicleGameObject().transform.rotation;
             FloatingOriginShifter shift = VTOLAPI.GetPlayersVehicleGameObject().GetComponentInChildren<FloatingOriginShifter>();
-            shift.enabled = true;
+            //shift.enabled = true;
         }
         else
         {
@@ -615,7 +620,7 @@ public static class PlayerManager
                     rb.velocity = plat.rb.velocity;
                     rb.isKinematic = false;
                     FlightLogger.Log("Plane Parented");
-                    rb.transform.SetParent(plat.transform);
+                    //rb.transform.SetParent(plat.transform);
                 }
             }
          
