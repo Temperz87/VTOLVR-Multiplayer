@@ -131,6 +131,7 @@ public class MissileNetworker_Receiver : MonoBehaviour
             {
                 Debug.Log("Missile fired " + thisMissile.name);
                 hasFired = true;
+                if(colliderLayers.Count>0)
                 StartCoroutine(colliderTimer());
             }
         }
