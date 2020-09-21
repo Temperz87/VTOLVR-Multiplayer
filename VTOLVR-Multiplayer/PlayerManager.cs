@@ -115,7 +115,10 @@ public static class PlayerManager
             {
                 if (!actor.isPlayer)
                 {
-                    allActors.Add(actor);
+                   if(!actor.name.Contains("Rearm/Refuel"))
+                    {
+                        allActors.Add(actor);
+                    }  
                 }
             }
             foreach (var actor in allActors)
