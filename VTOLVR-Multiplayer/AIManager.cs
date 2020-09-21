@@ -86,23 +86,36 @@ public static class AIManager
             actor.team = Teams.Enemy;
         else
             actor.team = Teams.Allied;
+
+        AirportManager airport = newAI.GetComponent<AirportManager>();
+
         UnitSpawn unitSP = newAI.GetComponent<UnitSpawn>();
         GameObject.Destroy(unitSP);
-        newAI.AddComponent<UnitSpawn>();
+             if(airport != null)
+             {
+            newAI.AddComponent<UnitSpawn>();
+              }
+            else
+            {
+                newAI.AddComponent<AICarrierSpawn>();
+            }
+         
         unitSP = newAI.GetComponent<UnitSpawn>();
 
-        UnitSpawner unitSpawn = new UnitSpawner();
+        UnitSpawner UnitSpawner = new UnitSpawner();
+
         actor.unitSpawn = unitSP;
-        actor.unitSpawn.unitSpawner = unitSpawn;
+        actor.unitSpawn.unitSpawner = UnitSpawner;
         unitSP.actor = actor;
         Traverse.Create(actor.unitSpawn.unitSpawner).Field("_spawnedUnit").SetValue(unitSP);
+        Traverse.Create(actor.unitSpawn.unitSpawner).Field("_spawned").SetValue(true);
         Traverse.Create(actor.unitSpawn.unitSpawner).Field("_unitInstanceID").SetValue(message.unitInstanceID); // To make objectives work.
-        unitSpawn.team = actor.team;
-        unitSpawn.unitName = actor.unitSpawn.unitName;
-
+        UnitSpawner.team = actor.team;
+        UnitSpawner.unitName = actor.unitSpawn.unitName;
+      
         if (!PlayerManager.teamLeftie)
         {
-            unitSpawn.team = actor.team;
+            UnitSpawner.team = actor.team;
         }
         else
         {
@@ -125,9 +138,9 @@ public static class AIManager
                     TargetManager.instance.RegisterActor(subActor);
                 }
             }
-            unitSpawn.team = actor.team;
+            UnitSpawner.team = actor.team;
 
-            AirportManager airport = newAI.GetComponent<AirportManager>();
+           
             if (airport != null)
             {
                 airport.team = actor.team;
@@ -141,7 +154,7 @@ public static class AIManager
         
         if (message.hasGroup)
         {
-            VTScenario.current.groups.AddUnitToGroup(unitSpawn, message.unitGroup);
+            VTScenario.current.groups.AddUnitToGroup(UnitSpawner, message.unitGroup);
         }
         Debug.Log(actor.name + $" has had its unitInstanceID set at value {actor.unitSpawn.unitSpawner.unitInstanceID}.");
         VTScenario.current.units.AddSpawner(actor.unitSpawn.unitSpawner);

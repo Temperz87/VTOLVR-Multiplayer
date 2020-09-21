@@ -478,7 +478,9 @@ public static class PlayerManager
          
         if (gameLoaded)
         {
-            EndMission.instance.HideEndMission();
+            if(EndMission.instance.completeObject.active==false)
+                EndMission.instance.HideEndMission();
+
             Actor  player = FlightSceneManager.instance.playerActor;
             if(player)
             {
