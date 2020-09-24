@@ -848,7 +848,7 @@ public class Multiplayer : VTOLMOD
                     {
                         PilotSaveManager.currentVehicle = VTResources.GetPlayerVehicle("F/A-26B");
                     }
-                    else if (PilotSaveManager.currentVehicle.name == "FA-26B")
+                    else if (PilotSaveManager.currentVehicle.name == "FA-26B" )
                     {
                         PilotSaveManager.currentVehicle = VTResources.GetPlayerVehicle("F-45A");
                     }

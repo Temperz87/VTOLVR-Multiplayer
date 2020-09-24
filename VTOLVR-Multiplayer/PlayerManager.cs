@@ -209,7 +209,7 @@ public static class PlayerManager
 
                 localVehicle.transform.position = hostTrans.position;
 
-                SpawnLocalVehicleAndInformOtherClients(localVehicle, hostTrans.transform.position, hostTrans.transform.rotation, localUID, 0);
+                SpawnLocalVehicleAndInformOtherClients(localVehicle, hostTrans.transform.position, hostTrans.transform.rotation, localUID, true,0);
             }
             else
                 Debug.Log("Local vehicle for host was null");
@@ -368,7 +368,7 @@ public static class PlayerManager
                 storedSpawnMessage = packet;
                 return;
             }
-        SpawnLocalVehicleAndInformOtherClients(localVehicle, localVehicle.transform.position, localVehicle.transform.rotation, result.vehicleUID, result.playerCount);
+        SpawnLocalVehicleAndInformOtherClients(localVehicle, localVehicle.transform.position, localVehicle.transform.rotation, result.vehicleUID, true,result.playerCount);
         localUID = result.vehicleUID;
 
         Time.timeScale = 1.0f;
@@ -648,13 +648,13 @@ public static class PlayerManager
         pvSetup.OnBeginUsingConfigurator -= StartConfig;
         unSubscribe = false;
     }
-    public static void SpawnLocalVehicleAndInformOtherClients(GameObject localVehicle, Vector3 pos, Quaternion rot, ulong UID, int playercount = 0) //Both
+    public static void SpawnLocalVehicleAndInformOtherClients(GameObject localVehicle, Vector3 pos, Quaternion rot, ulong UID, bool sendNewSpawnPacket = false ,int playercount = 0) //Both
     {
         Debug.Log("Sending our location to spawn our vehicle");
         VTOLVehicles currentVehicle = VTOLAPI.GetPlayersVehicleEnum();
         Actor actor = localVehicle.GetComponent<Actor>();
-        Player localPlayer = new Player(SteamUser.GetSteamID(), localVehicle,actor, currentVehicle, UID, PlayerManager.teamLeftie, SteamFriends.GetPersonaName());
-        AddToPlayerList(localPlayer);
+        //Player localPlayer = new Player(SteamUser.GetSteamID(), localVehicle,actor, currentVehicle, UID, PlayerManager.teamLeftie, SteamFriends.GetPersonaName());
+        //AddToPlayerList(localPlayer);
 
 
         ReArmingPoint[] rearmPoints = GameObject.FindObjectsOfType<ReArmingPoint>();
@@ -734,7 +734,7 @@ public static class PlayerManager
             VTMapGenerator.fetch.BakeColliderAtPosition(localVehicle.transform.position);
         }
         //rb.detectCollisions = true;
-        SetupLocalAircraft(localVehicle, pos, rot, UID);
+        SetupLocalAircraft(localVehicle, pos, rot, UID, sendNewSpawnPacket);
 
 
         firstSpawnDone = true;
@@ -764,7 +764,7 @@ public static class PlayerManager
     }
 
 
-    public static void SetupLocalAircraft(GameObject localVehicle, Vector3 pos, Quaternion rot, ulong UID)
+    public static void SetupLocalAircraft(GameObject localVehicle, Vector3 pos, Quaternion rot, ulong UID, bool sendNewSpawnPacket)
     {
         VTOLVehicles currentVehicle = VTOLAPI.GetPlayersVehicleEnum();
         Actor actor = localVehicle.GetComponent<Actor>();
@@ -850,7 +850,8 @@ public static class PlayerManager
         else
             AvatarManager.SetupAircraftRoundels(localVehicle.transform, currentVehicle, GetPlayerCSteamID(localUID), Vector3.zero);
    
-
+        if(sendNewSpawnPacket)
+        { 
         List<HPInfo> hpInfos = PlaneEquippableManager.generateLocalHpInfoList(UID);
         CountermeasureManager cmManager = localVehicle.GetComponentInChildren<CountermeasureManager>();
         List<int> cm = PlaneEquippableManager.generateCounterMeasuresFromCmManager(cmManager);
@@ -884,6 +885,7 @@ public static class PlayerManager
                     cm.ToArray(),
                     fuel, PlayerManager.teamLeftie, SteamFriends.GetPersonaName()),
                     EP2PSend.k_EP2PSendReliable);
+        }
         }
         WeaponManager localWManager = localVehicle.GetComponent<WeaponManager>();
 
