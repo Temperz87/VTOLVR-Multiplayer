@@ -156,10 +156,10 @@ class Patch2
     static void Postfix(VTEventTarget __instance)
     {
         String actionIdentifier = __instance.eventName + __instance.methodName + __instance.targetID + __instance.targetType.ToString();
-        /*foreach (VTEventTarget.ActionParamInfo aparam in __instance.parameterInfos)
+         foreach (VTEventTarget.ActionParamInfo aparam in __instance.parameterInfos)
         {
             actionIdentifier += aparam.name;
-        }*/
+        } 
 
         if (!__instance.TargetExists())
         {
@@ -204,10 +204,10 @@ class Patch3
             __instance.actions.Add(vTEventTarget);
             Debug.Log("Compiling scenario dictonary my codd2");
             String actionIdentifier = __instance.eventName + vTEventTarget.eventName + vTEventTarget.methodName + vTEventTarget.targetID + vTEventTarget.targetType.ToString();
-            /*foreach(VTEventTarget.ActionParamInfo aparam in vTEventTarget.parameterInfos)
+             foreach(VTEventTarget.ActionParamInfo aparam in vTEventTarget.parameterInfos)
             {
                 actionIdentifier+= aparam.name;
-            }*/
+            } 
             Debug.Log(actionIdentifier);
             int hash = actionIdentifier.GetHashCode();
             Debug.Log("Compiling scenario dictonary adding to my dictionary");

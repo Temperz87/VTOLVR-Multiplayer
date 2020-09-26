@@ -89,18 +89,18 @@ public static class AIManager
 
         AirportManager airport = null;
         
-        if(message.hasAirport)
-            airport = newAI.AddComponent<AirportManager>();
+        //if(message.hasAirport)
+           // airport = newAI.AddComponent<AirportManager>();
 
         UnitSpawn unitSP = newAI.GetComponent<UnitSpawn>();
         GameObject.Destroy(unitSP);
-             if(airport != null)
-             {
+           //  if(airport != null)
+            // {
             newAI.AddComponent<UnitSpawn>();
-              }
-            else
+            //  }
+           // else
             {
-                newAI.AddComponent<AICarrierSpawn>();
+             //   newAI.AddComponent<AICarrierSpawn>();
             }
          
         unitSP = newAI.GetComponent<UnitSpawn>();

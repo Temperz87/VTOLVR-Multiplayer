@@ -120,7 +120,7 @@ public static class PlaneEquippableManager
 
     public static List<HPInfo> generateLocalHpInfoList(ulong UID = 0)
     {
-        GameObject localVehicle = VTOLAPI.GetPlayersVehicleGameObject();
+        GameObject localVehicle = FlightSceneManager.instance.playerActor.gameObject;
         WeaponManager localWeaponManager = localVehicle.GetComponent<WeaponManager>();
         return generateHpInfoListFromWeaponManager(localWeaponManager, HPInfoListGenerateNetworkType.generate, UID);
     }

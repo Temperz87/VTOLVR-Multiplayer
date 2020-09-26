@@ -302,6 +302,12 @@ public class Multiplayer : VTOLMOD
         {
             case VTOLScenes.ReadyRoom:
                 CreateUI();
+                if(canvasButtonPrefab == null)
+                {
+                  canvasButtonPrefab = Instantiate(GameObject.Find("RecenterCanvas"));
+                   canvasButtonPrefab.SetActive(false);
+                   DontDestroyOnLoad(canvasButtonPrefab);
+                }
                 break;
             case VTOLScenes.Akutan:
                 Log("Map Loaded from vtol scenes akutan");
@@ -847,14 +853,17 @@ public class Multiplayer : VTOLMOD
                     if (PilotSaveManager.currentVehicle.name == "AV-42C")
                     {
                         PilotSaveManager.currentVehicle = VTResources.GetPlayerVehicle("F/A-26B");
+                        PilotSaveManager.current.lastVehicleUsed = PilotSaveManager.currentVehicle.name;
                     }
-                    else if (PilotSaveManager.currentVehicle.name == "FA-26B" )
+                    else if (PilotSaveManager.currentVehicle.name == "FA-26B" || PilotSaveManager.currentVehicle.name == "F/A-26B")
                     {
                         PilotSaveManager.currentVehicle = VTResources.GetPlayerVehicle("F-45A");
+                        PilotSaveManager.current.lastVehicleUsed = PilotSaveManager.currentVehicle.name;
                     }
                     else
                     {
                         PilotSaveManager.currentVehicle = VTResources.GetPlayerVehicle("AV-42C");
+                        PilotSaveManager.current.lastVehicleUsed = PilotSaveManager.currentVehicle.name;
                     }
                     text.text = PilotSaveManager.currentVehicle.name;
                     PlayerManager.selectedVehicle = text.text;
@@ -866,7 +875,7 @@ public class Multiplayer : VTOLMOD
                         {
                             campID = "av42cQuickFlight";
                         }
-                        else if (PlayerManager.selectedVehicle == "FA-26B")
+                        else if (PilotSaveManager.currentVehicle.name == "FA-26B" || PilotSaveManager.currentVehicle.name == "F/A-26B")
                         {
                             campID = "fa26bFreeFlight";
                         }

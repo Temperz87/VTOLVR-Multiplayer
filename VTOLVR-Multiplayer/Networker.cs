@@ -231,7 +231,7 @@ public class Networker : MonoBehaviour
     public static bool allPlayersReadyHasBeenSentFirstTime;
     public static bool readySent;
     public static bool hostReady, alreadyInGame, hostLoaded;
-
+    public static bool equipLocked;
     public static Dictionary<MessageType, List<SBufferedMessage>> packetBuffer = new Dictionary<MessageType, List<SBufferedMessage>>();
 
     public bool playingMP { get; private set; }
@@ -351,6 +351,8 @@ public class Networker : MonoBehaviour
             {
                 pilotSaveManagerControllerCampaignScenario = PilotSaveManager.currentScenario;
             }
+            
+            //PlayerManager.selectedVehicle = PilotSaveManager.currentVehicle.name;
         }
         /*if (isHost)
         {
@@ -1196,7 +1198,7 @@ public class Networker : MonoBehaviour
     {
         PilotSaveManager.currentCampaign = pilotSaveManagerControllerCampaign;
         PilotSaveManager.currentScenario = pilotSaveManagerControllerCampaignScenario;
-
+        PlayerManager.selectedVehicle = PilotSaveManager.currentVehicle.name;
         if (PilotSaveManager.currentScenario == null)
         {
             Debug.LogError("A null scenario was used on flight button!");
@@ -1207,12 +1209,14 @@ public class Networker : MonoBehaviour
         ScreenFader.FadeOut(Color.black, 0.85f);
         yield return new WaitForSeconds(1f);
         Debug.Log("Continueing fly button lmao i typod like marsh.");
-        if (PilotSaveManager.currentScenario.equipConfigurable)
+         if (PilotSaveManager.currentScenario.equipConfigurable)
         {
             LoadingSceneController.LoadSceneImmediate("VehicleConfiguration");
+            equipLocked = false;
         }
-        else
+         else
         {
+            equipLocked = true;
             BGMManager.FadeOut(2f);
             Loadout loadout = new Loadout();
             loadout.normalizedFuel = PilotSaveManager.currentScenario.forcedFuel;
@@ -1238,7 +1242,7 @@ public class Networker : MonoBehaviour
             {
                 LoadingSceneController.LoadScene(PilotSaveManager.currentScenario.mapSceneName);
             }
-        }
+        } 
         Debug.Log("Fly button successful, unpausing events.");
         ControllerEventHandler.UnpauseEvents();
     }
