@@ -62,7 +62,7 @@ public class PlaneNetworker_Sender : MonoBehaviour
         {
             traverse = Traverse.Create(weaponManager);
             Networker.WeaponSet += WeaponSet;
-            //weaponManager.OnWeaponEquipped += Rearm;
+            weaponManager.OnWeaponEquipped += Rearm;
             //weaponManager.OnWeaponUnequippedHPIdx +=Rearm;
 
             //detect player rearm
