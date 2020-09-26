@@ -39,7 +39,9 @@ class RocketLauncherNetworker_Sender : MonoBehaviour
     void FixedUpdate() {
         int rocketCount = (int)traverse.Field("rocketCount").GetValue();
         if (lastRocketCount != rocketCount) {
+            Debug.Log("Rocket ammount changed.");
             if (rocketCount < lastRocketCount) {
+                Debug.Log("It has decreased, launching missles!");
                 RocketUpdate();
             }
             lastRocketCount = rocketCount;

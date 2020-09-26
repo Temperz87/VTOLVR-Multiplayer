@@ -52,6 +52,7 @@ class RocketLauncherNetworker_Reciever : MonoBehaviour
         lastMessage = (Message_RocketLauncherUpdate)((PacketSingle)packet).message;
         if (lastMessage.networkUID != networkUID)
             return;
+        Debug.Log("Launching rocket!");
         rocketLauncher.FireRocket();
     }
 
