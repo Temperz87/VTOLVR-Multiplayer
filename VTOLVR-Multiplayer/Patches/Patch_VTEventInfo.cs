@@ -203,11 +203,11 @@ class Patch3
             vTEventTarget.LoadFromNode(node);
             __instance.actions.Add(vTEventTarget);
             Debug.Log("Compiling scenario dictonary my codd2");
-            String actionIdentifier = __instance.eventName + vTEventTarget.eventName + vTEventTarget.methodName + vTEventTarget.targetID + vTEventTarget.targetType.ToString();
-             foreach(VTEventTarget.ActionParamInfo aparam in vTEventTarget.parameterInfos)
+            String actionIdentifier = __instance.eventName + vTEventTarget.eventName + vTEventTarget.methodName + vTEventTarget.targetID + vTEventTarget.targetType.ToString() + ObjectiveNetworker_Reciever.actionCounter;
+            /*foreach(VTEventTarget.ActionParamInfo aparam in vTEventTarget.parameterInfos)
             {
                 actionIdentifier+= aparam.name;
-            } 
+            } */
             Debug.Log(actionIdentifier);
             int hash = actionIdentifier.GetHashCode();
             Debug.Log("Compiling scenario dictonary adding to my dictionary");

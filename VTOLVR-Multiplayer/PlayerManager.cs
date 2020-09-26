@@ -240,7 +240,9 @@ public static class PlayerManager
             VTScenario.current.units.enemyUnits.Clear();
             VTScenario.current.groups.DestroyAll();
 
-
+            UnitIconManager.instance.UnregisterAll();
+            TargetManager.instance.detectedByAllies.Clear();
+            TargetManager.instance.detectedByEnemies.Clear();
             if (teamLeftie)
                 foreach (AirportManager airportManager in VTMapManager.fetch.airports)
                 {
