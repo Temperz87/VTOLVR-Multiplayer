@@ -1198,10 +1198,10 @@ public static class PlayerManager
         {
             Debug.LogError("Spawn Representation couldn't find a player id.");
         }
-        Player player = players[playerID];
+        //Player player = ref players[playerID];
 
-        if (player.vehicle != null)
-            GameObject.Destroy(player.vehicle);
+        if (players[playerID].vehicle != null)
+            GameObject.Destroy(players[playerID].vehicle);
 
         GameObject newVehicle = null;
         switch (vehicle)
@@ -1232,7 +1232,7 @@ public static class PlayerManager
                 break;
         }
         //Debug.Log("Setting vehicle name");
-        newVehicle.name = $"Client [{player.cSteamID}]";
+        newVehicle.name = $"Client [{players[playerID].cSteamID}]";
         Debug.Log($"Spawned new vehicle at {newVehicle.transform.position}");
         if (Networker.isHost)
         {
@@ -1250,7 +1250,7 @@ public static class PlayerManager
         PlaneNetworker_Receiver planeReceiver = newVehicle.AddComponent<PlaneNetworker_Receiver>();
         planeReceiver.networkUID = networkID;
 
-        if (player.vehicleType == VTOLVehicles.AV42C || player.vehicleType == VTOLVehicles.F45A)
+        if (players[playerID].vehicleType == VTOLVehicles.AV42C || players[playerID].vehicleType == VTOLVehicles.F45A)
         {
             //Debug.Log("Adding Tilt Controller to this vehicle " + message.networkID);
             EngineTiltNetworker_Receiver tiltReceiver = newVehicle.AddComponent<EngineTiltNetworker_Receiver>();
@@ -1297,7 +1297,7 @@ public static class PlayerManager
 
         Debug.Log($"Finished changing {newVehicle.name}\n Pos:{rb.position} Rotation:{rb.rotation.eulerAngles}");
 
-        AvatarManager.SetupAircraftRoundels(newVehicle.transform, player.vehicleType, player.cSteamID, Vector3.zero);
+        AvatarManager.SetupAircraftRoundels(newVehicle.transform, players[playerID].vehicleType, players[playerID].cSteamID, Vector3.zero);
 
         if (!Multiplayer._instance.hidePlayerNameTags)
         {
@@ -1320,9 +1320,9 @@ public static class PlayerManager
         }
         TargetManager.instance.RegisterActor(aIPilot.actor);
         aIPilot.actor.hideDeathLog = true;
-        player.leftie = isLeft;
-        player.vehicle = newVehicle;
-        player.actor = aIPilot.actor;
+        players[playerID].leftie = isLeft;
+        players[playerID].vehicle = newVehicle;
+        players[playerID].actor = aIPilot.actor;
 
         if (!VTOLVR_Multiplayer.AIDictionaries.allActors.ContainsKey(networkID))
         {
