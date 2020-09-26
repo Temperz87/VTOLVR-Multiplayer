@@ -285,7 +285,7 @@ public static class AIManager
             }
 
             Debug.Log("Checking for gun turrets on child " + child.name);
-            if (child.gameObject.GetComponentsInChildren<Actor>().Length <= 1)
+            if (child.gameObject.GetComponentsInChildren<Actor>().Length <= 1 && child.gameObject.GetComponent<RefuelPlane>() != null)
             {//only run this code on units without subunits
                 Debug.Log("This is a child, with " + child.gameObject.GetComponentsInChildren<Actor>().Length + " actors, so it could have guns!");
                 ulong turretCount = 0;
@@ -696,7 +696,7 @@ public static class AIManager
                 }
 
                 Debug.Log("checking for guns");
-                if (child.gameObject.GetComponentsInChildren<Actor>().Count() <= 1)
+                if (child.gameObject.GetComponentsInChildren<Actor>().Count() <= 1 && child.gameObject.GetComponent<RefuelPlane>() != null)
                 {//only run this code on units without subunits
                     ulong turretCount = 0;
                     foreach (ModuleTurret moduleTurret in child.gameObject.GetComponentsInChildren<ModuleTurret>())
