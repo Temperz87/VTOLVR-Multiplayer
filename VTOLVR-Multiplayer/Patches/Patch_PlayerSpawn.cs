@@ -49,9 +49,9 @@ public static class Patch_DrawButton
     {
         if (VTOLAPI.currentScene == VTOLScenes.VehicleConfiguration)
             if (!Multiplayer._instance.buttonMade)
-        {
-            Multiplayer.CreateVehicleButton();
-        }
+            {
+                Multiplayer.CreateVehicleButton();
+            }
         return true;
     }
 }

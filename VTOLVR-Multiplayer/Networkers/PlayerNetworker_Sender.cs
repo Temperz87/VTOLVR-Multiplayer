@@ -66,9 +66,12 @@ class PlayerNetworker_Sender : MonoBehaviour
     IEnumerator RespawnTimer()
     {
         Debug.Log("Starting respawn timer.");
-        GameObject button = Multiplayer.CreateVehicleButton();
+        GameObject button = null;
+        if (!Networker.equipLocked)
+            button = Multiplayer.CreateVehicleButton();
         yield return new WaitForSeconds(respawnTimer);
-        Destroy(button);
+        if(button != null)
+            Destroy(button);
 
         Debug.Log("Finished respawn timer.");
 
@@ -118,7 +121,7 @@ class PlayerNetworker_Sender : MonoBehaviour
         //transform.position = rearmPoint.transform.position + Vector3.up * 10;
         //transform.rotation = rearmPoint.transform.rotation;
 
-        Destroy(VTOLAPI.GetPlayersVehicleGameObject());
+        Destroy(FlightSceneManager.instance.playerActor.gameObject);
         Destroy(detacher.cameraRig);
         Destroy(detacher.gameObject);
         Destroy(ejection.gameObject);
@@ -146,7 +149,7 @@ class PlayerNetworker_Sender : MonoBehaviour
                 //actor.DiscoverActor();
 
 
-                actor.permanentDiscovery = true;
+                actor.permanentDiscovery = false;
 
                 Traverse.Create(actor).Field("detectedByAllied").SetValue(false);
                 Traverse.Create(actor).Field("detectedByEnemy").SetValue(false);
@@ -219,11 +222,11 @@ class PlayerNetworker_Sender : MonoBehaviour
         //  PlayerManager.StartRearm(rearmPoint);
         //rb.velocity = Vector3.zero;
         //rb.detectCollisions = true;
-        PlayerManager.SpawnLocalVehicleAndInformOtherClients(newPlayer, newPlayer.transform.position, newPlayer.transform.rotation, networkUID);
+        PlayerManager.SpawnLocalVehicleAndInformOtherClients(newPlayer, newPlayer.transform.position, newPlayer.transform.rotation, networkUID,false);
 
         //PlayerManager.SetupLocalAircraft(newPlayer, newPlayer.transform.position, newPlayer.transform.rotation, networkUID);
 
-        lastMessage.UID = networkUID;
+       /* lastMessage.UID = networkUID;
         lastMessage.isLeftie = PlayerManager.teamLeftie;
         lastMessage.tagName = Steamworks.SteamFriends.GetPersonaName();
         lastMessage.vehicle = VTOLAPI.GetPlayersVehicleEnum();
@@ -231,6 +234,7 @@ class PlayerNetworker_Sender : MonoBehaviour
             NetworkSenderThread.Instance.SendPacketAsHostToAllClients(lastMessage, Steamworks.EP2PSend.k_EP2PSendReliable);
         else
             NetworkSenderThread.Instance.SendPacketToSpecificPlayer(Networker.hostID, lastMessage, Steamworks.EP2PSend.k_EP2PSendReliable);
+   */
     }
 
     void UnEject()
@@ -403,7 +407,7 @@ class PlayerNetworker_Sender : MonoBehaviour
         {
             message = "cowardly ejection";
         }
-        FlightSceneManager.instance.playerActor.health.Damage(10000.0f, FlightSceneManager.instance.playerActor.gameObject.transform.position, Health.DamageTypes.Impact, fkiller, message);
+        FlightSceneManager.instance.playerActor.health.Damage(10000000.0f, FlightSceneManager.instance.playerActor.gameObject.transform.position, Health.DamageTypes.Impact, fkiller, message);
         // health.invincible = false;
         //health.Kill();
 
@@ -411,6 +415,18 @@ class PlayerNetworker_Sender : MonoBehaviour
    
     void Death()
     {
+        foreach (Collider collider in FlightSceneManager.instance.playerActor.gameObject.GetComponentsInChildren<Collider>())
+        {
+            if (collider)
+            {
+                Hitbox hitbox = collider.GetComponent<Hitbox>();
+
+                if (hitbox != null)
+                { 
+                    collider.gameObject.layer = 9;
+                }
+            }
+        }
         repspawnTimer = StartCoroutine("RespawnTimer");
     }
 }

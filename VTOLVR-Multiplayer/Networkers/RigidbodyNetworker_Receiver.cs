@@ -108,7 +108,7 @@ public class RigidbodyNetworker_Receiver : MonoBehaviour
         rb.velocity = targetVelocity + (localTargetPosition - transform.position) / smoothingTime;
         //actor.SetCustomVelocity(Vector3.Lerp(actor.velocity, targetVelocity + (localTargetPosition - transform.position) / smoothingTime, Time.fixedDeltaTime / velSmoothingTime));
         actor.SetCustomVelocity(rb.velocity);
-       
+
         rb.MovePosition(transform.position + targetVelocity * Time.fixedDeltaTime + ((localTargetPosition - transform.position) * Time.fixedDeltaTime) / smoothingTime);
         Quaternion quat = Quaternion.Slerp(currentRotation, targetRotation, Time.fixedDeltaTime / rotSmoothingTime);
         rb.MoveRotation(quat.normalized);

@@ -231,7 +231,7 @@ public class Networker : MonoBehaviour
     public static bool allPlayersReadyHasBeenSentFirstTime;
     public static bool readySent;
     public static bool hostReady, alreadyInGame, hostLoaded;
-
+    public static bool equipLocked;
     public static Dictionary<MessageType, List<SBufferedMessage>> packetBuffer = new Dictionary<MessageType, List<SBufferedMessage>>();
 
     public bool playingMP { get; private set; }
@@ -352,6 +352,8 @@ public class Networker : MonoBehaviour
             {
                 pilotSaveManagerControllerCampaignScenario = PilotSaveManager.currentScenario;
             }
+
+            //PlayerManager.selectedVehicle = PilotSaveManager.currentVehicle.name;
         }
         /*if (isHost)
         {
@@ -1082,7 +1084,7 @@ public class Networker : MonoBehaviour
 
                     }
 
-                    
+
                     NetworkSenderThread.Instance.SendPacketAsHostToAllClients(new Message_ReportPingTime(pingTime / 2.0f, heartbeatResult.from), EP2PSend.k_EP2PSendUnreliable);
                 }
                 break;
@@ -1200,7 +1202,7 @@ public class Networker : MonoBehaviour
     {
         PilotSaveManager.currentCampaign = pilotSaveManagerControllerCampaign;
         PilotSaveManager.currentScenario = pilotSaveManagerControllerCampaignScenario;
-
+        PlayerManager.selectedVehicle = PilotSaveManager.currentVehicle.name;
         if (PilotSaveManager.currentScenario == null)
         {
             Debug.LogError("A null scenario was used on flight button!");
@@ -1214,9 +1216,11 @@ public class Networker : MonoBehaviour
         if (PilotSaveManager.currentScenario.equipConfigurable)
         {
             LoadingSceneController.LoadSceneImmediate("VehicleConfiguration");
+            equipLocked = false;
         }
         else
         {
+            equipLocked = true;
             BGMManager.FadeOut(2f);
             Loadout loadout = new Loadout();
             loadout.normalizedFuel = PilotSaveManager.currentScenario.forcedFuel;
@@ -1420,22 +1424,6 @@ public class Networker : MonoBehaviour
         {
             joinRequest.currentVehicle = "F/A-26B";
         }
-        /*if (joinRequest.currentVehicle != PilotSaveManager.currentVehicle.vehicleName)
-        {
-            string wrongVehicle = "Failed to Join Player, host vehicle is )" + PilotSaveManager.currentVehicle.vehicleName + ", client is " + joinRequest.currentVehicle;
-            Debug.Log($"Player {csteamID} attempted to join with {joinRequest.currentVehicle}, server is {PilotSaveManager.currentVehicle.vehicleName}");
-            NetworkSenderThread.Instance.SendPacketToSpecificPlayer(csteamID, new Message_JoinRequestRejected_Result(wrongVehicle), EP2PSend.k_EP2PSendReliable);
-            return;
-        }
-
-        if (joinRequest.builtInCampaign != MapAndScenarioVersionChecker.builtInCampaign)
-        {
-            string wrongCampaignType = "Failed to Join Player, host campaign type is )" + MapAndScenarioVersionChecker.builtInCampaign.ToString();
-            Debug.Log($"Player {csteamID} had the wrong campaign type");
-            NetworkSenderThread.Instance.SendPacketToSpecificPlayer(csteamID, new Message_JoinRequestRejected_Result(wrongCampaignType), EP2PSend.k_EP2PSendReliable);
-            return;
-        }*/
-
         if (joinRequest.builtInCampaign)
         {
             if (joinRequest.scenarioId != MapAndScenarioVersionChecker.scenarioId)

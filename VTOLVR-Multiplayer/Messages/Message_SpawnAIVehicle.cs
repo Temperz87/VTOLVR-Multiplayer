@@ -23,10 +23,11 @@ public class Message_SpawnAIVehicle : Message
     public ulong[] IRSamMissiles;
     public PhoneticLetters unitGroup;
     public bool redfor;
+    public bool hasAirport;
     public bool hasGroup { get; private set; }
     // public int playerCount;
 
-    public Message_SpawnAIVehicle(string aiVehicleName, string unitName, bool redforb, Vector3D position, Quaternion rotation, ulong rootActorNetworkID, ulong[] networkIDs, HPInfo[] hpLoadout, int[] cmLoadout, float normalizedFuel, bool Aggresive, int unitInstanceID, PhoneticLetters unitGroup, ulong[] radarIDs, ulong[] IRSAMissiles)
+    public Message_SpawnAIVehicle(string aiVehicleName, string unitName, bool redforb, bool airport, Vector3D position, Quaternion rotation, ulong rootActorNetworkID, ulong[] networkIDs, HPInfo[] hpLoadout, int[] cmLoadout, float normalizedFuel, bool Aggresive, int unitInstanceID, PhoneticLetters unitGroup, ulong[] radarIDs, ulong[] IRSAMissiles)
     {
         this.aiVehicleName = aiVehicleName;
         this.unitName = unitName;
@@ -44,10 +45,11 @@ public class Message_SpawnAIVehicle : Message
         this.redfor = redforb;
         hasGroup = true;
         this.IRSamMissiles = IRSAMissiles;
+        this.hasAirport = airport;
         // this.playerCount = playerCount;
         type = MessageType.SpawnAiVehicle;
     }
-    public Message_SpawnAIVehicle(string aiVehicleName, string unitName, bool redforb, Vector3D position, Quaternion rotation, ulong rootActorNetworkID, ulong[] networkIDs, HPInfo[] hpLoadout, int[] cmLoadout, float normalizedFuel, bool Aggresive, int unitInstanceID, ulong[] radarIDs, ulong[] IRSAMissiles)
+    public Message_SpawnAIVehicle(string aiVehicleName, string unitName, bool redforb, bool airport, Vector3D position, Quaternion rotation, ulong rootActorNetworkID, ulong[] networkIDs, HPInfo[] hpLoadout, int[] cmLoadout, float normalizedFuel, bool Aggresive, int unitInstanceID, ulong[] radarIDs, ulong[] IRSAMissiles)
     {
         this.aiVehicleName = aiVehicleName;
         this.unitName = unitName;
@@ -64,6 +66,7 @@ public class Message_SpawnAIVehicle : Message
         hasGroup = false;
         this.redfor = redforb;
         this.IRSamMissiles = IRSAMissiles;
+        this.hasAirport = airport;
         // this.playerCount = playerCount;
         type = MessageType.SpawnAiVehicle;
     }

@@ -9,12 +9,13 @@ class HealthNetworker_Sender : MonoBehaviour
     public bool immediateFlag;
     public Actor ownerActor;
     private Message_BulletHit bulletMessage;
+  
     private void Awake()
     {
         lastMessage = new Message_Death(networkUID, false,"empty");
         ownerActor = GetComponentInParent<Actor>();
         health = ownerActor.health;
-
+      
         if (health == null)
             Debug.LogError("health was null on vehicle " + gameObject.name);
         else

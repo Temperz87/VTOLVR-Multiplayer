@@ -160,7 +160,7 @@ public class MissileNetworker_Receiver : MonoBehaviour
 
     private System.Collections.IEnumerator colliderTimer()
     {
-        yield return new WaitForSeconds(2.5f);
+        yield return new WaitForSeconds(0.5f);
         int count = 0;
         foreach (var collider in thisMissile.GetComponentsInChildren<Collider>())
         {

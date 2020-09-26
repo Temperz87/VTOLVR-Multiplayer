@@ -25,6 +25,7 @@ class ObjectiveNetworker_Reciever
     public static List<VTObjective> VTobjectivesList;
     public static List<Message_ObjectiveSync> ObjectiveHistory = new List<Message_ObjectiveSync>();
 
+    public static int actionCounter = 0;
     public static int getVTObjectiveHash(VTObjective VTobj)
     {
         string hashStr = VTobj.objectiveName + VTobj.objectiveInfo + VTobj.required;
@@ -186,6 +187,7 @@ class ObjectiveNetworker_Reciever
      completeNextFailed = false;
      completeNextBegin = false;
      completeNextCancel = false;
-        ObjectiveHistory.Clear();
+     ObjectiveHistory.Clear();
+        actionCounter = 0;
     }
 }
