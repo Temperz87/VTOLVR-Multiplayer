@@ -66,9 +66,9 @@ public class PlaneNetworker_Sender : MonoBehaviour
             //weaponManager.OnWeaponUnequippedHPIdx +=Rearm;
 
             //detect player rearm
-            PlayerVehicleSetup pv =  gameObject.GetComponent<PlayerVehicleSetup>();
-            if(pv != null)
-            pv.OnEndRearming.AddListener(Rearm);
+            //PlayerVehicleSetup pv =  gameObject.GetComponent<PlayerVehicleSetup>();
+            //if(pv != null)
+            //pv.OnEndRearming.AddListener(Rearm);
          
             if (actor.isPlayer && weaponManager.GetIWBForEquip(3) != null)
             {
@@ -247,9 +247,9 @@ public class PlaneNetworker_Sender : MonoBehaviour
     public void OnDestroy()
     {
         Networker.WeaponSet -= WeaponSet;
-        PlayerVehicleSetup pv = gameObject.GetComponent<PlayerVehicleSetup>();
-        if (pv != null)
-            pv.OnEndRearming.RemoveListener(Rearm);
+        //PlayerVehicleSetup pv = gameObject.GetComponent<PlayerVehicleSetup>();
+        //if (pv != null)
+            //pv.OnEndRearming.RemoveListener(Rearm);
     }
 }
 [HarmonyPatch(typeof(WeaponManager), "JettisonMarkedItems")]

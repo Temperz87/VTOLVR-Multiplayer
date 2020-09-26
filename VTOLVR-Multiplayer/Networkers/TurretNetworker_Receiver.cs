@@ -32,7 +32,7 @@ class TurretNetworker_Receiver : MonoBehaviour
         if (lastMessage.turretID != turretID)
             return;
 
-        turret.AimToTarget(turret.pitchTransform.position + lastMessage.direction.toVector3.normalized * 1000);
+        turret.AimToTargetImmediate(lastMessage.direction.toVector3.normalized * 1000);
     }
 
     public void OnDestroy()
