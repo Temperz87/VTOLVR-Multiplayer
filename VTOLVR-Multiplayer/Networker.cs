@@ -1137,7 +1137,7 @@ public class Networker : MonoBehaviour
                 if (AAAUpdate != null)
                     AAAUpdate.Invoke(packet);
                 break;
-            case MessageType.RocketUpdate:
+            case MessageType.RocketLauncherUpdate:
                 if (RocketUpdate != null)
                     RocketUpdate.Invoke(packet);
                 break;

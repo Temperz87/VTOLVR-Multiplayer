@@ -20,3 +20,15 @@ class Message_AAAUpdate : Message
         type = MessageType.AAAUpdate;
     }
 }
+
+[Serializable]
+class Message_RocketLauncherUpdate : Message
+{
+    public ulong networkUID;
+
+    public Message_RocketLauncherUpdate(ulong networkUID)
+    {
+        this.networkUID = networkUID;
+        type = MessageType.RocketLauncherUpdate;
+    }
+}

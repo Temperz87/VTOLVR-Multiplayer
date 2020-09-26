@@ -310,8 +310,8 @@ public static class AIManager
 
                 foreach (RocketLauncherAI rocketAI in child.gameObject.GetComponentsInChildren<RocketLauncherAI>())
                 {
-                    turretAI.enabled = false;
-                    RocketLauncherNetworker_Reciever rocketRec = turretAI.gameObject.AddComponent<RocketLauncherNetworker_Reciever>();
+                    rocketAI.enabled = false;
+                    RocketLauncherNetworker_Reciever rocketRec = rocketAI.gameObject.AddComponent<RocketLauncherNetworker_Reciever>();
                     rocketRec.networkUID = message.networkIDs[currentSubActorID];
                     Debug.Log("Added rocket arty to actor " + message.networkIDs[currentSubActorID] + " uid");
                 }
