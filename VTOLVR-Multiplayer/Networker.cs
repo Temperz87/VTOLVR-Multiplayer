@@ -290,6 +290,7 @@ public class Networker : MonoBehaviour
     public static event UnityAction<Packet> JettisonUpdate;
     public static event UnityAction<Packet> SAMUpdate;
     public static event UnityAction<Packet> AAAUpdate;
+    public static event UnityAction<Packet> RocketUpdate;
     public static event UnityAction<Packet> BulletHit;
     public static event UnityAction<Packet> RadarDetectedUpdate;
     #endregion
@@ -1131,9 +1132,12 @@ public class Networker : MonoBehaviour
                     SAMUpdate.Invoke(packet);
                 break;
             case MessageType.AAAUpdate:
-                Debug.Log("case AAA update");
                 if (AAAUpdate != null)
                     AAAUpdate.Invoke(packet);
+                break;
+            case MessageType.RocketUpdate:
+                if (RocketUpdate != null)
+                    RocketUpdate.Invoke(packet);
                 break;
             case MessageType.ScenarioAction:
                 Debug.Log("case scenario action packet");

@@ -297,12 +297,20 @@ public static class AIManager
                 ulong gunCount = 0;
                 foreach (GunTurretAI turretAI in child.gameObject.GetComponentsInChildren<GunTurretAI>())
                 {
-                    turretAI.SetEngageEnemies(false);
-                    AAANetworker_Reciever aaaRec = child.gameObject.AddComponent<AAANetworker_Reciever>();
+                    turretAI.enabled = false;
+                    AAANetworker_Reciever aaaRec = turretAI.gameObject.AddComponent<AAANetworker_Reciever>();
                     aaaRec.networkUID = message.networkIDs[currentSubActorID];
                     aaaRec.gunID = gunCount;
                     Debug.Log("Added gun " + gunCount + " to actor " + message.networkIDs[currentSubActorID] + " uid");
                     gunCount++;
+                }
+
+                foreach (RocketLauncherAI rocketAI in child.gameObject.GetComponentsInChildren<RocketLauncherAI>())
+                {
+                    turretAI.enabled = false;
+                    RocketLauncherNetworker_Reciever rocketRec = turretAI.gameObject.AddComponent<RocketLauncherNetworker_Reciever>();
+                    rocketRec.networkUID = message.networkIDs[currentSubActorID];
+                    Debug.Log("Added rocket arty to actor " + message.networkIDs[currentSubActorID] + " uid");
                 }
             }
             else {
@@ -699,6 +707,12 @@ public static class AIManager
                         gSender.gunID = gunCount;
                         Debug.Log("Added gun " + gunCount + " to actor " + networkUID + " uid");
                         gunCount++;
+                    }
+                    foreach (RocketLauncherAI rocketLauncer in child.gameObject.GetComponentsInChildren<RocketLauncherAI>())
+                    {
+                        RocketLauncherNetworker_Sender rSender = rocketLauncer.gameObject.AddComponent<RocketLauncherNetworker_Sender>();
+                        rSender.networkUID = networkUID;
+                        Debug.Log("Added rocket arty to actor " + networkUID + " uid");
                     }
                 }
 
