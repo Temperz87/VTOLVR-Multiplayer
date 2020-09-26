@@ -208,6 +208,7 @@ class Patch3
             {
                 actionIdentifier+= aparam.name;
             } */
+            ObjectiveNetworker_Reciever.actionCounter+=1;
             Debug.Log(actionIdentifier);
             int hash = actionIdentifier.GetHashCode();
             Debug.Log("Compiling scenario dictonary adding to my dictionary");
