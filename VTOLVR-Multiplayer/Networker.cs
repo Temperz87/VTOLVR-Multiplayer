@@ -959,10 +959,10 @@ public class Networker : MonoBehaviour
                 Debug.Log("case weapon set result");
                 if (WeaponSet_Result != null)
                     WeaponSet_Result.Invoke(packet);
-                if (isHost)
+                /*if (isHost) already done in above invoke.
                 {
                     NetworkSenderThread.Instance.SendPacketAsHostToAllClients(packet, packet.sendType);
-                }
+                }*/
                 break;
             case MessageType.WeaponFiring:
                 Debug.Log("case weapon firing");

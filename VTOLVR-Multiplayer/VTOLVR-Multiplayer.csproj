@@ -98,10 +98,15 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ActivityManager.cs" />
     <Compile Include="AIDictionaries.cs" />
     <Compile Include="AIManager.cs" />
     <Compile Include="AvatarManager.cs" />
+    <Compile Include="Constants.cs" />
+    <Compile Include="Core.cs" />
     <Compile Include="HPInfo.cs" />
+    <Compile Include="ImageManager.cs" />
+    <Compile Include="LobbyManager.cs" />
     <Compile Include="Messages\Message_AAAUpdate.cs" />
     <Compile Include="Messages\Message_RadarDetectedActor.cs" />
     <Compile Include="Messages\Quat.cs" />
@@ -198,12 +203,17 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
+    <Compile Include="StorageManager.cs" />
+    <Compile Include="StoreManager.cs" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Messages\NewFolder1\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>

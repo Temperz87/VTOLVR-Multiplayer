@@ -50,15 +50,16 @@ class HealthNetworker_Sender : MonoBehaviour
         Hitbox hitbox = null;
         if (flag)
         {
-
-            hitbox = hitInfo.collider.GetComponent<Hitbox>();
-            if ((bool)hitbox && (bool)hitbox.actor)
+            if (hitInfo.collider != null)
             {
-
-                Debug.Log("found  target bullet hit");
-                hitbox.Damage(bulletMessage.damage*3.0f, hitInfo.point, Health.DamageTypes.Impact, source, "Bullet Impact");
-                BulletHitManager.instance.CreateBulletHit(hitInfo.point, -vel, true);
+                hitbox = hitInfo.collider.GetComponent<Hitbox>();
+                if ((bool)hitbox && (bool)hitbox.actor)
+                {
+                    Debug.Log("found  target bullet hit");
+                    hitbox.Damage(bulletMessage.damage*3.0f, hitInfo.point, Health.DamageTypes.Impact, source, "Bullet Impact");
+                    BulletHitManager.instance.CreateBulletHit(hitInfo.point, -vel, true);
                
+                }
             }
         }
         else
