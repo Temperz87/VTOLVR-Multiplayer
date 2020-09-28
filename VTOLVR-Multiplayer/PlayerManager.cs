@@ -1171,7 +1171,7 @@ public static class PlayerManager
             AIManager.TellClientAboutAI(spawnerSteamId);
         }
         AddToPlayerList(new Player(spawnerSteamId, null, null, message.vehicle, message.networkID, message.leftie, message.nameTag, message.discordID));
-        DiscordRadioManager.addPlayer(message.networkID, message.discordID);
+        DiscordRadioManager.addPlayer(message.nameTag, message.discordID);
         GameObject puppet = SpawnRepresentation(message.networkID, message.position, message.rotation, message.leftie, message.nameTag, message.vehicle);
         if (puppet != null)
         {

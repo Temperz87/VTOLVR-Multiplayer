@@ -41,11 +41,11 @@ public class Message_SpawnPlayerVehicle : Message
 [Serializable]
 public class Message_SetFrequency: Message
 {
-    public ulong source;
+    public string source;
     public int freq;
     // public int playerCount;
 
-    public Message_SetFrequency(ulong isource,int ifreq)
+    public Message_SetFrequency(string isource,int ifreq)
     {
         this.source = isource;
         this.freq = ifreq;

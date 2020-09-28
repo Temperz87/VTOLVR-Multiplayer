@@ -17,10 +17,11 @@ public static class DiscordRadioManager
     public static long lobbyID;
     public static string lobbySecret;
     public static bool connected;
-    public static Dictionary<ulong, long> steamIDtoDiscordIDDictionary = new Dictionary<ulong, long>();
-    public static Dictionary<ulong, int> steamIDtoFreq= new Dictionary<ulong, int>();
+    public static Dictionary<string, long> steamIDtoDiscordIDDictionary = new Dictionary<string, long>();
+    public static Dictionary<string, int> steamIDtoFreq= new Dictionary<string, int>();
     public static int radioFreq;
     public static LobbyManager lobbyManager = null;
+    public static string PersonaName = " ";
     public static void start()
         {
         UnityEngine.Debug.Log("loading discord");
@@ -54,6 +55,8 @@ public static class DiscordRadioManager
                 //Console.WriteLine(currentUser.Username);
                 userID=currentUser.Id;
             };
+
+        PersonaName = Steamworks.SteamFriends.GetPersonaName();
         }
 
     public static void disconnect()
@@ -124,44 +127,47 @@ public static class DiscordRadioManager
             //   );
         });
     }
-    public static void addPlayer(ulong steamid, long discordid)
+    public static void addPlayer(string name, long discordid)
     {
         if (!connectedToDiscord)
             return;
-        if (!steamIDtoDiscordIDDictionary.ContainsKey(steamid))
-        steamIDtoDiscordIDDictionary.Add(steamid, discordid);
+        UnityEngine.Debug.Log("added player");
+        if (!steamIDtoDiscordIDDictionary.ContainsKey(name))
+        steamIDtoDiscordIDDictionary.Add(name, discordid);
         else
         {
-            steamIDtoDiscordIDDictionary.Remove(steamid);
-            steamIDtoDiscordIDDictionary.Add(steamid, discordid);
+            steamIDtoDiscordIDDictionary.Remove(name);
+            steamIDtoDiscordIDDictionary.Add(name, discordid);
         }
 
 
-        if (!steamIDtoFreq.ContainsKey(steamid))
-            steamIDtoFreq.Add(steamid, 0);
+        if (!steamIDtoFreq.ContainsKey(name))
+            steamIDtoFreq.Add(name, 0);
         else
         {
-            steamIDtoFreq.Remove(steamid);
-            steamIDtoFreq.Add(steamid, 0);
+            steamIDtoFreq.Remove(name);
+            steamIDtoFreq.Add(name, 0);
         }
     }
 
-    public static void setFreq(ulong steamid, int freq)
+    public static void setFreq(string name, int freq)
     {
         if (!connectedToDiscord)
             return;
-        if (!steamIDtoFreq.ContainsKey(steamid))
-            steamIDtoFreq.Add(steamid, freq);
+        UnityEngine.Debug.Log("setting freq of player "+ name + "to"+ freq);
+        if (!steamIDtoFreq.ContainsKey(name))
+            steamIDtoFreq.Add(name, freq);
         else
         {
-            steamIDtoFreq.Remove(steamid);
-            steamIDtoFreq.Add(steamid, freq);
+            steamIDtoFreq.Remove(name);
+            steamIDtoFreq.Add(name, freq);
         }
     }
     public static void joinLobby(long ilobbyid,string secret)
     {
         if (!connectedToDiscord)
             return;
+
         connected = true;
         lobbyID = ilobbyid;
       
@@ -204,29 +210,30 @@ public static class DiscordRadioManager
         if (!connected)
             return;
 
-        Message_SetFrequency freqMsg = new Message_SetFrequency(PlayerManager.localUID, radioFreq);
-        if(Networker.isHost)
+        Message_SetFrequency freqMsg = new Message_SetFrequency(PersonaName, radioFreq);
+        if (Networker.isHost)
             NetworkSenderThread.Instance.SendPacketAsHostToAllClients(freqMsg, Steamworks.EP2PSend.k_EP2PSendUnreliable);
         else
             NetworkSenderThread.Instance.SendPacketToSpecificPlayer(Networker.hostID, freqMsg, Steamworks.EP2PSend.k_EP2PSendUnreliable);
+
         foreach (var play in PlayerManager.players)
         {
-            if(steamIDtoFreq.ContainsKey(play.vehicleUID))
+            if(steamIDtoFreq.ContainsKey(play.nameTag))
             {
-                if (steamIDtoFreq[play.vehicleUID] != radioFreq)
+                if (steamIDtoFreq[play.nameTag] != radioFreq)
                 {
-                    mutePlayer(play.vehicleUID, true);
+                    mutePlayer(play.nameTag, true);
                 }
                 else
                 {
-                    mutePlayer(play.vehicleUID, false);
+                    mutePlayer(play.nameTag, false);
                 }
             }
         }
      
     }
 
-    public static void mutePlayer(ulong id, bool state)
+    public static void mutePlayer(string name, bool state)
     {
         if (!connectedToDiscord)
             return;
@@ -235,15 +242,15 @@ public static class DiscordRadioManager
         {
             var ids = lobbyManager.GetMemberUserId(lobbyID, i);
 
-            if(steamIDtoDiscordIDDictionary.ContainsKey(id))
+            if(steamIDtoDiscordIDDictionary.ContainsKey(name))
             {
-                long discordid = steamIDtoDiscordIDDictionary[id];
+                long discordid = steamIDtoDiscordIDDictionary[name];
             if (userID != ids)
                 {
                     if (state)
-                        discord.GetVoiceManager().SetLocalVolume(ids, 0);
+                        discord.GetVoiceManager().SetLocalVolume(discordid, 0);
                     else
-                        discord.GetVoiceManager().SetLocalVolume(ids, 100);
+                        discord.GetVoiceManager().SetLocalVolume(discordid, 100);
                     
                 }
             }

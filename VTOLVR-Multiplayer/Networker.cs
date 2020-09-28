@@ -773,7 +773,7 @@ public class Networker : MonoBehaviour
                 HeartbeatTimer.Start();
 
                 Message_JoinRequestAccepted_Result messsageLobby = ((PacketSingle)packet).message as Message_JoinRequestAccepted_Result;
-                DiscordRadioManager.addPlayer(hostID.m_SteamID, messsageLobby.hostDiscordID);
+                //DiscordRadioManager.addPlayer(, messsageLobby.hostDiscordID);
                 DiscordRadioManager.joinLobby(messsageLobby.lobbyDiscordID, messsageLobby.lobbySecret);
                 StartCoroutine(FlyButton());
                 UpdateLoadingText();
