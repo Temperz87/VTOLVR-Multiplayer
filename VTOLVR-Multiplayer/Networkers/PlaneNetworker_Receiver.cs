@@ -103,6 +103,13 @@ public class PlaneNetworker_Receiver : MonoBehaviour
 
         mostCurrentUpdateNumber = newMessage.sequenceNumber;
 
+        if((int)newMessage.flaps != DiscordRadioManager.radioFreq)
+        {
+            DiscordRadioManager.mutePlayer(newMessage.networkUID,true);
+        }else
+        {
+            DiscordRadioManager.mutePlayer(newMessage.networkUID, false);
+        }
         if (!firstMessageReceived)
         {
             firstMessageReceived = true;

@@ -381,9 +381,14 @@ class PlayerNetworker_Sender : MonoBehaviour
             return;
         FlightSceneManager.instance.playerActor.health.invincible = false;
 
+        foreach (var part in FlightSceneManager.instance.playerActor.gameObject.GetComponentsInChildren<VehiclePart>())
+        {
+            part.detachOnDeath = true;
+        }
+ 
         Actor killer = null;
         Actor fkiller = null;
-        foreach (var heal in GetComponentsInChildren<Health>())
+        foreach (var heal in FlightSceneManager.instance.playerActor.gameObject.GetComponentsInChildren<Health>())
         {
             killer = Traverse.Create(heal).Field("lastSourceActor").GetValue<Actor>();
             if (killer != null)

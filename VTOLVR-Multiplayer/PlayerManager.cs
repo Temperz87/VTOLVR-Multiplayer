@@ -64,7 +64,8 @@ public static class PlayerManager
         public float ping;
         public float timeSinceLastResponse;
         public string nameTag;
-        public Player(CSteamID cSteamID, GameObject vehicle, Actor aactor, VTOLVehicles vehicleType, ulong vehicleUID, bool leftTeam, string tagName)
+        public long discordID;
+        public Player(CSteamID cSteamID, GameObject vehicle, Actor aactor, VTOLVehicles vehicleType, ulong vehicleUID, bool leftTeam, string tagName, long idiscord)
         {
             this.cSteamID = cSteamID;
             this.vehicle = vehicle;
@@ -74,7 +75,8 @@ public static class PlayerManager
             this.leftie = leftTeam;
             this.nameTag = tagName;
             timeSinceLastResponse = 0.0f;
-        }
+            this.discordID = idiscord;
+    }
     }
     public static List<Player> players = new List<Player>(); //This is the list of players
     /// <summary>
@@ -775,7 +777,7 @@ public static class PlayerManager
         Debug.Log("Sending our location to spawn our vehicle");
         VTOLVehicles currentVehicle = VTOLAPI.GetPlayersVehicleEnum();
         Actor actor = localVehicle.GetComponent<Actor>();
-        Player localPlayer = new Player(SteamUser.GetSteamID(), localVehicle, actor, currentVehicle, UID, PlayerManager.teamLeftie, SteamFriends.GetPersonaName());
+        Player localPlayer = new Player(SteamUser.GetSteamID(), localVehicle, actor, currentVehicle, UID, PlayerManager.teamLeftie, SteamFriends.GetPersonaName(),DiscordRadioManager.userID);
         AddToPlayerList(localPlayer);
 
 
@@ -792,6 +794,7 @@ public static class PlayerManager
         {
             foreach (ReArmingPoint rep in rearmPoints)
             {
+
                 if (rep.team == Teams.Allied)
                 {
                     if (rep.radius > 18.0f && rep.radius < 19.0f)
@@ -992,7 +995,7 @@ public static class PlayerManager
                         UID,
                         hpInfos.ToArray(),
                         cm.ToArray(),
-                        fuel, PlayerManager.teamLeftie, SteamFriends.GetPersonaName()),
+                        fuel, PlayerManager.teamLeftie, SteamFriends.GetPersonaName(),DiscordRadioManager.userID),
                         EP2PSend.k_EP2PSendReliable);
             }
             else
@@ -1005,7 +1008,7 @@ public static class PlayerManager
                         UID,
                         hpInfos.ToArray(),
                         cm.ToArray(),
-                        fuel, PlayerManager.teamLeftie, SteamFriends.GetPersonaName()),
+                        fuel, PlayerManager.teamLeftie, SteamFriends.GetPersonaName(), DiscordRadioManager.userID),
                         EP2PSend.k_EP2PSendReliable);
             }
         }
@@ -1099,13 +1102,13 @@ public static class PlayerManager
                             players[i].vehicleUID,
                             hpInfos.ToArray(),
                             cm.ToArray(),
-                            fuel, players[i].leftie, players[i].nameTag),
+                            fuel, players[i].leftie, players[i].nameTag, players[i].discordID),
                         EP2PSend.k_EP2PSendReliable);
 
                     //Debug.Log($"We have told the new player about the host and NOT the other way around.");
                     //Debug.Log($"We don't need to resync the host weapons, that's guaranteed to already be up to date.");
                     continue;
-                }
+                    }
 
                 if (players[i].vehicle != null)
                 {
@@ -1122,14 +1125,14 @@ public static class PlayerManager
                             players[i].vehicleUID,
                             existingPlayersPR.GenerateHPInfo(),
                             existingPlayersPR.GetCMS(),
-                            existingPlayersPR.GetFuel(), players[i].leftie, players[i].nameTag),
+                            existingPlayersPR.GetFuel(), players[i].leftie, players[i].nameTag, players[i].discordID),
                         EP2PSend.k_EP2PSendReliable);
                     //Debug.Log($"We have told {players[i].cSteamID.m_SteamID} about the new player ({message.csteamID}) and the other way round.");
 
                     //We ask the existing player what their load out just incase the host's player receiver was out of sync.
-                    NetworkSenderThread.Instance.SendPacketToSpecificPlayer(players[i].cSteamID,
-                        new Message(MessageType.WeaponsSet),
-                        EP2PSend.k_EP2PSendReliable);
+                    //NetworkSenderThread.Instance.SendPacketToSpecificPlayer(players[i].cSteamID,
+                      //  new Message(MessageType.WeaponsSet),
+                        //EP2PSend.k_EP2PSendReliable);
                     //Debug.Log($"We have asked {players[i].cSteamID.m_SteamID} what their current weapons are, and now waiting for a responce."); // marsh typo response lmao
                 }
                 else
@@ -1144,8 +1147,8 @@ public static class PlayerManager
             Debug.Log("Telling connected client about AI units");
             AIManager.TellClientAboutAI(spawnerSteamId);
         }
-        AddToPlayerList(new Player(spawnerSteamId, null, null, message.vehicle, message.networkID, message.leftie, message.nameTag));
-
+        AddToPlayerList(new Player(spawnerSteamId, null, null, message.vehicle, message.networkID, message.leftie, message.nameTag, message.discordID));
+        DiscordRadioManager.addPlayer(message.networkID, message.discordID);
         GameObject puppet = SpawnRepresentation(message.networkID, message.position, message.rotation, message.leftie, message.nameTag, message.vehicle);
         if (puppet != null)
         {

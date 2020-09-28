@@ -36,6 +36,7 @@ public class PlaneNetworker_Sender : MonoBehaviour
 
     private float tick = 0;
     public float tickRate = 2;
+    bool sendRearmPacket = false;
     private void Awake()
     {
         actor = gameObject.GetComponent<Actor>();
@@ -62,13 +63,11 @@ public class PlaneNetworker_Sender : MonoBehaviour
         {
             traverse = Traverse.Create(weaponManager);
             Networker.WeaponSet += WeaponSet;
-            //weaponManager.OnWeaponEquipped += Rearm;
+            weaponManager.OnWeaponEquipped += Rearm;
             //weaponManager.OnWeaponUnequippedHPIdx +=Rearm;
 
             //detect player rearm
-             PlayerVehicleSetup pv =  gameObject.GetComponent<PlayerVehicleSetup>();
-             if(pv != null)
-            pv.OnEndRearming.AddListener(Rearm);
+           
          
             if (actor.isPlayer && weaponManager.GetIWBForEquip(3) != null)
             {
@@ -126,9 +125,18 @@ public class PlaneNetworker_Sender : MonoBehaviour
             }
         }
     }
-
+    private void FixedUpdate()
+    {
+        //buffers multiple euip events into one packet
+        if (sendRearmPacket)
+        {
+            Rearm();
+        }
+    }
     private void LateUpdate()
     {
+        if(isPlayer)
+        DiscordRadioManager.radioFreq = (int)aeroController.flaps;
         tick += Time.deltaTime;
         if (tick > 1.0f / tickRate)
         { 
@@ -216,14 +224,9 @@ public class PlaneNetworker_Sender : MonoBehaviour
 
     public void Rearm(HPEquippable hpEquip)
     {
-        Rearm();
+        sendRearmPacket = true;
     }
-
-    public void Rearm(int i)
-    {
-        Rearm();
-    }
-
+ 
     public void Rearm()
     {
         Debug.Log("Rearm!");
@@ -242,6 +245,7 @@ public class PlaneNetworker_Sender : MonoBehaviour
             NetworkSenderThread.Instance.SendPacketAsHostToAllClients(rearm, Steamworks.EP2PSend.k_EP2PSendReliable);
         else
             NetworkSenderThread.Instance.SendPacketToSpecificPlayer(Networker.hostID, rearm, Steamworks.EP2PSend.k_EP2PSendReliable);
+        sendRearmPacket = false;
     }
 
     public void OnDestroy()

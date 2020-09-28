@@ -12,8 +12,8 @@ public class Message_JoinRequest : Message
     public bool builtInCampaign;
     public Dictionary<string, string> modsLoadedHashes;
     public byte[] modloaderHash;
-
-    public Message_JoinRequest(string currentVehicle, bool builtInCampaign, string scenarioId, byte[] mapHash, byte[] scenarioHash, byte[] campaignHash, Dictionary<string, string> mods, byte[] modloaderhash)
+    public long discordID;
+    public Message_JoinRequest(string currentVehicle, bool builtInCampaign, string scenarioId, byte[] mapHash, byte[] scenarioHash, byte[] campaignHash, Dictionary<string, string> mods, byte[] modloaderhash, long dID)
     {
         this.currentVehicle = currentVehicle;
         this.builtInCampaign = builtInCampaign;
@@ -26,14 +26,20 @@ public class Message_JoinRequest : Message
         modloaderHash = modloaderhash;
         multiplayerBranch = ModVersionString.ReleaseBranch;
         multiplayerModVersion = ModVersionString.ModVersionNumber;
-
+        this.discordID = dID;
         type = MessageType.JoinRequest;
     }
 }
 [Serializable]
 public class Message_JoinRequestAccepted_Result : Message
 {
-    public Message_JoinRequestAccepted_Result() {
+    public long hostDiscordID;
+    public long lobbyDiscordID;
+    public string lobbySecret;
+    public Message_JoinRequestAccepted_Result(long ihostDiscordID, long ilobbyDiscordID, string ilobbySecret) {
+        hostDiscordID = ihostDiscordID;
+        lobbyDiscordID = ilobbyDiscordID;
+        lobbySecret = ilobbySecret;
         type = MessageType.JoinRequestAccepted_Result;
     }
 }

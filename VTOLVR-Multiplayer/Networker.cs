@@ -13,6 +13,7 @@ using System.Collections;
 using System.Security.Cryptography;
 using TMPro;
 using Oculus.Platform.Samples.VrHoops;
+using VTOLVR_Multiplayer;
 
 public struct SBufferedMessage
 {
@@ -340,6 +341,7 @@ public class Networker : MonoBehaviour
     private void Update()
     {
         ReadP2P();
+        DiscordRadioManager.Update();
         if (VTOLAPI.currentScene == VTOLScenes.VehicleConfiguration)
             return;
         if (VTOLAPI.currentScene == VTOLScenes.ReadyRoom)
@@ -450,7 +452,7 @@ public class Networker : MonoBehaviour
         }
         Debug.Log("Hosting game");
         isHost = true;
-
+        DiscordRadioManager.makeLobby();
         TimeoutCounter = 0;
         HeartbeatTimerRunning = true;
         HeartbeatTimer.Start();
@@ -496,7 +498,8 @@ public class Networker : MonoBehaviour
                                     MapAndScenarioVersionChecker.scenarioHash,
                                     MapAndScenarioVersionChecker.campaignHash,
                                     MapAndScenarioVersionChecker.modsLoadedHashes,
-                                    MapAndScenarioVersionChecker.modloaderHash),
+                                    MapAndScenarioVersionChecker.modloaderHash,
+                                    DiscordRadioManager.userID),
             EP2PSend.k_EP2PSendReliable);
     }
 
@@ -768,6 +771,10 @@ public class Networker : MonoBehaviour
                 TimeoutCounter = 0;
                 HeartbeatTimerRunning = true;
                 HeartbeatTimer.Start();
+
+                Message_JoinRequestAccepted_Result messsageLobby = ((PacketSingle)packet).message as Message_JoinRequestAccepted_Result;
+                DiscordRadioManager.addPlayer(hostID.m_SteamID, messsageLobby.hostDiscordID);
+                DiscordRadioManager.joinLobby(messsageLobby.lobbyDiscordID, messsageLobby.lobbySecret);
                 StartCoroutine(FlyButton());
                 UpdateLoadingText();
                 break;
@@ -1518,7 +1525,7 @@ public class Networker : MonoBehaviour
         playerStatusDic.Add(csteamID, PlayerStatus.NotReady);//future people, please implement PlayerStatus.Loadout so we can see who is customising still
         Debug.Log("Done adding to status dict");
         NetworkSenderThread.Instance.AddPlayer(csteamID);
-        NetworkSenderThread.Instance.SendPacketToSpecificPlayer(csteamID, new Message_JoinRequestAccepted_Result(), EP2PSend.k_EP2PSendReliable);
+        NetworkSenderThread.Instance.SendPacketToSpecificPlayer(csteamID, new Message_JoinRequestAccepted_Result(DiscordRadioManager.userID, DiscordRadioManager.lobbyID, DiscordRadioManager.lobbySecret), EP2PSend.k_EP2PSendReliable);
         UpdateLoadingText();
     }
 

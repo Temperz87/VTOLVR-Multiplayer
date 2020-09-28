@@ -14,6 +14,7 @@ using TMPro;
 using UnityEngine.Events;
 using System.Net;
 using System.IO;
+using Discord;
 
 public class Multiplayer : VTOLMOD
 {
@@ -87,7 +88,7 @@ public class Multiplayer : VTOLMOD
 
     public bool displayClouds = false;
     private UnityAction<bool> displayClouds_changed;
-
+    public static Discord.Discord discord;
     private void Start()
     {
         if (_instance == null)
@@ -98,7 +99,14 @@ public class Multiplayer : VTOLMOD
         _instance = this;
         Networker.SetMultiplayerInstance(this);
     }
-
+    public static void callback()
+    {
+        UserManager uman = discord.GetUserManager();
+        User meUser = uman.GetCurrentUser();
+        long id = meUser.Id;
+        VoiceManager vman = discord.GetVoiceManager();
+        vman.SetLocalMute(id, true);
+    }
     public override void ModLoaded()
     {
         Log($"VTOL VR Multiplayer v{ ModVersionString.ModVersionNumber } - branch: { ModVersionString.ReleaseBranch }");
@@ -117,7 +125,7 @@ public class Multiplayer : VTOLMOD
         SoloTesting = false;
         Log("Valid User " + SteamUser.GetSteamID().m_SteamID);
 
-
+        DiscordRadioManager.start();
         VTOLAPI.SceneLoaded += SceneLoaded;
         CreateSettingsPage();
         base.ModLoaded();

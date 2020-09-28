@@ -98,15 +98,18 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="ActivityManager.cs" />
     <Compile Include="AIDictionaries.cs" />
     <Compile Include="AIManager.cs" />
     <Compile Include="AvatarManager.cs" />
-    <Compile Include="Constants.cs" />
-    <Compile Include="Core.cs" />
+    <Compile Include="DiscordRadioManager.cs" />
+    <Compile Include="Discord\ActivityManager.cs" />
+    <Compile Include="Discord\Constants.cs" />
+    <Compile Include="Discord\Core.cs" />
+    <Compile Include="Discord\ImageManager.cs" />
+    <Compile Include="Discord\LobbyManager.cs" />
+    <Compile Include="Discord\StorageManager.cs" />
+    <Compile Include="Discord\StoreManager.cs" />
     <Compile Include="HPInfo.cs" />
-    <Compile Include="ImageManager.cs" />
-    <Compile Include="LobbyManager.cs" />
     <Compile Include="Messages\Message_AAAUpdate.cs" />
     <Compile Include="Messages\Message_RadarDetectedActor.cs" />
     <Compile Include="Messages\Quat.cs" />
@@ -203,8 +206,6 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
-    <Compile Include="StorageManager.cs" />
-    <Compile Include="StoreManager.cs" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Properties\Resources.resx">

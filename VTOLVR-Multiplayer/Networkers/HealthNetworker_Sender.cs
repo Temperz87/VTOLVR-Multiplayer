@@ -47,6 +47,8 @@ class HealthNetworker_Sender : MonoBehaviour
         {
             source = AIDictionaries.allActors[bulletMessage.sourceActorUID];
         }
+        health.Damage(bulletMessage.damage * 1.0f, ownerActor.gameObject.transform.position, Health.DamageTypes.Impact, source, "Bullet Impact");
+        BulletHitManager.instance.CreateBulletHit(ownerActor.gameObject.transform.position, -vel, true);
         Hitbox hitbox = null;
         if (flag)
         {
@@ -62,11 +64,7 @@ class HealthNetworker_Sender : MonoBehaviour
                 }
             }
         }
-        else
-        {
-            health.Damage(bulletMessage.damage * 3.0f, ownerActor.gameObject.transform.position,  Health.DamageTypes.Impact, source, "Bullet Impact");
-            BulletHitManager.instance.CreateBulletHit(ownerActor.gameObject.transform.position, -vel, true);
-        }
+         
     }
     void Death()
     {
