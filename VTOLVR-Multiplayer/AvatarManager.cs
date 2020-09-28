@@ -1,10 +1,13 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Steamworks;
 using UnityEngine;
+using UnityEngine.Networking;
+using System.IO;
 
 public static class AvatarManager
 {
@@ -31,6 +34,26 @@ public static class AvatarManager
         public Vector3 position;
         public Quaternion rotation;
         public Vector3 scale;
+    }
+
+    public class Skin
+    {
+        public Skin(string name, bool av42, bool fa26, bool f45, List<string> textureNames, List<Texture> texture)
+        {
+            this.name = name;
+            this.av42 = av42;
+            this.fa26 = fa26;
+            this.f45 = f45;
+            this.textureNames = textureNames;
+            this.texture = texture;
+        }
+
+        public string name;
+        public bool av42;
+        public bool fa26;
+        public bool f45;
+        public List<string> textureNames;
+        public List<Texture> texture;
     }
 
     public static RoundelLayout[] layouts = {//roundel layouts for all the playable aircraft, get ready for some hardcoded schenanigins
@@ -68,6 +91,8 @@ public static class AvatarManager
         })
     };
     public static bool hideAvatars = false;//set this when we implement an option to dissable avatars
+
+    public static Dictionary<string, Skin> skins = new Dictionary<string, Skin>();
 
     public static void SetupAircraftRoundels(Transform aircraft, VTOLVehicles type, CSteamID steamID, Vector3 offset)
     {
@@ -122,5 +147,87 @@ public static class AvatarManager
             Debug.LogError("Couldn't get avatar.");
             return new Texture2D(0, 0);
         }
+    }
+
+    public static void LoadAllSkins()
+    {
+        skins = new Dictionary<string, Skin>();
+
+        string address = Directory.GetCurrentDirectory() + @"\VTOLVR_ModLoader\skins\";
+        Debug.Log("Checking for: " + address);
+
+        if (Directory.Exists(address))
+        {
+            Debug.Log(address + " exists!");
+            DirectoryInfo info = new DirectoryInfo(address);
+            foreach (DirectoryInfo item in info.GetDirectories())
+            {
+                Debug.Log("Checking for: " + address + item.Name);
+                string temp = File.ReadAllText(address + item.Name);
+                Debug.Log("Found skin: " + temp);
+
+                bool av42 = false;
+                bool fa26 = false;
+                bool f45 = false;
+                foreach (FileInfo file in info.GetFiles())
+                {
+                    Debug.Log("Found file " + file.Name);
+                    switch (file.Name) {
+                        case "0.png":
+                            Debug.Log("This skin is for the AV-42");
+                            av42 = true;
+                            break;
+                        case "1.png":
+                            Debug.Log("This skin is for the FA-26");
+                            fa26 = true;
+                            break;
+                        case "2.png":
+                            Debug.Log("This skin is for the F-45");
+                            f45 = true;
+                            break;
+                    }
+                }
+
+                skins.Add(item.Name, new Skin(item.Name, av42, fa26, f45, new List<string>(), new List<Texture>()));
+            }
+        }
+        else
+        {
+            Debug.Log(address + " doesn't exist.");
+        }
+        Debug.Log("Loading textures");
+        StartCoroutine(LoadSkins());
+    }
+
+    static IEnumerator LoadSkins()
+    {
+        for (int y = 0; y < profiles.Count; y++)
+        {
+            for (int x = 0; x < profiles[y].lineGroups.Count; x++)
+            {
+                for (int i = 0; i < profiles[y].lineGroups[x].lines.Count; i++)
+                {
+                    using (UnityWebRequest www = UnityWebRequestMultimedia.GetAudioClip(profiles[y].lineGroups[x].lines[i].filePath, AudioType.WAV))
+                    {
+                        yield return www.Send();
+
+                        if (www.isNetworkError)
+                        {
+                            Debug.Log(www.error);
+                        }
+                        else
+                        {
+                            profiles[y].lineGroups[x].lines[i].clip = DownloadHandlerAudioClip.GetContent(www);
+                        }
+                    }
+                    Debug.Log("Loaded " + profiles[y].lineGroups[x].lines[i].filePath);
+                }
+            }
+        }
+        AddCustomWingMen();
+    }
+
+    public static void GetLocalPlayerSkin() {
+    
     }
 }

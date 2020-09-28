@@ -222,7 +222,7 @@ class PlayerNetworker_Sender : MonoBehaviour
         //  PlayerManager.StartRearm(rearmPoint);
         //rb.velocity = Vector3.zero;
         //rb.detectCollisions = true;
-        PlayerManager.SpawnLocalVehicleAndInformOtherClients(newPlayer, newPlayer.transform.position, newPlayer.transform.rotation, networkUID,false);
+        PlayerManager.SpawnLocalVehicleAndInformOtherClients(newPlayer, newPlayer.transform.position, newPlayer.transform.rotation, networkUID, false);
 
         //PlayerManager.SetupLocalAircraft(newPlayer, newPlayer.transform.position, newPlayer.transform.rotation, networkUID);
 

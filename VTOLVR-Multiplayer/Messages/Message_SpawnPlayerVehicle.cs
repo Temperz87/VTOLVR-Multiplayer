@@ -17,9 +17,10 @@ public class Message_SpawnPlayerVehicle : Message
     public float normalizedFuel;
     public bool leftie;
     public string nameTag;
+    public string skinName;
     // public int playerCount;
 
-    public Message_SpawnPlayerVehicle(VTOLVehicles vehicle, Vector3D position, Quaternion rotation, ulong csteamID, ulong networkID, HPInfo[] hpLoadout, int[] cmLoadout, float normalizedFuel, bool isLeftie, string tagName)
+    public Message_SpawnPlayerVehicle(VTOLVehicles vehicle, Vector3D position, Quaternion rotation, ulong csteamID, ulong networkID, HPInfo[] hpLoadout, int[] cmLoadout, float normalizedFuel, bool isLeftie, string tagName, string skinName)
     {
         this.vehicle = vehicle;
         this.position = position;
@@ -31,6 +32,7 @@ public class Message_SpawnPlayerVehicle : Message
         this.normalizedFuel = normalizedFuel;
         this.leftie = isLeftie;
         this.nameTag = tagName;
+        this.skinName = skinName;
         // this.playerCount = playerCount;
         type = MessageType.SpawnPlayerVehicle;
     }
