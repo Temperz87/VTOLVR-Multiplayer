@@ -1100,6 +1100,7 @@ public static class PlayerManager
             Debug.Log("Telling other clients about new player and new player about other clients. Player count = " + players.Count);
             for (int i = 0; i < players.Count; i++)
             {
+                if(sender != SteamUser.GetSteamID())
                 if (players[i].cSteamID == SteamUser.GetSteamID())
                 {
                     //Debug.LogWarning("Skiping this one as it's the host");
