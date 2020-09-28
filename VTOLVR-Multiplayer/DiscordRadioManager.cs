@@ -55,6 +55,8 @@ public static class DiscordRadioManager
 
     public static void disconnect()
     {
+        if (!connectedToDiscord)
+            return;
         lobbyID = 0;
         connected = false;
         steamIDtoDiscordIDDictionary.Clear();
@@ -121,7 +123,9 @@ public static class DiscordRadioManager
     }
     public static void addPlayer(ulong steamid, long discordid)
     {
-        if(!steamIDtoDiscordIDDictionary.ContainsKey(steamid))
+        if (!connectedToDiscord)
+            return;
+        if (!steamIDtoDiscordIDDictionary.ContainsKey(steamid))
         steamIDtoDiscordIDDictionary.Add(steamid, discordid);
         else
         {
@@ -141,6 +145,8 @@ public static class DiscordRadioManager
 
     public static void setFreq(ulong steamid, int freq)
     {
+        if (!connectedToDiscord)
+            return;
         if (!steamIDtoFreq.ContainsKey(steamid))
             steamIDtoFreq.Add(steamid, freq);
         else
@@ -151,7 +157,8 @@ public static class DiscordRadioManager
     }
     public static void joinLobby(long ilobbyid,string secret)
     {
-
+        if (!connectedToDiscord)
+            return;
         connected = true;
         lobbyID = ilobbyid;
       
@@ -218,6 +225,8 @@ public static class DiscordRadioManager
 
     public static void mutePlayer(ulong id, bool state)
     {
+        if (!connectedToDiscord)
+            return;
         var count = lobbyManager.MemberCount(lobbyID);
         for (int i = 0; i < count; i++)
         {
@@ -240,6 +249,8 @@ public static class DiscordRadioManager
     }
     public static void makeLobby()
     {
+        if (!connectedToDiscord)
+            return;
         //lobbyManager = discord.GetLobbyManager();
         // Create the transaction
         var txn = lobbyManager.GetLobbyCreateTransaction();
