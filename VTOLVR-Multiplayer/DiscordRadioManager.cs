@@ -38,7 +38,10 @@ public static class DiscordRadioManager
             {
                 connectedToDiscord = true;
             UnityEngine.Debug.Log("loading discord worked");
-        }
+            }
+
+            if (!connectedToDiscord)
+            return;
         lobbyManager = discord.GetLobbyManager();
         var userManager = discord.GetUserManager();
             // The auth manager fires events as information about the current user changes.
