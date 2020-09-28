@@ -135,8 +135,7 @@ public class PlaneNetworker_Sender : MonoBehaviour
     }
     private void LateUpdate()
     {
-        if(isPlayer)
-        DiscordRadioManager.radioFreq = (int)aeroController.flaps;
+       
         tick += Time.deltaTime;
         if (tick > 1.0f / tickRate)
         { 

@@ -37,3 +37,19 @@ public class Message_SpawnPlayerVehicle : Message
         type = MessageType.SpawnPlayerVehicle;
     }
 }
+
+[Serializable]
+public class Message_SetFrequency: Message
+{
+    public ulong source;
+    public int freq;
+    // public int playerCount;
+
+    public Message_SetFrequency(ulong isource,int ifreq)
+    {
+        this.source = isource;
+        this.freq = ifreq;
+        // this.playerCount = playerCount;
+        type = MessageType.SetFrequency;
+    }
+}

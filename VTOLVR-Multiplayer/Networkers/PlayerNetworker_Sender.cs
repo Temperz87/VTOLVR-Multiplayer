@@ -67,12 +67,16 @@ class PlayerNetworker_Sender : MonoBehaviour
     {
         Debug.Log("Starting respawn timer.");
         GameObject button = null;
+         
+        if (PlayerManager.FrequenceyButton != null)
+            Destroy(PlayerManager.FrequenceyButton);
+
         if (!Networker.equipLocked)
             button = Multiplayer.CreateVehicleButton();
         yield return new WaitForSeconds(respawnTimer);
         if(button != null)
             Destroy(button);
-
+    
         Debug.Log("Finished respawn timer.");
 
         ReArmingPoint[] rearmPoints = GameObject.FindObjectsOfType<ReArmingPoint>();

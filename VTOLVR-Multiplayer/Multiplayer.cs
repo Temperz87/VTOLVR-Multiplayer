@@ -910,6 +910,68 @@ public class Multiplayer : VTOLMOD
         return null;
     }
 
+
+    public static GameObject CreateFreqButton()
+    {
+        foreach (var controller in GameObject.FindObjectsOfType<VRHandController>())
+        {
+            GameObject button;
+            if (canvasButtonPrefab == null)
+            {
+                button = GameObject.Instantiate(GameObject.Find("RecenterCanvas"));
+            }
+            else
+            {
+                button = GameObject.Instantiate(canvasButtonPrefab);
+                button.SetActive(true);
+            }
+            if (!controller.isLeft)
+            {
+                Debug.Log("Freq");
+                button.transform.SetParent(controller.transform);
+                button.transform.localPosition = new Vector3(0.101411f, 0.02100047f, -0.128024f);
+                button.transform.localRotation = Quaternion.Euler(-5.834f, 283.583f, 328.957f);
+                button.transform.localScale = new Vector3(button.transform.localScale.x * -1, button.transform.localScale.y * -1, button.transform.localScale.z);
+                VRInteractable bInteractable = button.GetComponentInChildren<VRInteractable>();
+                Text text = button.GetComponentInChildren<Text>();
+                text.transform.localScale = text.transform.localScale * 0.75f;
+                text.text = "Freq:140.500";
+                bInteractable.interactableName = "Freq.";
+                bInteractable.OnInteract = new UnityEvent();
+                DiscordRadioManager.radioFreq = 2;
+                string textS = "";
+                bInteractable.OnInteract.AddListener(delegate
+                {
+                    if (DiscordRadioManager.radioFreq == 0)
+                    {
+                        DiscordRadioManager.radioFreq = 1;
+                        textS = "Freq:140.500";
+                    }
+                    else if (DiscordRadioManager.radioFreq == 1)
+                    {
+                        DiscordRadioManager.radioFreq = 2;
+                        textS = "Freq:140.600";
+                    }
+                    else if(DiscordRadioManager.radioFreq == 2)
+                    {
+                        DiscordRadioManager.radioFreq = 3;
+                        textS = "Freq:140.700";
+                    }
+                    else if (DiscordRadioManager.radioFreq == 3)
+                    {
+                        DiscordRadioManager.radioFreq = 0;
+                        textS = "Freq:140.800";
+                    }
+
+                    text.text = textS;
+                });
+            }
+             
+            return button;
+        }
+        return null;
+    }
+
     public void OnDestroy()
     {
         VTOLAPI.SceneLoaded -= SceneLoaded;

@@ -18,6 +18,7 @@ public static class DiscordRadioManager
     public static string lobbySecret;
     public static bool connected;
     public static Dictionary<ulong, long> steamIDtoDiscordIDDictionary = new Dictionary<ulong, long>();
+    public static Dictionary<ulong, int> steamIDtoFreq= new Dictionary<ulong, int>();
     public static int radioFreq;
     public static LobbyManager lobbyManager = null;
     public static void start()
@@ -51,6 +52,20 @@ public static class DiscordRadioManager
                 userID=currentUser.Id;
             };
         }
+
+    public static void disconnect()
+    {
+        lobbyID = 0;
+        connected = false;
+        steamIDtoDiscordIDDictionary.Clear();
+        lobbyManager.DisconnectLobby(lobbyID, (result) =>
+        {
+            if (result == Discord.Result.Ok)
+            {
+                Console.WriteLine("Left lobby!");
+            }
+        });
+    }
     static void UpdateActivity(Discord.Discord discord, Discord.Lobby lobby)
     {
         var activityManager = discord.GetActivityManager();
@@ -113,6 +128,26 @@ public static class DiscordRadioManager
             steamIDtoDiscordIDDictionary.Remove(steamid);
             steamIDtoDiscordIDDictionary.Add(steamid, discordid);
         }
+
+
+        if (!steamIDtoFreq.ContainsKey(steamid))
+            steamIDtoFreq.Add(steamid, 0);
+        else
+        {
+            steamIDtoFreq.Remove(steamid);
+            steamIDtoFreq.Add(steamid, 0);
+        }
+    }
+
+    public static void setFreq(ulong steamid, int freq)
+    {
+        if (!steamIDtoFreq.ContainsKey(steamid))
+            steamIDtoFreq.Add(steamid, freq);
+        else
+        {
+            steamIDtoFreq.Remove(steamid);
+            steamIDtoFreq.Add(steamid, freq);
+        }
     }
     public static void joinLobby(long ilobbyid,string secret)
     {
@@ -154,8 +189,31 @@ public static class DiscordRadioManager
         if (!connectedToDiscord)
             return;
         discord.RunCallbacks();
-
         lobbyManager.FlushNetwork();
+
+        if (!connected)
+            return;
+
+        Message_SetFrequency freqMsg = new Message_SetFrequency(PlayerManager.localUID, radioFreq);
+        if(Networker.isHost)
+            NetworkSenderThread.Instance.SendPacketAsHostToAllClients(freqMsg, Steamworks.EP2PSend.k_EP2PSendUnreliable);
+        else
+            NetworkSenderThread.Instance.SendPacketToSpecificPlayer(Networker.hostID, freqMsg, Steamworks.EP2PSend.k_EP2PSendUnreliable);
+        foreach (var play in PlayerManager.players)
+        {
+            if(steamIDtoFreq.ContainsKey(play.vehicleUID))
+            {
+                if (steamIDtoFreq[play.vehicleUID] != radioFreq)
+                {
+                    mutePlayer(play.vehicleUID, true);
+                }
+                else
+                {
+                    mutePlayer(play.vehicleUID, false);
+                }
+            }
+        }
+     
     }
 
     public static void mutePlayer(ulong id, bool state)

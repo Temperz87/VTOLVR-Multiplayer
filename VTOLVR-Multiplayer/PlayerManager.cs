@@ -51,7 +51,7 @@ public static class PlayerManager
     public static ReArmingPoint rearmPoint;
     public static float flyCounter = 0;
     public static Vector3 av42Offset = new Vector3(0, 0.972f, -5.126f);//the difference between the origin of the ai and player AV-42s
-
+    public static GameObject FrequenceyButton;
     public static Hitbox lastBulletHit;
     public class Player
     {
@@ -65,6 +65,7 @@ public static class PlayerManager
         public float timeSinceLastResponse;
         public string nameTag;
         public long discordID;
+        
         public Player(CSteamID cSteamID, GameObject vehicle, Actor aactor, VTOLVehicles vehicleType, ulong vehicleUID, bool leftTeam, string tagName, long idiscord)
         {
             this.cSteamID = cSteamID;
@@ -545,6 +546,25 @@ public static class PlayerManager
         if (gameLoaded)
         {
 
+            if(FrequenceyButton != null)
+            {
+                Vector3 up = FrequenceyButton.transform.up;
+               up = up.normalized;
+
+               float dot =  Vector3.Dot(up, new Vector3(0.0f, 1.0f, 0.0f));
+                if(dot>0.2)
+                {
+                    FrequenceyButton.SetActive(false);
+                }
+                else
+                {
+
+
+                    FrequenceyButton.SetActive(true);
+
+                }
+            }
+
             foreach (GameObject act in invisibleActorList)
             {
 
@@ -1016,6 +1036,8 @@ public static class PlayerManager
 
         localWManager.gpsSystem.CreateGroup("MP");
         localWManager.gpsSystem.UpdateRemotelyModifiedGroups();
+
+        FrequenceyButton = Multiplayer.CreateFreqButton();
     }
     /// <summary>
     /// When the user has received a message of spawn player vehicle, 
@@ -1156,8 +1178,7 @@ public static class PlayerManager
         }
 
 
-    }
-
+    } 
     public static void addGPSTarget(Message_GPSData msg)
     {
         GameObject localVehicle = FlightSceneManager.instance.playerActor.gameObject;

@@ -991,6 +991,10 @@ public class Networker : MonoBehaviour
                 if (Death != null)
                     Death.Invoke(packet);
                 break;
+            case MessageType.SetFrequency:
+                Message_SetFrequency freMessage = ((PacketSingle)packet).message as Message_SetFrequency;
+                DiscordRadioManager.setFreq(freMessage.source, freMessage.freq);
+                break;
             case MessageType.Respawn:
                 Debug.Log("case respawn");
                 Message_Respawn respawnMessage = ((PacketSingle)packet).message as Message_Respawn;
@@ -1600,7 +1604,7 @@ public class Networker : MonoBehaviour
         hostID = new CSteamID(0);
         pingToHost = 0;
         rigidBodyUpdates = 0;
-
+        DiscordRadioManager.disconnect();
         AIManager.CleanUpOnDisconnect();
         multiplayerInstance?.CleanUpOnDisconnect();
         hostLoaded = false;
