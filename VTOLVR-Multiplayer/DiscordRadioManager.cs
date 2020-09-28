@@ -244,7 +244,7 @@ public static class DiscordRadioManager
                         discord.GetVoiceManager().SetLocalVolume(ids, 0);
                     else
                         discord.GetVoiceManager().SetLocalVolume(ids, 100);
-                    Console.WriteLine("lobby muted");
+                    
                 }
             }
             
