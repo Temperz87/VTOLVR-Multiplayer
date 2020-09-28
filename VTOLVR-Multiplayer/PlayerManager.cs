@@ -1020,7 +1020,7 @@ public static class PlayerManager
             }
             else
             {
-                //Debug.Log("I am host, no need to immediately forward my assembled vehicle");
+                 Debug.Log("I am host,sending respawn");
                 NetworkSenderThread.Instance.SendPacketAsHostToAllClients(new Message_SpawnPlayerVehicle(currentVehicle,
                         new Vector3D(pos),
                         rot,
@@ -1038,6 +1038,18 @@ public static class PlayerManager
         localWManager.gpsSystem.UpdateRemotelyModifiedGroups();
 
         FrequenceyButton = Multiplayer.CreateFreqButton();
+
+
+        if(Multiplayer._instance.alpha)
+        foreach(var wings in localVehicle.GetComponentsInChildren<Wing>())
+        {
+            wings.dragCoefficient *= 0.25f;
+        }
+       
+            foreach (var engine in localVehicle.GetComponentsInChildren<ModuleEngine>())
+        {
+            engine.maxThrust *= Multiplayer._instance.thrust;
+        }
     }
     /// <summary>
     /// When the user has received a message of spawn player vehicle, 
@@ -1100,7 +1112,7 @@ public static class PlayerManager
             Debug.Log("Telling other clients about new player and new player about other clients. Player count = " + players.Count);
             for (int i = 0; i < players.Count; i++)
             {
-                if(sender != SteamUser.GetSteamID())
+              
                 if (players[i].cSteamID == SteamUser.GetSteamID())
                 {
                     //Debug.LogWarning("Skiping this one as it's the host");

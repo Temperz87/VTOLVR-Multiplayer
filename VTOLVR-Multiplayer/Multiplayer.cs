@@ -65,6 +65,11 @@ public class Multiplayer : VTOLMOD
     public UnityAction<bool> hidePlayerNameTags_changed;
     public UnityAction<bool> hidePlayerRoundels_changed;
 
+    public float thrust = 1.0f;
+    public bool alpha = false;
+    public UnityAction<float> thrust_changed;
+    public UnityAction<bool> alpha_changed;
+
     public bool spawnRemainingPlayersAtAirBase = false;
     public UnityAction<bool> spawnRemainingPlayersAtAirBase_changed;
 
@@ -180,7 +185,12 @@ public class Multiplayer : VTOLMOD
         /*spawnRemainingPlayersAtAirBase_changed += spawnRemainingPlayersAtAirBase_Setting;
         settings.CreateCustomLabel("Spawn players at airbase if there are no wingmen available.");
         settings.CreateBoolSetting("Default = False", spawnRemainingPlayersAtAirBase_changed, spawnRemainingPlayersAtAirBase);*/
-
+        thrust_changed += thrust_Settings;
+        alpha_changed += alpha_Settings;
+        settings.CreateCustomLabel("Thrust Multiplier");
+        settings.CreateFloatSetting("Default = 1.0", thrust_changed,1.0f, 1.0f, 3.0f, 0.2f);
+        settings.CreateCustomLabel("High Alpha Mode");
+        settings.CreateBoolSetting("Default = False", alpha_changed, alpha);
 
         /*replaceWingmenWithClients_changed += replaceWingmenWithClients_Setting;
        settings.CreateCustomLabel("Replace AI wingmen (with the same flight designation) with clients.");
@@ -258,6 +268,15 @@ public class Multiplayer : VTOLMOD
     public void DisplayPing_Settings(bool newval)
     {
         displayPing = newval;
+    }
+
+    public void thrust_Settings(float newval)
+    {
+        thrust = newval;
+    }
+    public void alpha_Settings(bool newval)
+    {
+        alpha = newval;
     }
     public void DisplayCloud_Settings(bool newval)
     {

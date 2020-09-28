@@ -36,11 +36,15 @@ public class Message_JoinRequestAccepted_Result : Message
     public long hostDiscordID;
     public long lobbyDiscordID;
     public string lobbySecret;
-    public Message_JoinRequestAccepted_Result(long ihostDiscordID, long ilobbyDiscordID, string ilobbySecret) {
+    public float thrust;
+    public bool hiAlpha;
+    public Message_JoinRequestAccepted_Result(long ihostDiscordID, long ilobbyDiscordID, string ilobbySecret,float fthrust, bool alpha) {
         hostDiscordID = ihostDiscordID;
         lobbyDiscordID = ilobbyDiscordID;
         lobbySecret = ilobbySecret;
-        type = MessageType.JoinRequestAccepted_Result;
+        thrust = fthrust;
+        hiAlpha = alpha;
+    type = MessageType.JoinRequestAccepted_Result;
     }
 }
 [Serializable]
