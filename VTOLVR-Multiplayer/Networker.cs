@@ -775,6 +775,9 @@ public class Networker : MonoBehaviour
                 Message_JoinRequestAccepted_Result messsageLobby = ((PacketSingle)packet).message as Message_JoinRequestAccepted_Result;
                 Multiplayer._instance.alpha = messsageLobby.hiAlpha;
                 Multiplayer._instance.thrust = messsageLobby.thrust;
+                DiscordRadioManager.freqLabelTableNetworkString = messsageLobby.freqLabelString;
+                DiscordRadioManager.freqTableNetworkString = messsageLobby.freqString;
+               
                 DiscordRadioManager.joinLobby(messsageLobby.lobbyDiscordID, messsageLobby.lobbySecret);
 
                 StartCoroutine(FlyButton());
@@ -1531,7 +1534,8 @@ public class Networker : MonoBehaviour
         playerStatusDic.Add(csteamID, PlayerStatus.NotReady);//future people, please implement PlayerStatus.Loadout so we can see who is customising still
         Debug.Log("Done adding to status dict");
         NetworkSenderThread.Instance.AddPlayer(csteamID);
-        NetworkSenderThread.Instance.SendPacketToSpecificPlayer(csteamID, new Message_JoinRequestAccepted_Result(DiscordRadioManager.userID, DiscordRadioManager.lobbyID, DiscordRadioManager.lobbySecret,Multiplayer._instance.thrust, Multiplayer._instance.alpha), EP2PSend.k_EP2PSendReliable);
+        NetworkSenderThread.Instance.SendPacketToSpecificPlayer(csteamID, new Message_JoinRequestAccepted_Result(DiscordRadioManager.userID, DiscordRadioManager.lobbyID, DiscordRadioManager.lobbySecret,Multiplayer._instance.thrust, 
+            Multiplayer._instance.alpha,DiscordRadioManager.freqTableNetworkString, DiscordRadioManager.freqLabelTableNetworkString), EP2PSend.k_EP2PSendReliable);
         UpdateLoadingText();
     }
 

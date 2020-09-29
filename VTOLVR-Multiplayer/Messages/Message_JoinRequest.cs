@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -38,12 +39,16 @@ public class Message_JoinRequestAccepted_Result : Message
     public string lobbySecret;
     public float thrust;
     public bool hiAlpha;
-    public Message_JoinRequestAccepted_Result(long ihostDiscordID, long ilobbyDiscordID, string ilobbySecret,float fthrust, bool alpha) {
+    public string freqString;
+    public string freqLabelString;
+    public Message_JoinRequestAccepted_Result(long ihostDiscordID, long ilobbyDiscordID, string ilobbySecret,float fthrust, bool alpha, String freq,string labels) {
         hostDiscordID = ihostDiscordID;
         lobbyDiscordID = ilobbyDiscordID;
         lobbySecret = ilobbySecret;
         thrust = fthrust;
         hiAlpha = alpha;
+        freqString = freq;
+        freqLabelString = labels;
     type = MessageType.JoinRequestAccepted_Result;
     }
 }

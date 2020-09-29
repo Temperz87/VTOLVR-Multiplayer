@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
+using System.Reflection.Emit;
 using System.Text;
 using System.Threading.Tasks;
 using UnityEngine;
@@ -25,6 +26,12 @@ public static class DiscordRadioManager
     public static string PersonaName = " ";
     public static float tick = 0;
     public static float tickrate = 1.0f;
+    public static List<string> frequencyTable = new List<string>();
+    public static List<string> frequencyTableLabels = new List<string>();
+    private static int freqSelection = 0;
+
+    public static string freqTableNetworkString = "UNICOM";
+    public static string freqLabelTableNetworkString = "122.8";
     public static void start()
         {
         UnityEngine.Debug.Log("loading discord");
@@ -60,15 +67,106 @@ public static class DiscordRadioManager
             };
 
         PersonaName = Steamworks.SteamFriends.GetPersonaName();
+
+        radioFreq = 0;
+        reloadFrequencyTextFiles();
+    }
+
+    public static void reloadFrequencyTextFiles()
+    {
+
+        var dllDirectory = @"VTOLVR_ModLoader\mods\Multiplayer";
+        frequencyTable.Clear();
+       
+        frequencyTableLabels.Clear();
+        freqSelection = 0;
+
+        freqTableNetworkString = "UNICOM";
+        freqLabelTableNetworkString = "122.8";
+        frequencyTableLabels.Add("UNICOM");
+        frequencyTable.Add("122.8");
+
+        string readText = "";
+        // This text is added only once to the file.
+        if (System.IO.File.Exists(dllDirectory + @"\freq.txt"))
+        {
+            readText = System.IO.File.ReadAllText(dllDirectory + @"\freq.txt");
+            string[] values = readText.Split(',');
+            frequencyTable.Add(values);
+            UnityEngine.Debug.Log("loading freqs");
+            freqTableNetworkString += "," + readText;
         }
 
+        if (System.IO.File.Exists(dllDirectory + @"\freqlabels.txt"))
+        {
+            readText = System.IO.File.ReadAllText(dllDirectory + @"\freqlabels.txt");
+            UnityEngine.Debug.Log("loading freqlabels");
+            string[] values = readText.Split(',');
+            frequencyTableLabels.Add(values);
+            freqLabelTableNetworkString += "," + readText;
+        }
+
+    }
+    public static void parseFrequencyList()
+    {
+        frequencyTable.Clear();
+
+        frequencyTableLabels.Clear();
+        freqSelection = 0;
+
+        //freqTableNetworkString = "UNICOM";
+        //freqLabelTableNetworkString = "140.1";
+        //frequencyTableLabels.Add("UNICOM");
+        //frequencyTable.Add("140.1");
+
+
+        string[] values = freqTableNetworkString.Split(',');
+        frequencyTable.Add(values);
+
+        string[] values2 = freqLabelTableNetworkString.Split(',');
+        frequencyTableLabels.Add(values2);
+    }
+    public static string getFrequencyTableString()
+    {
+        string frequencyLegLookup = "Frequencies:";
+        int counter = 0;
+        foreach (var freq in DiscordRadioManager.frequencyTable)
+        {
+           
+            string Label = "\n";
+            if (counter<frequencyTableLabels.Count)
+            {
+                Label += frequencyTableLabels[counter];
+            }
+
+            frequencyLegLookup += Label;
+            frequencyLegLookup += ": "+ freq;
+            counter += 1;
+        }
+        return frequencyLegLookup;
+    }
+    public static string getNextFrequency()
+    {
+        freqSelection += 1;
+        if(freqSelection> frequencyTable.Count - 1)
+            freqSelection = 0;
+        return frequencyTable[freqSelection];
+    }
     public static void disconnect()
     {
         if (!connectedToDiscord)
             return;
-       
+        reloadFrequencyTextFiles();
         connected = false;
+        radioFreq = 0;
         steamIDtoDiscordIDDictionary.Clear();
+        lobbyManager.DisconnectVoice(lobbyID, (result) =>
+        {
+            if (result == Discord.Result.Ok)
+            {
+                Console.WriteLine("Left voice lobby!");
+            }
+        });
         lobbyManager.DisconnectLobby(lobbyID, (result) =>
         {
             if (result == Discord.Result.Ok)
@@ -171,7 +269,7 @@ public static class DiscordRadioManager
     {
         if (!connectedToDiscord)
             return;
-
+        parseFrequencyList();
         connected = true;
         lobbyID = ilobbyid;
       
@@ -209,10 +307,11 @@ public static class DiscordRadioManager
         if (!connectedToDiscord)
             return;
         discord.RunCallbacks();
-        lobbyManager.FlushNetwork();
+        
 
         if (!connected)
             return;
+        lobbyManager.FlushNetwork();
         tick += UnityEngine.Time.deltaTime;
 
         if(tick > 1.0f/tickrate)

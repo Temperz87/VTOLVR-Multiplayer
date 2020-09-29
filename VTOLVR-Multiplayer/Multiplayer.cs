@@ -954,35 +954,18 @@ public class Multiplayer : VTOLMOD
                 VRInteractable bInteractable = button.GetComponentInChildren<VRInteractable>();
                 Text text = button.GetComponentInChildren<Text>();
                 text.transform.localScale = text.transform.localScale * 0.75f;
-                text.text = "Freq:140.500";
+                text.text = "Freq: " + CUSTOM_API.currentFreq;
                 bInteractable.interactableName = "Freq.";
                 bInteractable.OnInteract = new UnityEvent();
-                DiscordRadioManager.radioFreq = 0;
+
                 string textS = "";
                 bInteractable.OnInteract.AddListener(delegate
                 {
-                    if (DiscordRadioManager.radioFreq == 0)
-                    {
-                        DiscordRadioManager.radioFreq = 1;
-                        textS = "Freq:140.500";
-                    }
-                    else if (DiscordRadioManager.radioFreq == 1)
-                    {
-                        DiscordRadioManager.radioFreq = 2;
-                        textS = "Freq:140.600";
-                    }
-                    else if(DiscordRadioManager.radioFreq == 2)
-                    {
-                        DiscordRadioManager.radioFreq = 3;
-                        textS = "Freq:140.700";
-                    }
-                    else if (DiscordRadioManager.radioFreq == 3)
-                    {
-                        DiscordRadioManager.radioFreq = 0;
-                        textS = "Freq:140.800";
-                    }
-
+                    textS = DiscordRadioManager.getNextFrequency();
+                    DiscordRadioManager.radioFreq = textS.GetHashCode();
+                    CUSTOM_API.forceSetFreq(textS); 
                     text.text = textS;
+                    Debug.Log("discord freq " + DiscordRadioManager.radioFreq);
                 });
             }
              

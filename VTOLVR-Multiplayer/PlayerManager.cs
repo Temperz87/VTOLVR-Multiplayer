@@ -101,9 +101,8 @@ public static class PlayerManager
         Debug.Log("The map has loaded");
         gameLoaded = true;
         // As a client, when the map has loaded we are going to request a spawn point from the host
-        SetPrefabs();
-
-        CUSTOM_API.loadDisplayPrefab();
+        SetPrefabs(); 
+     
         carrierStart = FlightSceneManager.instance.playerActor.unitSpawn.unitSpawner.linkedToCarrier;
         if (carrierStart && !Networker.isHost)
         {
@@ -492,6 +491,7 @@ public static class PlayerManager
     /// <param name="localVehicle">The local clients gameobject</param>
     public static void Update()
     {
+        CUSTOM_API.Update();
         if (!Networker.isHost)
             if (gameLoaded)
                 if (!firstSpawnDone)
@@ -640,7 +640,7 @@ public static class PlayerManager
     public static void hackSaveUnlockAllWeapons()
     {
         string weaponList = "";
-        VTOLVehicles currentVehicle = VTOLAPI.GetPlayersVehicleEnum();
+        VTOLVehicles currentVehicle = getPlayerVehicleType();
         //rbSender.SetSpawn(pos, rot);
         if (currentVehicle == VTOLVehicles.AV42C)
         {
@@ -798,7 +798,7 @@ public static class PlayerManager
     public static void SpawnLocalVehicleAndInformOtherClients(GameObject localVehicle, Vector3 pos, Quaternion rot, ulong UID, bool sendNewSpawnPacket = false, int playercount = 0) //Both
     {
         Debug.Log("Sending our location to spawn our vehicle");
-        VTOLVehicles currentVehicle = VTOLAPI.GetPlayersVehicleEnum();
+        VTOLVehicles currentVehicle = getPlayerVehicleType();
         Actor actor = localVehicle.GetComponent<Actor>();
         Player localPlayer = new Player(SteamUser.GetSteamID(), localVehicle, actor, currentVehicle, UID, PlayerManager.teamLeftie, SteamFriends.GetPersonaName(),DiscordRadioManager.userID);
         AddToPlayerList(localPlayer);
@@ -911,10 +911,24 @@ public static class PlayerManager
         }
     }
 
-
+    public static VTOLVehicles getPlayerVehicleType()
+    {
+        if (PlayerManager.selectedVehicle == "AV-42C")
+        {
+            return VTOLVehicles.AV42C;
+        }
+        if (PlayerManager.selectedVehicle  == "FA-26B" || PlayerManager.selectedVehicle == "F/A-26B")
+        {
+            return VTOLVehicles.FA26B;
+        }
+        
+         
+          return VTOLVehicles.F45A;
+        
+    }
     public static void SetupLocalAircraft(GameObject localVehicle, Vector3 pos, Quaternion rot, ulong UID, bool sendNewSpawnPacket)
     {
-        VTOLVehicles currentVehicle = VTOLAPI.GetPlayersVehicleEnum();
+        VTOLVehicles currentVehicle = getPlayerVehicleType();
         Actor actor = localVehicle.GetComponent<Actor>();
 
         if (VTOLVR_Multiplayer.AIDictionaries.allActors.ContainsKey(UID))
@@ -1039,12 +1053,21 @@ public static class PlayerManager
 
         localWManager.gpsSystem.CreateGroup("MP");
         localWManager.gpsSystem.UpdateRemotelyModifiedGroups();
+        if(currentVehicle == VTOLVehicles.FA26B)
+        {
 
-        FrequenceyButton = Multiplayer.CreateFreqButton();
+            CUSTOM_API.loadDisplayPrefab();
+            CUSTOM_API.SetupNewDisplay();
+            CUSTOM_API.setupFA26(localVehicle);
 
-        CUSTOM_API.SetupNewDisplay();
-        CUSTOM_API.setupFA26(localVehicle);
+        }else
+        {
 
+            FrequenceyButton = Multiplayer.CreateFreqButton();
+            CUSTOM_API.setupLeg(localVehicle);
+        }
+
+     
         if (Multiplayer._instance.alpha)
         foreach(var wings in localVehicle.GetComponentsInChildren<Wing>())
         {

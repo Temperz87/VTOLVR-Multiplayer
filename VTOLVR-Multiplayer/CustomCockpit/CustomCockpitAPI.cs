@@ -8,6 +8,8 @@ using UnityEngine;
 using UnityEngine.Events;
 using UnityEditor;
 using System.IO;
+using TMPro;
+using UnityEngine.Experimental.PlayerLoop;
 
 public class VTTextProperties
 {
@@ -101,7 +103,7 @@ public static class CUSTOM_API
     private static GameObject radioInput;
     private static VTText radioText;
 
-    private static string currentFreq = "xxx.x";
+    public static string currentFreq = "xxx.x";
     private static int freqIndex = 0;
     private static StringBuilder sb;
     private static GameObject paper;
@@ -115,7 +117,7 @@ public static class CUSTOM_API
     private static bool lastFreq = false;
     public static void loadDisplayPrefab()
     {
-         PathToBundle = Directory.GetCurrentDirectory() + @"\VTOLVR_ModLoader\mods\display";
+         PathToBundle = Directory.GetCurrentDirectory() + @"\VTOLVR_ModLoader\mods\Multiplayer\display";
         if (!AssetLoaded)
         {
             newDisplayPrefab =  FileLoader.GetAssetBundleAsGameObject(PathToBundle, "Display.prefab");
@@ -189,10 +191,10 @@ public static class CUSTOM_API
     }
     private static void editIndex()
     {
-        freqIndex = Mathf.Clamp(( freqIndex - 1), 0, 6);
+        freqIndex = Mathf.Clamp(( freqIndex - 1), 0, 5);
         if ( sb[ freqIndex] == '.')
         {
-             freqIndex = Mathf.Clamp(( freqIndex - 1), 0, 6);
+             freqIndex = Mathf.Clamp(( freqIndex - 1), 0, 5);
         }
 
         if ( sb[freqIndex] != 'x' &&  freqIndex != 6 &&  sb[freqIndex] != '.')
@@ -201,6 +203,8 @@ public static class CUSTOM_API
              currentFreq =  sb.ToString();
             radioText.text =  currentFreq;
              radioText.ApplyText();
+            radioText.SetEmission(true);
+            radioText.SetEmissionMultiplier(3);
         }
 
     }
@@ -213,23 +217,78 @@ public static class CUSTOM_API
              sb[freqIndex] = input;
              currentFreq =  sb.ToString();
              radioText.text =  currentFreq;
-             radioText.ApplyText();
+               
+            radioText.ApplyText();
 
         }
         else if ( freqIndex != 6)
         {
 
-            sb[freqIndex] = input;
+             sb[freqIndex] = input;
              currentFreq =  sb.ToString();
              radioText.text = currentFreq;
-             radioText.ApplyText();
+           
+            radioText.ApplyText();
+        }
+        DiscordRadioManager.radioFreq = radioText.text.GetHashCode();
+        Debug.Log("discord freq " + DiscordRadioManager.radioFreq);
+        if (PlayerManager.FrequenceyButton != null)
+        {
+            UnityEngine.UI.Text text = PlayerManager.FrequenceyButton.GetComponentInChildren<UnityEngine.UI.Text>();
+            //text.transform.localScale = text.transform.localScale * 0.75f;
+            text.text = "Freq: " + currentFreq;
+
         }
 
-        freqIndex = Mathf.Clamp(( freqIndex + 1), 0, 6);
+        freqIndex = Mathf.Clamp(( freqIndex + 1), 0, 5);
     }
 
 
-    public static void setupFA26(GameObject go)
+    public static void forceSetFreq(string ins)
+    {
+        currentFreq = ins;
+        freqIndex =5;
+        if(radioText!=null)
+        {
+            radioText.text = currentFreq;
+            radioText.ApplyText();
+            radioText.SetEmission(true);
+            radioText.SetEmissionMultiplier(3);
+
+            sb.Clear();
+            sb.Append(currentFreq);
+        }
+      
+    }
+    public static void setupLeg(GameObject go)
+    {
+        GameObject leg = GetChildWithName(go,"femur.left");
+        paper = GameObject.CreatePrimitive(PrimitiveType.Cube);
+        paper.transform.SetParent(leg.transform);
+        paper.transform.localScale = new Vector3(0.18f, 0.001f, 0.13f);
+        GameObject.Destroy(paper.GetComponent<Collider>());
+        GameObject.Destroy(paper.GetComponent<Rigidbody>());
+        paper.transform.SetParent(leg.transform);
+        paper.transform.localPosition = new Vector3(0.1003f, 0.1629f, -0.0089f);
+        paper.transform.localEulerAngles = new Vector3(4.13f, 188.92f, 87.24f);
+
+        TextMeshPro textMesh;
+        GameObject paperLabel;
+        paperLabel = new GameObject();
+
+        textMesh = paperLabel.AddComponent<TextMeshPro>();
+        textMesh.alignment = TextAlignmentOptions.Left;
+        textMesh.overflowMode = TextOverflowModes.Overflow;
+        textMesh.enableWordWrapping = false;
+        textMesh.color = new Color32(0, 0, 0, 255);
+        paperLabel.transform.SetParent(leg.transform);
+        paperLabel.transform.localPosition = new Vector3(0.11f, 0.14f, 0);
+        paperLabel.transform.localEulerAngles = new Vector3(3.24f, 280.42f, 185.08f);
+        paperLabel.transform.localScale = new Vector3(0.004f, 0.004f, 0.004f);
+
+        textMesh.SetText(DiscordRadioManager.getFrequencyTableString());
+    }
+        public static void setupFA26(GameObject go)
     {
         switchObject = GetChildWithName(go,"APUSwitch");
 
@@ -241,7 +300,10 @@ public static class CUSTOM_API
         {
             //gets engine objects
             FindSwitchObjects(go);
-            currentFreq = "xxx.x";
+            if (DiscordRadioManager.frequencyTable.Count > 0)
+                currentFreq = DiscordRadioManager.frequencyTable[0];
+            else
+                currentFreq = "122.8";
             freqIndex = 0;
             sb = new StringBuilder(currentFreq);
             lastFreq = false;
@@ -264,7 +326,7 @@ public static class CUSTOM_API
 
             Debug.Log(" Color darkGreen = new Color32(26, 102, 11, 255);");
             Color darkGreen = new Color32(26, 102, 11, 255);
-            VTTextProperties radioProp = new VTTextProperties("radioInput", 30, 1, VTText.AlignmentModes.Center, VTText.VerticalAlignmentModes.Middle, darkGreen, Color.green, true, 1);
+            VTTextProperties radioProp = new VTTextProperties("radioInput", 30, 1, VTText.AlignmentModes.Center, VTText.VerticalAlignmentModes.Middle, darkGreen, Color.green, true, 3.0f);
             radioInput = createText(currentFreq, newDisplay.transform, new Vector3(0, 0.007f, 0.007f), new Vector3(0, 0, 0), new Vector3(0.0005f, 0.0005f, 0.0005f), radioProp, true);
             radioInput.transform.localEulerAngles = new Vector3(90, 0, 0);
             radioInput.name = "Radio Input";
@@ -283,8 +345,8 @@ public static class CUSTOM_API
 
             //-0.0460, 1.2385, 5.8246
             //Creates radio buttons
-            VTTextProperties button1Properties = new VTTextProperties("1", 36, 1, VTText.AlignmentModes.Center, VTText.VerticalAlignmentModes.Middle, Color.black, Color.green, false, 0);
-            button1 = createAPButton("1", null, "1Bound", go.transform, new Vector3(-0.0510f, 1.2435f, 5.8146f), new Vector3(0, 0, 0), button1Properties);
+            VTTextProperties button1Properties = new VTTextProperties("1", 36, 1, VTText.AlignmentModes.Center, VTText.VerticalAlignmentModes.Middle, Color.black, Color.green, true, 1.0f);
+            button1 = createAPButton("1", null, "1Bound", go.transform, new Vector3(-0.0510f, 1.2435f, 5.8246f), new Vector3(0, 0, 0), button1Properties);
             VRInteractable button1Int = button1.GetComponentInChildren<VRInteractable>();
             button1Int.OnInteract = new UnityEvent();
             button1Int.OnInteract.AddListener(updateFreq1);
@@ -292,95 +354,73 @@ public static class CUSTOM_API
 
 
             Debug.Log("createAPButton2");
-            VTTextProperties button2Properties = new VTTextProperties("2", 36, 1, VTText.AlignmentModes.Center, VTText.VerticalAlignmentModes.Middle, Color.black, Color.green, false, 0);
-            button2 = createAPButton("2", null, "2Bound", go.transform, new Vector3(-0.0280f, 1.2435f, 5.8146f), new Vector3(0, 0, 0), button2Properties);
+            VTTextProperties button2Properties = new VTTextProperties("2", 36, 1, VTText.AlignmentModes.Center, VTText.VerticalAlignmentModes.Middle, Color.black, Color.green, true, 1.0f);
+            button2 = createAPButton("2", null, "2Bound", go.transform, new Vector3(-0.0280f, 1.2435f, 5.8246f), new Vector3(0, 0, 0), button2Properties);
             VRInteractable button2Int = button2.GetComponentInChildren<VRInteractable>();
             button2Int.OnInteract = new UnityEvent();
             button2Int.OnInteract.AddListener(updateFreq2);
 
-            VTTextProperties button3Properties = new VTTextProperties("3", 36, 1, VTText.AlignmentModes.Center, VTText.VerticalAlignmentModes.Middle, Color.black, Color.green, false, 0);
-            button3 = createAPButton("3", null, "3Bound", go.transform, new Vector3(-0.0050f, 1.2435f, 5.8146f), new Vector3(0, 0, 0), button3Properties);
+            VTTextProperties button3Properties = new VTTextProperties("3", 36, 1, VTText.AlignmentModes.Center, VTText.VerticalAlignmentModes.Middle, Color.black, Color.green, true, 1.0f);
+            button3 = createAPButton("3", null, "3Bound", go.transform, new Vector3(-0.0050f, 1.2435f, 5.8246f), new Vector3(0, 0, 0), button3Properties);
             VRInteractable button3Int = button3.GetComponentInChildren<VRInteractable>();
             button3Int.OnInteract = new UnityEvent();
             button3Int.OnInteract.AddListener(updateFreq3);
 
             //v.1284, 1.2165, 5.8176
 
-            VTTextProperties button4Properties = new VTTextProperties("4", 36, 1, VTText.AlignmentModes.Center, VTText.VerticalAlignmentModes.Middle, Color.black, Color.green, false, 0);
-            button4 = createAPButton("4", null, "4Bound", go.transform, new Vector3(-0.0510f, 1.2275f, 5.8146f), new Vector3(0, 0, 0), button4Properties);
+            VTTextProperties button4Properties = new VTTextProperties("4", 36, 1, VTText.AlignmentModes.Center, VTText.VerticalAlignmentModes.Middle, Color.black, Color.green, true, 1.0f);
+            button4 = createAPButton("4", null, "4Bound", go.transform, new Vector3(-0.0510f, 1.2275f, 5.8196f), new Vector3(0, 0, 0), button4Properties);
             VRInteractable button4Int = button4.GetComponentInChildren<VRInteractable>();
             button4Int.OnInteract = new UnityEvent();
             button4Int.OnInteract.AddListener(updateFreq4);
 
 
-            VTTextProperties button5Properties = new VTTextProperties("5", 36, 1, VTText.AlignmentModes.Center, VTText.VerticalAlignmentModes.Middle, Color.black, Color.green, false, 0);
-            button5 = createAPButton("5", null, "5Bound", go.transform, new Vector3(-0.0280f, 1.2275f, 5.8146f), new Vector3(0, 0, 0), button5Properties);
+            VTTextProperties button5Properties = new VTTextProperties("5", 36, 1, VTText.AlignmentModes.Center, VTText.VerticalAlignmentModes.Middle, Color.black, Color.green, true, 1.0f);
+            button5 = createAPButton("5", null, "5Bound", go.transform, new Vector3(-0.0280f, 1.2275f, 5.8196f), new Vector3(0, 0, 0), button5Properties);
             VRInteractable button5Int = button5.GetComponentInChildren<VRInteractable>();
             button5Int.OnInteract = new UnityEvent();
             button5Int.OnInteract.AddListener(updateFreq5);
 
 
-            VTTextProperties button6Properties = new VTTextProperties("6", 36, 1, VTText.AlignmentModes.Center, VTText.VerticalAlignmentModes.Middle, Color.black, Color.green, false, 0);
-            button6 = createAPButton("6", null, "6Bound", go.transform, new Vector3(-0.0050f, 1.2275f, 5.8146f), new Vector3(0, 0, 0), button6Properties);
+            VTTextProperties button6Properties = new VTTextProperties("6", 36, 1, VTText.AlignmentModes.Center, VTText.VerticalAlignmentModes.Middle, Color.black, Color.green, true, 1.0f);
+            button6 = createAPButton("6", null, "6Bound", go.transform, new Vector3(-0.0050f, 1.2275f, 5.8196f), new Vector3(0, 0, 0), button6Properties);
             VRInteractable button6Int = button6.GetComponentInChildren<VRInteractable>();
             button6Int.OnInteract = new UnityEvent();
             button6Int.OnInteract.AddListener(updateFreq6);
 
             //0.1244, 1.1925, 5.8116
-            VTTextProperties button7Properties = new VTTextProperties("7", 36, 1, VTText.AlignmentModes.Center, VTText.VerticalAlignmentModes.Middle, Color.black, Color.green, false, 0);
-            button7 = createAPButton("7", null, "7Bound", go.transform, new Vector3(-0.0510f, 1.2105f, 5.8146f), new Vector3(0, 0, 0), button7Properties);
+            VTTextProperties button7Properties = new VTTextProperties("7", 36, 1, VTText.AlignmentModes.Center, VTText.VerticalAlignmentModes.Middle, Color.black, Color.green, true, 1.0f);
+            button7 = createAPButton("7", null, "7Bound", go.transform, new Vector3(-0.0510f, 1.2105f, 5.8156f), new Vector3(0, 0, 0), button7Properties);
             VRInteractable button7Int = button7.GetComponentInChildren<VRInteractable>();
             button7Int.OnInteract = new UnityEvent();
             button7Int.OnInteract.AddListener(updateFreq7);
 
-            VTTextProperties button8Properties = new VTTextProperties("8", 36, 1, VTText.AlignmentModes.Center, VTText.VerticalAlignmentModes.Middle, Color.black, Color.green, false, 0);
-            button8 = createAPButton("8", null, "8Bound", go.transform, new Vector3(-0.0280f, 1.2105f, 5.8146f), new Vector3(0, 0, 0), button8Properties);
+            VTTextProperties button8Properties = new VTTextProperties("8", 36, 1, VTText.AlignmentModes.Center, VTText.VerticalAlignmentModes.Middle, Color.black, Color.green, true, 1.0f);
+            button8 = createAPButton("8", null, "8Bound", go.transform, new Vector3(-0.0280f, 1.2105f, 5.8156f), new Vector3(0, 0, 0), button8Properties);
             VRInteractable button8Int = button8.GetComponentInChildren<VRInteractable>();
             button8Int.OnInteract = new UnityEvent();
             button8Int.OnInteract.AddListener(updateFreq8);
 
-            VTTextProperties button9Properties = new VTTextProperties("9", 36, 1, VTText.AlignmentModes.Center, VTText.VerticalAlignmentModes.Middle, Color.black, Color.green, false, 0);
-            button9 = createAPButton("9", null, "9Bound", go.transform, new Vector3(-0.0050f, 1.2105f, 5.8146f), new Vector3(0, 0, 0), button9Properties);
+            VTTextProperties button9Properties = new VTTextProperties("9", 36, 1, VTText.AlignmentModes.Center, VTText.VerticalAlignmentModes.Middle, Color.black, Color.green, true, 1.0f);
+            button9 = createAPButton("9", null, "9Bound", go.transform, new Vector3(-0.0050f, 1.2105f, 5.8156f), new Vector3(0, 0, 0), button9Properties);
             VRInteractable button9Int = button9.GetComponentInChildren<VRInteractable>();
             button9Int.OnInteract = new UnityEvent();
             button9Int.OnInteract.AddListener(updateFreq9);
 
-            VTTextProperties buttonClrProperties = new VTTextProperties("Clr", 35, 1, VTText.AlignmentModes.Center, VTText.VerticalAlignmentModes.Middle, Color.black, Color.green, false, 0);
-            buttonClr = createAPButton("Clr", null, "ClrBound", go.transform, new Vector3(-0.0510f, 1.1935f, 5.8146f), new Vector3(0, 0, 0), buttonClrProperties);
+            VTTextProperties buttonClrProperties = new VTTextProperties("Clr", 35, 1, VTText.AlignmentModes.Center, VTText.VerticalAlignmentModes.Middle, Color.black, Color.green, true, 1.0f);
+            buttonClr = createAPButton("Clr", null, "ClrBound", go.transform, new Vector3(-0.0510f, 1.1935f, 5.8106f), new Vector3(0, 0, 0), buttonClrProperties);
             VRInteractable buttonClrInt = buttonClr.GetComponentInChildren<VRInteractable>();
             buttonClrInt.OnInteract = new UnityEvent();
             buttonClrInt.OnInteract.AddListener(editIndex);
 
-            VTTextProperties button0Properties = new VTTextProperties("0", 36, 1, VTText.AlignmentModes.Center, VTText.VerticalAlignmentModes.Middle, Color.black, Color.green, false, 0);
-            button0 = createAPButton("0", null, "0Bound", go.transform, new Vector3(-0.0280f, 1.1935f, 5.8146f), new Vector3(0, 0, 0), button0Properties);
+            VTTextProperties button0Properties = new VTTextProperties("0", 36, 1, VTText.AlignmentModes.Center, VTText.VerticalAlignmentModes.Middle, Color.black, Color.green, true, 1.0f);
+            button0 = createAPButton("0", null, "0Bound", go.transform, new Vector3(-0.0280f, 1.1935f, 5.8106f), new Vector3(0, 0, 0), button0Properties);
             VRInteractable button0Int = button0.GetComponentInChildren<VRInteractable>();
             button0Int.OnInteract = new UnityEvent();
             button0Int.OnInteract.AddListener(updateFreq0);
 
-            //creates cube on left leg
-            GameObject leg = GetChildWithName(go,"femur.left");
-            paper = GameObject.CreatePrimitive(PrimitiveType.Cube);
-            paper.transform.SetParent(leg.transform);
-            paper.transform.localScale = new Vector3(0.18f, 0.001f, 0.13f);
-            GameObject.Destroy(paper.GetComponent<Collider>());
-            GameObject.Destroy(paper.GetComponent<Rigidbody>());
-            paper.transform.SetParent(leg.transform);
-            paper.transform.localPosition = new Vector3(0.1003f, 0.1629f, -0.0089f);
-            paper.transform.localEulerAngles = new Vector3(4.13f, 188.92f, 87.24f);
-
-
-            VTTextProperties paperProps = new VTTextProperties("PaperLabel", 9.9f, 1, VTText.AlignmentModes.Left, VTText.VerticalAlignmentModes.Top, Color.black, Color.black, false, 0);
-            GameObject paperLabel = createText("hello", go.transform, new Vector3(0, 0, 0), new Vector3(0, 0, 0), new Vector3(0.0007f, 0.0007f, 0.0007f), paperProps, true);
-            paperLabel.transform.SetParent(paperLabel.transform);
-            paperLabel.transform.localPosition = new Vector3(0, 0, 0);
-            paperLabel.transform.localEulerAngles = new Vector3(90, 0, 0);
-            paperLabel.transform.SetParent(paper.transform);
-            paperLabel.transform.localPosition = new Vector3(-0.4900f, 0.6000f, -0.4700f);
-            paperLabel.transform.localEulerAngles = new Vector3(85.78f, 335.74f, 65.76f);
-
-            paperLabel = paperLabel;
-
-
+          
+            setupLeg(go);
             Vector3 scaler = new Vector3(0.83f, 0.83f, 0.83f);
             //23.5153
             GameObject alt = GetChildWithName(go,"Altitude");
@@ -404,7 +444,7 @@ public static class CUSTOM_API
             off.transform.localPosition = new Vector3(55.3942f, -112.2782f, 26.1551f);
             objectToMove = off;
 
-
+             
 
             GameObject brtKnob = GetChildWithName(go,"MFDBrightnessKnob");
             brtKnob.transform.localEulerAngles = new Vector3(343.54f, 0, 180);
@@ -437,7 +477,7 @@ public static class CUSTOM_API
         if (newDisplayPrefab != null)
         {
             VTOLVehicles cv = VTOLVehicles.FA26B;
-            if (cv == VTOLAPI.GetPlayersVehicleEnum())
+            if (cv == PlayerManager.getPlayerVehicleType())
             {
                 displayEnabled = true;
             }
@@ -785,8 +825,9 @@ public static class CUSTOM_API
             }
 
             textRef.ApplyText();
-
-            return textObject;
+        textRef.ApplyText(); textRef.ApplyText();
+        textRef.SetEmission(false);
+        return textObject;
 
         }
     public static GameObject GetChildWithName(GameObject obj, string name)
@@ -796,7 +837,7 @@ public static class CUSTOM_API
         Transform[] children = obj.GetComponentsInChildren<Transform>();
         foreach (Transform child in children)
         {
-            if (child.name.Contains(name))
+            if (child.name==name || child.name.Contains(name+"(clone"))
             {
                 return child.gameObject;
             }
@@ -806,9 +847,165 @@ public static class CUSTOM_API
         return null;
      
     }
+    public static void moveObjectByKeyboard(GameObject objectMoved, float increment)
+    {
+        Vector3 objectTemp = objectMoved.transform.localPosition;
 
 
 
+        if (Input.GetKeyDown("w"))
+        {
+            objectTemp.y += increment;
+             moveCounterY++;
+            objectMoved.transform.localPosition = objectTemp;
+            Debug.Log(objectMoved.name + ": " + objectMoved.transform.localPosition.ToString("F4"));
+
+        }
+
+        if (Input.GetKeyDown("s"))
+        {
+            objectTemp.y -= increment;
+
+             moveCounterY--;
+            objectMoved.transform.localPosition = objectTemp;
+            Debug.Log(objectMoved.name + ": " + objectMoved.transform.localPosition.ToString("F4"));
+        }
+
+        if (Input.GetKeyDown("a"))
+        {
+            objectTemp.x -= increment;
+
+             moveCounterX--;
+            objectMoved.transform.localPosition = objectTemp;
+            Debug.Log(objectMoved.name + ": " + objectMoved.transform.localPosition.ToString("F4"));
+        }
+
+        if (Input.GetKeyDown("d"))
+        {
+            objectTemp.x += increment;
+
+             moveCounterX++;
+            objectMoved.transform.localPosition = objectTemp;
+            Debug.Log(objectMoved.name + ": " + objectMoved.transform.localPosition.ToString("F4"));
+        }
+
+        if (Input.GetKeyDown("r"))
+        {
+            objectTemp.z += increment;
+
+             moveCounterZ++;
+            objectMoved.transform.localPosition = objectTemp;
+            Debug.Log(objectMoved.name + ": " + objectMoved.transform.localPosition.ToString("F4"));
+        }
+
+        if (Input.GetKeyDown("f"))
+        {
+            objectTemp.z -= increment;
+
+            moveCounterZ--;
+            objectMoved.transform.localPosition = objectTemp;
+            Debug.Log(objectMoved.name + ": " + objectMoved.transform.localPosition.ToString("F4"));
+        }
+    }
+
+    private static int moveCounterX;
+    private static int moveCounterY;
+    private static int moveCounterZ;
+    public static void rotateObjectByKeyboard(GameObject rotatedObject, float increment)
+    {
+        Quaternion objectTemp = rotatedObject.transform.localRotation;
+
+        Quaternion incrementx = Quaternion.Euler(new Vector3(increment, 0.0f, 0.0f)).normalized;
+
+        Quaternion incrementy = Quaternion.Euler(new Vector3(  0.0f, increment, 0.0f)).normalized;
+
+        Quaternion incrementz = Quaternion.Euler(new Vector3(0.0f, 0.0f, increment)).normalized;
+        if (Input.GetKey("u"))
+        {
+            objectTemp *= incrementy;
+
+            rotatedObject.transform.localRotation = objectTemp.normalized;
+            Debug.Log("Switch clone new angle: " + rotatedObject.transform.localEulerAngles.ToString("F2"));
+        }
+
+        if (Input.GetKey("j"))
+        {
+            objectTemp  *= Quaternion.Inverse(incrementy);
+
+
+            rotatedObject.transform.localRotation = objectTemp.normalized;
+            Debug.Log("Switch clone new angle: " + rotatedObject.transform.localEulerAngles.ToString("F2"));
+        }
+
+        if (Input.GetKey("h"))
+        {
+            objectTemp *= incrementx;
+
+            rotatedObject.transform.localRotation = objectTemp.normalized;
+            Debug.Log("Switch clone new angle: " + rotatedObject.transform.localEulerAngles.ToString("F2"));
+        }
+    
+
+        if (Input.GetKey("k"))
+        {
+         objectTemp  *= Quaternion.Inverse(incrementx);
+
+
+            rotatedObject.transform.localRotation = objectTemp.normalized;
+            Debug.Log("Switch clone new angle: " + rotatedObject.transform.localEulerAngles.ToString("F2"));
+        }
+        
+
+        if (Input.GetKey("o"))
+        {
+            objectTemp *= incrementz;
+
+
+            rotatedObject.transform.localRotation = objectTemp.normalized;
+            Debug.Log("Switch clone new angle: " + rotatedObject.transform.localEulerAngles.ToString("F2"));
+        }
+
+        if (Input.GetKey("l"))
+        {
+            objectTemp *= Quaternion.Inverse(incrementz);
+
+
+            rotatedObject.transform.localRotation = objectTemp.normalized;
+            Debug.Log("Switch clone new angle: " + rotatedObject.transform.localEulerAngles.ToString("F2"));
+        }
+    }
+
+    static void getObjectByClick()
+    {
+        if (Input.GetMouseButtonDown(0))
+        {
+            Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+
+            RaycastHit[] hit = Physics.RaycastAll(ray.origin, ray.direction, 50.0f);
+
+            {
+                foreach (var Raycs in hit)
+                {
+                    GameObject obj = Raycs.collider.gameObject;
+                    if (obj != null)
+                        if (obj.GetComponent<VRInteractable>() != null)
+                        {
+                            Debug.Log("You selected the " + obj.name);
+                        }
+                }
+                // ensure you picked right object
+            }
+        }
+    }
+
+    static GameObject selectedOBJ;
+    public static void Update()
+    { /*getObjectByClick();
+        if(selectedOBJ!=null)
+        moveObjectByKeyboard(selectedOBJ, 0.01f);
+        if (selectedOBJ != null)
+            rotateObjectByKeyboard(selectedOBJ, 0.5f);*/
+    }
     /// <summary>
     /// Must be called at the beggining of the program in order to retrieve all the objects that will be cloned
     /// So far only works on the fa-26b. 
@@ -822,16 +1019,17 @@ public static class CUSTOM_API
             SEAT_ADJUST_POSE_BOUNDS = GetChildWithName(go,"MasterArmPoseBounds");
             Debug.Log("pose bound found: " + SEAT_ADJUST_POSE_BOUNDS);
             playerGameObject = VTOLAPI.GetPlayersVehicleGameObject();
-            APOFF_ORIGINAL = GetChildWithName(go,"VisorButton");
-
-        }
+        //APOFF_ORIGINAL = GetChildWithName(go,"VisorButton");
+            APOFF_ORIGINAL = GetChildWithName(go,"APOff");
+    }
 
 
 
 
         private static GameObject APU_ORIGINAL;
-   
-        private static GameObject SEAT_ADJUST_POSE_BOUNDS;
+
+    private static GameObject selectedObject = null;
+    private static GameObject SEAT_ADJUST_POSE_BOUNDS;
         private static GameObject playerGameObject;
         private static GameObject APOFF_ORIGINAL;
 
