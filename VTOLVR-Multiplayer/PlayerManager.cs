@@ -53,6 +53,7 @@ public static class PlayerManager
     public static Vector3 av42Offset = new Vector3(0, 0.972f, -5.126f);//the difference between the origin of the ai and player AV-42s
     public static GameObject FrequenceyButton;
     public static Hitbox lastBulletHit;
+
     public class Player
     {
         public CSteamID cSteamID;
@@ -102,7 +103,7 @@ public static class PlayerManager
         // As a client, when the map has loaded we are going to request a spawn point from the host
         SetPrefabs();
 
-
+        CUSTOM_API.loadDisplayPrefab();
         carrierStart = FlightSceneManager.instance.playerActor.unitSpawn.unitSpawner.linkedToCarrier;
         if (carrierStart && !Networker.isHost)
         {
@@ -1041,8 +1042,10 @@ public static class PlayerManager
 
         FrequenceyButton = Multiplayer.CreateFreqButton();
 
+        CUSTOM_API.SetupNewDisplay();
+        CUSTOM_API.setupFA26(localVehicle);
 
-        if(Multiplayer._instance.alpha)
+        if (Multiplayer._instance.alpha)
         foreach(var wings in localVehicle.GetComponentsInChildren<Wing>())
         {
             wings.dragCoefficient *= 0.5f;

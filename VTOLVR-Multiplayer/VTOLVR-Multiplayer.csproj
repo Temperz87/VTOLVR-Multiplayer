@@ -75,6 +75,10 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\Dependencies\UnityEngine.AnimationModule.dll</HintPath>
     </Reference>
+    <Reference Include="UnityEngine.AssetBundleModule, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\Dependencies\UnityEngine.AssetBundleModule.dll</HintPath>
+    </Reference>
     <Reference Include="UnityEngine.AudioModule">
       <HintPath>..\Dependencies\UnityEngine.AudioModule.dll</HintPath>
     </Reference>
@@ -101,6 +105,7 @@
     <Compile Include="AIDictionaries.cs" />
     <Compile Include="AIManager.cs" />
     <Compile Include="AvatarManager.cs" />
+    <Compile Include="CustomCockpit\CustomCockpitAPI.cs" />
     <Compile Include="DiscordRadioManager.cs" />
     <Compile Include="Discord\ActivityManager.cs" />
     <Compile Include="Discord\Constants.cs" />
