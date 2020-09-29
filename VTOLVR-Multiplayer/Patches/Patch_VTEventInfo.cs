@@ -123,6 +123,21 @@ class PatchPROTECC
 
     }
 }
+
+
+[HarmonyPatch(typeof(EndMission), "CompleteMission")]
+
+class Patchmission
+{
+    static bool Prefix()
+    {
+ 
+        PilotSaveManager.currentCampaign = Networker._instance.pilotSaveManagerControllerCampaign;
+        PilotSaveManager.currentScenario = Networker._instance.pilotSaveManagerControllerCampaignScenario;
+        return true;
+    }
+}
+
 [HarmonyPatch(typeof(VTEventTarget), "Invoke")]
 class Patch22
 {

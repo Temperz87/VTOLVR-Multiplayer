@@ -188,7 +188,7 @@ public class Multiplayer : VTOLMOD
         thrust_changed += thrust_Settings;
         alpha_changed += alpha_Settings;
         settings.CreateCustomLabel("Thrust Multiplier");
-        settings.CreateFloatSetting("Default = 1.0", thrust_changed,1.0f, 1.0f, 3.0f, 0.2f);
+        settings.CreateFloatSetting("Default = 1.0", thrust_changed,1.0f, 1.0f, 4.0f, 0.2f);
         settings.CreateCustomLabel("High Alpha Mode");
         settings.CreateBoolSetting("Default = False", alpha_changed, alpha);
 
@@ -957,7 +957,7 @@ public class Multiplayer : VTOLMOD
                 text.text = "Freq:140.500";
                 bInteractable.interactableName = "Freq.";
                 bInteractable.OnInteract = new UnityEvent();
-                DiscordRadioManager.radioFreq = 2;
+                DiscordRadioManager.radioFreq = 0;
                 string textS = "";
                 bInteractable.OnInteract.AddListener(delegate
                 {

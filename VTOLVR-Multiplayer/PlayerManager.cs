@@ -94,6 +94,7 @@ public static class PlayerManager
 
         while (VTMapManager.fetch == null || !VTMapManager.fetch.scenarioReady || FlightSceneManager.instance.switchingScene || !PlayerSpawn.playerVehicleReady)
         {
+            ScreenFader.FadeOut(Color.black, 0.0f, fadeoutVolume: true);
             yield return null;
         }
         Debug.Log("The map has loaded");
@@ -323,6 +324,7 @@ public static class PlayerManager
                 localVehicle.transform.position = hostTrans.position;
 
                 SpawnLocalVehicleAndInformOtherClients(localVehicle, hostTrans.transform.position, hostTrans.transform.rotation, localUID, true, 0);
+                ScreenFader.FadeIn(0.25f);
             }
             else
                 Debug.Log("Local vehicle for host was null");
@@ -788,8 +790,8 @@ public static class PlayerManager
         pvSetup.OnBeginUsingConfigurator -= StartConfig;
         unSubscribe = false;
 
-        PilotSaveManager.currentCampaign = Networker._instance.pilotSaveManagerControllerCampaign;
-        PilotSaveManager.currentScenario = Networker._instance.pilotSaveManagerControllerCampaignScenario;
+       // PilotSaveManager.currentCampaign = Networker._instance.pilotSaveManagerControllerCampaign;
+       // PilotSaveManager.currentScenario = Networker._instance.pilotSaveManagerControllerCampaignScenario;
 
     }
     public static void SpawnLocalVehicleAndInformOtherClients(GameObject localVehicle, Vector3 pos, Quaternion rot, ulong UID, bool sendNewSpawnPacket = false, int playercount = 0) //Both
@@ -1043,7 +1045,7 @@ public static class PlayerManager
         if(Multiplayer._instance.alpha)
         foreach(var wings in localVehicle.GetComponentsInChildren<Wing>())
         {
-            wings.dragCoefficient *= 0.25f;
+            wings.dragCoefficient *= 0.5f;
         }
        
             foreach (var engine in localVehicle.GetComponentsInChildren<ModuleEngine>())

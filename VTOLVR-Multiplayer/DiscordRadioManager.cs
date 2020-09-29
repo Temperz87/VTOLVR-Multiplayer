@@ -1,4 +1,5 @@
 ﻿using Discord;
+using Steamworks;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -22,6 +23,8 @@ public static class DiscordRadioManager
     public static int radioFreq;
     public static LobbyManager lobbyManager = null;
     public static string PersonaName = " ";
+    public static float tick = 0;
+    public static float tickrate = 1.0f;
     public static void start()
         {
         UnityEngine.Debug.Log("loading discord");
@@ -63,7 +66,7 @@ public static class DiscordRadioManager
     {
         if (!connectedToDiscord)
             return;
-        lobbyID = 0;
+       
         connected = false;
         steamIDtoDiscordIDDictionary.Clear();
         lobbyManager.DisconnectLobby(lobbyID, (result) =>
@@ -73,6 +76,7 @@ public static class DiscordRadioManager
                 Console.WriteLine("Left lobby!");
             }
         });
+        lobbyID = 0;
     }
     static void UpdateActivity(Discord.Discord discord, Discord.Lobby lobby)
     {
@@ -209,13 +213,17 @@ public static class DiscordRadioManager
 
         if (!connected)
             return;
+        tick += UnityEngine.Time.deltaTime;
 
+        if(tick > 1.0f/tickrate)
+        {
+            tick = 0.0f;
         Message_SetFrequency freqMsg = new Message_SetFrequency(PersonaName, radioFreq);
         if (Networker.isHost)
             NetworkSenderThread.Instance.SendPacketAsHostToAllClients(freqMsg, Steamworks.EP2PSend.k_EP2PSendUnreliable);
         else
             NetworkSenderThread.Instance.SendPacketToSpecificPlayer(Networker.hostID, freqMsg, Steamworks.EP2PSend.k_EP2PSendUnreliable);
-
+      
         foreach (var play in PlayerManager.players)
         {
             if(steamIDtoFreq.ContainsKey(play.nameTag))
@@ -230,7 +238,7 @@ public static class DiscordRadioManager
                 }
             }
         }
-     
+        }
     }
 
     public static void mutePlayer(string name, bool state)
