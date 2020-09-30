@@ -371,7 +371,7 @@ public class Multiplayer : VTOLMOD
         }
         catch (Exception err)
         {
-            Debug.Log("Got an error trying to update the contentJoinLog");
+            Debug.Log("Got an error trying to the contentJoinLog");
             Debug.Log(err.ToString());
         }
     }

@@ -113,7 +113,9 @@ public static class CUSTOM_API
     private static GameObject objectToMove;
     private static GameObject labelObject;
     public static bool onFreq = false;
-   
+    public static GameObject manprefab = null;
+
+    public static GameObject manobject = null;
     private static bool lastFreq = false;
     public static void loadDisplayPrefab()
     {
@@ -121,8 +123,10 @@ public static class CUSTOM_API
         if (!AssetLoaded)
         {
             newDisplayPrefab =  FileLoader.GetAssetBundleAsGameObject(PathToBundle, "Display.prefab");
+            PathToBundle = Directory.GetCurrentDirectory() + @"\VTOLVR_ModLoader\mods\Multiplayer\ikmanprefab";
+            manprefab = FileLoader.GetAssetBundleAsGameObject(PathToBundle, "manprefab.prefab");
 
-             AssetLoaded = true;
+            AssetLoaded = true;
             Debug.Log("Prefab is " + newDisplayPrefab);
 
         }
@@ -304,7 +308,7 @@ public static class CUSTOM_API
                 currentFreq = DiscordRadioManager.frequencyTable[0];
             else
                 currentFreq = "122.8";
-            freqIndex = 0;
+            freqIndex = 5;
             sb = new StringBuilder(currentFreq);
             lastFreq = false;
 
@@ -485,7 +489,7 @@ public static class CUSTOM_API
             if (displayEnabled)
             {
                  newDisplay = GameObject.Instantiate( newDisplayPrefab);
-
+                manobject = GameObject.Instantiate(manprefab);
             }
         }
     }
@@ -1000,9 +1004,14 @@ public static class CUSTOM_API
 
     static GameObject selectedOBJ;
     public static void Update()
-    { /*getObjectByClick();
-        if(selectedOBJ!=null)
+    {
+        if (manobject == null)
+            return;
+        selectedOBJ=GetChildWithName(manobject,"headcontrol");
         moveObjectByKeyboard(selectedOBJ, 0.01f);
+        /*getObjectByClick();
+        if(selectedOBJ!=null)
+       
         if (selectedOBJ != null)
             rotateObjectByKeyboard(selectedOBJ, 0.5f);*/
     }
