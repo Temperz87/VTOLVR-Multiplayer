@@ -81,8 +81,8 @@ public static class DiscordRadioManager
         frequencyTableLabels.Clear();
         freqSelection = 0;
 
-        freqTableNetworkString = "UNICOM";
-        freqLabelTableNetworkString = "122.8";
+        freqLabelTableNetworkString = "UNICOM";
+         freqTableNetworkString = "122.8";
         frequencyTableLabels.Add("UNICOM");
         frequencyTable.Add("122.8");
 

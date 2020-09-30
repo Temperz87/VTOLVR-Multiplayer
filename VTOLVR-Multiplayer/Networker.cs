@@ -354,7 +354,7 @@ public class Networker : MonoBehaviour
             {
                 pilotSaveManagerControllerCampaignScenario = PilotSaveManager.currentScenario;
             }
-
+           
             //PlayerManager.selectedVehicle = PilotSaveManager.currentVehicle.name;
         }
         /*if (isHost)

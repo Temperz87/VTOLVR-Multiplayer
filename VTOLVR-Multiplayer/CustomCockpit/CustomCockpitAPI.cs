@@ -190,46 +190,66 @@ public static class CUSTOM_API
 
     }
     private static void editIndex()
-    {
-        freqIndex = Mathf.Clamp(( freqIndex - 1), 0, 5);
-        if ( sb[ freqIndex] == '.')
-        {
-             freqIndex = Mathf.Clamp(( freqIndex - 1), 0, 5);
-        }
+    { 
+        freqIndex = Math.Min(4, freqIndex);
+        char letter= currentFreq[freqIndex];
 
-        if ( sb[freqIndex] != 'x' &&  freqIndex != 6 &&  sb[freqIndex] != '.')
+        if (letter == '.')
         {
-             sb[freqIndex] = 'x';
-             currentFreq =  sb.ToString();
-            radioText.text =  currentFreq;
-             radioText.ApplyText();
-            radioText.SetEmission(true);
-            radioText.SetEmissionMultiplier(3);
+           
+            freqIndex -= 1;
         }
+          
+            currentFreq = currentFreq.ReplaceAt(freqIndex, 'X');
+            freqIndex -= 1;
+        radioText.text = currentFreq;
+        radioText.ApplyText();
+
+
+        DiscordRadioManager.radioFreq = radioText.text.GetHashCode();
+        Debug.Log("discord freq " + DiscordRadioManager.radioFreq);
+        if (PlayerManager.FrequenceyButton != null)
+        {
+            UnityEngine.UI.Text text = PlayerManager.FrequenceyButton.GetComponentInChildren<UnityEngine.UI.Text>();
+            //text.transform.localScale = text.transform.localScale * 0.75f;
+            text.text = "Freq: " + currentFreq;
+
+        }
+        freqIndex = Math.Max(0, freqIndex);
 
     }
-
+    public static string ReplaceAt(this string input, int index, char newChar)
+    {
+        if (input == null)
+        {
+            throw new ArgumentNullException("input");
+        }
+        char[] chars = input.ToCharArray();
+        chars[index] = newChar;
+        return new string(chars);
+    }
     private static void updateFreq(char input)
     {
-        if ( sb[freqIndex] == '.')
-        {
-             freqIndex++;
-             sb[freqIndex] = input;
-             currentFreq =  sb.ToString();
-             radioText.text =  currentFreq;
-               
-            radioText.ApplyText();
 
-        }
-        else if ( freqIndex != 6)
-        {
+        freqIndex = Math.Min(3, freqIndex);
+      
+        char letter = currentFreq[freqIndex];
 
-             sb[freqIndex] = input;
-             currentFreq =  sb.ToString();
-             radioText.text = currentFreq;
-           
-            radioText.ApplyText();
+        if (  letter == '.')
+        {
+          
+            freqIndex ++;
         }
+        letter = currentFreq[freqIndex];
+        if (letter == 'X')
+        {
+            currentFreq=currentFreq.ReplaceAt(freqIndex, input);
+            freqIndex ++;
+        }
+        radioText.text = currentFreq;
+        radioText.ApplyText();
+       
+ 
         DiscordRadioManager.radioFreq = radioText.text.GetHashCode();
         Debug.Log("discord freq " + DiscordRadioManager.radioFreq);
         if (PlayerManager.FrequenceyButton != null)
@@ -240,23 +260,20 @@ public static class CUSTOM_API
 
         }
 
-        freqIndex = Mathf.Clamp(( freqIndex + 1), 0, 5);
+        freqIndex = Math.Min(4, freqIndex);
     }
 
 
     public static void forceSetFreq(string ins)
     {
         currentFreq = ins;
-        freqIndex =5;
+        freqIndex =4;
         if(radioText!=null)
         {
             radioText.text = currentFreq;
             radioText.ApplyText();
             radioText.SetEmission(true);
             radioText.SetEmissionMultiplier(3);
-
-            sb.Clear();
-            sb.Append(currentFreq);
         }
       
     }
@@ -304,7 +321,7 @@ public static class CUSTOM_API
                 currentFreq = DiscordRadioManager.frequencyTable[0];
             else
                 currentFreq = "122.8";
-            freqIndex = 0;
+            freqIndex = 4;
             sb = new StringBuilder(currentFreq);
             lastFreq = false;
 

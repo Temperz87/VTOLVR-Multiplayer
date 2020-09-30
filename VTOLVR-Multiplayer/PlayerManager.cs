@@ -1076,7 +1076,7 @@ public static class PlayerManager
        
             foreach (var engine in localVehicle.GetComponentsInChildren<ModuleEngine>())
         {
-            engine.maxThrust *= Multiplayer._instance.thrust;
+           // engine.maxThrust *= Multiplayer._instance.thrust;
         }
     }
     /// <summary>
