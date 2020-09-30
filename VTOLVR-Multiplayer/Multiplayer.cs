@@ -331,7 +331,7 @@ public class Multiplayer : VTOLMOD
                 CreateUI();
                 if(canvasButtonPrefab == null)
                 {
-                  canvasButtonPrefab = Instantiate(GameObject.Find("RecenterCanvas"));
+                   canvasButtonPrefab = Instantiate(GameObject.Find("RecenterCanvas"));
                    canvasButtonPrefab.SetActive(false);
                    DontDestroyOnLoad(canvasButtonPrefab);
                 }
