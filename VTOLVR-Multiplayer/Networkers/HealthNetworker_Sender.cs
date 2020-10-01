@@ -35,35 +35,37 @@ class HealthNetworker_Sender : MonoBehaviour
             return;
 
 
-        RaycastHit hitInfo;
-        Vector3 pos = VTMapManager.GlobalToWorldPoint(bulletMessage.pos);
-        Vector3 vel = bulletMessage.dir.toVector3;
-        Vector3 a = pos;
-        a += vel * 100.0f;
+        Collider[] hitInfo;
+        Vector3 pos =  ownerActor.gameObject.transform.position + bulletMessage.pos; 
+        
 
-        bool flag = Physics.Linecast(pos, a, out hitInfo, 1025);
+        hitInfo = Physics.OverlapSphere(pos, 5.0f, 1025);
+
+
         Actor source = null;
         if (AIDictionaries.allActors.ContainsKey(bulletMessage.sourceActorUID))
         {
             source = AIDictionaries.allActors[bulletMessage.sourceActorUID];
         }
-        health.Damage(bulletMessage.damage * 1.0f, ownerActor.gameObject.transform.position, Health.DamageTypes.Impact, source, "Bullet Impact");
-        BulletHitManager.instance.CreateBulletHit(ownerActor.gameObject.transform.position, -vel, true);
-        Hitbox hitbox = null;
-        if (flag)
+
+
+        int hits = 0;
+        foreach(Collider col in hitInfo)
         {
-            if (hitInfo.collider != null)
+            Hitbox hitbox = null;
+            hitbox =  col.GetComponent<Hitbox>();
+            if ((bool)hitbox && (bool)hitbox.actor)
             {
-                hitbox = hitInfo.collider.GetComponent<Hitbox>();
-                if ((bool)hitbox && (bool)hitbox.actor)
-                {
-                    Debug.Log("found  target bullet hit");
-                    hitbox.Damage(bulletMessage.damage*3.0f, hitInfo.point, Health.DamageTypes.Impact, source, "Bullet Impact");
-                    BulletHitManager.instance.CreateBulletHit(hitInfo.point, -vel, true);
-               
-                }
+                Debug.Log("found  target bullet hit");
+                hitbox.Damage(bulletMessage.damage * 2.0f, pos, Health.DamageTypes.Impact, source, "Bullet Impact");
+                BulletHitManager.instance.CreateBulletHit(pos, new Vector3(0.0f,1.0f,0.0f), true);
+                hits++;
             }
         }
+
+        if(hits == 0)
+        health.Damage(bulletMessage.damage * 2.0f, ownerActor.gameObject.transform.position, Health.DamageTypes.Impact, source, "Bullet Impact");
+        
          
     }
     void Death()

@@ -1,4 +1,6 @@
 ﻿using System;
+using UnityEngine;
+
 [Serializable]
 public class Message_Death : Message
 {
@@ -19,15 +21,15 @@ public class Message_BulletHit : Message
     public ulong UID;
     public ulong destUID;
     public ulong sourceActorUID;
-    public Vector3D pos;
-    public Vector3D dir;
+    public SerializableVector3 pos;
+     
     public float damage;
-    public Message_BulletHit(ulong uID, ulong dest, ulong sourceActor, Vector3D apos, Vector3D adir, float adam)
+    public Message_BulletHit(ulong uID, ulong dest, ulong sourceActor, Vector3 apos , float adam)
     {
         this.UID = uID;
         this.destUID = dest;
         this.pos = apos;
-        this.dir = adir;
+       
         this.damage = adam;
         this.sourceActorUID = sourceActor;
         type = MessageType.BulletHit;

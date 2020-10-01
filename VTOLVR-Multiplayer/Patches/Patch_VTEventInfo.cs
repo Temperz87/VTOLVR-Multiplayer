@@ -10,50 +10,32 @@ using UnityEngine;
 
 
 // patch to grab all the events being loaded on creation this replaces original method
-[HarmonyPatch(typeof(Bullet), "KillBullet")]
+[HarmonyPatch(typeof(Hitbox), "Damage")]
 class PatchBullet
 {
-    static bool Prefix(Bullet __instance)
+    static bool Prefix(Hitbox __instance, float damage, Vector3 position, Health.DamageTypes damageType, Actor sourceActor, string damageMessage)
     {
 
-        Vector3 pos = Traverse.Create(__instance).Field("hitPoint").GetValue<Vector3>();
-        Vector3 vel = Traverse.Create(__instance).Field("velocity").GetValue<Vector3>();
-        Vector3 a = pos;
-        a += -vel * Time.deltaTime;
-        float damage = Traverse.Create(__instance).Field("damage").GetValue<float>();
-        Actor sourceActor = Traverse.Create(__instance).Field("sourceActor").GetValue<Actor>();
-        Hitbox hitbox = null;
-
-
-
-        Collider[] ColliderHits;
-        ColliderHits = Physics.OverlapSphere(pos, 5.0f, 1025);
-        for (int i = 0; i < ColliderHits.Length; i++)
+        Collider hitCollider = __instance.GetComponentInParent<Collider>();
+        ulong sourceID;
+        if(sourceActor !=null)
+        if (VTOLVR_Multiplayer.AIDictionaries.reverseAllActors.TryGetValue(sourceActor, out sourceID))
         {
 
-            Collider coll = ColliderHits[i];
-                hitbox= coll.GetComponent<Hitbox>();
-            if ((bool)hitbox && (bool)hitbox.actor)
+        if(sourceID == PlayerManager.localUID) { 
+            if (hitCollider != null)
             {
-                PlayerManager.lastBulletHit = hitbox;
-                Debug.Log("hit box bullet hit");
-                ulong lastID; ulong sourceID;
-                if (VTOLVR_Multiplayer.AIDictionaries.reverseAllActors.TryGetValue(hitbox.actor, out lastID))
-                {
-
-                    if (VTOLVR_Multiplayer.AIDictionaries.reverseAllActors.TryGetValue(sourceActor, out sourceID))
+                    ulong lastID;  
+                    if (VTOLVR_Multiplayer.AIDictionaries.reverseAllActors.TryGetValue(__instance.actor, out lastID))
                     {
-
+                         Vector3 relativeHit = hitCollider.transform.position - __instance.actor.transform.position;
+                        Debug.Log("hit player sending bullet packet");
+                        Message_BulletHit hitmsg = new Message_BulletHit(PlayerManager.localUID, lastID, sourceID, relativeHit, damage);
+                        NetworkSenderThread.Instance.SendPacketToSpecificPlayer(Networker.hostID, hitmsg, Steamworks.EP2PSend.k_EP2PSendReliable);
                     }
-                    
-                    Debug.Log("hit player sending bullet packet");
-                    Message_BulletHit hitmsg = new Message_BulletHit(PlayerManager.localUID, lastID, sourceID, VTMapManager.WorldToGlobalPoint(pos), new Vector3D(vel), damage);
-                    NetworkSenderThread.Instance.SendPacketToSpecificPlayer(Networker.hostID, hitmsg, Steamworks.EP2PSend.k_EP2PSendReliable);
                 }
-
             }
         }
-
         return true;
     }
 }

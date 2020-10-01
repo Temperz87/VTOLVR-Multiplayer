@@ -115,6 +115,9 @@
     <Compile Include="Discord\StorageManager.cs" />
     <Compile Include="Discord\StoreManager.cs" />
     <Compile Include="HPInfo.cs" />
+    <Compile Include="IK\FastIKFabric.cs" />
+    <Compile Include="IK\FastIKLook.cs" />
+    <Compile Include="IK\mouseMover.cs" />
     <Compile Include="Messages\Message_AAAUpdate.cs" />
     <Compile Include="Messages\Message_RadarDetectedActor.cs" />
     <Compile Include="Messages\Quat.cs" />

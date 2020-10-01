@@ -17,8 +17,10 @@ class HealthNetworker_Receiver : MonoBehaviour
         Networker.Death += Death; 
         health = GetComponent<Health>();
         health.invincible = true;
-    }
 
+         
+    }
+    
     public void Death(Packet packet)
     {
         lastMessage = (Message_Death)((PacketSingle)packet).message;

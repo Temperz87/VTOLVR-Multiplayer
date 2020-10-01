@@ -129,7 +129,7 @@ public class Multiplayer : VTOLMOD
 #endif
         SoloTesting = false;
         Log("Valid User " + SteamUser.GetSteamID().m_SteamID);
-
+        CUSTOM_API.loadDisplayPrefab();
         DiscordRadioManager.start();
         VTOLAPI.SceneLoaded += SceneLoaded;
         CreateSettingsPage();
