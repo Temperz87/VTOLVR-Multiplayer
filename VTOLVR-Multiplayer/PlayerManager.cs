@@ -53,7 +53,7 @@ public static class PlayerManager
     public static Vector3 av42Offset = new Vector3(0, 0.972f, -5.126f);//the difference between the origin of the ai and player AV-42s
     public static GameObject FrequenceyButton;
     public static Hitbox lastBulletHit;
-
+    public static Material playerCanopyMaterial;
     public class Player
     {
         public CSteamID cSteamID;
@@ -81,6 +81,19 @@ public static class PlayerManager
     }
     }
     public static List<Player> players = new List<Player>(); //This is the list of players
+
+    public static void grabCanopyMaterial(GameObject player)
+    {
+        foreach(Renderer rend in player.GetComponentsInChildren<Renderer>())
+        {
+           
+                if(rend.material.name.Contains("CanopyExt"))
+                {
+                    playerCanopyMaterial = rend.material;
+                }
+             
+        }
+    }
     /// <summary>
     /// This runs when the map has finished loading and hopefully 
     /// when the player first can interact with the vehicle.
@@ -98,6 +111,7 @@ public static class PlayerManager
             ScreenFader.FadeOut(Color.black, 0.0f, fadeoutVolume: true);
             yield return null;
         }
+        
         Debug.Log("The map has loaded");
         gameLoaded = true;
         // As a client, when the map has loaded we are going to request a spawn point from the host

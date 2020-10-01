@@ -37,6 +37,57 @@ public class PlaneNetworker_Sender : MonoBehaviour
     private float tick = 0;
     public float tickRate = 2;
     bool sendRearmPacket = false;
+
+    public static Transform puppetRhand;
+    public static Transform puppetLhand;
+    public static Transform puppetHead;
+    public static Transform puppetHeadLook;
+    public static Transform puppethip;
+
+    public static GameObject manobject = null;
+    private void setupMan(GameObject go)
+    {
+        manobject = GameObject.Instantiate(CUSTOM_API.manprefab, go.GetComponent<Rigidbody>().transform);
+
+        manobject.transform.localScale = new Vector3(0.074f, 0.074f, 0.074f);
+
+        manobject.transform.localEulerAngles = new Vector3(0.0f, 180.0f, 0.0f);
+        Debug.Log("righthandControl");
+        puppetRhand = CUSTOM_API.GetChildWithName(manobject, "righthandControl").transform;
+        Debug.Log("lefthandControl");
+        puppetLhand = CUSTOM_API.GetChildWithName(manobject, "lefthandControl").transform;
+        Debug.Log("headControl");
+        puppetHead = CUSTOM_API.GetChildWithName(manobject, "headControl").transform;
+        Debug.Log("headLook");
+        puppetHeadLook = CUSTOM_API.GetChildWithName(manobject, "lookControl").transform;
+        Debug.Log("Bone.008");
+        puppethip = CUSTOM_API.GetChildWithName(manobject, "Bone.008").transform;
+
+        Debug.Log("headik_end");
+        FastIKFabric ikh = CUSTOM_API.GetChildWithName(manobject, "Bone.007").AddComponent<FastIKFabric>();
+        ikh.Target = puppetHead;
+        ikh.ChainLength = 4;
+
+        Debug.Log("righthandik_end");
+        FastIKFabric ikrh = CUSTOM_API.GetChildWithName(manobject, "righthandik_end").AddComponent<FastIKFabric>();
+        ikrh.Target = puppetRhand;
+        ikrh.ChainLength = 3;
+
+        Debug.Log("lefthandik_end");
+        FastIKFabric iklh = CUSTOM_API.GetChildWithName(manobject, "lefthandik_end").AddComponent<FastIKFabric>();
+        iklh.Target = puppetLhand;
+        iklh.ChainLength = 3;
+        Debug.Log("SetupNewDisplay");
+
+
+        Debug.Log("headik");
+        FastIKLook ikheadlook = CUSTOM_API.GetChildWithName(manobject, "headik").AddComponent<FastIKLook>();
+        ikheadlook.Target = puppetHeadLook;
+        Debug.Log("SetupNewDisplay");
+    }
+
+
+
     private void Awake()
     {
         actor = gameObject.GetComponent<Actor>();
@@ -90,6 +141,16 @@ public class PlaneNetworker_Sender : MonoBehaviour
         tailhook = GetComponentInChildren<Tailhook>();
         launchBar = GetComponentInChildren<CatapultHook>();
         refuelPort = GetComponentInChildren<RefuelPort>();
+         
+        foreach (Renderer rend in GetComponentsInChildren<Renderer>())
+        {
+         
+                if(rend.material.name.Contains("Glass")|| rend.material.name.Contains("glass"))
+            {
+               // rend.enabled = false;
+                }
+           
+        }
     }
 
     private void Update()

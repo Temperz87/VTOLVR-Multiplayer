@@ -249,7 +249,7 @@ public static class CUSTOM_API
             freqIndex++;
         }
         letter = currentFreq[freqIndex];
-        if (letter == 'X')
+        //if (letter == 'X')
         {
             currentFreq = currentFreq.ReplaceAt(freqIndex, input);
             freqIndex++;
@@ -286,11 +286,7 @@ public static class CUSTOM_API
 
     }
 
-    public static Transform puppetRhand;
-    public static Transform puppetLhand;
-    public static Transform puppetHead;
-    public static Transform puppetHeadLook;
-    public static Transform puppethip;
+ 
 
     public static Transform Rhand;// = GetChildTransformWithName(planeObject, "Controller (right)");
     public static Transform Lhand;// = GetChildTransformWithName(planeObject, "Controller (left)");
@@ -345,7 +341,7 @@ public static class CUSTOM_API
             freqIndex = 4;
             sb = new StringBuilder(currentFreq);
             lastFreq = false;
-
+            /*
             manobject = GameObject.Instantiate(manprefab, go.GetComponent<Rigidbody>().transform);
 
             manobject.transform.localScale = new Vector3(0.074f, 0.074f, 0.074f);
@@ -381,7 +377,7 @@ public static class CUSTOM_API
 
             Debug.Log("headik");
             FastIKLook ikheadlook = GetChildWithName(manobject, "headik").AddComponent<FastIKLook>();
-            ikheadlook.Target = puppetHeadLook;
+            ikheadlook.Target = puppetHeadLook;*/
             Debug.Log("SetupNewDisplay");
 
 
@@ -1092,7 +1088,7 @@ public static class CUSTOM_API
     static GameObject selectedOBJ;
     public static void Update()
     {
-        if (manobject == null)
+        /*if (manobject == null)
             return;
 
 
@@ -1144,7 +1140,7 @@ public static class CUSTOM_API
         puppetLhand.position = puppethip.transform.position + lhandHostPos;
         puppetHead.position = puppethip.transform.position + (headHostPos * 1.0001f);
         puppetHeadLook.position = puppethip.transform.position + headlookHostPos;
-        moveObjectByKeyboard(manobject, 0.08f);
+        moveObjectByKeyboard(manobject, 0.08f);*/
         /*getObjectByClick();
         if(selectedOBJ!=null)
        

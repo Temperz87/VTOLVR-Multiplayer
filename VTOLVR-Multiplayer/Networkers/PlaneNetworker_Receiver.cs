@@ -87,8 +87,7 @@ public class PlaneNetworker_Receiver : MonoBehaviour
                 }
             }
         }
-
-
+ 
         StartCoroutine(colliderTimer());
     }
     public void PlaneUpdate(Packet packet)
