@@ -36,7 +36,7 @@ public class MissileNetworker_Receiver : MonoBehaviour
         } 
         
 
-        thisMissile.explodeRadius *= 1.8f; thisMissile.explodeDamage *= 0.7f;
+        thisMissile.explodeRadius *= 1.4f; thisMissile.explodeDamage *= 0.7f;
         traverse = Traverse.Create(thisML);
         traverse.Field("detonated").SetValue(true);
     }

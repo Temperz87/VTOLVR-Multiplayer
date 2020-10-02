@@ -14,6 +14,7 @@ public class MissileNetworker_Sender : MonoBehaviour
     public Actor ownerActor;
     // private float tick;
     // private float tickRate = 1.0f/10.0f;
+
     private void Awake()
     {
         Networker.RequestNetworkUID += RequestUID;
@@ -21,6 +22,7 @@ public class MissileNetworker_Sender : MonoBehaviour
         thisMissile = GetComponent<Missile>();
         ownerActor = GetComponentInParent<Actor>();
         thisMissile.OnMissileDetonated += OnDetonated;
+        thisMissile.explodeRadius *= 1.4f; thisMissile.explodeDamage *= 0.7f;
     }
     /*private bool sendRateLimiter()
     {

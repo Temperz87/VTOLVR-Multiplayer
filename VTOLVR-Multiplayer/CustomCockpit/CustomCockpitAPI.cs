@@ -124,7 +124,7 @@ public static class CUSTOM_API
         {
             newDisplayPrefab =  FileLoader.GetAssetBundleAsGameObject(PathToBundle, "Display.prefab");
             PathToBundle = Directory.GetCurrentDirectory() + @"\VTOLVR_ModLoader\mods\Multiplayer\ikmanprefab";
-            manprefab = FileLoader.GetAssetBundleAsGameObject(PathToBundle, "manprefab.prefab");
+            //manprefab = FileLoader.GetAssetBundleAsGameObject(PathToBundle, "manprefab.prefab");
 
             AssetLoaded = true;
             Debug.Log("Prefab is " + newDisplayPrefab);

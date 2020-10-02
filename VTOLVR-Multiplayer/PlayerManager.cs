@@ -1073,10 +1073,10 @@ public static class PlayerManager
         {
             wings.dragCoefficient *= 0.5f;
         }
-       
-            foreach (var engine in localVehicle.GetComponentsInChildren<ModuleEngine>())
+        
+        foreach (var engine in localVehicle.GetComponentsInChildren<ModuleEngine>())
         {
-           // engine.maxThrust *= Multiplayer._instance.thrust;
+            engine.maxThrust *= Multiplayer._instance.thrust;
         }
     }
     /// <summary>
