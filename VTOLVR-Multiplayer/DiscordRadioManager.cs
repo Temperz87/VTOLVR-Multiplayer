@@ -245,11 +245,7 @@ public static class DiscordRadioManager
 
         if (!steamIDtoFreq.ContainsKey(name))
             steamIDtoFreq.Add(name, 0);
-        else
-        {
-            steamIDtoFreq.Remove(name);
-            steamIDtoFreq.Add(name, 0);
-        }
+      
     }
 
     public static void setFreq(string name, int freq)
@@ -262,7 +258,7 @@ public static class DiscordRadioManager
         else
         {
             steamIDtoFreq.Remove(name);
-            steamIDtoFreq.Add(name, freq);
+            steamIDtoFreq[name]= freq;
         }
     }
     public static void joinLobby(long ilobbyid,string secret)

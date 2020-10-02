@@ -25,6 +25,7 @@ class HealthNetworker_Sender : MonoBehaviour
         ownerActor.hideDeathLog = true;
         Networker.BulletHit += this.BulletHit;
     }
+
     public void BulletHit(Packet packet)
     {
         bulletMessage = (Message_BulletHit)((PacketSingle)packet).message;
@@ -40,31 +41,15 @@ class HealthNetworker_Sender : MonoBehaviour
         Vector3 vel = bulletMessage.dir.toVector3;
         Vector3 a = pos;
         a += vel * 100.0f;
-
-        bool flag = Physics.Linecast(pos, a, out hitInfo, 1025);
         Actor source = null;
         if (AIDictionaries.allActors.ContainsKey(bulletMessage.sourceActorUID))
         {
             source = AIDictionaries.allActors[bulletMessage.sourceActorUID];
         }
-        health.Damage(bulletMessage.damage * 1.0f, ownerActor.gameObject.transform.position, Health.DamageTypes.Impact, source, "Bullet Impact");
-        BulletHitManager.instance.CreateBulletHit(ownerActor.gameObject.transform.position, -vel, true);
-        Hitbox hitbox = null;
-        if (flag)
-        {
-            if (hitInfo.collider != null)
-            {
-                hitbox = hitInfo.collider.GetComponent<Hitbox>();
-                if ((bool)hitbox && (bool)hitbox.actor)
-                {
-                    Debug.Log("found  target bullet hit");
-                    hitbox.Damage(bulletMessage.damage*3.0f, hitInfo.point, Health.DamageTypes.Impact, source, "Bullet Impact");
-                    BulletHitManager.instance.CreateBulletHit(hitInfo.point, -vel, true);
-               
-                }
-            }
-        }
-         
+        health.Damage(bulletMessage.damage * 3.0f, pos, Health.DamageTypes.Impact, source, "Bullet Impact");
+        BulletHitManager.instance.CreateBulletHit(pos, -vel, true);
+      
+      
     }
     void Death()
     {

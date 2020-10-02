@@ -506,7 +506,7 @@ public static class CUSTOM_API
             if (displayEnabled)
             {
                  newDisplay = GameObject.Instantiate( newDisplayPrefab);
-                manobject = GameObject.Instantiate(manprefab);
+                //manobject = GameObject.Instantiate(manprefab);
             }
         }
     }

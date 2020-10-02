@@ -387,6 +387,8 @@ class PlayerNetworker_Sender : MonoBehaviour
 
         foreach (var part in FlightSceneManager.instance.playerActor.gameObject.GetComponentsInChildren<VehiclePart>())
         {
+
+            if(!part.partName.Contains("ngine") )
             part.detachOnDeath = true;
         }
  
