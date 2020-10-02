@@ -40,7 +40,7 @@ public static class DiscordRadioManager
             var clientID = Environment.GetEnvironmentVariable("DISCORD_CLIENT_ID");
             if (clientID == null)
             {
-                clientID = "418559331265675294";
+                clientID = "759675844971986975";
             }
             discord = new Discord.Discord(Int64.Parse(clientID), (UInt64)Discord.CreateFlags.Default);
             userID = 0;
@@ -370,8 +370,8 @@ public static class DiscordRadioManager
 
         // Set lobby information
         txn.SetCapacity(30);
-        txn.SetType(Discord.LobbyType.Private);
-        txn.SetMetadata("a", "123");
+        txn.SetType(Discord.LobbyType.Public);
+        txn.SetMetadata("VTOL MP", "In a Lobby");
 
         // Create it!
         lobbyManager.CreateLobby(txn, (Discord.Result result, ref Discord.Lobby lobby) =>
