@@ -21,6 +21,7 @@ public static class PlayerManager
     private static int spawnsCount = 20;
     private static int spawnTicker = 1;
     public static bool buttonMade = false;
+    public static bool OPFORbuttonMade = false;
     public static Text text;
     public static bool firstSpawnDone = false;
     public static bool firstKillSpawnDone = false;
@@ -98,6 +99,7 @@ public static class PlayerManager
             ScreenFader.FadeOut(Color.black, 0.0f, fadeoutVolume: true);
             yield return null;
         }
+         
         Debug.Log("The map has loaded");
         gameLoaded = true;
         // As a client, when the map has loaded we are going to request a spawn point from the host
@@ -791,8 +793,8 @@ public static class PlayerManager
         pvSetup.OnBeginUsingConfigurator -= StartConfig;
         unSubscribe = false;
 
-       // PilotSaveManager.currentCampaign = Networker._instance.pilotSaveManagerControllerCampaign;
-       // PilotSaveManager.currentScenario = Networker._instance.pilotSaveManagerControllerCampaignScenario;
+      PilotSaveManager.currentCampaign = Networker._instance.pilotSaveManagerControllerCampaign;
+      PilotSaveManager.currentScenario = Networker._instance.pilotSaveManagerControllerCampaignScenario;
 
     }
     public static void SpawnLocalVehicleAndInformOtherClients(GameObject localVehicle, Vector3 pos, Quaternion rot, ulong UID, bool sendNewSpawnPacket = false, int playercount = 0) //Both
@@ -1623,6 +1625,7 @@ public static class PlayerManager
         carrierStartTimer = 0;
         flyCounter = 0;
         kills = 0;
+        OPFORbuttonMade = false;
     }
 
     public static void OnDisconnect()

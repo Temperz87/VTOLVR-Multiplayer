@@ -873,6 +873,7 @@ public class Multiplayer : VTOLMOD
                 bInteractable.interactableName = "Switch Vehicles.";
                 bInteractable.OnInteract = new UnityEvent();
                 PlayerManager.selectedVehicle = PilotSaveManager.currentVehicle.name;
+         
                 foreach (var vehicle in VTResources.GetPlayerVehicles())
                 {
                     Debug.Log(vehicle.name);

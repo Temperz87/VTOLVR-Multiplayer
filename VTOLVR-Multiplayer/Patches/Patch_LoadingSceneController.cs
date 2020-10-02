@@ -59,14 +59,20 @@ class Patch_LoadingSceneHelmet_Update
         Traverse t = Traverse.Create(__instance);
         bool grabbed = (bool)t.Field("grabbed").GetValue();
         VRHandController c = (VRHandController)t.Field("c").GetValue();
-        if (!PlayerManager.buttonMade)
+        if(PlayerManager.OPFORbuttonMade)
+        Debug.Log("OPFORbuttonMade is made");
+        if (!PlayerManager.OPFORbuttonMade)
         {
-            GameObject button = GameObject.Instantiate(Multiplayer.canvasButtonPrefab);
-            PlayerManager.buttonMade = false;
+            Debug.Log("OPFORbuttonMade eneter");
+            var refrence = Resources.FindObjectsOfTypeAll<GameObject>().FirstOrDefault(g => g.name.Contains("RecenterCanvas"));
+            GameObject button = GameObject.Instantiate(refrence);
+             PlayerManager.OPFORbuttonMade = false;
             foreach (var controller in GameObject.FindObjectsOfType<VRHandController>())
             {
                 if (!controller.isLeft)
                 {
+
+                    Debug.Log("OPFORbuttonMade setting transform");
                     button.transform.SetParent(controller.transform);
                     button.transform.localPosition = new Vector3(0.101411f, 0.02100047f, -0.128024f);
                     button.transform.localRotation = Quaternion.Euler(-5.834f, 283.583f, 328.957f);
@@ -96,11 +102,12 @@ class Patch_LoadingSceneHelmet_Update
                         GameObject.Destroy(button.transform.GetChild(1).gameObject);
                         bInteractable.OnInteract = new UnityEngine.Events.UnityEvent();
                     }
-                    PlayerManager.buttonMade = true;
+                    button.SetActive(true);
+                     PlayerManager.OPFORbuttonMade = true;
                     break;
                 }
             }
-            PlayerManager.buttonMade = true;
+            
         }
         if (grabbed || __instance.GetComponent<Rigidbody>().velocity.sqrMagnitude > 0.1f)
         {
@@ -124,7 +131,7 @@ class Patch_LoadingSceneHelmet_Update
                             NetworkSenderThread.Instance.SendPacketAsHostToAllClients(new Message(MessageType.AllPlayersReady), Steamworks.EP2PSend.k_EP2PSendReliable);
                             Networker.SetHostReady(true);
                             LoadingSceneController.instance.PlayerReady();
-                            PlayerManager.buttonMade = false;
+                            PlayerManager.OPFORbuttonMade = false;
                         }
                         else
                         {
@@ -144,6 +151,7 @@ class Patch_LoadingSceneHelmet_Update
                     if (!Networker.hostLoaded && !Networker.isHost)
                     {
                         Debug.Log("Waiting for host to load");
+                       
                     }
                     __instance.equipAudioSource.Play();
                     return false;
@@ -152,7 +160,7 @@ class Patch_LoadingSceneHelmet_Update
                 {
                     Debug.Log("Player is not a MP host or client.");
                     LoadingSceneController.instance.PlayerReady();
-                    PlayerManager.buttonMade = false;
+                    PlayerManager.OPFORbuttonMade = false;
                 }
             }
         }
