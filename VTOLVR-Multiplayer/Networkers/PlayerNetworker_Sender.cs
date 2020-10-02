@@ -230,15 +230,17 @@ class PlayerNetworker_Sender : MonoBehaviour
 
         //PlayerManager.SetupLocalAircraft(newPlayer, newPlayer.transform.position, newPlayer.transform.rotation, networkUID);
 
-       /* lastMessage.UID = networkUID;
+        lastMessage.UID = networkUID;
         lastMessage.isLeftie = PlayerManager.teamLeftie;
         lastMessage.tagName = Steamworks.SteamFriends.GetPersonaName();
-        lastMessage.vehicle = VTOLAPI.GetPlayersVehicleEnum();
+        lastMessage.vehicle = PlayerManager.getPlayerVehicleType();
         if (Networker.isHost)
+        {
             NetworkSenderThread.Instance.SendPacketAsHostToAllClients(lastMessage, Steamworks.EP2PSend.k_EP2PSendReliable);
-        else
-            NetworkSenderThread.Instance.SendPacketToSpecificPlayer(Networker.hostID, lastMessage, Steamworks.EP2PSend.k_EP2PSendReliable);
-   */
+        }
+        //else
+         //   NetworkSenderThread.Instance.SendPacketToSpecificPlayer(Networker.hostID, lastMessage, Steamworks.EP2PSend.k_EP2PSendReliable);
+   
     }
 
     void UnEject()

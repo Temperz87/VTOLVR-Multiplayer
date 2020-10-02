@@ -325,6 +325,8 @@ public static class CUSTOM_API
                 currentFreq = DiscordRadioManager.frequencyTable[0];
             else
                 currentFreq = "122.8";
+
+            forceSetFreq("122.8");
             freqIndex = 4;
             sb = new StringBuilder(currentFreq);
             lastFreq = false;

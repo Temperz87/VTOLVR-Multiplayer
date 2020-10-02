@@ -1022,7 +1022,7 @@ public static class PlayerManager
             float fuel = PlaneEquippableManager.generateLocalFuelValue();
 
             Debug.Log("Assembled our local vehicle");
-            if (!Networker.isHost || Multiplayer.SoloTesting)
+            if (!Networker.isHost)
             {
                 // Not host, so send host the spawn vehicle message
                 Debug.Log($"Sending spawn vehicle message to: {Networker.hostID}");
