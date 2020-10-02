@@ -61,7 +61,7 @@ class Patch_LoadingSceneHelmet_Update
         VRHandController c = (VRHandController)t.Field("c").GetValue();
         if (!PlayerManager.buttonMade)
         {
-            GameObject button = GameObject.Instantiate(GameObject.Find("RecenterCanvas"));
+            GameObject button = GameObject.Instantiate(Multiplayer.canvasButtonPrefab);
             PlayerManager.buttonMade = false;
             foreach (var controller in GameObject.FindObjectsOfType<VRHandController>())
             {

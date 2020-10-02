@@ -329,12 +329,7 @@ public class Multiplayer : VTOLMOD
         {
             case VTOLScenes.ReadyRoom:
                 CreateUI();
-                if(canvasButtonPrefab == null)
-                {
-                   canvasButtonPrefab = Instantiate(GameObject.Find("RecenterCanvas"));
-                   canvasButtonPrefab.SetActive(false);
-                   DontDestroyOnLoad(canvasButtonPrefab);
-                }
+              
                 break;
             case VTOLScenes.Akutan:
                 Log("Map Loaded from vtol scenes akutan");
@@ -844,6 +839,14 @@ public class Multiplayer : VTOLMOD
 
     public static GameObject CreateVehicleButton()
     {
+
+        if (canvasButtonPrefab == null)
+        {
+            var refrence = Resources.FindObjectsOfTypeAll<GameObject>().FirstOrDefault(g => g.name.Contains("RecenterCanvas"));
+            canvasButtonPrefab = Instantiate(refrence);
+            canvasButtonPrefab.SetActive(false);
+            DontDestroyOnLoad(canvasButtonPrefab);
+        }
         foreach (var controller in GameObject.FindObjectsOfType<VRHandController>())
         {
             GameObject button;
