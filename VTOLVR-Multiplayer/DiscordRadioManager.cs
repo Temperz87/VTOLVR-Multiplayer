@@ -369,7 +369,7 @@ public static class DiscordRadioManager
         var txn = lobbyManager.GetLobbyCreateTransaction();
 
         // Set lobby information
-        txn.SetCapacity(30);
+        txn.SetCapacity(50);
         txn.SetType(Discord.LobbyType.Public);
         txn.SetMetadata("VTOL MP", "In a Lobby");
 
@@ -381,7 +381,7 @@ public static class DiscordRadioManager
             // We want to update the capacity of the lobby
             // So we get a new transaction for the lobby
             var newTxn = lobbyManager.GetLobbyUpdateTransaction(lobby.Id);
-            newTxn.SetCapacity(5);
+            newTxn.SetCapacity(50);
             lobbyManager.ConnectVoice(lobby.Id, (Discord.Result voiceResult) => {
 
                 if (voiceResult == Discord.Result.Ok)
