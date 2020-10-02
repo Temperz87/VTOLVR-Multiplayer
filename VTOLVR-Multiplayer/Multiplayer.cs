@@ -143,7 +143,7 @@ public class Multiplayer : VTOLMOD
         if (checkedToDate)
             return;
         checkedToDate = false;
-        HttpWebRequest request = (HttpWebRequest)WebRequest.Create("https://vtolvr-mods.com/api/mods/qs6jxkt2/?format=json");
+        HttpWebRequest request = (HttpWebRequest)WebRequest.Create("https://vtolvr-mods.com/api/mods/7jdyy3go/?format=json");
         request.AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate;
 
         HttpWebResponse response = (HttpWebResponse)request.GetResponse();
