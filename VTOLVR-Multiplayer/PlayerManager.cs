@@ -908,7 +908,13 @@ public static class PlayerManager
                 source = VTOLVR_Multiplayer.AIDictionaries.allActors[damageSource];
             Actor act = VTOLVR_Multiplayer.AIDictionaries.allActors[actorTodamage];
             if (act != null)
+            {
+                bool storage = act.health.invincible;
+                act.health.invincible = false;
                 act.health.Damage(lastMissileDamageMessage.damage, act.position, Health.DamageTypes.Impact, source, "Missile Impact");
+                act.health.invincible = storage;
+            }
+              
 
         }
     }
@@ -1301,15 +1307,15 @@ public static class PlayerManager
         //Debug.Log("Setting vehicle name");
         newVehicle.name = $"Client [{players[playerID].cSteamID}]";
         Debug.Log($"Spawned new vehicle at {newVehicle.transform.position}");
-        if (Networker.isHost)
+        //if (Networker.isHost)
         {
             HealthNetworker_Receiver healthNetworker = newVehicle.AddComponent<HealthNetworker_Receiver>();
             healthNetworker.networkUID = networkID;
         }
-        else
+        //else
         {
-            HealthNetworker_ReceiverHostEnforced healthNetworker = newVehicle.AddComponent<HealthNetworker_ReceiverHostEnforced>();
-            healthNetworker.networkUID = networkID;
+           // HealthNetworker_ReceiverHostEnforced healthNetworker = newVehicle.AddComponent<HealthNetworker_ReceiverHostEnforced>();
+            //healthNetworker.networkUID = networkID;
         }
         RigidbodyNetworker_Receiver rbNetworker = newVehicle.AddComponent<RigidbodyNetworker_Receiver>();
         rbNetworker.networkUID = networkID;

@@ -301,11 +301,12 @@ public static class CUSTOM_API
         textMesh.alignment = TextAlignmentOptions.Left;
         textMesh.overflowMode = TextOverflowModes.Overflow;
         textMesh.enableWordWrapping = false;
+        textMesh.fontSize *= 0.5f;
         textMesh.color = new Color32(0, 0, 0, 255);
         paperLabel.transform.SetParent(leg.transform);
-        paperLabel.transform.localPosition = new Vector3(0.11f, 0.14f, 0);
+        paperLabel.transform.localPosition = new Vector3(0.11f, 0.115f, 0);
         paperLabel.transform.localEulerAngles = new Vector3(3.24f, 280.42f, 185.08f);
-        paperLabel.transform.localScale = new Vector3(0.004f, 0.004f, 0.004f);
+        paperLabel.transform.localScale = new Vector3(0.005f, 0.005f, 0.005f);
 
         textMesh.SetText(DiscordRadioManager.getFrequencyTableString());
     }

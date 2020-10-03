@@ -46,10 +46,12 @@ class HealthNetworker_Sender : MonoBehaviour
         {
             source = AIDictionaries.allActors[bulletMessage.sourceActorUID];
         }
+        bool storage = health.invincible;
+        health.invincible = false;
         health.Damage(bulletMessage.damage * 3.0f, pos, Health.DamageTypes.Impact, source, "Bullet Impact");
         BulletHitManager.instance.CreateBulletHit(pos, -vel, true);
-      
-      
+        health.invincible = storage;
+
     }
     void Death()
     {

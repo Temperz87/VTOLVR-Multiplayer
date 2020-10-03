@@ -121,8 +121,8 @@ public class RigidbodyNetworker_Receiver : MonoBehaviour
         if (rigidbodyUpdate.networkUID != networkUID)
             return;
 
-        if (rigidbodyUpdate.sequenceNumber <= mostCurrentUpdateNumber)
-            return;
+        //if (rigidbodyUpdate.sequenceNumber <= mostCurrentUpdateNumber)
+            //return;
         mostCurrentUpdateNumber = rigidbodyUpdate.sequenceNumber;
 
         globalTargetPosition = rigidbodyUpdate.position + rigidbodyUpdate.velocity.toVector3 * latency;
