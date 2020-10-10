@@ -79,7 +79,7 @@ public class Multiplayer : VTOLMOD
     public bool restrictToHostMods = true;
     private UnityAction<bool> restrictToHostMods_changed;
 
-    public bool debugLogs = false;
+    public bool debugLogs = true;//false
     private UnityAction<bool> debugLogs_changed;
 
     public bool forceWinds = false; // not implemented
@@ -94,6 +94,11 @@ public class Multiplayer : VTOLMOD
     public bool displayClouds = false;
     private UnityAction<bool> displayClouds_changed;
     public static Discord.Discord discord;
+
+    void Awake() {
+        _instance = this;
+    }
+
     private void Start()
     {
         if (_instance == null)
@@ -101,7 +106,6 @@ public class Multiplayer : VTOLMOD
             HarmonyInstance harmony = HarmonyInstance.Create("marsh.vtolvr.multiplayer.temperzFork");
             harmony.PatchAll(Assembly.GetExecutingAssembly());
         }
-        _instance = this;
         Networker.SetMultiplayerInstance(this);
     }
     public static void callback()
@@ -137,6 +141,8 @@ public class Multiplayer : VTOLMOD
         CreateUI();
         gameObject.AddComponent<Networker>();
         debugLog_Settings(debugLogs);
+
+        AvatarManager.LoadAllSkins();
     }
     public void CheckUpToDate()
     {

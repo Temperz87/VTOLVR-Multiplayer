@@ -8,6 +8,8 @@ using Steamworks;
 using UnityEngine;
 using UnityEngine.Networking;
 using System.IO;
+using Harmony;
+using System.Reflection;
 
 public static class AvatarManager
 {
@@ -163,13 +165,13 @@ public static class AvatarManager
             foreach (DirectoryInfo item in info.GetDirectories())
             {
                 Debug.Log("Checking for: " + address + item.Name);
-                string temp = File.ReadAllText(address + item.Name);
-                Debug.Log("Found skin: " + temp);
 
                 bool av42 = false;
                 bool fa26 = false;
                 bool f45 = false;
-                foreach (FileInfo file in info.GetFiles())
+
+                List<string> fileNames = new List<string>();
+                foreach (FileInfo file in item.GetFiles())
                 {
                     Debug.Log("Found file " + file.Name);
                     switch (file.Name) {
@@ -185,10 +187,15 @@ public static class AvatarManager
                             Debug.Log("This skin is for the F-45");
                             f45 = true;
                             break;
+                        default:
+                            if (file.Name.Contains(".png")) {
+                                fileNames.Add(file.Name);
+                            }
+                            break;
                     }
                 }
 
-                skins.Add(item.Name, new Skin(item.Name, av42, fa26, f45, new List<string>(), new List<Texture>()));
+                skins.Add(item.Name, new Skin(item.Name, av42, fa26, f45, fileNames, new List<Texture>()));
             }
         }
         else
@@ -196,38 +203,40 @@ public static class AvatarManager
             Debug.Log(address + " doesn't exist.");
         }
         Debug.Log("Loading textures");
-        StartCoroutine(LoadSkins());
+        Multiplayer._instance.StartCoroutine(LoadSkins());
     }
 
     static IEnumerator LoadSkins()
     {
-        for (int y = 0; y < profiles.Count; y++)
+        Debug.Log("Loading textures for skins coroutine");
+        string address = Directory.GetCurrentDirectory() + @"\VTOLVR_ModLoader\skins\";
+        foreach (Skin skin in skins.Values)
         {
-            for (int x = 0; x < profiles[y].lineGroups.Count; x++)
+            Debug.Log("Loading textures for " + skin.name);
+            for (int x = 0; x < skin.textureNames.Count; x++)
             {
-                for (int i = 0; i < profiles[y].lineGroups[x].lines.Count; i++)
+                
+                using (UnityWebRequest www = UnityWebRequestTexture.GetTexture(address + skin.textureNames[x]))
                 {
-                    using (UnityWebRequest www = UnityWebRequestMultimedia.GetAudioClip(profiles[y].lineGroups[x].lines[i].filePath, AudioType.WAV))
-                    {
-                        yield return www.Send();
-
-                        if (www.isNetworkError)
-                        {
-                            Debug.Log(www.error);
-                        }
-                        else
-                        {
-                            profiles[y].lineGroups[x].lines[i].clip = DownloadHandlerAudioClip.GetContent(www);
-                        }
+                    yield return www.SendWebRequest();
+                    while (www.isDone == false) {
+                        yield return 0;
                     }
-                    Debug.Log("Loaded " + profiles[y].lineGroups[x].lines[i].filePath);
+                    if (www.isNetworkError)
+                    {
+                        Debug.Log("Error: " + www.error);
+                    }
+                    else
+                    {
+                        skin.texture[x] = DownloadHandlerTexture.GetContent(www);
+                        Debug.Log("Loaded " + skin.textureNames[x]);
+                    }
                 }
             }
         }
-        AddCustomWingMen();
     }
 
-    public static void GetLocalPlayerSkin() {
-    
+    public static string GetLocalPlayerSkin() {
+        return "";
     }
 }

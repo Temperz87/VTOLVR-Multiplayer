@@ -1040,7 +1040,7 @@ public static class PlayerManager
                         UID,
                         hpInfos.ToArray(),
                         cm.ToArray(),
-                        fuel, PlayerManager.teamLeftie, SteamFriends.GetPersonaName(),DiscordRadioManager.userID),
+                        fuel, PlayerManager.teamLeftie, SteamFriends.GetPersonaName(), DiscordRadioManager.userID, AvatarManager.GetLocalPlayerSkin()),
                         EP2PSend.k_EP2PSendReliable);
             }
             else
@@ -1053,7 +1053,7 @@ public static class PlayerManager
                         UID,
                         hpInfos.ToArray(),
                         cm.ToArray(),
-                        fuel, PlayerManager.teamLeftie, SteamFriends.GetPersonaName(), DiscordRadioManager.userID),
+                        fuel, PlayerManager.teamLeftie, SteamFriends.GetPersonaName(), DiscordRadioManager.userID, AvatarManager.GetLocalPlayerSkin()),
                         EP2PSend.k_EP2PSendReliable);
             }
         }
@@ -1173,7 +1173,7 @@ public static class PlayerManager
                             players[i].vehicleUID,
                             hpInfos.ToArray(),
                             cm.ToArray(),
-                            fuel, players[i].leftie, players[i].nameTag, players[i].discordID),
+                            fuel, players[i].leftie, players[i].nameTag, players[i].discordID, AvatarManager.GetLocalPlayerSkin()),
                         EP2PSend.k_EP2PSendReliable);
 
                     //Debug.Log($"We have told the new player about the host and NOT the other way around.");
@@ -1196,7 +1196,7 @@ public static class PlayerManager
                             players[i].vehicleUID,
                             existingPlayersPR.GenerateHPInfo(),
                             existingPlayersPR.GetCMS(),
-                            existingPlayersPR.GetFuel(), players[i].leftie, players[i].nameTag, players[i].discordID),
+                            existingPlayersPR.GetFuel(), players[i].leftie, players[i].nameTag, players[i].discordID, AvatarManager.GetLocalPlayerSkin()),
                         EP2PSend.k_EP2PSendReliable);
                     //Debug.Log($"We have told {players[i].cSteamID.m_SteamID} about the new player ({message.csteamID}) and the other way round.");
 
