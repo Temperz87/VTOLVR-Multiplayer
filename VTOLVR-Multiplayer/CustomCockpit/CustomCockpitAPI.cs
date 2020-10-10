@@ -309,6 +309,8 @@ public static class CUSTOM_API
         paperLabel.transform.localScale = new Vector3(0.005f, 0.005f, 0.005f);
 
         textMesh.SetText(DiscordRadioManager.getFrequencyTableString());
+        CUSTOM_API.forceSetFreq("122.8");
+        DiscordRadioManager.radioFreq = currentFreq.GetHashCode();
     }
         public static void setupFA26(GameObject go)
     {
@@ -326,9 +328,9 @@ public static class CUSTOM_API
                 currentFreq = DiscordRadioManager.frequencyTable[0];
             else
                 currentFreq = "122.8";
+            DiscordRadioManager.radioFreq = currentFreq.GetHashCode();
 
-            forceSetFreq("122.8");
-            freqIndex = 4;
+
             sb = new StringBuilder(currentFreq);
             lastFreq = false;
 
@@ -487,6 +489,9 @@ public static class CUSTOM_API
             newBounds.transform.eulerAngles = GetChildWithName(go,"MasterArmPoseBounds").transform.eulerAngles;
             swapInt.poseBounds = newBounds.GetComponent<PoseBounds>(); //Assigns bounds for switch
 
+
+            forceSetFreq("122.8");
+            freqIndex = 4;
 
             GameObject.Destroy(hudDash.transform.Find("AutopilotLabel").gameObject);
             GameObject.Destroy(hudDash.transform.Find("lrRectangle").gameObject);

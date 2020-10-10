@@ -97,9 +97,7 @@ public class PlaneNetworker_Receiver : MonoBehaviour
 
         if (newMessage.networkUID != networkUID)
             return;
-        // If already received this message or a newer one, don't need to update
-        if (newMessage.sequenceNumber <= mostCurrentUpdateNumber)
-            return;
+       
 
         mostCurrentUpdateNumber = newMessage.sequenceNumber;
 
@@ -162,6 +160,8 @@ public class PlaneNetworker_Receiver : MonoBehaviour
     }
     private void SetLandingGear(bool state)
     {
+        if (aiPilot.gearAnimator == null)
+            return;
         if (state)
             aiPilot.gearAnimator.Extend();
         else

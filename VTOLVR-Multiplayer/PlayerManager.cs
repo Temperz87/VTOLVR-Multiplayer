@@ -357,6 +357,24 @@ public static class PlayerManager
             worldData.AddComponent<WorldDataNetworker_Sender>();
         }
 
+
+        foreach (var rend in GameObject.FindObjectsOfType<Renderer>())
+        {
+            if (rend.material.name.Contains("glass") || rend.material.name.Contains("Glass"))
+            {
+                Color meshColor = rend.sharedMaterial.color;
+                meshColor.a = 0.2f;
+                rend.sharedMaterial.color = meshColor;
+                rend.sharedMaterial.SetFloat("_Mode", 2);
+                rend.sharedMaterial.SetInt("_SrcBlend", (int)UnityEngine.Rendering.BlendMode.SrcAlpha);
+                rend.sharedMaterial.SetInt("_DstBlend", (int)UnityEngine.Rendering.BlendMode.OneMinusSrcAlpha);
+                rend.sharedMaterial.SetInt("_ZWrite", 0);
+                rend.sharedMaterial.DisableKeyword("_ALPHATEST_ON");
+                rend.sharedMaterial.EnableKeyword("_ALPHABLEND_ON");
+                rend.sharedMaterial.DisableKeyword("_ALPHAPREMULTIPLY_ON");
+                rend.sharedMaterial.renderQueue = 3000;
+            }
+        }
     }
 
     public static void SpawnPlayersInPlayerSpawnQueue()
@@ -570,7 +588,7 @@ public static class PlayerManager
                 }
             }
 
-            foreach (GameObject act in invisibleActorList)
+            /*foreach (GameObject act in invisibleActorList)
             {
 
 
@@ -605,7 +623,7 @@ public static class PlayerManager
                         invisibleActorList.Add(play.vehicle);
                     }
                 }
-            }
+            }*/
 
 
 
@@ -628,7 +646,7 @@ public static class PlayerManager
                     if (flyCounter > 10.0f && flyCounter < 13.0f)
                     {
                         //FlightLogger.Log("Plane Unparented");
-                        player.gameObject.GetComponent<Rigidbody>().transform.SetParent(null);
+                        //player.gameObject.GetComponent<Rigidbody>().transform.SetParent(null);
                         player.health.invincible = false;
                     }
                 }
@@ -804,8 +822,13 @@ public static class PlayerManager
         Actor actor = localVehicle.GetComponent<Actor>();
         Player localPlayer = new Player(SteamUser.GetSteamID(), localVehicle, actor, currentVehicle, UID, PlayerManager.teamLeftie, SteamFriends.GetPersonaName(),DiscordRadioManager.userID);
         AddToPlayerList(localPlayer);
-
-
+        Rigidbody rb = localVehicle.GetComponent<Rigidbody>();
+        GameObject prefab = GameObject.Instantiate(Resources.Load<GameObject>("Effects/SmokeFlare"));
+        SmokeFlare fl = prefab.GetComponent<SmokeFlare>();
+        fl.Ignite(100000,SmokeFlare.FlareColors.Red,new Vector3(0.0f, 0.0f, 0.0f));
+        prefab.transform.SetParent(rb.transform);
+        prefab.transform.position=(rb.transform.position);
+        prefab.AddComponent<FloatingOriginTransform>();
         ReArmingPoint[] rearmPoints = GameObject.FindObjectsOfType<ReArmingPoint>();
         rearmPoint = rearmPoints[UnityEngine.Random.Range(0, rearmPoints.Length - 1)];
         int rand = UnityEngine.Random.Range(0, rearmPoints.Length - 1);
@@ -813,7 +836,7 @@ public static class PlayerManager
 
         float lastRadius = 0.0f;
 
-        Rigidbody rb = localVehicle.GetComponent<Rigidbody>();
+        
         //rb.detectCollisions = false;
         if (PlayerManager.carrierStart)
         {
@@ -1319,7 +1342,7 @@ public static class PlayerManager
         }
         RigidbodyNetworker_Receiver rbNetworker = newVehicle.AddComponent<RigidbodyNetworker_Receiver>();
         rbNetworker.networkUID = networkID;
-
+        rbNetworker.smoothingTime = 0.5f;
         PlaneNetworker_Receiver planeReceiver = newVehicle.AddComponent<PlaneNetworker_Receiver>();
         planeReceiver.networkUID = networkID;
 
@@ -1444,6 +1467,7 @@ public static class PlayerManager
             Debug.LogError("Couldn't find the prefab for the F/A-26B");
         if (!f45Prefab)
             Debug.LogError("Couldn't find the prefab for the F-45A");
+
     }
 
 

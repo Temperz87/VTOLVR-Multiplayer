@@ -17,7 +17,7 @@ class NetworkSenderThread
         waitHandle = new EventWaitHandle(true, EventResetMode.ManualReset);
          messageCounterTypes = new Dictionary<MessageType, ulong>();
      
-    messageQueue = new ConcurrentQueue<OutgoingNetworkPacketContainer>();
+        messageQueue = new ConcurrentQueue<OutgoingNetworkPacketContainer>();
 
         packetSingle = new PacketSingle();
 

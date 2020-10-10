@@ -25,7 +25,7 @@ public static class DiscordRadioManager
     public static LobbyManager lobbyManager = null;
     public static string PersonaName = " ";
     public static float tick = 0;
-    public static float tickrate = 1.0f;
+    public static float tickrate = 3.0f;
     public static List<string> frequencyTable = new List<string>();
     public static List<string> frequencyTableLabels = new List<string>();
     private static int freqSelection = 0;
@@ -290,6 +290,8 @@ public static class DiscordRadioManager
 
             UpdateActivity(discord, lobby);
             discord.GetVoiceManager().SetSelfMute(false);
+
+            //discord.GetVoiceManager().SetSelfDeaf(true);
         });
 
         /*
@@ -315,9 +317,9 @@ public static class DiscordRadioManager
             tick = 0.0f;
         Message_SetFrequency freqMsg = new Message_SetFrequency(PersonaName, radioFreq);
         if (Networker.isHost)
-            NetworkSenderThread.Instance.SendPacketAsHostToAllClients(freqMsg, Steamworks.EP2PSend.k_EP2PSendUnreliable);
+            NetworkSenderThread.Instance.SendPacketAsHostToAllClients(freqMsg, Steamworks.EP2PSend.k_EP2PSendReliable);
         else
-            NetworkSenderThread.Instance.SendPacketToSpecificPlayer(Networker.hostID, freqMsg, Steamworks.EP2PSend.k_EP2PSendUnreliable);
+            NetworkSenderThread.Instance.SendPacketToSpecificPlayer(Networker.hostID, freqMsg, Steamworks.EP2PSend.k_EP2PSendReliable);
       
         foreach (var play in PlayerManager.players)
         {
@@ -398,6 +400,7 @@ public static class DiscordRadioManager
             lobbySecret = lobby.Secret;
             connected = true;
             discord.GetVoiceManager().SetSelfMute(false);
+            //discord.GetVoiceManager().SetSelfDeaf(true);
             lobbyManager.UpdateLobby(lobby.Id, newTxn, (results) =>
             {
                 Console.WriteLine("lobby updated");

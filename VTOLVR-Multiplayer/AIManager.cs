@@ -296,7 +296,7 @@ public static class AIManager
                 ulong gunCount = 0;
                 foreach (GunTurretAI turretAI in child.gameObject.GetComponentsInChildren<GunTurretAI>())
                 {
-                    turretAI.enabled = false;
+                    turretAI.engageEnemies = false;
                     AAANetworker_Reciever aaaRec = turretAI.gameObject.AddComponent<AAANetworker_Reciever>();
                     aaaRec.networkUID = message.networkIDs[currentSubActorID];
                     aaaRec.gunID = gunCount;

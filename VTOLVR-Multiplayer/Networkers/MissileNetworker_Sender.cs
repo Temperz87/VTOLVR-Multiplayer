@@ -12,8 +12,8 @@ public class MissileNetworker_Sender : MonoBehaviour
     private Missile thisMissile;
     private bool hasFired = false;
     public Actor ownerActor;
-    // private float tick;
-    // private float tickRate = 1.0f/10.0f;
+     private float tick;
+     private float tickRate = 1.0f/5.0f;
 
     private void Awake()
     {
@@ -40,56 +40,62 @@ public class MissileNetworker_Sender : MonoBehaviour
         if (thisMissile == null)
         {
             Debug.LogError("thisMissile null.");
+            return;
         }
-        if (hasFired != thisMissile.fired)
+        tick += Time.fixedDeltaTime;
+        if (tick > 1.0f / tickRate)
         {
-            Debug.Log("Missile fired " + thisMissile.name);
-            hasFired = true;
-
-            RigidbodyNetworker_Sender rbSender = gameObject.AddComponent<RigidbodyNetworker_Sender>();
-            rbSender.networkUID = networkUID;
-        }
-        if (thisMissile != null && thisMissile.fired)
-        {
-            if (lastMessage == null)
+            tick = 0.0f;
+            if (hasFired != thisMissile.fired)
             {
-                Debug.LogError("lastMessage null");
+                Debug.Log("Missile fired " + thisMissile.name);
+                hasFired = true;
+
+                RigidbodyNetworker_Sender rbSender = gameObject.AddComponent<RigidbodyNetworker_Sender>();
+                rbSender.networkUID = networkUID;
             }
-            lastMessage.networkUID = networkUID;
-            lastMessage.guidanceMode = thisMissile.guidanceMode;
-            if (thisMissile.guidanceMode == Missile.GuidanceModes.Radar)
+            if (thisMissile != null && thisMissile.fired)
             {
-                if (thisMissile.radarLock != null && thisMissile.radarLock.actor != null)
+                if (lastMessage == null)
                 {
-                    lastMessage.targetPosition = VTMapManager.WorldToGlobalPoint(thisMissile.radarLock.actor.transform.position);
-
-                    if (VTOLVR_Multiplayer.AIDictionaries.reverseAllActors.ContainsKey(thisMissile.radarLock.actor))
+                    Debug.LogError("lastMessage null");
+                }
+                lastMessage.networkUID = networkUID;
+                lastMessage.guidanceMode = thisMissile.guidanceMode;
+                if (thisMissile.guidanceMode == Missile.GuidanceModes.Radar)
+                {
+                    if (thisMissile.radarLock != null && thisMissile.radarLock.actor != null)
                     {
-                        lastMessage.radarLock = VTOLVR_Multiplayer.AIDictionaries.reverseAllActors[thisMissile.radarLock.actor];
+                        lastMessage.targetPosition = VTMapManager.WorldToGlobalPoint(thisMissile.radarLock.actor.transform.position);
+
+                        if (VTOLVR_Multiplayer.AIDictionaries.reverseAllActors.ContainsKey(thisMissile.radarLock.actor))
+                        {
+                            lastMessage.radarLock = VTOLVR_Multiplayer.AIDictionaries.reverseAllActors[thisMissile.radarLock.actor];
+                        }
+
+                    }
+                }
+                else if (thisMissile.guidanceMode == Missile.GuidanceModes.Optical)
+                {
+
+                    if (thisMissile.opticalTargetActor != null)
+                        lastMessage.targetPosition = VTMapManager.WorldToGlobalPoint(thisMissile.opticalTargetActor.transform.position);
+                    else
+                    {
+                        lastMessage.targetPosition = Traverse.Create(thisMissile).Field("staticOpticalTargetLock").GetValue<FixedPoint>().globalPoint;
+
                     }
 
+
+                    //lastMessage.seekerRotation = thisMissile.heatSeeker.transform.rotation;
                 }
-            }
-            else if (thisMissile.guidanceMode == Missile.GuidanceModes.Optical)
-            {
-                 
-                if (thisMissile.opticalTargetActor !=null)
-                lastMessage.targetPosition = VTMapManager.WorldToGlobalPoint(thisMissile.opticalTargetActor.transform.position);
-                     else
+                else if (thisMissile.guidanceMode == Missile.GuidanceModes.Heat)
                 {
-                    lastMessage.targetPosition = Traverse.Create(thisMissile).Field("staticOpticalTargetLock").GetValue<FixedPoint>().globalPoint;
-
+                    //lastMessage.targetPosition = VTMapManager.WorldToGlobalPoint(thisMissile.opticalTargetActor.transform.position);
+                    lastMessage.seekerRotation = thisMissile.heatSeeker.transform.rotation;
                 }
-                 
-
-                //lastMessage.seekerRotation = thisMissile.heatSeeker.transform.rotation;
+                SendMessage(false);
             }
-            else if (thisMissile.guidanceMode == Missile.GuidanceModes.Heat)
-            {
-                //lastMessage.targetPosition = VTMapManager.WorldToGlobalPoint(thisMissile.opticalTargetActor.transform.position);
-                lastMessage.seekerRotation = thisMissile.heatSeeker.transform.rotation;
-            }
-            SendMessage(false);
         }
         /*if (thisMissile.guidanceMode == Missile.GuidanceModes.Radar)
         {
