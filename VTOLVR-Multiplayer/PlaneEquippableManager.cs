@@ -182,10 +182,11 @@ public static class PlaneEquippableManager
         weaponManager.RefreshWeapon();
         //Debug.Log("Refreshed this weapon manager's weapons.");
         MissileNetworker_Receiver lastReciever;
-        for (int i = 0; i < 30; i++)
+        for (int i = 0; i < weaponManager.equipCount; i++)
         {
             int uIDidx = 0;
             HPEquippable equip = weaponManager.GetEquip(i);
+            if(equip != null) { 
             if (equip is HPEquipMissileLauncher)
             {
                 //Debug.Log(equip.name + " is a missile launcher");
@@ -222,6 +223,7 @@ public static class PlaneEquippableManager
                 reciever.turret = equip.GetComponent<ModuleTurret>();
                 equip.enabled = false;
                 Debug.Log("Added m230 turret reciever");
+            }
             }
         }
         FuelTank fuelTank = vehicle.GetComponent<FuelTank>();

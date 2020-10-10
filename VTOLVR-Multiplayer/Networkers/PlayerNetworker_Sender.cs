@@ -67,12 +67,16 @@ class PlayerNetworker_Sender : MonoBehaviour
     {
         Debug.Log("Starting respawn timer.");
         GameObject button = null;
+         
+        if (PlayerManager.FrequenceyButton != null)
+            Destroy(PlayerManager.FrequenceyButton);
+
         if (!Networker.equipLocked)
             button = Multiplayer.CreateVehicleButton();
         yield return new WaitForSeconds(respawnTimer);
         if(button != null)
             Destroy(button);
-
+    
         Debug.Log("Finished respawn timer.");
 
         ReArmingPoint[] rearmPoints = GameObject.FindObjectsOfType<ReArmingPoint>();
@@ -226,15 +230,17 @@ class PlayerNetworker_Sender : MonoBehaviour
 
         //PlayerManager.SetupLocalAircraft(newPlayer, newPlayer.transform.position, newPlayer.transform.rotation, networkUID);
 
-       /* lastMessage.UID = networkUID;
+        lastMessage.UID = networkUID;
         lastMessage.isLeftie = PlayerManager.teamLeftie;
         lastMessage.tagName = Steamworks.SteamFriends.GetPersonaName();
-        lastMessage.vehicle = VTOLAPI.GetPlayersVehicleEnum();
+        lastMessage.vehicle = PlayerManager.getPlayerVehicleType();
         if (Networker.isHost)
+        {
             NetworkSenderThread.Instance.SendPacketAsHostToAllClients(lastMessage, Steamworks.EP2PSend.k_EP2PSendReliable);
-        else
-            NetworkSenderThread.Instance.SendPacketToSpecificPlayer(Networker.hostID, lastMessage, Steamworks.EP2PSend.k_EP2PSendReliable);
-   */
+        }
+        //else
+         //   NetworkSenderThread.Instance.SendPacketToSpecificPlayer(Networker.hostID, lastMessage, Steamworks.EP2PSend.k_EP2PSendReliable);
+   
     }
 
     void UnEject()
@@ -381,9 +387,16 @@ class PlayerNetworker_Sender : MonoBehaviour
             return;
         FlightSceneManager.instance.playerActor.health.invincible = false;
 
+        foreach (var part in FlightSceneManager.instance.playerActor.gameObject.GetComponentsInChildren<VehiclePart>())
+        {
+
+            if(!part.partName.Contains("ngine") )
+            part.detachOnDeath = true;
+        }
+ 
         Actor killer = null;
         Actor fkiller = null;
-        foreach (var heal in GetComponentsInChildren<Health>())
+        foreach (var heal in FlightSceneManager.instance.playerActor.gameObject.GetComponentsInChildren<Health>())
         {
             killer = Traverse.Create(heal).Field("lastSourceActor").GetValue<Actor>();
             if (killer != null)

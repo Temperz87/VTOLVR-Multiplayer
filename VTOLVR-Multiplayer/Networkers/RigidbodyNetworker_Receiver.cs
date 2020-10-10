@@ -22,11 +22,11 @@ public class RigidbodyNetworker_Receiver : MonoBehaviour
     private Actor actor;
     private KinematicPlane kplane;
     private float positionThreshold = 100f;
-    private float smoothingTime = 2.5f;
+    private float smoothingTime = 2.0f;
     private float rotSmoothingTime = 0.2f;
     private float velSmoothingTime = 0.5f;//actor velocity for using with the gunsight, should stop the jitter
     private float latency = 0.0f;
-
+    
     private PlayerManager.Player playerWeRepresent;
 
     private ulong mostCurrentUpdateNumber;
@@ -121,8 +121,8 @@ public class RigidbodyNetworker_Receiver : MonoBehaviour
         if (rigidbodyUpdate.networkUID != networkUID)
             return;
 
-        if (rigidbodyUpdate.sequenceNumber <= mostCurrentUpdateNumber)
-            return;
+        //if (rigidbodyUpdate.sequenceNumber <= mostCurrentUpdateNumber)
+            //return;
         mostCurrentUpdateNumber = rigidbodyUpdate.sequenceNumber;
 
         globalTargetPosition = rigidbodyUpdate.position + rigidbodyUpdate.velocity.toVector3 * latency;
@@ -137,6 +137,66 @@ public class RigidbodyNetworker_Receiver : MonoBehaviour
             transform.position = localTargetPosition;
 
             transform.rotation = rigidbodyUpdate.rotation;
+        }
+    }
+
+   
+        public void rotateObjectByKeyboard(GameObject rotatedObject, float increment)
+    {
+        Vector3 objectTemp = rotatedObject.transform.localEulerAngles;
+
+
+
+        if (Input.GetKeyDown("u"))
+        {
+            objectTemp.y += increment;
+
+            rotatedObject.transform.localEulerAngles = objectTemp;
+            Debug.Log("Switch clone new angle: " + rotatedObject.transform.localEulerAngles.ToString("F2"));
+        }
+
+        if (Input.GetKeyDown("j"))
+        {
+            objectTemp.y -= increment;
+
+
+            rotatedObject.transform.localEulerAngles = objectTemp;
+            Debug.Log("Switch clone new angle: " + rotatedObject.transform.localEulerAngles.ToString("F2"));
+        }
+
+        if (Input.GetKeyDown("h"))
+        {
+            objectTemp.x -= increment;
+
+            rotatedObject.transform.localEulerAngles = objectTemp;
+            Debug.Log("Switch clone new angle: " + rotatedObject.transform.localEulerAngles.ToString("F2"));
+        }
+
+        if (Input.GetKeyDown("k"))
+        {
+            objectTemp.x += increment;
+
+
+            rotatedObject.transform.localEulerAngles = objectTemp;
+            Debug.Log("Switch clone new angle: " + rotatedObject.transform.localEulerAngles.ToString("F2"));
+        }
+
+        if (Input.GetKeyDown("o"))
+        {
+            objectTemp.z += increment;
+
+
+            rotatedObject.transform.localEulerAngles = objectTemp;
+            Debug.Log("Switch clone new angle: " + rotatedObject.transform.localEulerAngles.ToString("F2"));
+        }
+
+        if (Input.GetKeyDown("l"))
+        {
+            objectTemp.z -= increment;
+
+
+            rotatedObject.transform.localEulerAngles = objectTemp;
+            Debug.Log("Switch clone new angle: " + rotatedObject.transform.localEulerAngles);
         }
     }
 

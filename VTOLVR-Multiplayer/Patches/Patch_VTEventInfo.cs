@@ -48,7 +48,10 @@ class PatchBullet
                     
                     Debug.Log("hit player sending bullet packet");
                     Message_BulletHit hitmsg = new Message_BulletHit(PlayerManager.localUID, lastID, sourceID, VTMapManager.WorldToGlobalPoint(pos), new Vector3D(vel), damage);
-                    NetworkSenderThread.Instance.SendPacketToSpecificPlayer(Networker.hostID, hitmsg, Steamworks.EP2PSend.k_EP2PSendReliable);
+                    if(Networker.isHost)
+                        NetworkSenderThread.Instance.SendPacketAsHostToAllClients(hitmsg, Steamworks.EP2PSend.k_EP2PSendReliable);
+                    else
+                        NetworkSenderThread.Instance.SendPacketToSpecificPlayer(Networker.hostID, hitmsg, Steamworks.EP2PSend.k_EP2PSendReliable);
                 }
 
             }
@@ -123,6 +126,21 @@ class PatchPROTECC
 
     }
 }
+
+
+[HarmonyPatch(typeof(EndMission), "CompleteMission")]
+
+class Patchmission
+{
+    static bool Prefix()
+    {
+ 
+        PilotSaveManager.currentCampaign = Networker._instance.pilotSaveManagerControllerCampaign;
+        PilotSaveManager.currentScenario = Networker._instance.pilotSaveManagerControllerCampaignScenario;
+        return true;
+    }
+}
+
 [HarmonyPatch(typeof(VTEventTarget), "Invoke")]
 class Patch22
 {

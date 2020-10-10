@@ -103,6 +103,7 @@ public class PlaneNetworker_Receiver : MonoBehaviour
 
         mostCurrentUpdateNumber = newMessage.sequenceNumber;
 
+      
         if (!firstMessageReceived)
         {
             firstMessageReceived = true;

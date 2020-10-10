@@ -54,5 +54,6 @@ public enum MessageType
     BulletHit,
     MissileDamage,
     GPSTarget,
-    CompressedBatch
+    CompressedBatch,
+    SetFrequency
 }

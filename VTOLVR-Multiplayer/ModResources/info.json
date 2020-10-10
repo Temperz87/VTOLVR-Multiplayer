@@ -1,0 +1,12 @@
+{
+  "Name": "Multiplayer",
+  "Description": "The Unofficial Multiplayer Mod allows multiple pilots to fly and complete missions together with multiple loadouts. Fly in a wing and complete missions in coop, or against each other on opposing sides. Take an Air to Ground loadout while your buddies fly CAP to ensure you don’t get taken out by enemy fighters, or intercept your friends before they can splash your Bombers. Compatible with Steam missions. Tutorial missions not supported.",
+  "Dll File": "Multiplayer.dll",
+  "Preview Image": "preview.png",
+  "Tagline": "Finally.... now you can play with Steam friends.",
+  "Version": "2.2.0",
+  "Source": "https://github.com/Temperz87/VTOLVR-Multiplayer",
+  "Is Public": "True",
+  "Unlisted": "False",
+  "Web Preview Image": "2.jpg"
+}

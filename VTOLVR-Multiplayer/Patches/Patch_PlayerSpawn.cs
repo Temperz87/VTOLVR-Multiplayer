@@ -28,7 +28,7 @@ class Patch_OnPreSpawnUnit
         {
             campID = "av42cQuickFlight";
         }
-        else if (PlayerManager.selectedVehicle == "FA-26B")
+        else if (PlayerManager.selectedVehicle == "F/A-26B")
         {
             campID = "fa26bFreeFlight";
         }

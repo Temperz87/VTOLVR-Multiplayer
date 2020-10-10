@@ -89,19 +89,15 @@ public static class AIManager
 
         AirportManager airport = null;
         
-        //if(message.hasAirport)
-           // airport = newAI.AddComponent<AirportManager>();
+         //if(message.hasAirport)
+        
+        airport = newAI.GetComponent<AirportManager>();
 
         UnitSpawn unitSP = newAI.GetComponent<UnitSpawn>();
         GameObject.Destroy(unitSP);
-           //  if(airport != null)
-            // {
+          
             newAI.AddComponent<UnitSpawn>();
-            //  }
-           // else
-            {
-             //   newAI.AddComponent<AICarrierSpawn>();
-            }
+           
          
         unitSP = newAI.GetComponent<UnitSpawn>();
 
@@ -124,6 +120,7 @@ public static class AIManager
         {
             if (actor.team == Teams.Enemy)
             {
+                actor.team = Teams.Allied;
                 foreach (Actor subActor in newAI.GetComponentsInChildren<Actor>())
                 {
                     subActor.team = Teams.Allied;
@@ -134,6 +131,7 @@ public static class AIManager
             else
             if (actor.team == Teams.Allied)
             {
+                actor.team = Teams.Enemy;
                 foreach (Actor subActor in newAI.GetComponentsInChildren<Actor>())
                 {
                     subActor.team = Teams.Enemy;
@@ -142,13 +140,11 @@ public static class AIManager
                 }
             }
             UnitSpawner.team = actor.team;
-
-           
-            if (airport != null)
-            {
-                airport.team = actor.team;
-                SetUpCarrier(newAI, message.rootActorNetworkID, actor.team);
-            }
+        }
+        if (airport != null)
+        {
+            airport.team = actor.team;
+            SetUpCarrier(newAI, message.rootActorNetworkID, actor.team);
         }
 
         TargetManager.instance.UnregisterActor(actor);

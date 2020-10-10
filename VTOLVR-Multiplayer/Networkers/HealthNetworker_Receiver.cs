@@ -24,8 +24,12 @@ class HealthNetworker_Receiver : MonoBehaviour
         lastMessage = (Message_Death)((PacketSingle)packet).message;
         if (lastMessage.UID != networkUID)
             return;
-        
+
         // int player = PlayerManager.GetPlayerIDFromCSteamID(new Steamworks.CSteamID(PlayerManager.localUID));
+        foreach (var collider in GetComponentsInChildren<Collider>())
+        {
+            collider.gameObject.layer = 9;
+        }
 
         string name = Steamworks.SteamFriends.GetPersonaName();
 

@@ -17,10 +17,10 @@ public class Message_SpawnPlayerVehicle : Message
     public float normalizedFuel;
     public bool leftie;
     public string nameTag;
+    public long discordID;
     public string skinName;
     // public int playerCount;
-
-    public Message_SpawnPlayerVehicle(VTOLVehicles vehicle, Vector3D position, Quaternion rotation, ulong csteamID, ulong networkID, HPInfo[] hpLoadout, int[] cmLoadout, float normalizedFuel, bool isLeftie, string tagName, string skinName)
+    public Message_SpawnPlayerVehicle(VTOLVehicles vehicle, Vector3D position, Quaternion rotation, ulong csteamID, ulong networkID, HPInfo[] hpLoadout, int[] cmLoadout, float normalizedFuel, bool isLeftie, string tagName, long idiscord, string skinName)
     {
         this.vehicle = vehicle;
         this.position = position;
@@ -32,8 +32,25 @@ public class Message_SpawnPlayerVehicle : Message
         this.normalizedFuel = normalizedFuel;
         this.leftie = isLeftie;
         this.nameTag = tagName;
+        this.discordID = idiscord;
         this.skinName = skinName;
         // this.playerCount = playerCount;
         type = MessageType.SpawnPlayerVehicle;
+    }
+}
+
+[Serializable]
+public class Message_SetFrequency: Message
+{
+    public string source;
+    public int freq;
+    // public int playerCount;
+
+    public Message_SetFrequency(string isource,int ifreq)
+    {
+        this.source = isource;
+        this.freq = ifreq;
+        // this.playerCount = playerCount;
+        type = MessageType.SetFrequency;
     }
 }

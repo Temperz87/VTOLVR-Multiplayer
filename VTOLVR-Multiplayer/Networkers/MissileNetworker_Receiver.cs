@@ -26,7 +26,7 @@ public class MissileNetworker_Receiver : MonoBehaviour
         // rigidbody = GetComponent<Rigidbody>();
         Networker.MissileUpdate += MissileUpdate;
         thisMissile.OnDetonate.AddListener(new UnityEngine.Events.UnityAction(() => { Debug.Log("Missile detonated: " + thisMissile.name); }));
-        if (thisMissile.guidanceMode == Missile.GuidanceModes.Bomb || thisMissile.guidanceMode == Missile.GuidanceModes.Optical || thisMissile.guidanceMode == Missile.GuidanceModes.GPS)
+        //if (thisMissile.guidanceMode == Missile.GuidanceModes. || thisMissile.guidanceMode == Missile.GuidanceModes.Optical || thisMissile.guidanceMode == Missile.GuidanceModes.GPS)
         {
             foreach (var collider in thisMissile.GetComponentsInChildren<Collider>())
             {
@@ -36,7 +36,7 @@ public class MissileNetworker_Receiver : MonoBehaviour
         } 
         
 
-        thisMissile.explodeRadius *= 1.8f; thisMissile.explodeDamage *= 0.7f;
+        thisMissile.explodeRadius *= 1.4f; thisMissile.explodeDamage *= 0.7f;
         traverse = Traverse.Create(thisML);
         traverse.Field("detonated").SetValue(true);
     }

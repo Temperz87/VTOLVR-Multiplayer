@@ -14,6 +14,7 @@ using TMPro;
 using UnityEngine.Events;
 using System.Net;
 using System.IO;
+using Discord;
 
 public class Multiplayer : VTOLMOD
 {
@@ -64,6 +65,11 @@ public class Multiplayer : VTOLMOD
     public UnityAction<bool> hidePlayerNameTags_changed;
     public UnityAction<bool> hidePlayerRoundels_changed;
 
+    public float thrust = 1.0f;
+    public bool alpha = false;
+    public UnityAction<float> thrust_changed;
+    public UnityAction<bool> alpha_changed;
+
     public bool spawnRemainingPlayersAtAirBase = false;
     public UnityAction<bool> spawnRemainingPlayersAtAirBase_changed;
 
@@ -87,7 +93,7 @@ public class Multiplayer : VTOLMOD
 
     public bool displayClouds = false;
     private UnityAction<bool> displayClouds_changed;
-
+    public static Discord.Discord discord;
     private void Start()
     {
         if (_instance == null)
@@ -98,7 +104,14 @@ public class Multiplayer : VTOLMOD
         _instance = this;
         Networker.SetMultiplayerInstance(this);
     }
-
+    public static void callback()
+    {
+        UserManager uman = discord.GetUserManager();
+        User meUser = uman.GetCurrentUser();
+        long id = meUser.Id;
+        VoiceManager vman = discord.GetVoiceManager();
+        vman.SetLocalMute(id, true);
+    }
     public override void ModLoaded()
     {
         Log($"VTOL VR Multiplayer v{ ModVersionString.ModVersionNumber } - branch: { ModVersionString.ReleaseBranch }");
@@ -117,7 +130,7 @@ public class Multiplayer : VTOLMOD
         SoloTesting = false;
         Log("Valid User " + SteamUser.GetSteamID().m_SteamID);
 
-
+        DiscordRadioManager.start();
         VTOLAPI.SceneLoaded += SceneLoaded;
         CreateSettingsPage();
         base.ModLoaded();
@@ -130,7 +143,7 @@ public class Multiplayer : VTOLMOD
         if (checkedToDate)
             return;
         checkedToDate = false;
-        HttpWebRequest request = (HttpWebRequest)WebRequest.Create("https://vtolvr-mods.com/api/mods/qs6jxkt2/?format=json");
+        HttpWebRequest request = (HttpWebRequest)WebRequest.Create("https://vtolvr-mods.com/api/mods/7jdyy3go/?format=json");
         request.AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate;
 
         HttpWebResponse response = (HttpWebResponse)request.GetResponse();
@@ -172,7 +185,12 @@ public class Multiplayer : VTOLMOD
         /*spawnRemainingPlayersAtAirBase_changed += spawnRemainingPlayersAtAirBase_Setting;
         settings.CreateCustomLabel("Spawn players at airbase if there are no wingmen available.");
         settings.CreateBoolSetting("Default = False", spawnRemainingPlayersAtAirBase_changed, spawnRemainingPlayersAtAirBase);*/
-
+        thrust_changed += thrust_Settings;
+        alpha_changed += alpha_Settings;
+        settings.CreateCustomLabel("Thrust Multiplier");
+        settings.CreateFloatSetting("Default = 1.0", thrust_changed,1.0f, 1.0f, 5.0f, 0.2f);
+        settings.CreateCustomLabel("High Alpha Mode");
+        settings.CreateBoolSetting("Default = False", alpha_changed, alpha);
 
         /*replaceWingmenWithClients_changed += replaceWingmenWithClients_Setting;
        settings.CreateCustomLabel("Replace AI wingmen (with the same flight designation) with clients.");
@@ -251,6 +269,15 @@ public class Multiplayer : VTOLMOD
     {
         displayPing = newval;
     }
+
+    public void thrust_Settings(float newval)
+    {
+        thrust = newval;
+    }
+    public void alpha_Settings(bool newval)
+    {
+        alpha = newval;
+    }
     public void DisplayCloud_Settings(bool newval)
     {
         //displayClouds = newval;
@@ -302,12 +329,7 @@ public class Multiplayer : VTOLMOD
         {
             case VTOLScenes.ReadyRoom:
                 CreateUI();
-                if(canvasButtonPrefab == null)
-                {
-                  canvasButtonPrefab = Instantiate(GameObject.Find("RecenterCanvas"));
-                   canvasButtonPrefab.SetActive(false);
-                   DontDestroyOnLoad(canvasButtonPrefab);
-                }
+              
                 break;
             case VTOLScenes.Akutan:
                 Log("Map Loaded from vtol scenes akutan");
@@ -344,7 +366,7 @@ public class Multiplayer : VTOLMOD
         }
         catch (Exception err)
         {
-            Debug.Log("Got an error trying to update the contentJoinLog");
+            Debug.Log("Got an error trying to the contentJoinLog");
             Debug.Log(err.ToString());
         }
     }
@@ -817,6 +839,14 @@ public class Multiplayer : VTOLMOD
 
     public static GameObject CreateVehicleButton()
     {
+
+        if (canvasButtonPrefab == null)
+        {
+            var refrence = Resources.FindObjectsOfTypeAll<GameObject>().FirstOrDefault(g => g.name.Contains("RecenterCanvas"));
+            canvasButtonPrefab = Instantiate(refrence);
+            canvasButtonPrefab.SetActive(false);
+            DontDestroyOnLoad(canvasButtonPrefab);
+        }
         foreach (var controller in GameObject.FindObjectsOfType<VRHandController>())
         {
             GameObject button;
@@ -843,6 +873,7 @@ public class Multiplayer : VTOLMOD
                 bInteractable.interactableName = "Switch Vehicles.";
                 bInteractable.OnInteract = new UnityEvent();
                 PlayerManager.selectedVehicle = PilotSaveManager.currentVehicle.name;
+         
                 foreach (var vehicle in VTResources.GetPlayerVehicles())
                 {
                     Debug.Log(vehicle.name);
@@ -897,6 +928,51 @@ public class Multiplayer : VTOLMOD
                 DontDestroyOnLoad(canvasButtonPrefab);
             }
             Multiplayer._instance.buttonMade = true;
+            return button;
+        }
+        return null;
+    }
+
+
+    public static GameObject CreateFreqButton()
+    {
+        foreach (var controller in GameObject.FindObjectsOfType<VRHandController>())
+        {
+            GameObject button;
+            if (canvasButtonPrefab == null)
+            {
+                button = GameObject.Instantiate(GameObject.Find("RecenterCanvas"));
+            }
+            else
+            {
+                button = GameObject.Instantiate(canvasButtonPrefab);
+                button.SetActive(true);
+            }
+            if (!controller.isLeft)
+            {
+                Debug.Log("Freq");
+                button.transform.SetParent(controller.transform);
+                button.transform.localPosition = new Vector3(0.101411f, 0.02100047f, -0.128024f);
+                button.transform.localRotation = Quaternion.Euler(-5.834f, 283.583f, 328.957f);
+                button.transform.localScale = new Vector3(button.transform.localScale.x * -1, button.transform.localScale.y * -1, button.transform.localScale.z);
+                VRInteractable bInteractable = button.GetComponentInChildren<VRInteractable>();
+                Text text = button.GetComponentInChildren<Text>();
+                text.transform.localScale = text.transform.localScale * 0.75f;
+                text.text = "Freq: " + CUSTOM_API.currentFreq;
+                bInteractable.interactableName = "Freq.";
+                bInteractable.OnInteract = new UnityEvent();
+
+                string textS = "";
+                bInteractable.OnInteract.AddListener(delegate
+                {
+                    textS = DiscordRadioManager.getNextFrequency();
+                    DiscordRadioManager.radioFreq = textS.GetHashCode();
+                    CUSTOM_API.forceSetFreq(textS); 
+                    text.text = textS;
+                    Debug.Log("discord freq " + DiscordRadioManager.radioFreq);
+                });
+            }
+             
             return button;
         }
         return null;

@@ -13,6 +13,7 @@ using System.Collections;
 using System.Security.Cryptography;
 using TMPro;
 using Oculus.Platform.Samples.VrHoops;
+using VTOLVR_Multiplayer;
 
 public struct SBufferedMessage
 {
@@ -340,6 +341,7 @@ public class Networker : MonoBehaviour
     private void Update()
     {
         ReadP2P();
+        DiscordRadioManager.Update();
         if (VTOLAPI.currentScene == VTOLScenes.VehicleConfiguration)
             return;
         if (VTOLAPI.currentScene == VTOLScenes.ReadyRoom)
@@ -352,7 +354,7 @@ public class Networker : MonoBehaviour
             {
                 pilotSaveManagerControllerCampaignScenario = PilotSaveManager.currentScenario;
             }
-
+           
             //PlayerManager.selectedVehicle = PilotSaveManager.currentVehicle.name;
         }
         /*if (isHost)
@@ -450,7 +452,7 @@ public class Networker : MonoBehaviour
         }
         Debug.Log("Hosting game");
         isHost = true;
-
+        DiscordRadioManager.makeLobby();
         TimeoutCounter = 0;
         HeartbeatTimerRunning = true;
         HeartbeatTimer.Start();
@@ -496,7 +498,8 @@ public class Networker : MonoBehaviour
                                     MapAndScenarioVersionChecker.scenarioHash,
                                     MapAndScenarioVersionChecker.campaignHash,
                                     MapAndScenarioVersionChecker.modsLoadedHashes,
-                                    MapAndScenarioVersionChecker.modloaderHash),
+                                    MapAndScenarioVersionChecker.modloaderHash,
+                                    DiscordRadioManager.userID),
             EP2PSend.k_EP2PSendReliable);
     }
 
@@ -768,6 +771,15 @@ public class Networker : MonoBehaviour
                 TimeoutCounter = 0;
                 HeartbeatTimerRunning = true;
                 HeartbeatTimer.Start();
+
+                Message_JoinRequestAccepted_Result messsageLobby = ((PacketSingle)packet).message as Message_JoinRequestAccepted_Result;
+                Multiplayer._instance.alpha = messsageLobby.hiAlpha;
+                Multiplayer._instance.thrust = messsageLobby.thrust;
+                DiscordRadioManager.freqLabelTableNetworkString = messsageLobby.freqLabelString;
+                DiscordRadioManager.freqTableNetworkString = messsageLobby.freqString;
+               
+                DiscordRadioManager.joinLobby(messsageLobby.lobbyDiscordID, messsageLobby.lobbySecret);
+
                 StartCoroutine(FlyButton());
                 UpdateLoadingText();
                 break;
@@ -959,10 +971,10 @@ public class Networker : MonoBehaviour
                 Debug.Log("case weapon set result");
                 if (WeaponSet_Result != null)
                     WeaponSet_Result.Invoke(packet);
-                if (isHost)
+                /*if (isHost) already done in above invoke.
                 {
                     NetworkSenderThread.Instance.SendPacketAsHostToAllClients(packet, packet.sendType);
-                }
+                }*/
                 break;
             case MessageType.WeaponFiring:
                 Debug.Log("case weapon firing");
@@ -983,6 +995,10 @@ public class Networker : MonoBehaviour
                 Debug.Log("case death");
                 if (Death != null)
                     Death.Invoke(packet);
+                break;
+            case MessageType.SetFrequency:
+                Message_SetFrequency freMessage = ((PacketSingle)packet).message as Message_SetFrequency;
+                DiscordRadioManager.setFreq(freMessage.source, freMessage.freq);
                 break;
             case MessageType.Respawn:
                 Debug.Log("case respawn");
@@ -1518,7 +1534,8 @@ public class Networker : MonoBehaviour
         playerStatusDic.Add(csteamID, PlayerStatus.NotReady);//future people, please implement PlayerStatus.Loadout so we can see who is customising still
         Debug.Log("Done adding to status dict");
         NetworkSenderThread.Instance.AddPlayer(csteamID);
-        NetworkSenderThread.Instance.SendPacketToSpecificPlayer(csteamID, new Message_JoinRequestAccepted_Result(), EP2PSend.k_EP2PSendReliable);
+        NetworkSenderThread.Instance.SendPacketToSpecificPlayer(csteamID, new Message_JoinRequestAccepted_Result(DiscordRadioManager.userID, DiscordRadioManager.lobbyID, DiscordRadioManager.lobbySecret,Multiplayer._instance.thrust, 
+            Multiplayer._instance.alpha,DiscordRadioManager.freqTableNetworkString, DiscordRadioManager.freqLabelTableNetworkString), EP2PSend.k_EP2PSendReliable);
         UpdateLoadingText();
     }
 
@@ -1593,7 +1610,7 @@ public class Networker : MonoBehaviour
         hostID = new CSteamID(0);
         pingToHost = 0;
         rigidBodyUpdates = 0;
-
+        DiscordRadioManager.disconnect();
         AIManager.CleanUpOnDisconnect();
         multiplayerInstance?.CleanUpOnDisconnect();
         hostLoaded = false;
