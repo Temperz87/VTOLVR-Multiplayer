@@ -1091,7 +1091,7 @@ public static class PlayerManager
         {
 
             CUSTOM_API.loadDisplayPrefab();
-            CUSTOM_API.SetupNewDisplay();
+            //CUSTOM_API.SetupNewDisplay();
             CUSTOM_API.setupFA26(localVehicle);
 
         }else

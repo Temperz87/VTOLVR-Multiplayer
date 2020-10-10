@@ -334,16 +334,11 @@ public static class CUSTOM_API
             sb = new StringBuilder(currentFreq);
             lastFreq = false;
 
-
-
-
             Debug.Log("SetupNewDisplay");
 
             SetupNewDisplay();
-          // newDisplay.GetComponent<MeshRenderer>().material.EnableKeyword("_EMISSION");
+            //newDisplay.GetComponent<MeshRenderer>().material.EnableKeyword("_EMISSION");
             newDisplay.transform.SetParent(go.transform);
-
-
 
             newDisplay.transform.localPosition = new Vector3(0.05f, 1.289f, 5.84f);
             newDisplay.transform.localEulerAngles = new Vector3(273, 0, 0);
@@ -362,8 +357,6 @@ public static class CUSTOM_API
             Debug.Log("Radio input scale " + radioInput.transform.localScale);
             radioText = radioInput.GetComponent<VTText>();
 
-
-
             Debug.Log("createAPButton");
 
             //TODO assign audio listener
@@ -376,8 +369,6 @@ public static class CUSTOM_API
             VRInteractable button1Int = button1.GetComponentInChildren<VRInteractable>();
             button1Int.OnInteract = new UnityEvent();
             button1Int.OnInteract.AddListener(updateFreq1);
-
-
 
             Debug.Log("createAPButton2");
             VTTextProperties button2Properties = new VTTextProperties("2", 36, 1, VTText.AlignmentModes.Center, VTText.VerticalAlignmentModes.Middle, Color.black, Color.green, true, 1.0f);
@@ -513,7 +504,7 @@ public static class CUSTOM_API
 
             if (displayEnabled)
             {
-                 newDisplay = GameObject.Instantiate( newDisplayPrefab);
+                 newDisplay = GameObject.Instantiate(newDisplayPrefab);
                 //manobject = GameObject.Instantiate(manprefab);
             }
         }

@@ -19,6 +19,8 @@ class TurretNetworker_Sender : MonoBehaviour
                 Debug.LogError($"Turret was null on ID {networkUID}");
             }
         }
+
+        tick += UnityEngine.Random.Range(0.0f, 1.0f / tickRate);
     }
 
     private void LateUpdate()

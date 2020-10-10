@@ -50,6 +50,7 @@ public class PlaneNetworker_Sender : MonoBehaviour
         sequenceNumber = 0;
         lastMessage = new Message_PlaneUpdate(false, 0, 0, 0, 0, 0, 0, false, false, false, networkUID, sequenceNumber);
 
+        tick += UnityEngine.Random.Range(0.0f, 1.0f / tickRate);
         engine = gameObject.GetComponentInChildren<ModuleEngine>();
         if (engine == null)
         {

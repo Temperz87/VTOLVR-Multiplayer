@@ -31,6 +31,8 @@ public class PlaneNetworker_Receiver : MonoBehaviour
     {
         firstMessageReceived = false;
         aiPilot = GetComponent<AIPilot>();
+
+        ownerActor = this.GetComponentInParent<Actor>();
         autoPilot = aiPilot.autoPilot;
         aiPilot.enabled = false;
         Networker.PlaneUpdate += PlaneUpdate;
@@ -40,6 +42,7 @@ public class PlaneNetworker_Receiver : MonoBehaviour
         Networker.JettisonUpdate += JettisonUpdate;
         // Networker.WeaponStoppedFiring += WeaponStoppedFiring;
         Networker.FireCountermeasure += FireCountermeasure;
+        if(!ownerActor.gameObject.name.Contains("verlord") && !ownerActor.gameObject.name.Contains("kc"))
         weaponManager = GetComponent<WeaponManager>();
         mostCurrentUpdateNumber = 0;
         if (weaponManager == null)
@@ -57,7 +60,6 @@ public class PlaneNetworker_Receiver : MonoBehaviour
         if (fuelTank == null)
             Debug.LogError("FuelTank was null on " + gameObject.name);
 
-         ownerActor = this.GetComponentInParent<Actor>();
         collidersStore = new List<int>();
         //?fix gun sight jitter
         if (ownerActor != null)
