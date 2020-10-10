@@ -933,7 +933,15 @@ public static class PlayerManager
             if (act != null)
             {
                 bool storage = act.health.invincible;
-                act.health.invincible = false;
+
+                if (act.gameObject.name.Contains("lient"))
+                {
+                    if (actorTodamage == localUID)
+                    {
+                        act.health.invincible = false;
+                    }
+                }
+                
                 act.health.Damage(lastMissileDamageMessage.damage, act.position, Health.DamageTypes.Impact, source, "Missile Impact");
                 act.health.invincible = storage;
             }
