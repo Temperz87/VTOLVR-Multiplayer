@@ -13,7 +13,7 @@ public class MissileNetworker_Sender : MonoBehaviour
     private bool hasFired = false;
     public Actor ownerActor;
      private float tick;
-     private float tickRate = 1.0f/5.0f;
+     private float tickRate = 1.0f/20.0f;
 
     private void Awake()
     {
@@ -22,7 +22,7 @@ public class MissileNetworker_Sender : MonoBehaviour
         thisMissile = GetComponent<Missile>();
         ownerActor = GetComponentInParent<Actor>();
         thisMissile.OnMissileDetonated += OnDetonated;
-        thisMissile.explodeRadius *= 1.4f; thisMissile.explodeDamage *= 0.7f;
+        thisMissile.explodeRadius *= 1.8f; thisMissile.explodeDamage *= 0.7f;
     }
     /*private bool sendRateLimiter()
     {

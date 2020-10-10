@@ -48,7 +48,7 @@ class HealthNetworker_Sender : MonoBehaviour
         }
         bool storage = health.invincible;
         health.invincible = false;
-        health.Damage(bulletMessage.damage * 3.0f, pos, Health.DamageTypes.Impact, source, "Bullet Impact");
+        health.Damage(bulletMessage.damage * 1.0f, pos, Health.DamageTypes.Impact, source, "Bullet Impact");
         BulletHitManager.instance.CreateBulletHit(pos, -vel, true);
         health.invincible = storage;
 

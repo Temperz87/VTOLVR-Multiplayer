@@ -823,12 +823,7 @@ public static class PlayerManager
         Player localPlayer = new Player(SteamUser.GetSteamID(), localVehicle, actor, currentVehicle, UID, PlayerManager.teamLeftie, SteamFriends.GetPersonaName(),DiscordRadioManager.userID);
         AddToPlayerList(localPlayer);
         Rigidbody rb = localVehicle.GetComponent<Rigidbody>();
-        GameObject prefab = GameObject.Instantiate(Resources.Load<GameObject>("Effects/SmokeFlare"));
-        SmokeFlare fl = prefab.GetComponent<SmokeFlare>();
-        fl.Ignite(100000,SmokeFlare.FlareColors.Red,new Vector3(0.0f, 0.0f, 0.0f));
-        prefab.transform.SetParent(rb.transform);
-        prefab.transform.position=(rb.transform.position);
-        prefab.AddComponent<FloatingOriginTransform>();
+        
         ReArmingPoint[] rearmPoints = GameObject.FindObjectsOfType<ReArmingPoint>();
         rearmPoint = rearmPoints[UnityEngine.Random.Range(0, rearmPoints.Length - 1)];
         int rand = UnityEngine.Random.Range(0, rearmPoints.Length - 1);
