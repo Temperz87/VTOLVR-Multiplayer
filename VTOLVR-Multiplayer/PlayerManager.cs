@@ -103,8 +103,8 @@ public static class PlayerManager
         Debug.Log("The map has loaded");
         gameLoaded = true;
         // As a client, when the map has loaded we are going to request a spawn point from the host
-        SetPrefabs(); 
-     
+        SetPrefabs();
+        CUSTOM_API.loadDisplayPrefab();
         carrierStart = FlightSceneManager.instance.playerActor.unitSpawn.unitSpawner.linkedToCarrier;
         if (carrierStart && !Networker.isHost)
         {
@@ -1090,7 +1090,7 @@ public static class PlayerManager
         if(currentVehicle == VTOLVehicles.FA26B)
         {
 
-            CUSTOM_API.loadDisplayPrefab();
+       
             //CUSTOM_API.SetupNewDisplay();
             CUSTOM_API.setupFA26(localVehicle);
 

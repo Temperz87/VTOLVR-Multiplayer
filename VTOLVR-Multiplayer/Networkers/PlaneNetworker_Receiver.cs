@@ -40,6 +40,7 @@ public class PlaneNetworker_Receiver : MonoBehaviour
         Networker.Disconnecting += OnDisconnect;
         Networker.WeaponFiring += WeaponFiring;
         Networker.JettisonUpdate += JettisonUpdate;
+        Networker.IKPuppetUpdate += IKUpdate;
         // Networker.WeaponStoppedFiring += WeaponStoppedFiring;
         Networker.FireCountermeasure += FireCountermeasure;
         if(!ownerActor.gameObject.name.Contains("verlord") && !ownerActor.gameObject.name.Contains("kc"))
@@ -92,6 +93,17 @@ public class PlaneNetworker_Receiver : MonoBehaviour
 
 
         StartCoroutine(colliderTimer());
+    }
+
+    public void IKUpdate(Packet packet)
+    {
+        Message_IKPuppet newMessage = (Message_IKPuppet)((PacketSingle)packet).message;
+
+        if (newMessage.networkUID != networkUID)
+            return;
+
+
+
     }
     public void PlaneUpdate(Packet packet)
     {

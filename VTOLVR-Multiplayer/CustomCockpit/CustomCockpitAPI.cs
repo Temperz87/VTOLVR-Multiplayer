@@ -114,8 +114,7 @@ public static class CUSTOM_API
     private static GameObject labelObject;
     public static bool onFreq = false;
     public static GameObject manprefab = null;
-
-    public static GameObject manobject = null;
+     
     private static bool lastFreq = false;
     public static void loadDisplayPrefab()
     {
@@ -123,8 +122,8 @@ public static class CUSTOM_API
         if (!AssetLoaded)
         {
             newDisplayPrefab =  FileLoader.GetAssetBundleAsGameObject(PathToBundle, "Display.prefab");
-            PathToBundle = Directory.GetCurrentDirectory() + @"\VTOLVR_ModLoader\mods\Multiplayer\ikmanprefab";
-            //manprefab = FileLoader.GetAssetBundleAsGameObject(PathToBundle, "manprefab.prefab");
+            PathToBundle = Directory.GetCurrentDirectory() + @"\VTOLVR_ModLoader\mods\Multiplayer\ikmanfinal";
+            manprefab = FileLoader.GetAssetBundleAsGameObject(PathToBundle, "IKMANMOUSE.prefab");
 
             AssetLoaded = true;
             Debug.Log("Prefab is " + newDisplayPrefab);
@@ -867,13 +866,31 @@ public static class CUSTOM_API
         return null;
      
     }
+
+    public static Transform GetChildTransformWithName(GameObject obj, string name)
+    {
+
+
+        Transform[] children = obj.GetComponentsInChildren<Transform>(true);
+        foreach (Transform child in children)
+        {
+            if (child.name == name || child.name.Contains(name + "(clone"))
+            {
+                return child;
+            }
+        }
+
+
+        return null;
+
+    }
     public static void moveObjectByKeyboard(GameObject objectMoved, float increment)
     {
         Vector3 objectTemp = objectMoved.transform.localPosition;
 
 
 
-        if (Input.GetKeyDown("w"))
+        if (Input.GetKey("w"))
         {
             objectTemp.y += increment;
              moveCounterY++;
@@ -882,7 +899,7 @@ public static class CUSTOM_API
 
         }
 
-        if (Input.GetKeyDown("s"))
+        if (Input.GetKey("s"))
         {
             objectTemp.y -= increment;
 
@@ -891,7 +908,7 @@ public static class CUSTOM_API
             Debug.Log(objectMoved.name + ": " + objectMoved.transform.localPosition.ToString("F4"));
         }
 
-        if (Input.GetKeyDown("a"))
+        if (Input.GetKey("a"))
         {
             objectTemp.x -= increment;
 
@@ -900,7 +917,7 @@ public static class CUSTOM_API
             Debug.Log(objectMoved.name + ": " + objectMoved.transform.localPosition.ToString("F4"));
         }
 
-        if (Input.GetKeyDown("d"))
+        if (Input.GetKey("d"))
         {
             objectTemp.x += increment;
 
@@ -909,7 +926,7 @@ public static class CUSTOM_API
             Debug.Log(objectMoved.name + ": " + objectMoved.transform.localPosition.ToString("F4"));
         }
 
-        if (Input.GetKeyDown("r"))
+        if (Input.GetKey("r"))
         {
             objectTemp.z += increment;
 
@@ -918,7 +935,7 @@ public static class CUSTOM_API
             Debug.Log(objectMoved.name + ": " + objectMoved.transform.localPosition.ToString("F4"));
         }
 
-        if (Input.GetKeyDown("f"))
+        if (Input.GetKey("f"))
         {
             objectTemp.z -= increment;
 
@@ -1021,10 +1038,7 @@ public static class CUSTOM_API
     static GameObject selectedOBJ;
     public static void Update()
     {
-        if (manobject == null)
-            return;
-        selectedOBJ=GetChildWithName(manobject,"headcontrol");
-        moveObjectByKeyboard(selectedOBJ, 0.01f);
+        
         /*getObjectByClick();
         if(selectedOBJ!=null)
        

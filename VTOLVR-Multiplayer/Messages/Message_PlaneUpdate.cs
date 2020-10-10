@@ -37,3 +37,20 @@ public class Message_PlaneUpdate : Message
             $"Throttle = {throttle} tailHook = {tailHook} Fuel Port = {fuelPort} NetworkID = {networkUID}";
     }
 }
+
+[Serializable]
+public class Message_IKPuppet : Message
+{
+    public SerializableVector3 puppetRhand;
+    public SerializableVector3 puppetLhand;
+    public SerializableVector3 puppetHead;
+    public SerializableVector3 puppetHeadLook;
+    public ulong networkUID;
+    public Message_IKPuppet(ulong networkUID)
+    {
+        
+        this.networkUID = networkUID;
+        
+        type = MessageType.IKPuppet;
+    }
+}

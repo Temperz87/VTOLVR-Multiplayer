@@ -55,5 +55,6 @@ public enum MessageType
     MissileDamage,
     GPSTarget,
     CompressedBatch,
-    SetFrequency
+    SetFrequency,
+    IKPuppet
 }

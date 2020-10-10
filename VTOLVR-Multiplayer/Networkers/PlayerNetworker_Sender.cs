@@ -30,14 +30,30 @@ class PlayerNetworker_Sender : MonoBehaviour
     GameObject hud;
     GameObject hudWaypoint;
 
+    GameObject headL;
+    GameObject head;
+    GameObject hip;
+    Transform Rhand;
+    Transform Lhand;
+
+
+    GameObject manPuppet;
+
+    public static Transform puppetRhand;
+    public static Transform puppetLhand;
+    public static Transform puppetHead;
+    public static Transform puppetHeadLook;
+    public static Transform puppethip;
     public float respawnTimer = 10.0f;
+
+    Message_IKPuppet ikMsg;
     void Awake()
     {
         lastMessage = new Message_Respawn(networkUID, new Vector3D(), new Quaternion(), false, Steamworks.SteamFriends.GetPersonaName(), VTOLAPI.GetPlayersVehicleEnum());
         actor = GetComponent<Actor>();
         health = actor.health;
-        
 
+        ikMsg = new Message_IKPuppet(networkUID);
         if (health == null)
             Debug.LogError("health was null on player " + gameObject.name);
         else
@@ -61,8 +77,110 @@ class PlayerNetworker_Sender : MonoBehaviour
         //}
 
         effects = GetComponentsInChildren<EngineEffects>();
+
+
+        setupManSender();
+        setupManReciever();
+        
     }
 
+    private void setupManReciever()
+    {
+        manPuppet = GameObject.Instantiate(CUSTOM_API.manprefab, gameObject.GetComponent<Rigidbody>().transform);
+
+        manPuppet.transform.localScale = new Vector3(0.074f, 0.074f, 0.074f);
+
+        manPuppet.transform.localEulerAngles = new Vector3(0.0f, 180.0f, 0.0f);
+
+        manPuppet.transform.localPosition = new Vector3(0.03f, 1.04f, 5.31f);
+        Debug.Log("righthandControl");
+        puppetRhand = CUSTOM_API.GetChildWithName(manPuppet, "righthandControl").transform;
+        Debug.Log("lefthandControl");
+        puppetLhand = CUSTOM_API.GetChildWithName(manPuppet, "lefthandControl").transform;
+        Debug.Log("headControl");
+        puppetHead = CUSTOM_API.GetChildWithName(manPuppet, "headControl").transform;
+        Debug.Log("headLook");
+        puppetHeadLook = CUSTOM_API.GetChildWithName(manPuppet, "lookControl").transform;
+        puppetHeadLook.transform.position = puppetHeadLook.transform.position - new Vector3(0.0f, 0.15f, 0.0f);
+        Debug.Log("Bone.008");
+        puppethip = CUSTOM_API.GetChildWithName(manPuppet, "Bone.008").transform;
+
+        Debug.Log("headik_end");
+        FastIKFabric ikh = CUSTOM_API.GetChildWithName(manPuppet, "Bone.007").AddComponent<FastIKFabric>();
+        ikh.Target = puppetHead;
+        ikh.ChainLength = 4;
+
+        Debug.Log("righthandik_end");
+        FastIKFabric ikrh = CUSTOM_API.GetChildWithName(manPuppet, "righthandik_end").AddComponent<FastIKFabric>();
+        ikrh.Target = puppetRhand;
+        ikrh.ChainLength = 3;
+
+        Debug.Log("lefthandik_end");
+        FastIKFabric iklh = CUSTOM_API.GetChildWithName(manPuppet, "lefthandik_end").AddComponent<FastIKFabric>();
+        iklh.Target = puppetLhand;
+        iklh.ChainLength = 3;
+        Debug.Log("SetupNewDisplay");
+
+
+        Debug.Log("headik");
+        FastIKLook ikheadlook = CUSTOM_API.GetChildWithName(manPuppet, "headik").AddComponent<FastIKLook>();
+        ikheadlook.Target = puppetHeadLook;
+    }
+
+    private void updateManPuppet()
+    {
+      
+    }
+    private void setupManSender()
+    {
+        Rhand = CUSTOM_API.GetChildTransformWithName(gameObject, "Controller (right)");
+        Debug.Log("Controller (left)");
+        Lhand = CUSTOM_API.GetChildTransformWithName(gameObject, "Controller (left)");
+
+        Debug.Log("neckBone_end");
+        head = CUSTOM_API.GetChildWithName(gameObject, "neckBone_end");
+
+        Debug.Log("hip.left");
+        hip = CUSTOM_API.GetChildWithName(gameObject, "hip.left");
+        headL = CUSTOM_API.GetChildWithName(gameObject, "Helmet");
+        Debug.Log("hip.left");
+        hip = CUSTOM_API.GetChildWithName(gameObject, "hip.left");
+    }
+    private void sendManData()
+    {
+      
+        Vector3 rhandHostPos = Rhand.position - hip.transform.position;
+
+        Vector3 lhandHostPos = Lhand.position - hip.transform.position;
+
+        Vector3 headHostPos = head.transform.position - hip.transform.position;
+
+        Vector3 headlookHostPos = (headL.transform.position + headL.transform.forward) - hip.transform.position;
+
+        puppetRhand.position = puppethip.transform.position + rhandHostPos;
+        puppetLhand.position = puppethip.transform.position + lhandHostPos;
+        puppetHead.position = puppethip.transform.position + (headHostPos * 1.0001f);
+        puppetHeadLook.position = puppethip.transform.position + headlookHostPos;
+
+        ikMsg.puppetRhand = puppethip.transform.position + rhandHostPos;
+        ikMsg.puppetLhand = puppethip.transform.position + lhandHostPos;
+        ikMsg.puppetHead  = puppethip.transform.position + (headHostPos * 1.0001f);
+        ikMsg.puppetHeadLook  = puppethip.transform.position + headlookHostPos;
+
+        if (Networker.isHost)
+        {
+            NetworkSenderThread.Instance.SendPacketAsHostToAllClients(ikMsg, Steamworks.EP2PSend.k_EP2PSendUnreliable);
+        }
+        else
+            NetworkSenderThread.Instance.SendPacketToSpecificPlayer(Networker.hostID, ikMsg, Steamworks.EP2PSend.k_EP2PSendUnreliable);
+    }
+
+    private void FixedUpdate()
+    {
+        sendManData();
+        if(manPuppet!=null)
+        CUSTOM_API.moveObjectByKeyboard(manPuppet, 0.01f);
+    }
     IEnumerator RespawnTimer()
     {
         Debug.Log("Starting respawn timer.");
