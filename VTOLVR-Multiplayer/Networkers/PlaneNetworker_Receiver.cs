@@ -103,6 +103,13 @@ public class PlaneNetworker_Receiver : MonoBehaviour
             }
         }
 
+       
+
+        StartCoroutine(colliderTimer());
+    }
+
+    private void Start()
+    {
         if (gameObject.name.Contains("Client"))
         {
             setupManReciever();
@@ -112,78 +119,83 @@ public class PlaneNetworker_Receiver : MonoBehaviour
                 if (rend.material.name.Contains("Glass") || rend.material.name.Contains("glass"))
                 {
                     Color meshColor = rend.sharedMaterial.color;
-                   
-                    meshColor*= new Color(0.8f,0.8f,1.0f,1.0f);
-                    meshColor.a = 0.6f;
-                    Shader newShader = Shader.Find("Transparent/Specular");
-                 
+
+                    meshColor *= new Color(0.8f, 0.8f, 1.0f, 1.0f);
+                    meshColor.a = 0.64f;
+                    Shader newShader = Shader.Find("Transparent/Diffuse");
+
                     rend.material.color = meshColor;
                     rend.material.shader = newShader;
                 }
 
-                if (rend.material.name.Contains("Ext") || rend.material.name.Contains("ext"))
-                {
-                    rend.material.SetInt("_Cull", (int)UnityEngine.Rendering.CullMode.Off);
-                }
+
 
 
             }
         }
-
-        StartCoroutine(colliderTimer());
     }
 
-
+    FastIKLook ikheadlook;
+FastIKFabric iklh; FastIKFabric ikrh; FastIKFabric ikh;
     private void setupManReciever()
     {
         manPuppet = GameObject.Instantiate(CUSTOM_API.manprefab, gameObject.GetComponent<Rigidbody>().transform);
+
+
+        foreach(Collider col in manPuppet.GetComponentsInChildren<Collider>())
+        { col.enabled = false; }
+
 
         manPuppet.transform.localScale = new Vector3(0.074f, 0.074f, 0.074f);
 
         manPuppet.transform.localEulerAngles = new Vector3(0.0f, 180.0f, 0.0f);
 
+
         if (vehicleType == VTOLVehicles.FA26B)
             manPuppet.transform.localPosition = new Vector3(0.03f, 1.04f, 5.31f);
 
         if (vehicleType == VTOLVehicles.F45A)
-            manPuppet.transform.localPosition = new Vector3(-0.06f, 0.81f, 5.7f);
+            manPuppet.transform.localPosition = new Vector3(-0.06f, 0.79f, 5.7f);
 
         if (vehicleType == VTOLVehicles.AV42C)
-            manPuppet.transform.localPosition = new Vector3(-0.07f, 0.69f, -0.1f);
-
+            manPuppet.transform.localPosition = new Vector3(-0.07f, 0.69f, -0.1f)-PlayerManager.av42Offset;
 
 
         Debug.Log("righthandControl");
         puppetRhand = CUSTOM_API.GetChildWithName(manPuppet, "righthandControl").transform;
+        puppetRhand.GetComponent<Renderer>().enabled = false;
         Debug.Log("lefthandControl");
         puppetLhand = CUSTOM_API.GetChildWithName(manPuppet, "lefthandControl").transform;
+        puppetLhand.GetComponent<Renderer>().enabled = false;
         Debug.Log("headControl");
         puppetHead = CUSTOM_API.GetChildWithName(manPuppet, "headControl").transform;
+        puppetHead.GetComponent<Renderer>().enabled = false;
         Debug.Log("headLook");
         puppetHeadLook = CUSTOM_API.GetChildWithName(manPuppet, "lookControl").transform;
         puppetHeadLook.transform.position = puppetHeadLook.transform.position - new Vector3(0.0f, 0.15f, 0.0f);
+        puppetHeadLook.GetComponent<Renderer>().enabled = false;
         Debug.Log("Bone.008");
         puppethip = CUSTOM_API.GetChildWithName(manPuppet, "Bone.008").transform;
 
         Debug.Log("headik_end");
-        FastIKFabric ikh = CUSTOM_API.GetChildWithName(manPuppet, "Bone.007").AddComponent<FastIKFabric>();
+          ikh = CUSTOM_API.GetChildWithName(manPuppet, "Bone.007").AddComponent<FastIKFabric>();
         ikh.Target = puppetHead;
         ikh.ChainLength = 4;
 
         Debug.Log("righthandik_end");
-        FastIKFabric ikrh = CUSTOM_API.GetChildWithName(manPuppet, "righthandik_end").AddComponent<FastIKFabric>();
+          ikrh = CUSTOM_API.GetChildWithName(manPuppet, "righthandik_end").AddComponent<FastIKFabric>();
         ikrh.Target = puppetRhand;
         ikrh.ChainLength = 3;
 
         Debug.Log("lefthandik_end");
-        FastIKFabric iklh = CUSTOM_API.GetChildWithName(manPuppet, "lefthandik_end").AddComponent<FastIKFabric>();
+          iklh = CUSTOM_API.GetChildWithName(manPuppet, "lefthandik_end").AddComponent<FastIKFabric>();
         iklh.Target = puppetLhand;
         iklh.ChainLength = 3;
         Debug.Log("SetupNewDisplay");
 
 
         Debug.Log("headik");
-        FastIKLook ikheadlook = CUSTOM_API.GetChildWithName(manPuppet, "headik").AddComponent<FastIKLook>();
+          ikheadlook = CUSTOM_API.GetChildWithName(manPuppet, "headik").AddComponent<FastIKLook>();
         ikheadlook.Target = puppetHeadLook;
         manSetup = true;
 
@@ -191,7 +203,9 @@ public class PlaneNetworker_Receiver : MonoBehaviour
 
     private void FixedUpdate()
     {
-        if(manPuppet.transform.position.magnitude > 500)
+        Vector3 v = manPuppet.transform.position - FlightSceneManager.instance.playerActor.gameObject.transform.position;
+        if (manSetup)
+        if(v.magnitude > 500)
         {
             manPuppet.SetActive(false);
         }else

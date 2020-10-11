@@ -54,7 +54,7 @@ public static class PlayerManager
     public static Vector3 av42Offset = new Vector3(0, 0.972f, -5.126f);//the difference between the origin of the ai and player AV-42s
     public static GameObject FrequenceyButton;
     public static Hitbox lastBulletHit;
-
+    public static Material playerCanopyMaterial;
     public class Player
     {
         public CSteamID cSteamID;
@@ -82,10 +82,13 @@ public static class PlayerManager
     }
     }
     public static List<Player> players = new List<Player>(); //This is the list of players
+ 
     /// <summary>
     /// This runs when the map has finished loading and hopefully 
     /// when the player first can interact with the vehicle.
     /// </summary>
+    /// 
+
     public static IEnumerator MapLoaded()
     {
         Debug.Log("map loading started");
@@ -105,6 +108,7 @@ public static class PlayerManager
         // As a client, when the map has loaded we are going to request a spawn point from the host
         SetPrefabs();
         CUSTOM_API.loadDisplayPrefab();
+         
         carrierStart = FlightSceneManager.instance.playerActor.unitSpawn.unitSpawner.linkedToCarrier;
         if (carrierStart && !Networker.isHost)
         {
@@ -1348,7 +1352,7 @@ public static class PlayerManager
         rbNetworker.smoothingTime = 1.25f;
         PlaneNetworker_Receiver planeReceiver = newVehicle.AddComponent<PlaneNetworker_Receiver>();
         planeReceiver.networkUID = networkID;
-        planeReceiver.vehicleType = vehicle;
+        planeReceiver.vehicleType = players[playerID].vehicleType;
         if (players[playerID].vehicleType == VTOLVehicles.AV42C || players[playerID].vehicleType == VTOLVehicles.F45A)
         {
             //Debug.Log("Adding Tilt Controller to this vehicle " + message.networkID);
