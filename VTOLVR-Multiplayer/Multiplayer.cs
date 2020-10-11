@@ -136,8 +136,10 @@ public class Multiplayer : VTOLMOD
         base.ModLoaded();
         CreateUI();
         gameObject.AddComponent<Networker>();
+        gameObject.AddComponent<ProfilerDataSaverComponent>();
         debugLog_Settings(debugLogs);
     }
+     
     public void CheckUpToDate()
     {
         if (checkedToDate)
@@ -329,7 +331,7 @@ public class Multiplayer : VTOLMOD
         {
             case VTOLScenes.ReadyRoom:
                 CreateUI();
-              
+                CreateVehicleButton();
                 break;
             case VTOLScenes.Akutan:
                 Log("Map Loaded from vtol scenes akutan");
@@ -941,7 +943,7 @@ public class Multiplayer : VTOLMOD
             GameObject button;
             if (canvasButtonPrefab == null)
             {
-                button = GameObject.Instantiate(GameObject.Find("RecenterCanvas"));
+                return null;
             }
             else
             {

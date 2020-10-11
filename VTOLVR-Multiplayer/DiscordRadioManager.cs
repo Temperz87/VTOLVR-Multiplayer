@@ -252,12 +252,12 @@ public static class DiscordRadioManager
     {
         if (!connectedToDiscord)
             return;
-        UnityEngine.Debug.Log("setting freq of player "+ name + "to"+ freq);
+        // UnityEngine.Debug.Log("setting freq of player "+ name + "to"+ freq);
         if (!steamIDtoFreq.ContainsKey(name))
             steamIDtoFreq.Add(name, freq);
         else
         {
-            steamIDtoFreq.Remove(name);
+            //steamIDtoFreq.Remove(name);
             steamIDtoFreq[name]= freq;
         }
     }

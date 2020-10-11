@@ -36,7 +36,7 @@ class WingFoldNetworker_Receiver : MonoBehaviour
     public void OnDestroy()
     {
         Networker.WingFold -= WingFold;
-        Debug.Log("Destroyed WingFold");
+        //Debug.Log("Destroyed WingFold");
         Debug.Log(gameObject.name);
     }
 }

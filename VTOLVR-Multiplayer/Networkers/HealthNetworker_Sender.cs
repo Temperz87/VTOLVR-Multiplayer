@@ -30,12 +30,12 @@ class HealthNetworker_Sender : MonoBehaviour
     {
         bulletMessage = (Message_BulletHit)((PacketSingle)packet).message;
 
-        Debug.Log("handling bullet hit");
+       
 
         if (bulletMessage.destUID != networkUID)
             return;
 
-
+    
         RaycastHit hitInfo;
         Vector3 pos = VTMapManager.GlobalToWorldPoint(bulletMessage.pos);
         Vector3 vel = bulletMessage.dir.toVector3;
@@ -46,6 +46,8 @@ class HealthNetworker_Sender : MonoBehaviour
         {
             source = AIDictionaries.allActors[bulletMessage.sourceActorUID];
         }
+        if (bulletMessage.sourceActorUID == networkUID)
+            return;
         bool storage = health.invincible;
         health.invincible = false;
         health.Damage(bulletMessage.damage * 1.0f, pos, Health.DamageTypes.Impact, source, "Bullet Impact");

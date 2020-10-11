@@ -28,7 +28,7 @@ public class WorldDataNetworker_Receiver : MonoBehaviour
       
         if (Time.timeScale != serverTimescale)
         {
-            Debug.Log($"Client timescale { Time.timeScale } mismatch with server { serverTimescale } - Forcing client update");
+            //Debug.Log($"Client timescale { Time.timeScale } mismatch with server { serverTimescale } - Forcing client update");
             Time.timeScale = serverTimescale;
         }
 
@@ -41,7 +41,7 @@ public class WorldDataNetworker_Receiver : MonoBehaviour
         Time.timeScale = worldDataUpdate.timeScale;
         serverTimescale = worldDataUpdate.timeScale;
 
-        Debug.Log($"Set the timescale {worldDataUpdate.timeScale}");
+        // Debug.Log($"Set the timescale {worldDataUpdate.timeScale}");
 
     }
 
@@ -60,6 +60,6 @@ public class WorldDataNetworker_Receiver : MonoBehaviour
     {
         Networker.WorldDataUpdate -= WorldDataUpdate;
         Networker.Disconnecting -= OnDisconnect;
-        Debug.Log("Destroyed WorldData Update");
+        //Debug.Log("Destroyed WorldData Update");
     }
 }

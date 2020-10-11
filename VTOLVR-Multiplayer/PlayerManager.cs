@@ -45,7 +45,7 @@ public static class PlayerManager
     public static ulong localUID;
     private static Packet storedSpawnMessage;
     public static GameObject worldData;
-    public static List<GameObject> invisibleActorList = new List<GameObject>();
+    public static List<Renderer> invisibleActorList = new List<Renderer>();
     public static Multiplayer multiplayerInstance = null;
     public static bool teamLeftie = false;
     public static int carrierStartTimer = 0;
@@ -362,23 +362,7 @@ public static class PlayerManager
         }
 
 
-        foreach (var rend in GameObject.FindObjectsOfType<Renderer>())
-        {
-            if (rend.material.name.Contains("glass") || rend.material.name.Contains("Glass"))
-            {
-                Color meshColor = rend.sharedMaterial.color;
-                meshColor.a = 0.2f;
-                rend.sharedMaterial.color = meshColor;
-                rend.sharedMaterial.SetFloat("_Mode", 2);
-                rend.sharedMaterial.SetInt("_SrcBlend", (int)UnityEngine.Rendering.BlendMode.SrcAlpha);
-                rend.sharedMaterial.SetInt("_DstBlend", (int)UnityEngine.Rendering.BlendMode.OneMinusSrcAlpha);
-                rend.sharedMaterial.SetInt("_ZWrite", 0);
-                rend.sharedMaterial.DisableKeyword("_ALPHATEST_ON");
-                rend.sharedMaterial.EnableKeyword("_ALPHABLEND_ON");
-                rend.sharedMaterial.DisableKeyword("_ALPHAPREMULTIPLY_ON");
-                rend.sharedMaterial.renderQueue = 3000;
-            }
-        }
+       
     }
 
     public static void SpawnPlayersInPlayerSpawnQueue()
@@ -592,17 +576,12 @@ public static class PlayerManager
                 }
             }
 
-            /*foreach (GameObject act in invisibleActorList)
+            foreach (Renderer rend in invisibleActorList)
             {
 
-
-                foreach (var comp in act.GetComponentsInChildren<Renderer>())
-                {
-                    comp.enabled = true;
-                }
-
-
-
+                
+                    rend.enabled = true;
+                
 
             }
             invisibleActorList.Clear();
@@ -622,12 +601,16 @@ public static class PlayerManager
                     {
                         foreach (var comp in play.vehicle.GetComponentsInChildren<Renderer>())
                         {
-                            comp.enabled = false;
+                            if(comp.enabled == true)
+                            {
+                                comp.enabled = false;
+                                invisibleActorList.Add(comp);
+                            }
                         }
-                        invisibleActorList.Add(play.vehicle);
+                       
                     }
                 }
-            }*/
+            } 
 
 
 

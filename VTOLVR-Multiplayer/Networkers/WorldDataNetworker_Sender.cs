@@ -25,7 +25,7 @@ class WorldDataNetworker_Sender : MonoBehaviour
             lastMessage.timeScale = curTimeScale;
             if (Networker.isHost)
             {
-                Debug.Log($"Sending the timescale {lastMessage.timeScale}");
+                //Debug.Log($"Sending the timescale {lastMessage.timeScale}");
                 NetworkSenderThread.Instance.SendPacketAsHostToAllClients(lastMessage, Steamworks.EP2PSend.k_EP2PSendReliable);
             }
             
@@ -40,7 +40,7 @@ class WorldDataNetworker_Sender : MonoBehaviour
         lastMessage.timeScale = 1f;
         if (Networker.isHost)
         {
-            Debug.Log($"Host Disconnecting - Setting timescale to {lastMessage.timeScale}");
+            //Debug.Log($"Host Disconnecting - Setting timescale to {lastMessage.timeScale}");
             NetworkSenderThread.Instance.SendPacketAsHostToAllClients(lastMessage, Steamworks.EP2PSend.k_EP2PSendReliable);
         }
 

@@ -122,7 +122,7 @@ public class MissileNetworker_Receiver : MonoBehaviour
 
                     }
                 }
-                Debug.Log("Try fire missile clientside");
+                // Debug.Log("Try fire missile clientside");
                 traverse.Field("missileIdx").SetValue(idx);
                 thisML.FireMissile();
                 RigidbodyNetworker_Receiver rbReceiver = gameObject.AddComponent<RigidbodyNetworker_Receiver>();

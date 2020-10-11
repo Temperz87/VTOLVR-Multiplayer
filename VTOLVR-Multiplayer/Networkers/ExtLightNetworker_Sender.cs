@@ -51,7 +51,7 @@ class ExtLight_Sender : MonoBehaviour
         lastMessage.UID = networkUID;
         if (strobeLight.onByDefault != lastStrobe || (navLever.currentState == 1) != lastNav || (landingLever.currentState == 1) != lastLanding)
         {
-            Debug.Log("The lights on " + networkUID + " have changed, sending");
+            //Debug.Log("The lights on " + networkUID + " have changed, sending");
 
             lastMessage.strobe = strobeLight.onByDefault;
             lastMessage.nav = (navLever.currentState == 1);

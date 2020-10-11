@@ -203,16 +203,21 @@ FastIKFabric iklh; FastIKFabric ikrh; FastIKFabric ikh;
 
     private void FixedUpdate()
     {
-        Vector3 v = manPuppet.transform.position - FlightSceneManager.instance.playerActor.gameObject.transform.position;
+
         if (manSetup)
-        if(v.magnitude > 500)
         {
-            manPuppet.SetActive(false);
-        }else
-        {
-            manPuppet.SetActive(true);
+            Vector3 v = manPuppet.transform.position - FlightSceneManager.instance.playerActor.gameObject.transform.position;
+            if (v.magnitude > 500)
+            {
+                manPuppet.SetActive(false);
+            }
+            else
+            {
+                manPuppet.SetActive(true);
+
+            }
         }
-    }
+     }
     public void IKUpdate(Packet packet)
     {
         if(manSetup!=true)
@@ -467,7 +472,7 @@ FastIKFabric iklh; FastIKFabric ikrh; FastIKFabric ikh;
                 }
                 else
                 {
-                    Debug.Log("try start fire for vehicle" + gameObject.name + " on current equip " + weaponManager.currentEquip);
+                    //Debug.Log("try start fire for vehicle" + gameObject.name + " on current equip " + weaponManager.currentEquip);
                     if (message.noAmmo && noAmmo == false)
                     {
                         if (weaponManager.currentEquip is HPEquipGun)

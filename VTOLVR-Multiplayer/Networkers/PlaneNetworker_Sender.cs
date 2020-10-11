@@ -178,7 +178,7 @@ public class PlaneNetworker_Sender : MonoBehaviour
                 previousFiringState = weaponManager.isFiring;
                 lastFiringMessage.weaponIdx = (int)traverse.Field("weaponIdx").GetValue();
                 lastIdx = lastFiringMessage.weaponIdx;
-                Debug.Log("combinedWeaponIdx = " + lastFiringMessage.weaponIdx);
+                //Debug.Log("combinedWeaponIdx = " + lastFiringMessage.weaponIdx);
                 lastFiringMessage.UID = networkUID;
                 // lastStoppedFiringMessage.UID = networkUID;
                 lastFiringMessage.isFiring = weaponManager.isFiring;
