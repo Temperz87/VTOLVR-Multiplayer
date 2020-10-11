@@ -27,6 +27,17 @@ public class PlaneNetworker_Receiver : MonoBehaviour
     private ulong mostCurrentUpdateNumber;
     private Actor ownerActor;
     private List<int> collidersStore;
+
+
+    GameObject manPuppet;
+
+    public Transform puppetRhand;
+    public Transform puppetLhand;
+    public Transform puppetHead;
+    public Transform puppetHeadLook;
+    public Transform puppethip;
+    bool manSetup = false;
+    public VTOLVehicles vehicleType = VTOLVehicles.None;
     private void Awake()
     {
         firstMessageReceived = false;
@@ -40,11 +51,11 @@ public class PlaneNetworker_Receiver : MonoBehaviour
         Networker.Disconnecting += OnDisconnect;
         Networker.WeaponFiring += WeaponFiring;
         Networker.JettisonUpdate += JettisonUpdate;
-        Networker.IKPuppetUpdate += IKUpdate;
+
         // Networker.WeaponStoppedFiring += WeaponStoppedFiring;
         Networker.FireCountermeasure += FireCountermeasure;
-        if(!ownerActor.gameObject.name.Contains("verlord") && !ownerActor.gameObject.name.Contains("kc"))
-        weaponManager = GetComponent<WeaponManager>();
+        if (!ownerActor.gameObject.name.Contains("verlord") && !ownerActor.gameObject.name.Contains("kc"))
+            weaponManager = GetComponent<WeaponManager>();
         mostCurrentUpdateNumber = 0;
         if (weaponManager == null)
             Debug.LogError("Weapon Manager was null on " + gameObject.name);
@@ -64,7 +75,8 @@ public class PlaneNetworker_Receiver : MonoBehaviour
         collidersStore = new List<int>();
         //?fix gun sight jitter
         if (ownerActor != null)
-        {   ownerActor.flightInfo.PauseGCalculations();
+        {
+            ownerActor.flightInfo.PauseGCalculations();
             //FlightSceneManager.instance.playerActor.flightInfo.OverrideRecordedAcceleration(Vector3.zero);
 
             foreach (Rigidbody rb in ownerActor.gameObject.GetComponentsInChildren<Rigidbody>())
@@ -91,19 +103,114 @@ public class PlaneNetworker_Receiver : MonoBehaviour
             }
         }
 
+        if (gameObject.name.Contains("Client"))
+        {
+            setupManReciever();
+            Networker.IKUpdate += IKUpdate;
+            foreach (var rend in GetComponentsInChildren<Renderer>())
+            {
+                if (rend.material.name.Contains("Glass") || rend.material.name.Contains("glass"))
+                {
+                    Color meshColor = rend.sharedMaterial.color;
+                   
+                    meshColor*= new Color(0.8f,0.8f,1.0f,1.0f);
+                    meshColor.a = 0.6f;
+                    Shader newShader = Shader.Find("Transparent/Specular");
+                 
+                    rend.material.color = meshColor;
+                    rend.material.shader = newShader;
+                }
+
+                if (rend.material.name.Contains("Ext") || rend.material.name.Contains("ext"))
+                {
+                    rend.material.SetInt("_Cull", (int)UnityEngine.Rendering.CullMode.Off);
+                }
+
+
+            }
+        }
 
         StartCoroutine(colliderTimer());
     }
 
+
+    private void setupManReciever()
+    {
+        manPuppet = GameObject.Instantiate(CUSTOM_API.manprefab, gameObject.GetComponent<Rigidbody>().transform);
+
+        manPuppet.transform.localScale = new Vector3(0.074f, 0.074f, 0.074f);
+
+        manPuppet.transform.localEulerAngles = new Vector3(0.0f, 180.0f, 0.0f);
+
+        if (vehicleType == VTOLVehicles.FA26B)
+            manPuppet.transform.localPosition = new Vector3(0.03f, 1.04f, 5.31f);
+
+        if (vehicleType == VTOLVehicles.F45A)
+            manPuppet.transform.localPosition = new Vector3(-0.06f, 0.81f, 5.7f);
+
+        if (vehicleType == VTOLVehicles.AV42C)
+            manPuppet.transform.localPosition = new Vector3(-0.07f, 0.69f, -0.1f);
+
+
+
+        Debug.Log("righthandControl");
+        puppetRhand = CUSTOM_API.GetChildWithName(manPuppet, "righthandControl").transform;
+        Debug.Log("lefthandControl");
+        puppetLhand = CUSTOM_API.GetChildWithName(manPuppet, "lefthandControl").transform;
+        Debug.Log("headControl");
+        puppetHead = CUSTOM_API.GetChildWithName(manPuppet, "headControl").transform;
+        Debug.Log("headLook");
+        puppetHeadLook = CUSTOM_API.GetChildWithName(manPuppet, "lookControl").transform;
+        puppetHeadLook.transform.position = puppetHeadLook.transform.position - new Vector3(0.0f, 0.15f, 0.0f);
+        Debug.Log("Bone.008");
+        puppethip = CUSTOM_API.GetChildWithName(manPuppet, "Bone.008").transform;
+
+        Debug.Log("headik_end");
+        FastIKFabric ikh = CUSTOM_API.GetChildWithName(manPuppet, "Bone.007").AddComponent<FastIKFabric>();
+        ikh.Target = puppetHead;
+        ikh.ChainLength = 4;
+
+        Debug.Log("righthandik_end");
+        FastIKFabric ikrh = CUSTOM_API.GetChildWithName(manPuppet, "righthandik_end").AddComponent<FastIKFabric>();
+        ikrh.Target = puppetRhand;
+        ikrh.ChainLength = 3;
+
+        Debug.Log("lefthandik_end");
+        FastIKFabric iklh = CUSTOM_API.GetChildWithName(manPuppet, "lefthandik_end").AddComponent<FastIKFabric>();
+        iklh.Target = puppetLhand;
+        iklh.ChainLength = 3;
+        Debug.Log("SetupNewDisplay");
+
+
+        Debug.Log("headik");
+        FastIKLook ikheadlook = CUSTOM_API.GetChildWithName(manPuppet, "headik").AddComponent<FastIKLook>();
+        ikheadlook.Target = puppetHeadLook;
+        manSetup = true;
+
+    }
+
+    private void FixedUpdate()
+    {
+        if(manPuppet.transform.position.magnitude > 500)
+        {
+            manPuppet.SetActive(false);
+        }else
+        {
+            manPuppet.SetActive(true);
+        }
+    }
     public void IKUpdate(Packet packet)
     {
+        if(manSetup!=true)
+            return;
         Message_IKPuppet newMessage = (Message_IKPuppet)((PacketSingle)packet).message;
-
+       
         if (newMessage.networkUID != networkUID)
             return;
-
-
-
+        puppetRhand.position = puppethip.transform.position + newMessage.puppetRhand.toVector3;
+        puppetLhand.position = puppethip.transform.position + newMessage.puppetLhand.toVector3;
+        puppetHead.position = puppethip.transform.position + newMessage.puppetHead.toVector3;
+        puppetHeadLook.position = puppethip.transform.position + newMessage.puppetHeadLook.toVector3;
     }
     public void PlaneUpdate(Packet packet)
     {
@@ -111,11 +218,11 @@ public class PlaneNetworker_Receiver : MonoBehaviour
 
         if (newMessage.networkUID != networkUID)
             return;
-       
+
 
         mostCurrentUpdateNumber = newMessage.sequenceNumber;
 
-      
+
         if (!firstMessageReceived)
         {
             firstMessageReceived = true;
@@ -331,7 +438,7 @@ public class PlaneNetworker_Receiver : MonoBehaviour
         {
             if (message.isFiring)
             {
-               
+
                 /*if (weaponManager.currentEquip is HPEquipMissileLauncher)
                 {
                     //lastml = weaponManager.currentEquip as HPEquipMissileLauncher;
@@ -339,7 +446,8 @@ public class PlaneNetworker_Receiver : MonoBehaviour
                     //Debug.Log("Single firing this missile " + weaponManager.currentEquip.shortName);
                     //weaponManager.SingleFire();
                 }
-                else*/ if (weaponManager.currentEquip is RocketLauncher)
+                else*/
+                if (weaponManager.currentEquip is RocketLauncher)
                 {
                     weaponManager.StartFire();
                 }
@@ -372,8 +480,8 @@ public class PlaneNetworker_Receiver : MonoBehaviour
                             noAmmo = false;
                         }
                     }
-                    if(!noAmmo)
-                    weaponManager.StartFire();
+                    if (!noAmmo)
+                        weaponManager.StartFire();
                 }
             }
             else
@@ -427,13 +535,16 @@ public class PlaneNetworker_Receiver : MonoBehaviour
         Networker.Disconnecting -= OnDisconnect;
         Networker.WeaponSet_Result -= WeaponSet_Result;
         Networker.WeaponFiring -= WeaponFiring;
+
+        if (manSetup == true)
+            Networker.IKUpdate -= IKUpdate;
         // Networker.WeaponStoppedFiring -= WeaponStoppedFiring;
         Networker.FireCountermeasure -= FireCountermeasure;
         Debug.Log("Destroyed Plane Update");
         Debug.Log(gameObject.name);
     }
 
-    
+
     private System.Collections.IEnumerator colliderTimer()
     {
         yield return new WaitForSeconds(20.5f);
@@ -453,9 +564,9 @@ public class PlaneNetworker_Receiver : MonoBehaviour
 
                     if (hitbox != null)
                     {
-                        hitbox.health.invincible = true; 
+                        hitbox.health.invincible = true;
                         collider.gameObject.layer = collidersStore[i];
-                        i+=1;
+                        i += 1;
                     }
                     else
                     {

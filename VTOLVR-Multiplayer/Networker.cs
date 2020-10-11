@@ -294,7 +294,7 @@ public class Networker : MonoBehaviour
     public static event UnityAction<Packet> RocketUpdate;
     public static event UnityAction<Packet> BulletHit;
     public static event UnityAction<Packet> RadarDetectedUpdate;
-    public static event UnityAction<Packet> IKPuppetUpdate;
+    public static event UnityAction<Packet> IKUpdate;
     #endregion
     #region Host Forwarding Suppress By Message Type List
     private List<MessageType> hostMessageForwardingSuppressList = new List<MessageType> {
@@ -893,6 +893,10 @@ public class Networker : MonoBehaviour
                 if (PlaneUpdate != null)
                     PlaneUpdate.Invoke(packet);
                 break;
+            case MessageType.IKPuppet:
+                if (IKUpdate != null)
+                    IKUpdate.Invoke(packet);
+                break;
             case MessageType.EngineTiltUpdate:
                 // Debug.Log("case engine tilt update");
                 if (EngineTiltUpdate != null)
@@ -1056,9 +1060,6 @@ public class Networker : MonoBehaviour
                 Debug.Log("case loading text update");
                 if (!isHost)
                     UpdateLoadingText(packet);
-                break;
-            case MessageType.IKPuppet:
-                IKPuppetUpdate.Invoke(packet);
                 break;
             case MessageType.HostLoaded:
                 Debug.Log("case host loaded");

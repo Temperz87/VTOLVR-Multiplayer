@@ -23,7 +23,7 @@ using UnityEngine;
         /// Solver iterations per update
         /// </summary>
         [Header("Solver Parameters")]
-        public int Iterations = 10;
+        public int Iterations = 4;
 
         /// <summary>
         /// Distance when the solver stops
@@ -111,10 +111,10 @@ using UnityEngine;
         // Update is called once per frame
         void Update()
         {
-            ResolveIK();
+            //ResolveIK();
         }
 
-        private void ResolveIK()
+        public void ResolveIK()
         {
             if (Target == null)
                 return;

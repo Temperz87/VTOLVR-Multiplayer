@@ -41,15 +41,15 @@ public class Message_PlaneUpdate : Message
 [Serializable]
 public class Message_IKPuppet : Message
 {
-    public SerializableVector3 puppetRhand;
-    public SerializableVector3 puppetLhand;
-    public SerializableVector3 puppetHead;
-    public SerializableVector3 puppetHeadLook;
+    public Vector3D puppetRhand;
+    public Vector3D puppetLhand;
+    public Vector3D puppetHead;
+    public Vector3D puppetHeadLook;
     public ulong networkUID;
-    public Message_IKPuppet(ulong networkUID)
+    public Message_IKPuppet(ulong networkUIDD)
     {
         
-        this.networkUID = networkUID;
+        this.networkUID = networkUIDD;
         
         type = MessageType.IKPuppet;
     }

@@ -1345,10 +1345,10 @@ public static class PlayerManager
         }
         RigidbodyNetworker_Receiver rbNetworker = newVehicle.AddComponent<RigidbodyNetworker_Receiver>();
         rbNetworker.networkUID = networkID;
-        rbNetworker.smoothingTime = 0.5f;
+        rbNetworker.smoothingTime = 1.25f;
         PlaneNetworker_Receiver planeReceiver = newVehicle.AddComponent<PlaneNetworker_Receiver>();
         planeReceiver.networkUID = networkID;
-
+        planeReceiver.vehicleType = vehicle;
         if (players[playerID].vehicleType == VTOLVehicles.AV42C || players[playerID].vehicleType == VTOLVehicles.F45A)
         {
             //Debug.Log("Adding Tilt Controller to this vehicle " + message.networkID);
