@@ -1,9 +1,7 @@
-﻿using System.Collections;
-using UnityEngine;
-using Harmony;
+﻿using Harmony;
+using System.Collections;
 using TMPro;
-using UnityEngine.UI;
-using Steamworks;
+using UnityEngine;
 
 class PlayerNetworker_Sender : MonoBehaviour
 {
@@ -33,6 +31,7 @@ class PlayerNetworker_Sender : MonoBehaviour
 
 
 
+    GameObject button = null;
     public float respawnTimer = 10.0f;
 
     void Awake()
@@ -66,23 +65,17 @@ class PlayerNetworker_Sender : MonoBehaviour
         effects = GetComponentsInChildren<EngineEffects>();
 
 
-       
+
     }
 
     IEnumerator RespawnTimer()
     {
         Debug.Log("Starting respawn timer.");
-        GameObject button = null;
-         
-        if (PlayerManager.FrequenceyButton != null)
-            Destroy(PlayerManager.FrequenceyButton);
 
-        if (!Networker.equipLocked)
-            button = Multiplayer.CreateVehicleButton();
         yield return new WaitForSeconds(respawnTimer);
-        if(button != null)
+        if (button != null)
             Destroy(button);
-    
+
         Debug.Log("Finished respawn timer.");
 
         ReArmingPoint[] rearmPoints = GameObject.FindObjectsOfType<ReArmingPoint>();
@@ -180,6 +173,7 @@ class PlayerNetworker_Sender : MonoBehaviour
         if (PlayerManager.selectedVehicle == "FA-26B")
             PlayerManager.selectedVehicle = "F/A-26B";
         PilotSaveManager.currentVehicle = VTResources.GetPlayerVehicle(PlayerManager.selectedVehicle);
+        PilotSaveManager.current.lastVehicleUsed = PilotSaveManager.currentVehicle.name;
         string campID;
         if (PlayerManager.selectedVehicle == "AV-42C")
         {
@@ -232,7 +226,7 @@ class PlayerNetworker_Sender : MonoBehaviour
         //  PlayerManager.StartRearm(rearmPoint);
         //rb.velocity = Vector3.zero;
         //rb.detectCollisions = true;
-        PlayerManager.SpawnLocalVehicleAndInformOtherClients(newPlayer, newPlayer.transform.position, newPlayer.transform.rotation, networkUID,false);
+        PlayerManager.SpawnLocalVehicleAndInformOtherClients(newPlayer, newPlayer.transform.position, newPlayer.transform.rotation, networkUID, false);
 
         //PlayerManager.SetupLocalAircraft(newPlayer, newPlayer.transform.position, newPlayer.transform.rotation, networkUID);
 
@@ -245,8 +239,8 @@ class PlayerNetworker_Sender : MonoBehaviour
             NetworkSenderThread.Instance.SendPacketAsHostToAllClients(lastMessage, Steamworks.EP2PSend.k_EP2PSendReliable);
         }
         //else
-         //   NetworkSenderThread.Instance.SendPacketToSpecificPlayer(Networker.hostID, lastMessage, Steamworks.EP2PSend.k_EP2PSendReliable);
-   
+        //   NetworkSenderThread.Instance.SendPacketToSpecificPlayer(Networker.hostID, lastMessage, Steamworks.EP2PSend.k_EP2PSendReliable);
+
     }
 
     void UnEject()
@@ -396,10 +390,10 @@ class PlayerNetworker_Sender : MonoBehaviour
         foreach (var part in FlightSceneManager.instance.playerActor.gameObject.GetComponentsInChildren<VehiclePart>())
         {
 
-            if(!part.partName.Contains("ngine") )
-            part.detachOnDeath = true;
+            if (!part.partName.Contains("ngine"))
+                part.detachOnDeath = true;
         }
- 
+
         Actor killer = null;
         Actor fkiller = null;
         foreach (var heal in FlightSceneManager.instance.playerActor.gameObject.GetComponentsInChildren<Health>())
@@ -411,10 +405,10 @@ class PlayerNetworker_Sender : MonoBehaviour
                 fkiller = killer;
             }
         }
-      
 
 
-      
+
+
         string message = "";
 
         if (FlightSceneManager.instance.playerActor.health.killMessage != null)
@@ -431,7 +425,7 @@ class PlayerNetworker_Sender : MonoBehaviour
         //health.Kill();
 
     }
-   
+
     void Death()
     {
         foreach (Collider collider in FlightSceneManager.instance.playerActor.gameObject.GetComponentsInChildren<Collider>())
@@ -441,19 +435,27 @@ class PlayerNetworker_Sender : MonoBehaviour
                 Hitbox hitbox = collider.GetComponent<Hitbox>();
 
                 if (hitbox != null)
-                { 
+                {
                     collider.gameObject.layer = 9;
                 }
             }
         }
+
+        if (PlayerManager.FrequenceyButton != null)
+            Destroy(PlayerManager.FrequenceyButton);
+
+        if (!Networker.equipLocked)
+            button = Multiplayer.CreateVehicleButton();
         repspawnTimer = StartCoroutine("RespawnTimer");
+
+
     }
 }
 class PlaneButton : MonoBehaviour
 {
     TextMeshPro textMesh;
     GameObject obj;
-    public string text ="";
+    public string text = "";
     void buttonFunc(string intext)
     {
         PlayerManager.selectedVehicle = intext;
@@ -465,14 +467,14 @@ class PlaneButton : MonoBehaviour
             if (controller.isLeft)
             {
                 obj = new GameObject();
-        textMesh = obj.AddComponent<TextMeshPro>();
-        textMesh.alignment = TextAlignmentOptions.Center;
-        textMesh.overflowMode = TextOverflowModes.Overflow;
-        textMesh.enableWordWrapping = false;
-        
-        obj.transform.SetParent(controller.transform);
-        obj.transform.localPosition = new Vector3(0, 0.2f, 0);
-        obj.transform.localScale = new Vector3(0.05f, 0.05f, 0.05f);
+                textMesh = obj.AddComponent<TextMeshPro>();
+                textMesh.alignment = TextAlignmentOptions.Center;
+                textMesh.overflowMode = TextOverflowModes.Overflow;
+                textMesh.enableWordWrapping = false;
+
+                obj.transform.SetParent(controller.transform);
+                obj.transform.localPosition = new Vector3(0, 0.2f, 0);
+                obj.transform.localScale = new Vector3(0.05f, 0.05f, 0.05f);
             }
         }
     }
@@ -483,7 +485,7 @@ class PlaneButton : MonoBehaviour
     }
     private void LateUpdate()
     {
-        
+
         foreach (var controller in GameObject.FindObjectsOfType<VRHandController>())
         {
             if (!controller.isLeft)
@@ -491,7 +493,7 @@ class PlaneButton : MonoBehaviour
 
                 Vector3 dist = controller.transform.position - obj.transform.position;
 
-                if(dist.magnitude<0.05f)
+                if (dist.magnitude < 0.05f)
                 {
                     buttonFunc("F-45A");
                     obj.transform.localScale = new Vector3(0.07f, 0.07f, 0.07f);

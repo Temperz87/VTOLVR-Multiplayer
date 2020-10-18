@@ -1,7 +1,4 @@
-﻿using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using UnityEngine;
+﻿using UnityEngine;
 
 class HealthNetworker_ReceiverHostEnforced : MonoBehaviour
 {
@@ -12,9 +9,9 @@ class HealthNetworker_ReceiverHostEnforced : MonoBehaviour
     private Message_BulletHit bulletMessage;
     private void Awake()
     {
-        lastMessage = new Message_Death(networkUID,false,"");
+        lastMessage = new Message_Death(networkUID, false, "");
         Networker.Death += Death;
-         
+
         health = GetComponent<Health>();
         health.invincible = true;
     }

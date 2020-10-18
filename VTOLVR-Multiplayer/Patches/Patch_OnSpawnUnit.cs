@@ -1,12 +1,4 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Harmony;
-using Steamworks;
-using UnityEngine;
+﻿using Harmony;
 
 
 [HarmonyPatch(typeof(AIUnitSpawn), "SpawnUnit")]
@@ -18,7 +10,7 @@ class Patch8
         {
             Actor actor = __instance.actor;
             if (actor.isPlayer)
-                    return;
+                return;
 
             TargetManager.instance.RegisterActor(actor);
             AIManager.setupAIAircraft(__instance.actor);
@@ -133,11 +125,11 @@ class Patch90
         {
 
             UnitSpawn sp = (UnitSpawn)Traverse.Create(__instance).Field("_spawnedUnit").GetValue();
-            if(sp == null)
-                 return;
-                Actor actor = sp.actor;
+            if (sp == null)
+                return;
+            Actor actor = sp.actor;
             if (actor.isPlayer)
-                    return;
+                return;
 
             TargetManager.instance.RegisterActor(actor);
             AIManager.setupAIAircraft(actor);

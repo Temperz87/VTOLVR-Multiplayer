@@ -1,8 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using UnityEngine;
 
 [Serializable]
@@ -21,16 +17,17 @@ public class Message_RequestSpawn_Result : Message
         type = MessageType.RequestSpawn_Result;
     }
 }
- 
+
 
 [Serializable]
 public class Message_RequestSpawn : Message
 {
     public bool teaml;
     public ulong senderSteamID;
-    public Message_RequestSpawn(bool team, ulong senderSteamID) {
+    public Message_RequestSpawn(bool team, ulong senderSteamID)
+    {
         type = MessageType.RequestSpawn;
-        this.teaml = team;
+        teaml = team;
         this.senderSteamID = senderSteamID;
 
     }

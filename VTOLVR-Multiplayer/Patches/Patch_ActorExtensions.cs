@@ -1,11 +1,4 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Harmony;
-using Oculus.Platform;
+﻿using Harmony;
 using UnityEngine;
 
 [HarmonyPatch(typeof(ActorExtensions), "DebugName")]

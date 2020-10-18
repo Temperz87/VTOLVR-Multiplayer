@@ -1,20 +1,18 @@
-﻿using System;
+﻿using Discord;
+using Harmony;
+using Steamworks;
+using System;
+using System.Collections;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.Net;
+using System.Reflection;
+using TMPro;
 using UnityEngine;
+using UnityEngine.Events;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
-using Harmony;
-using System.Reflection;
-using Steamworks;
-using System.Collections;
-using TMPro;
-using UnityEngine.Events;
-using System.Net;
-using System.IO;
-using Discord;
 
 public class Multiplayer : VTOLMOD
 {
@@ -139,7 +137,7 @@ public class Multiplayer : VTOLMOD
         gameObject.AddComponent<ProfilerDataSaverComponent>();
         debugLog_Settings(debugLogs);
     }
-     
+
     public void CheckUpToDate()
     {
         if (checkedToDate)
@@ -190,7 +188,7 @@ public class Multiplayer : VTOLMOD
         thrust_changed += thrust_Settings;
         alpha_changed += alpha_Settings;
         settings.CreateCustomLabel("Thrust Multiplier");
-        settings.CreateFloatSetting("Default = 1.0", thrust_changed,1.0f, 1.0f, 5.0f, 0.2f);
+        settings.CreateFloatSetting("Default = 1.0", thrust_changed, 1.0f, 1.0f, 5.0f, 0.2f);
         settings.CreateCustomLabel("High Alpha Mode");
         settings.CreateBoolSetting("Default = False", alpha_changed, alpha);
 
@@ -297,7 +295,7 @@ public class Multiplayer : VTOLMOD
             temp += "compressedtotal " + Networker.totalCompressed + "\n";
             temp += "sucess " + Networker.compressionSucess + "\n";
             temp += "fail " + Networker.compressionFailure + "\n";
-            temp += "Compression failure Rate " + (float)Networker.compressionFailTotal / (float)(Networker.compressionSucessTotal + Networker.compressionFailTotal) * 100.0f + "\n";
+            temp += "Compression failure Rate " + Networker.compressionFailTotal / (float)(Networker.compressionSucessTotal + Networker.compressionFailTotal) * 100.0f + "\n";
             foreach (PlayerManager.Player player in PlayerManager.players)
             {
                 temp += player.cSteamID + ": " + Mathf.Round(player.ping * 1000f) + "\n";
@@ -310,7 +308,7 @@ public class Multiplayer : VTOLMOD
                     MessageType enumHandle = (MessageType)i;
                     if (NetworkSenderThread.Instance.messageCounterTypes.ContainsKey(enumHandle))
                     {
-                        float percent = (float)NetworkSenderThread.Instance.messageCounterTypes[enumHandle] / (float)NetworkSenderThread.Instance.messageCounter * 100.0f;
+                        float percent = NetworkSenderThread.Instance.messageCounterTypes[enumHandle] / (float)NetworkSenderThread.Instance.messageCounter * 100.0f;
                         temp += MessageType.GetNames(typeof(MessageType))[i] + " " + Mathf.Round(percent) + "\n";
                     }
 
@@ -331,7 +329,6 @@ public class Multiplayer : VTOLMOD
         {
             case VTOLScenes.ReadyRoom:
                 CreateUI();
-                CreateVehicleButton();
                 break;
             case VTOLScenes.Akutan:
                 Log("Map Loaded from vtol scenes akutan");
@@ -411,6 +408,10 @@ public class Multiplayer : VTOLMOD
         {
             Debug.Log("Waiting for scene to be loaded");
         }
+        var refrence = Resources.FindObjectsOfTypeAll<GameObject>().FirstOrDefault(g => g.name.Contains("RecenterCanvas"));
+        canvasButtonPrefab = Instantiate(refrence);
+        canvasButtonPrefab.SetActive(false);
+
         Log("Creating Multiplayer UI");
         CheckUpToDate();
 
@@ -875,7 +876,7 @@ public class Multiplayer : VTOLMOD
                 bInteractable.interactableName = "Switch Vehicles.";
                 bInteractable.OnInteract = new UnityEvent();
                 PlayerManager.selectedVehicle = PilotSaveManager.currentVehicle.name;
-         
+
                 foreach (var vehicle in VTResources.GetPlayerVehicles())
                 {
                     Debug.Log(vehicle.name);
@@ -969,12 +970,12 @@ public class Multiplayer : VTOLMOD
                 {
                     textS = DiscordRadioManager.getNextFrequency();
                     DiscordRadioManager.radioFreq = textS.GetHashCode();
-                    CUSTOM_API.forceSetFreq(textS); 
+                    CUSTOM_API.forceSetFreq(textS);
                     text.text = textS;
                     Debug.Log("discord freq " + DiscordRadioManager.radioFreq);
                 });
             }
-             
+
             return button;
         }
         return null;

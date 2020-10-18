@@ -1,6 +1,5 @@
 ﻿using UnityEngine;
 using VTOLVR_Multiplayer;
-using Harmony;
 class HealthNetworker_Sender : MonoBehaviour
 {
     public ulong networkUID;
@@ -9,33 +8,34 @@ class HealthNetworker_Sender : MonoBehaviour
     public bool immediateFlag;
     public Actor ownerActor;
     private Message_BulletHit bulletMessage;
-  
+
     private void Awake()
     {
-        lastMessage = new Message_Death(networkUID, false,"empty");
+        lastMessage = new Message_Death(networkUID, false, "empty");
         ownerActor = GetComponentInParent<Actor>();
         health = ownerActor.health;
-      
+
         if (health == null)
             Debug.LogError("health was null on vehicle " + gameObject.name);
         else
             health.OnDeath.AddListener(Death);
         Debug.LogError("found health on " + gameObject.name);
-       
+
         ownerActor.hideDeathLog = true;
-        Networker.BulletHit += this.BulletHit;
+        Networker.BulletHit += BulletHit;
+
     }
 
     public void BulletHit(Packet packet)
     {
         bulletMessage = (Message_BulletHit)((PacketSingle)packet).message;
 
-       
+
 
         if (bulletMessage.destUID != networkUID)
             return;
 
-    
+
         RaycastHit hitInfo;
         Vector3 pos = VTMapManager.GlobalToWorldPoint(bulletMessage.pos);
         Vector3 vel = bulletMessage.dir.toVector3;
@@ -55,7 +55,7 @@ class HealthNetworker_Sender : MonoBehaviour
         health.invincible = storage;
 
     }
-    void Death()
+    public void Death()
     {
         lastMessage.UID = networkUID;
         lastMessage.immediate = immediateFlag;
@@ -63,7 +63,7 @@ class HealthNetworker_Sender : MonoBehaviour
         string killerName = "themselves";
         Actor killer = null;
 
-        
+
         if (health.killedByActor != null)
         {
             killerName = health.killedByActor.name;
@@ -77,7 +77,7 @@ class HealthNetworker_Sender : MonoBehaviour
         }
         string selfName = PlayerManager.GetPlayerNameFromActor(ownerActor);
 
-        if(selfName.Length<2)
+        if (selfName.Length < 2)
         {
             selfName = ownerActor.name;
         }

@@ -1,8 +1,5 @@
-﻿using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using Harmony;
 using UnityEngine;
-using Harmony;
 
 class ShipNetworker_Receiver : MonoBehaviour
 {
@@ -28,13 +25,14 @@ class ShipNetworker_Receiver : MonoBehaviour
         shipTraverse = Traverse.Create(ship);
     }
 
-    void FixedUpdate() {
+    void FixedUpdate()
+    {
         targetPositionGlobal += targetVelocity * Time.fixedDeltaTime;
         targetPosition = VTMapManager.GlobalToWorldPoint(targetPositionGlobal);
         ship.rb.MovePosition(ship.transform.position + targetVelocity * Time.fixedDeltaTime + ((targetPosition - ship.transform.position) * Time.fixedDeltaTime) / smoothTime);
-        ship.rb.velocity = targetVelocity + (targetPosition - ship.transform.position)/smoothTime;
+        ship.rb.velocity = targetVelocity + (targetPosition - ship.transform.position) / smoothTime;
         shipTraverse.Field("_velocity").SetValue(ship.rb.velocity);//makes the wake emit partical
-        ship.rb.MoveRotation(Quaternion.Lerp(ship.transform.rotation, targetRotation, Time.fixedDeltaTime/rotSmoothTime));
+        ship.rb.MoveRotation(Quaternion.Lerp(ship.transform.rotation, targetRotation, Time.fixedDeltaTime / rotSmoothTime));
     }
 
     public void ShipUpdate(Packet packet)
@@ -45,9 +43,10 @@ class ShipNetworker_Receiver : MonoBehaviour
 
         targetPositionGlobal = lastMessage.position + lastMessage.velocity.toVector3 * Networker.pingToHost;
         targetVelocity = lastMessage.velocity.toVector3;
-        targetRotation =  lastMessage.rotation;
+        targetRotation = lastMessage.rotation;
 
-        if ((VTMapManager.GlobalToWorldPoint(lastMessage.position) - ship.transform.position).magnitude > 100) {
+        if ((VTMapManager.GlobalToWorldPoint(lastMessage.position) - ship.transform.position).magnitude > 100)
+        {
             Debug.Log("Ship is too far, teleporting. This message should apear once per ship at spawn, if ur seeing more something is probably fucky");
             ship.transform.position = VTMapManager.GlobalToWorldPoint(lastMessage.position);
         }

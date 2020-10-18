@@ -1,8 +1,4 @@
-﻿using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using UnityEngine;
-using Harmony;
+﻿using UnityEngine;
 
 class GroundNetworker_Receiver : MonoBehaviour
 {
@@ -28,13 +24,14 @@ class GroundNetworker_Receiver : MonoBehaviour
     {
         lastMessage = new Message_ShipUpdate(new Vector3D(), new Quaternion(), new Vector3D(), networkUID);//it uses ship update, cause the information really isnt all that different
         Networker.ShipUpdate += GroundUpdate;
-         
+
         groundUnitMover = GetComponent<GroundUnitMover>();
         soldier = GetComponentInChildren<SoldierAnimator>();
         groundUnitMover.enabled = false;
         rb = GetComponent<Rigidbody>();
 
-        if (soldier != null) {
+        if (soldier != null)
+        {
             Debug.Log("uwu, i am a soldier!");
             soldier.enabled = false;
             isSoldier = true;
@@ -72,11 +69,12 @@ class GroundNetworker_Receiver : MonoBehaviour
         }
         adjustedRotation = adjustedRotation.normalized;
         //groundTraverse.Field("velocity").SetValue(targetVelocity + (targetPositionGlobal - smoothedPosition).toVector3 / smoothTime);
-        
+
         rb.MovePosition(adjustedPos);
         rb.MoveRotation(adjustedRotation);//move rotation was throwing "Rotation quaternions must be unit length"
 
-        if (isSoldier) {
+        if (isSoldier)
+        {
             soldier.animator.SetFloat(walkingAnimation, (targetVelocity + (targetPositionGlobal - smoothedPosition).toVector3 / smoothTime).magnitude);
         }
     }

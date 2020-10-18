@@ -7,13 +7,13 @@ public class Message_WorldData : Message
 
     public Message_WorldData(float timeScaleData)
     {
-        this.timeScale = timeScaleData;
+        timeScale = timeScaleData;
         type = MessageType.WorldData;
     }
 }
 
 [Serializable]
-public class Message_GPSData: Message
+public class Message_GPSData : Message
 {
     public Vector3D pos;
     public string prefix;
@@ -21,13 +21,13 @@ public class Message_GPSData: Message
     public string GPName;
     public ulong uid;
 
-    public Message_GPSData(ulong ida,Vector3D ipos, string iprefix, bool team, string group)
+    public Message_GPSData(ulong ida, Vector3D ipos, string iprefix, bool team, string group)
     {
-        this.uid = ida;
-        this.pos = ipos;
-        this.prefix = iprefix;
-        this.teamLeft = team;
-        this.GPName = group;
+        uid = ida;
+        pos = ipos;
+        prefix = iprefix;
+        teamLeft = team;
+        GPName = group;
         type = MessageType.GPSTarget;
     }
 }

@@ -1,8 +1,4 @@
-﻿using Oculus.Platform.Samples.VrHoops;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using UnityEngine;
+﻿using UnityEngine;
 
 class HealthNetworker_Receiver : MonoBehaviour
 {
@@ -13,8 +9,8 @@ class HealthNetworker_Receiver : MonoBehaviour
     private Message_BulletHit bulletMessage;
     private void Awake()
     {
-        lastMessage = new Message_Death(networkUID, false,"empty");
-        Networker.Death += Death; 
+        lastMessage = new Message_Death(networkUID, false, "empty");
+        Networker.Death += Death;
         health = GetComponent<Health>();
         health.invincible = true;
     }
@@ -52,7 +48,7 @@ class HealthNetworker_Receiver : MonoBehaviour
         }
 
     }
-     
+
 
     public void OnDestroy()
     {

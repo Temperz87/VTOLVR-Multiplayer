@@ -1,17 +1,9 @@
 ﻿using Discord;
-using Steamworks;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using System.Reflection;
-using System.Reflection.Emit;
-using System.Text;
-using System.Threading.Tasks;
-using UnityEngine;
 
 public static class DiscordRadioManager
-    {
+{
     public static Discord.Discord discord;
     public static bool connectedToDiscord;
 
@@ -20,7 +12,7 @@ public static class DiscordRadioManager
     public static string lobbySecret;
     public static bool connected;
     public static Dictionary<string, long> steamIDtoDiscordIDDictionary = new Dictionary<string, long>();
-    public static Dictionary<string, int> steamIDtoFreq= new Dictionary<string, int>();
+    public static Dictionary<string, int> steamIDtoFreq = new Dictionary<string, int>();
     public static int radioFreq;
     public static LobbyManager lobbyManager = null;
     public static string PersonaName = " ";
@@ -33,38 +25,38 @@ public static class DiscordRadioManager
     public static string freqTableNetworkString = "UNICOM";
     public static string freqLabelTableNetworkString = "122.8";
     public static void start()
-        {
+    {
         UnityEngine.Debug.Log("loading discord");
         var dllDirectory = @"VTOLVR_ModLoader\mods\Multiplayer";
         Environment.SetEnvironmentVariable("PATH", Environment.GetEnvironmentVariable("PATH") + ";" + dllDirectory);
-            var clientID = Environment.GetEnvironmentVariable("DISCORD_CLIENT_ID");
-            if (clientID == null)
-            {
-                clientID = "759675844971986975";
-            }
-            discord = new Discord.Discord(Int64.Parse(clientID), (UInt64)Discord.CreateFlags.Default);
-            userID = 0;
-            lobbyID = 0;
-            if (discord != null)
-            {
-                connectedToDiscord = true;
+        var clientID = Environment.GetEnvironmentVariable("DISCORD_CLIENT_ID");
+        if (clientID == null)
+        {
+            clientID = "759675844971986975";
+        }
+        discord = new Discord.Discord(Int64.Parse(clientID), (UInt64)Discord.CreateFlags.Default);
+        userID = 0;
+        lobbyID = 0;
+        if (discord != null)
+        {
+            connectedToDiscord = true;
             UnityEngine.Debug.Log("loading discord worked");
-            }
+        }
 
-            if (!connectedToDiscord)
+        if (!connectedToDiscord)
             return;
         lobbyManager = discord.GetLobbyManager();
         var userManager = discord.GetUserManager();
-            // The auth manager fires events as information about the current user changes.
-            // This event will fire once on init.
-            //
-            // GetCurrentUser will error until this fires once.
-            userManager.OnCurrentUserUpdate += () =>
-            {
-                var currentUser = userManager.GetCurrentUser();
-                //Console.WriteLine(currentUser.Username);
-                userID=currentUser.Id;
-            };
+        // The auth manager fires events as information about the current user changes.
+        // This event will fire once on init.
+        //
+        // GetCurrentUser will error until this fires once.
+        userManager.OnCurrentUserUpdate += () =>
+        {
+            var currentUser = userManager.GetCurrentUser();
+            //Console.WriteLine(currentUser.Username);
+            userID = currentUser.Id;
+        };
 
         PersonaName = Steamworks.SteamFriends.GetPersonaName();
 
@@ -77,12 +69,12 @@ public static class DiscordRadioManager
 
         var dllDirectory = @"VTOLVR_ModLoader\mods\Multiplayer";
         frequencyTable.Clear();
-       
+
         frequencyTableLabels.Clear();
         freqSelection = 0;
 
         freqLabelTableNetworkString = "UNICOM";
-         freqTableNetworkString = "122.8";
+        freqTableNetworkString = "122.8";
         frequencyTableLabels.Add("UNICOM");
         frequencyTable.Add("122.8");
 
@@ -132,15 +124,15 @@ public static class DiscordRadioManager
         int counter = 0;
         foreach (var freq in DiscordRadioManager.frequencyTable)
         {
-           
+
             string Label = "\n";
-            if (counter<frequencyTableLabels.Count)
+            if (counter < frequencyTableLabels.Count)
             {
                 Label += frequencyTableLabels[counter];
             }
 
             frequencyLegLookup += Label;
-            frequencyLegLookup += ": "+ freq;
+            frequencyLegLookup += ": " + freq;
             counter += 1;
         }
         return frequencyLegLookup;
@@ -148,7 +140,7 @@ public static class DiscordRadioManager
     public static string getNextFrequency()
     {
         freqSelection += 1;
-        if(freqSelection> frequencyTable.Count - 1)
+        if (freqSelection > frequencyTable.Count - 1)
             freqSelection = 0;
         return frequencyTable[freqSelection];
     }
@@ -235,7 +227,7 @@ public static class DiscordRadioManager
             return;
         UnityEngine.Debug.Log("added player");
         if (!steamIDtoDiscordIDDictionary.ContainsKey(name))
-        steamIDtoDiscordIDDictionary.Add(name, discordid);
+            steamIDtoDiscordIDDictionary.Add(name, discordid);
         else
         {
             steamIDtoDiscordIDDictionary.Remove(name);
@@ -245,7 +237,7 @@ public static class DiscordRadioManager
 
         if (!steamIDtoFreq.ContainsKey(name))
             steamIDtoFreq.Add(name, 0);
-      
+
     }
 
     public static void setFreq(string name, int freq)
@@ -258,41 +250,42 @@ public static class DiscordRadioManager
         else
         {
             //steamIDtoFreq.Remove(name);
-            steamIDtoFreq[name]= freq;
+            steamIDtoFreq[name] = freq;
         }
     }
-    public static void joinLobby(long ilobbyid,string secret)
+    public static void joinLobby(long ilobbyid, string secret)
     {
         if (!connectedToDiscord)
             return;
         parseFrequencyList();
         connected = true;
         lobbyID = ilobbyid;
-      
-        lobbyManager.ConnectLobby(ilobbyid, secret,(Discord.Result result, ref Discord.Lobby lobby) =>
-        {
-            if (result == Discord.Result.Ok)
-            {
-                Console.WriteLine("Connected to lobby {0}!", lobby.Id);
-            }
 
-            lobbyManager.ConnectVoice(lobby.Id, (Discord.Result voiceResult) => {
+        lobbyManager.ConnectLobby(ilobbyid, secret, (Discord.Result result, ref Discord.Lobby lobby) =>
+         {
+             if (result == Discord.Result.Ok)
+             {
+                 Console.WriteLine("Connected to lobby {0}!", lobby.Id);
+             }
 
-                if (voiceResult == Discord.Result.Ok)
-                {
-                    Console.WriteLine("New User Connected to Voice! Say Hello! Result: {0}", voiceResult);
-                }
-                else
-                {
-                    Console.WriteLine("Failed with Result: {0}", voiceResult);
-                };
-            });
+             lobbyManager.ConnectVoice(lobby.Id, (Discord.Result voiceResult) =>
+             {
 
-            UpdateActivity(discord, lobby);
-            discord.GetVoiceManager().SetSelfMute(false);
+                 if (voiceResult == Discord.Result.Ok)
+                 {
+                     Console.WriteLine("New User Connected to Voice! Say Hello! Result: {0}", voiceResult);
+                 }
+                 else
+                 {
+                     Console.WriteLine("Failed with Result: {0}", voiceResult);
+                 };
+             });
 
-            //discord.GetVoiceManager().SetSelfDeaf(true);
-        });
+             UpdateActivity(discord, lobby);
+             discord.GetVoiceManager().SetSelfMute(false);
+
+             //discord.GetVoiceManager().SetSelfDeaf(true);
+         });
 
         /*
     Console.WriteLine("Connected to lobby: {0}", lobby.Id);
@@ -305,36 +298,36 @@ public static class DiscordRadioManager
         if (!connectedToDiscord)
             return;
         discord.RunCallbacks();
-        
+
 
         if (!connected)
             return;
         lobbyManager.FlushNetwork();
         tick += UnityEngine.Time.deltaTime;
 
-        if(tick > 1.0f/tickrate)
+        if (tick > 1.0f / tickrate)
         {
             tick = 0.0f;
-        Message_SetFrequency freqMsg = new Message_SetFrequency(PersonaName, radioFreq);
-        if (Networker.isHost)
-            NetworkSenderThread.Instance.SendPacketAsHostToAllClients(freqMsg, Steamworks.EP2PSend.k_EP2PSendReliable);
-        else
-            NetworkSenderThread.Instance.SendPacketToSpecificPlayer(Networker.hostID, freqMsg, Steamworks.EP2PSend.k_EP2PSendReliable);
-      
-        foreach (var play in PlayerManager.players)
-        {
-            if(steamIDtoFreq.ContainsKey(play.nameTag))
+            Message_SetFrequency freqMsg = new Message_SetFrequency(PersonaName, radioFreq);
+            if (Networker.isHost)
+                NetworkSenderThread.Instance.SendPacketAsHostToAllClients(freqMsg, Steamworks.EP2PSend.k_EP2PSendReliable);
+            else
+                NetworkSenderThread.Instance.SendPacketToSpecificPlayer(Networker.hostID, freqMsg, Steamworks.EP2PSend.k_EP2PSendReliable);
+
+            foreach (var play in PlayerManager.players)
             {
-                if (steamIDtoFreq[play.nameTag] != radioFreq)
+                if (steamIDtoFreq.ContainsKey(play.nameTag))
                 {
-                    mutePlayer(play.nameTag, true);
-                }
-                else
-                {
-                    mutePlayer(play.nameTag, false);
+                    if (steamIDtoFreq[play.nameTag] != radioFreq)
+                    {
+                        mutePlayer(play.nameTag, true);
+                    }
+                    else
+                    {
+                        mutePlayer(play.nameTag, false);
+                    }
                 }
             }
-        }
         }
     }
 
@@ -347,19 +340,26 @@ public static class DiscordRadioManager
         {
             var ids = lobbyManager.GetMemberUserId(lobbyID, i);
 
-            if(steamIDtoDiscordIDDictionary.ContainsKey(name))
+            if (steamIDtoDiscordIDDictionary.ContainsKey(name))
             {
                 long discordid = steamIDtoDiscordIDDictionary[name];
-            if (userID != ids)
+                if (userID != ids)
                 {
                     if (state)
+                    {
                         discord.GetVoiceManager().SetLocalVolume(discordid, 0);
+                        discord.GetVoiceManager().SetLocalMute(discordid, true);
+                    }
+
                     else
-                        discord.GetVoiceManager().SetLocalVolume(discordid, 100);
-                    
+                    {
+                        discord.GetVoiceManager().SetLocalMute(discordid, false);
+                    discord.GetVoiceManager().SetLocalVolume(discordid, 100);
+                    }
+
                 }
             }
-            
+
         }
     }
     public static void makeLobby()
@@ -379,12 +379,13 @@ public static class DiscordRadioManager
         lobbyManager.CreateLobby(txn, (Discord.Result result, ref Discord.Lobby lobby) =>
         {
             Console.WriteLine("lobby {0} created with secret {1}", lobby.Id, lobby.Secret);
-           
+
             // We want to update the capacity of the lobby
             // So we get a new transaction for the lobby
             var newTxn = lobbyManager.GetLobbyUpdateTransaction(lobby.Id);
             newTxn.SetCapacity(50);
-            lobbyManager.ConnectVoice(lobby.Id, (Discord.Result voiceResult) => {
+            lobbyManager.ConnectVoice(lobby.Id, (Discord.Result voiceResult) =>
+            {
 
                 if (voiceResult == Discord.Result.Ok)
                 {
@@ -407,9 +408,9 @@ public static class DiscordRadioManager
             });
             UpdateActivity(discord, lobby);
         });
-    
-}
-    
+
+    }
+
 
 }
- 
+

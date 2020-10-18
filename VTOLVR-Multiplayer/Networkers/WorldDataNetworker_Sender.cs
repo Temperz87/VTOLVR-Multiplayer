@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using UnityEngine;
+﻿using UnityEngine;
 
 class WorldDataNetworker_Sender : MonoBehaviour
 {
@@ -17,18 +12,20 @@ class WorldDataNetworker_Sender : MonoBehaviour
         lastMessage = new Message_WorldData(lastTimeScale);
     }
 
-    void LateUpdate() {
+    void LateUpdate()
+    {
 
         float curTimeScale = Time.timeScale;
 
-        if (curTimeScale != lastTimeScale) {
+        if (curTimeScale != lastTimeScale)
+        {
             lastMessage.timeScale = curTimeScale;
             if (Networker.isHost)
             {
                 //Debug.Log($"Sending the timescale {lastMessage.timeScale}");
                 NetworkSenderThread.Instance.SendPacketAsHostToAllClients(lastMessage, Steamworks.EP2PSend.k_EP2PSendReliable);
             }
-            
+
             lastTimeScale = curTimeScale;
         }
     }

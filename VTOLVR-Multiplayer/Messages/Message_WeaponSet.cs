@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using Steamworks;
 
 [Serializable]
 public class Message_WeaponSet_Result : Message

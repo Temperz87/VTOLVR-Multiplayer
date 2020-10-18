@@ -1,8 +1,4 @@
 ﻿using Harmony;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using UnityEngine;
 
 class AAANetworker_Sender : MonoBehaviour
@@ -36,11 +32,14 @@ class RocketLauncherNetworker_Sender : MonoBehaviour
         traverse = Traverse.Create(rocketLauncher);
     }
 
-    void FixedUpdate() {
+    void FixedUpdate()
+    {
         int rocketCount = (int)traverse.Field("rocketCount").GetValue();
-        if (lastRocketCount != rocketCount) {
+        if (lastRocketCount != rocketCount)
+        {
             Debug.Log("Rocket ammount changed.");
-            if (rocketCount < lastRocketCount) {
+            if (rocketCount < lastRocketCount)
+            {
                 Debug.Log("It has decreased, launching missles!");
                 RocketUpdate();
             }

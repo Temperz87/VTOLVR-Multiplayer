@@ -1,10 +1,6 @@
-﻿using System;
+﻿using Harmony;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using UnityEngine;
-using Harmony;
 public class PlaneNetworker_Sender : MonoBehaviour
 {
     public ulong networkUID;
@@ -37,7 +33,7 @@ public class PlaneNetworker_Sender : MonoBehaviour
     private float tick = 0;
     public float tickRate = 2;
 
-    private float tickPuppet= 0;
+    private float tickPuppet = 0;
     public float tickRatePuppet = 20;
     bool sendRearmPacket = false;
 
@@ -48,7 +44,7 @@ public class PlaneNetworker_Sender : MonoBehaviour
     Transform Rhand;
     Transform Lhand;
 
- 
+
     Message_IKPuppet ikMsg;
     private void Awake()
     {
@@ -56,7 +52,7 @@ public class PlaneNetworker_Sender : MonoBehaviour
         lastFiringMessage = new Message_WeaponFiring(-1, false, false, networkUID);
         // lastStoppedFiringMessage = new Message_WeaponStoppedFiring(networkUID);
         lastCountermeasureMessage = new Message_FireCountermeasure(true, true, networkUID);
-        lastDeathMessage = new Message_Death(networkUID, false,"");
+        lastDeathMessage = new Message_Death(networkUID, false, "");
         wheelsController = GetComponent<WheelsController>();
         aeroController = GetComponent<AeroController>();
         isPlayer = actor.isPlayer;
@@ -81,8 +77,8 @@ public class PlaneNetworker_Sender : MonoBehaviour
             //weaponManager.OnWeaponUnequippedHPIdx +=Rearm;
 
             //detect player rearm
-           
-         
+
+
             if (actor.isPlayer && weaponManager.GetIWBForEquip(3) != null)
             {
                 iwb = weaponManager.GetIWBForEquip(3);
@@ -105,12 +101,15 @@ public class PlaneNetworker_Sender : MonoBehaviour
         launchBar = GetComponentInChildren<CatapultHook>();
         refuelPort = GetComponentInChildren<RefuelPort>();
 
-        if(isPlayer)
-        setupManSender();
+        if (isPlayer)
+            setupManSender();
 
-        
-            
+
+
         ikMsg = new Message_IKPuppet(networkUID);
+        //if (gameObject.name.Contains("Client"))
+      
+     
     }
 
 
@@ -123,10 +122,10 @@ public class PlaneNetworker_Sender : MonoBehaviour
     public Transform puppetHeadLook;
     public Transform puppethip;
     bool manSetup = false;
-     
-    
 
-     
+
+
+
     private void setupManSender()
     {
         Rhand = CUSTOM_API.GetChildTransformWithName(gameObject, "Controller (right)");
@@ -168,7 +167,7 @@ public class PlaneNetworker_Sender : MonoBehaviour
             NetworkSenderThread.Instance.SendPacketToSpecificPlayer(Networker.hostID, ikMsg, Steamworks.EP2PSend.k_EP2PSendUnreliable);
     }
 
-   
+
     private void Update()
     {
         if (weaponManager != null)
@@ -205,12 +204,12 @@ public class PlaneNetworker_Sender : MonoBehaviour
     private void FixedUpdate()
     {
         tickPuppet += Time.fixedDeltaTime;
-       
-            if (tickPuppet > 1.0f / tickRatePuppet)
-            {
-                tickPuppet = 0.0f;
-                if(isPlayer)
-                    sendManData();
+
+        if (tickPuppet > 1.0f / tickRatePuppet)
+        {
+            tickPuppet = 0.0f;
+            if (isPlayer)
+                sendManData();
 
 
         }
@@ -219,63 +218,63 @@ public class PlaneNetworker_Sender : MonoBehaviour
         {
             Rearm();
         }
-      
+
 
 
     }
     private void LateUpdate()
     {
-       
+
         tick += Time.deltaTime;
         if (tick > 1.0f / tickRate)
-        { 
-        tick = 0;
-        lastMessage.flaps = aeroController.flaps;
-        lastMessage.pitch = Mathf.Round(aeroController.input.x * 100000f) / 100000f;
-        lastMessage.yaw = Mathf.Round(aeroController.input.y * 100000f) / 100000f;
-        lastMessage.roll = Mathf.Round(aeroController.input.z * 100000f) / 100000f;
-        lastMessage.brakes = aeroController.brake;
-        lastMessage.landingGear = LandingGearState();
-        lastMessage.networkUID = networkUID;
-        lastMessage.sequenceNumber = ++sequenceNumber;
-        if (iwb != null)
         {
-            lastMessage.doorState = iwb.doorState;
-        }
-        if (engine != null)
-        {
-            lastMessage.throttle = engine.finalThrottle;
-        }
-        if (tailhook != null)
-        {
-            lastMessage.tailHook = tailhook.isDeployed;
-        }
-        if (launchBar != null)
-        {
-            lastMessage.launchBar = launchBar.deployed;
-        }
-        if (refuelPort != null)
-        {
-            lastMessage.fuelPort = refuelPort.open;
-        }
+            tick = 0;
+            lastMessage.flaps = aeroController.flaps;
+            lastMessage.pitch = Mathf.Round(aeroController.input.x * 100000f) / 100000f;
+            lastMessage.yaw = Mathf.Round(aeroController.input.y * 100000f) / 100000f;
+            lastMessage.roll = Mathf.Round(aeroController.input.z * 100000f) / 100000f;
+            lastMessage.brakes = aeroController.brake;
+            lastMessage.landingGear = LandingGearState();
+            lastMessage.networkUID = networkUID;
+            lastMessage.sequenceNumber = ++sequenceNumber;
+            if (iwb != null)
+            {
+                lastMessage.doorState = iwb.doorState;
+            }
+            if (engine != null)
+            {
+                lastMessage.throttle = engine.finalThrottle;
+            }
+            if (tailhook != null)
+            {
+                lastMessage.tailHook = tailhook.isDeployed;
+            }
+            if (launchBar != null)
+            {
+                lastMessage.launchBar = launchBar.deployed;
+            }
+            if (refuelPort != null)
+            {
+                lastMessage.fuelPort = refuelPort.open;
+            }
 
-        if (Networker.isHost)
-        {
+            if (Networker.isHost)
+            {
                 Networker.addToUnreliableSendBuffer(lastMessage);
-        }
+            }
             //NetworkSenderThread.Instance.SendPacketAsHostToAllClients(lastMessage, Steamworks.EP2PSend.k_EP2PSendUnreliable);
-        else
-        {
-            NetworkSenderThread.Instance.SendPacketToSpecificPlayer(Networker.hostID, lastMessage, Steamworks.EP2PSend.k_EP2PSendUnreliable);
-        }
+            else
+            {
+                NetworkSenderThread.Instance.SendPacketToSpecificPlayer(Networker.hostID, lastMessage, Steamworks.EP2PSend.k_EP2PSendUnreliable);
+            }
         }
     }
 
     private bool LandingGearState()
     {
-        if(wheelsController !=null)
-        { 
-        return wheelsController.gearAnimator.GetCurrentState() == GearAnimator.GearStates.Extended;
+        if (wheelsController != null)
+        {
+            return wheelsController.gearAnimator.GetCurrentState() == GearAnimator.GearStates.Extended;
         }
         return false;
     }
@@ -315,7 +314,7 @@ public class PlaneNetworker_Sender : MonoBehaviour
     {
         sendRearmPacket = true;
     }
- 
+
     public void Rearm()
     {
         Debug.Log("Rearm!");
@@ -342,7 +341,7 @@ public class PlaneNetworker_Sender : MonoBehaviour
         Networker.WeaponSet -= WeaponSet;
         //PlayerVehicleSetup pv = gameObject.GetComponent<PlayerVehicleSetup>();
         //if (pv != null)
-            //pv.OnEndRearming.RemoveListener(Rearm);
+        //pv.OnEndRearming.RemoveListener(Rearm);
     }
 }
 [HarmonyPatch(typeof(WeaponManager), "JettisonMarkedItems")]

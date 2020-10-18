@@ -1,7 +1,5 @@
 ﻿using Harmony;
-using System;
 using System.Collections.Generic;
-using System.Linq;
 using UnityEngine;
 using VTOLVR_Multiplayer;
 
@@ -12,8 +10,8 @@ public class MissileNetworker_Sender : MonoBehaviour
     private Missile thisMissile;
     private bool hasFired = false;
     public Actor ownerActor;
-     private float tick;
-     private float tickRate = 20.0f;
+    private float tick;
+    private float tickRate = 20.0f;
 
     private void Awake()
     {

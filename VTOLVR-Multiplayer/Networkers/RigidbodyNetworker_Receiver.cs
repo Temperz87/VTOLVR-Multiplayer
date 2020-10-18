@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using UnityEngine;
-using Steamworks;
+﻿using UnityEngine;
 
 /// <summary>
 /// Updates objects with a  rigidbody over the network using velocity and position.
@@ -21,12 +15,12 @@ public class RigidbodyNetworker_Receiver : MonoBehaviour
     private Rigidbody rb;
     private Actor actor;
     private KinematicPlane kplane;
-    private float positionThreshold = 100f;
-    public float smoothingTime = 1.5f;
+    private float positionThreshold = 25.5f;
+    public float smoothingTime = 0.8f;
     private float rotSmoothingTime = 0.2f;
     private float velSmoothingTime = 0.5f;//actor velocity for using with the gunsight, should stop the jitter
     private float latency = 0.0f;
-    
+
     private PlayerManager.Player playerWeRepresent;
 
     private ulong mostCurrentUpdateNumber;
@@ -56,6 +50,9 @@ public class RigidbodyNetworker_Receiver : MonoBehaviour
         originTransform.SetRigidbody(rb);
 
         Networker.RigidbodyUpdate += RigidbodyUpdate;
+
+
+        mostCurrentUpdateNumber = 0;
     }
 
     void FixedUpdate()
@@ -92,9 +89,10 @@ public class RigidbodyNetworker_Receiver : MonoBehaviour
                 playerWeRepresent = PlayerManager.players[playerID];
             }
         }
-        if (playerWeRepresent != null) {
+        if (playerWeRepresent != null)
+        {
             //delta time needs to be added to latency as this runs after packet has arrived for a while
-            latency = playerWeRepresent.ping + Time.fixedDeltaTime;
+            latency = (latency * 0.5f) + (playerWeRepresent.ping * 0.5f);
         }
 
         globalTargetPosition += new Vector3D(targetVelocity * Time.fixedDeltaTime);
@@ -103,13 +101,14 @@ public class RigidbodyNetworker_Receiver : MonoBehaviour
         Quaternion quatVel = Quaternion.Euler(targetRotationVelocity * Time.fixedDeltaTime);
         Quaternion currentRotation = transform.rotation;
         currentRotation *= quatVel;
-        targetRotation *= quatVel;
 
-        rb.velocity = targetVelocity + (localTargetPosition - transform.position) / smoothingTime;
+
+        rb.velocity = targetVelocity;
         //actor.SetCustomVelocity(Vector3.Lerp(actor.velocity, targetVelocity + (localTargetPosition - transform.position) / smoothingTime, Time.fixedDeltaTime / velSmoothingTime));
         actor.SetCustomVelocity(rb.velocity);
-
-        rb.MovePosition(transform.position + targetVelocity * Time.fixedDeltaTime + ((localTargetPosition - transform.position) * Time.fixedDeltaTime) / smoothingTime);
+        Vector3D errorVec = (globalTargetPosition- VTMapManager.WorldToGlobalPoint(transform.position));
+      
+            rb.MovePosition(transform.position + targetVelocity * Time.fixedDeltaTime + ((errorVec.toVector3) * Time.fixedDeltaTime) / smoothingTime);
         Quaternion quat = Quaternion.Slerp(currentRotation, targetRotation, Time.fixedDeltaTime / rotSmoothingTime);
         rb.MoveRotation(quat.normalized);
     }
@@ -121,8 +120,8 @@ public class RigidbodyNetworker_Receiver : MonoBehaviour
         if (rigidbodyUpdate.networkUID != networkUID)
             return;
 
-        //if (rigidbodyUpdate.sequenceNumber <= mostCurrentUpdateNumber)
-            //return;
+        if (rigidbodyUpdate.sequenceNumber <= mostCurrentUpdateNumber)
+         return;
         mostCurrentUpdateNumber = rigidbodyUpdate.sequenceNumber;
 
         globalTargetPosition = rigidbodyUpdate.position + rigidbodyUpdate.velocity.toVector3 * latency;
@@ -131,75 +130,16 @@ public class RigidbodyNetworker_Receiver : MonoBehaviour
         targetRotation = rigidbodyUpdate.rotation * Quaternion.Euler(rigidbodyUpdate.angularVelocity.toVector3 * latency);
         targetRotationVelocity = rigidbodyUpdate.angularVelocity.toVector3;
 
-        if (Vector3.Distance(transform.position, localTargetPosition) > positionThreshold)
+        Vector3D errorVec = (VTMapManager.WorldToGlobalPoint(transform.position) - globalTargetPosition);
+        if (errorVec.magnitude > positionThreshold)
         {
             //Debug.Log("Outside of thresh hold, moving " + gameObject.name);
             transform.position = localTargetPosition;
-
             transform.rotation = rigidbodyUpdate.rotation;
         }
     }
 
-   
-        public void rotateObjectByKeyboard(GameObject rotatedObject, float increment)
-    {
-        Vector3 objectTemp = rotatedObject.transform.localEulerAngles;
-
-
-
-        if (Input.GetKeyDown("u"))
-        {
-            objectTemp.y += increment;
-
-            rotatedObject.transform.localEulerAngles = objectTemp;
-            Debug.Log("Switch clone new angle: " + rotatedObject.transform.localEulerAngles.ToString("F2"));
-        }
-
-        if (Input.GetKeyDown("j"))
-        {
-            objectTemp.y -= increment;
-
-
-            rotatedObject.transform.localEulerAngles = objectTemp;
-            Debug.Log("Switch clone new angle: " + rotatedObject.transform.localEulerAngles.ToString("F2"));
-        }
-
-        if (Input.GetKeyDown("h"))
-        {
-            objectTemp.x -= increment;
-
-            rotatedObject.transform.localEulerAngles = objectTemp;
-            Debug.Log("Switch clone new angle: " + rotatedObject.transform.localEulerAngles.ToString("F2"));
-        }
-
-        if (Input.GetKeyDown("k"))
-        {
-            objectTemp.x += increment;
-
-
-            rotatedObject.transform.localEulerAngles = objectTemp;
-            Debug.Log("Switch clone new angle: " + rotatedObject.transform.localEulerAngles.ToString("F2"));
-        }
-
-        if (Input.GetKeyDown("o"))
-        {
-            objectTemp.z += increment;
-
-
-            rotatedObject.transform.localEulerAngles = objectTemp;
-            Debug.Log("Switch clone new angle: " + rotatedObject.transform.localEulerAngles.ToString("F2"));
-        }
-
-        if (Input.GetKeyDown("l"))
-        {
-            objectTemp.z -= increment;
-
-
-            rotatedObject.transform.localEulerAngles = objectTemp;
-            Debug.Log("Switch clone new angle: " + rotatedObject.transform.localEulerAngles);
-        }
-    }
-
+ 
     //sliders for testing different values for smoothing interpolation
     //uncomment if you wana tweak them in realtime
     //void OnGUI()
@@ -221,7 +161,7 @@ public class RigidbodyNetworker_Receiver : MonoBehaviour
     public void OnDestroy()
     {
         Networker.RigidbodyUpdate -= RigidbodyUpdate;
-        Networker.Disconnecting -= OnDisconnect;
+
         Debug.Log("Destroyed Rigidbody Update");
         Debug.Log(gameObject.name);
     }

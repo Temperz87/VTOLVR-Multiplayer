@@ -16,11 +16,12 @@ class ShipNetworker_Sender : MonoBehaviour
     void FixedUpdate()
     {
         timer += Time.fixedDeltaTime;
-        if (timer > 1) {
+        if (timer > 1)
+        {
             timer = 0;
 
             lastMessage.position = VTMapManager.WorldToGlobalPoint(ship.transform.position);
-            lastMessage.rotation =  ship.transform.rotation;
+            lastMessage.rotation = ship.transform.rotation;
             lastMessage.velocity = new Vector3D(ship.velocity);
 
             lastMessage.UID = networkUID;

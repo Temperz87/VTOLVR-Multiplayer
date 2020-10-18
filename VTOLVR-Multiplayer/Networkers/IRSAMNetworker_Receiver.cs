@@ -1,8 +1,5 @@
 ﻿using Harmony;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using UnityEngine;
 
 class IRSAMNetworker_Reciever : MonoBehaviour
@@ -84,6 +81,19 @@ class IRSAMNetworker_Reciever : MonoBehaviour
                     Debug.Log("Beginning sam launch routine for reciever.");
                     int j = 0;
                     Missile[] missiles = (Missile[])Traverse.Create(samLauncher).Field("missiles").GetValue();
+                    bool needToLoad = true;
+                    for (int i = 0; i < missiles.Length; i++)
+                    {
+                        if (missiles[i] != null)
+                        {
+                            needToLoad = false;
+
+                        }
+                    }
+                    if (needToLoad)
+                    {
+                        samLauncher.LoadMissile(0);
+                    }
                     for (int i = 0; i < missiles.Length; i++)
                     {
                         if (missiles[i] != null)

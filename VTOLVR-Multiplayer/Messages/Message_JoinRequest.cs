@@ -1,9 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Runtime.CompilerServices;
-using System.Text;
-using System.Threading.Tasks;
 
 [Serializable]
 public class Message_JoinRequest : Message
@@ -27,7 +23,7 @@ public class Message_JoinRequest : Message
         modloaderHash = modloaderhash;
         multiplayerBranch = ModVersionString.ReleaseBranch;
         multiplayerModVersion = ModVersionString.ModVersionNumber;
-        this.discordID = dID;
+        discordID = dID;
         type = MessageType.JoinRequest;
     }
 }
@@ -41,7 +37,8 @@ public class Message_JoinRequestAccepted_Result : Message
     public bool hiAlpha;
     public string freqString;
     public string freqLabelString;
-    public Message_JoinRequestAccepted_Result(long ihostDiscordID, long ilobbyDiscordID, string ilobbySecret,float fthrust, bool alpha, String freq,string labels) {
+    public Message_JoinRequestAccepted_Result(long ihostDiscordID, long ilobbyDiscordID, string ilobbySecret, float fthrust, bool alpha, String freq, string labels)
+    {
         hostDiscordID = ihostDiscordID;
         lobbyDiscordID = ilobbyDiscordID;
         lobbySecret = ilobbySecret;
@@ -49,7 +46,7 @@ public class Message_JoinRequestAccepted_Result : Message
         hiAlpha = alpha;
         freqString = freq;
         freqLabelString = labels;
-    type = MessageType.JoinRequestAccepted_Result;
+        type = MessageType.JoinRequestAccepted_Result;
     }
 }
 [Serializable]
@@ -57,7 +54,8 @@ public class Message_JoinRequestRejected_Result : Message
 {
     public string reason;
 
-    public Message_JoinRequestRejected_Result(string reason) {
+    public Message_JoinRequestRejected_Result(string reason)
+    {
         this.reason = reason;
         type = MessageType.JoinRequestRejected_Result;
     }

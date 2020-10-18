@@ -1,11 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using UnityEngine;
-using Harmony;
+﻿using Harmony;
 using Steamworks;
+using System.Collections.Generic;
+using UnityEngine;
 
 public class PlaneNetworker_Receiver : MonoBehaviour
 {
@@ -43,7 +39,7 @@ public class PlaneNetworker_Receiver : MonoBehaviour
         firstMessageReceived = false;
         aiPilot = GetComponent<AIPilot>();
 
-        ownerActor = this.GetComponentInParent<Actor>();
+        ownerActor = GetComponentInParent<Actor>();
         autoPilot = aiPilot.autoPilot;
         aiPilot.enabled = false;
         Networker.PlaneUpdate += PlaneUpdate;
@@ -103,7 +99,7 @@ public class PlaneNetworker_Receiver : MonoBehaviour
             }
         }
 
-       
+
 
         StartCoroutine(colliderTimer());
     }
@@ -136,13 +132,13 @@ public class PlaneNetworker_Receiver : MonoBehaviour
     }
 
     FastIKLook ikheadlook;
-FastIKFabric iklh; FastIKFabric ikrh; FastIKFabric ikh;
+    FastIKFabric iklh; FastIKFabric ikrh; FastIKFabric ikh;
     private void setupManReciever()
     {
         manPuppet = GameObject.Instantiate(CUSTOM_API.manprefab, gameObject.GetComponent<Rigidbody>().transform);
 
 
-        foreach(Collider col in manPuppet.GetComponentsInChildren<Collider>())
+        foreach (Collider col in manPuppet.GetComponentsInChildren<Collider>())
         { col.enabled = false; }
 
 
@@ -158,7 +154,7 @@ FastIKFabric iklh; FastIKFabric ikrh; FastIKFabric ikh;
             manPuppet.transform.localPosition = new Vector3(-0.06f, 0.79f, 5.7f);
 
         if (vehicleType == VTOLVehicles.AV42C)
-            manPuppet.transform.localPosition = new Vector3(-0.07f, 0.69f, -0.1f)-PlayerManager.av42Offset;
+            manPuppet.transform.localPosition = new Vector3(-0.07f, 0.69f, -0.1f) - PlayerManager.av42Offset;
 
 
         Debug.Log("righthandControl");
@@ -178,24 +174,24 @@ FastIKFabric iklh; FastIKFabric ikrh; FastIKFabric ikh;
         puppethip = CUSTOM_API.GetChildWithName(manPuppet, "Bone.008").transform;
 
         Debug.Log("headik_end");
-          ikh = CUSTOM_API.GetChildWithName(manPuppet, "Bone.007").AddComponent<FastIKFabric>();
+        ikh = CUSTOM_API.GetChildWithName(manPuppet, "Bone.007").AddComponent<FastIKFabric>();
         ikh.Target = puppetHead;
         ikh.ChainLength = 4;
 
         Debug.Log("righthandik_end");
-          ikrh = CUSTOM_API.GetChildWithName(manPuppet, "righthandik_end").AddComponent<FastIKFabric>();
+        ikrh = CUSTOM_API.GetChildWithName(manPuppet, "righthandik_end").AddComponent<FastIKFabric>();
         ikrh.Target = puppetRhand;
         ikrh.ChainLength = 3;
 
         Debug.Log("lefthandik_end");
-          iklh = CUSTOM_API.GetChildWithName(manPuppet, "lefthandik_end").AddComponent<FastIKFabric>();
+        iklh = CUSTOM_API.GetChildWithName(manPuppet, "lefthandik_end").AddComponent<FastIKFabric>();
         iklh.Target = puppetLhand;
         iklh.ChainLength = 3;
         Debug.Log("SetupNewDisplay");
 
 
         Debug.Log("headik");
-          ikheadlook = CUSTOM_API.GetChildWithName(manPuppet, "headik").AddComponent<FastIKLook>();
+        ikheadlook = CUSTOM_API.GetChildWithName(manPuppet, "headik").AddComponent<FastIKLook>();
         ikheadlook.Target = puppetHeadLook;
         manSetup = true;
 
@@ -207,7 +203,7 @@ FastIKFabric iklh; FastIKFabric ikrh; FastIKFabric ikh;
         if (manSetup)
         {
             Vector3 v = manPuppet.transform.position - FlightSceneManager.instance.playerActor.gameObject.transform.position;
-            if (v.magnitude > 500)
+            if (v.magnitude > 200)
             {
                 manPuppet.SetActive(false);
             }
@@ -217,13 +213,13 @@ FastIKFabric iklh; FastIKFabric ikrh; FastIKFabric ikh;
 
             }
         }
-     }
+    }
     public void IKUpdate(Packet packet)
     {
-        if(manSetup!=true)
+        if (manSetup != true)
             return;
         Message_IKPuppet newMessage = (Message_IKPuppet)((PacketSingle)packet).message;
-       
+
         if (newMessage.networkUID != networkUID)
             return;
         puppetRhand.position = puppethip.transform.position + newMessage.puppetRhand.toVector3;
@@ -473,7 +469,7 @@ FastIKFabric iklh; FastIKFabric ikrh; FastIKFabric ikh;
                 else
                 {
                     //Debug.Log("try start fire for vehicle" + gameObject.name + " on current equip " + weaponManager.currentEquip);
-                    if (message.noAmmo && noAmmo == false)
+                    if (message.noAmmo)
                     {
                         if (weaponManager.currentEquip is HPEquipGun)
                         {

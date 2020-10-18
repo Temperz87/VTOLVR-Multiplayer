@@ -1,8 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using UnityEngine;
 [Serializable]
 public class Message_SpawnPlayerVehicle : Message
@@ -20,7 +16,7 @@ public class Message_SpawnPlayerVehicle : Message
     public long discordID;
     // public int playerCount;
 
-    public Message_SpawnPlayerVehicle(VTOLVehicles vehicle, Vector3D position, Quaternion rotation, ulong csteamID, ulong networkID, HPInfo[] hpLoadout, int[] cmLoadout, float normalizedFuel, bool isLeftie, string tagName,long idiscord)
+    public Message_SpawnPlayerVehicle(VTOLVehicles vehicle, Vector3D position, Quaternion rotation, ulong csteamID, ulong networkID, HPInfo[] hpLoadout, int[] cmLoadout, float normalizedFuel, bool isLeftie, string tagName, long idiscord)
     {
         this.vehicle = vehicle;
         this.position = position;
@@ -30,25 +26,25 @@ public class Message_SpawnPlayerVehicle : Message
         this.hpLoadout = hpLoadout;
         this.cmLoadout = cmLoadout;
         this.normalizedFuel = normalizedFuel;
-        this.leftie = isLeftie;
-        this.nameTag = tagName;
-        this.discordID = idiscord;
+        leftie = isLeftie;
+        nameTag = tagName;
+        discordID = idiscord;
         // this.playerCount = playerCount;
         type = MessageType.SpawnPlayerVehicle;
     }
 }
 
 [Serializable]
-public class Message_SetFrequency: Message
+public class Message_SetFrequency : Message
 {
     public string source;
     public int freq;
     // public int playerCount;
 
-    public Message_SetFrequency(string isource,int ifreq)
+    public Message_SetFrequency(string isource, int ifreq)
     {
-        this.source = isource;
-        this.freq = ifreq;
+        source = isource;
+        freq = ifreq;
         // this.playerCount = playerCount;
         type = MessageType.SetFrequency;
     }

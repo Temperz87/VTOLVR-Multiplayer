@@ -28,7 +28,7 @@ class TurretNetworker_Sender : MonoBehaviour
         if (turret == null)
             return;
 
-         tick += Time.deltaTime;
+        tick += Time.deltaTime;
         if (tick > 1.0f / tickRate)
         {
             tick = 0.0f;

@@ -1,15 +1,9 @@
 ﻿using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
+using System.IO;
 using System.Text;
-using System.Threading.Tasks;
+using TMPro;
 using UnityEngine;
 using UnityEngine.Events;
-using UnityEditor;
-using System.IO;
-using TMPro;
-using UnityEngine.Experimental.PlayerLoop;
 
 public class VTTextProperties
 {
@@ -77,8 +71,8 @@ static class FileLoader
         }
     }
 }
-public static class CUSTOM_API  
-    {
+public static class CUSTOM_API
+{
 
     private static GameObject hudDash;
 
@@ -114,14 +108,14 @@ public static class CUSTOM_API
     private static GameObject labelObject;
     public static bool onFreq = false;
     public static GameObject manprefab = null;
-     
+
     private static bool lastFreq = false;
     public static void loadDisplayPrefab()
     {
-         PathToBundle = Directory.GetCurrentDirectory() + @"\VTOLVR_ModLoader\mods\Multiplayer\display";
+        PathToBundle = Directory.GetCurrentDirectory() + @"\VTOLVR_ModLoader\mods\Multiplayer\display";
         if (!AssetLoaded)
         {
-            newDisplayPrefab =  FileLoader.GetAssetBundleAsGameObject(PathToBundle, "Display.prefab");
+            newDisplayPrefab = FileLoader.GetAssetBundleAsGameObject(PathToBundle, "Display.prefab");
             PathToBundle = Directory.GetCurrentDirectory() + @"\VTOLVR_ModLoader\mods\Multiplayer\ikmanfinal";
             manprefab = FileLoader.GetAssetBundleAsGameObject(PathToBundle, "IKMANMOUSE.prefab");
 
@@ -193,18 +187,18 @@ public static class CUSTOM_API
 
     }
     private static void editIndex()
-    { 
+    {
         freqIndex = Math.Min(4, freqIndex);
-        char letter= currentFreq[freqIndex];
+        char letter = currentFreq[freqIndex];
 
         if (letter == '.')
         {
-           
+
             freqIndex -= 1;
         }
-          
-            currentFreq = currentFreq.ReplaceAt(freqIndex, 'X');
-            freqIndex -= 1;
+
+        currentFreq = currentFreq.ReplaceAt(freqIndex, 'X');
+        freqIndex -= 1;
         radioText.text = currentFreq;
         radioText.ApplyText();
 
@@ -235,24 +229,24 @@ public static class CUSTOM_API
     {
 
         freqIndex = Math.Min(3, freqIndex);
-      
+
         char letter = currentFreq[freqIndex];
 
-        if (  letter == '.')
+        if (letter == '.')
         {
-          
-            freqIndex ++;
+
+            freqIndex++;
         }
         letter = currentFreq[freqIndex];
         if (letter == 'X')
         {
-            currentFreq=currentFreq.ReplaceAt(freqIndex, input);
-            freqIndex ++;
+            currentFreq = currentFreq.ReplaceAt(freqIndex, input);
+            freqIndex++;
         }
         radioText.text = currentFreq;
         radioText.ApplyText();
-       
- 
+
+
         DiscordRadioManager.radioFreq = radioText.text.GetHashCode();
         Debug.Log("discord freq " + DiscordRadioManager.radioFreq);
         if (PlayerManager.FrequenceyButton != null)
@@ -270,19 +264,19 @@ public static class CUSTOM_API
     public static void forceSetFreq(string ins)
     {
         currentFreq = ins;
-        freqIndex =4;
-        if(radioText!=null)
+        freqIndex = 4;
+        if (radioText != null)
         {
             radioText.text = currentFreq;
             radioText.ApplyText();
             radioText.SetEmission(true);
             radioText.SetEmissionMultiplier(3);
         }
-      
+
     }
     public static void setupLeg(GameObject go)
     {
-        GameObject leg = GetChildWithName(go,"femur.left");
+        GameObject leg = GetChildWithName(go, "femur.left");
         paper = GameObject.CreatePrimitive(PrimitiveType.Cube);
         paper.transform.SetParent(leg.transform);
         paper.transform.localScale = new Vector3(0.18f, 0.001f, 0.13f);
@@ -311,12 +305,12 @@ public static class CUSTOM_API
         CUSTOM_API.forceSetFreq("122.8");
         DiscordRadioManager.radioFreq = currentFreq.GetHashCode();
     }
-        public static void setupFA26(GameObject go)
+    public static void setupFA26(GameObject go)
     {
-        switchObject = GetChildWithName(go,"APUSwitch");
+        switchObject = GetChildWithName(go, "APUSwitch");
 
         Debug.Log(" hudDash = GetChildWithName(go, ");
-        hudDash = GetChildWithName(go,"HUDDash"); 
+        hudDash = GetChildWithName(go, "HUDDash");
 
         Debug.Log("switchObject != null");
         if (switchObject != null)
@@ -435,48 +429,48 @@ public static class CUSTOM_API
             button0Int.OnInteract = new UnityEvent();
             button0Int.OnInteract.AddListener(updateFreq0);
 
-          
+
             setupLeg(go);
             Vector3 scaler = new Vector3(0.83f, 0.83f, 0.83f);
             //23.5153
-            GameObject alt = GetChildWithName(go,"Altitude");
+            GameObject alt = GetChildWithName(go, "Altitude");
             alt.transform.localScale = Vector3.Scale(alt.transform.localScale, scaler);
             alt.transform.localPosition = new Vector3(55.3942f, -18.7209f, 24.3522f);
 
-            GameObject spd = GetChildWithName(go,"Speed");
+            GameObject spd = GetChildWithName(go, "Speed");
             spd.transform.localScale = Vector3.Scale(spd.transform.localScale, scaler);
             spd.transform.localPosition = new Vector3(55.3942f, -42.2362f, 26.1551f);
 
-            GameObject hdg = GetChildWithName(go,"Heading");
+            GameObject hdg = GetChildWithName(go, "Heading");
             hdg.transform.localScale = Vector3.Scale(hdg.transform.localScale, scaler);
             hdg.transform.localPosition = new Vector3(55.3942f, -65.7515f, 26.1551f);
 
-            GameObject nav = GetChildWithName(go,"Nav");
+            GameObject nav = GetChildWithName(go, "Nav");
             nav.transform.localScale = Vector3.Scale(nav.transform.localScale, scaler);
             nav.transform.localPosition = new Vector3(55.3942f, -89.2668f, 26.1551f);
 
-            GameObject off = GetChildWithName(go,"APOff");
+            GameObject off = GetChildWithName(go, "APOff");
             off.transform.localScale = Vector3.Scale(off.transform.localScale, scaler);
             off.transform.localPosition = new Vector3(55.3942f, -112.2782f, 26.1551f);
             objectToMove = off;
 
-             
 
-            GameObject brtKnob = GetChildWithName(go,"MFDBrightnessKnob");
+
+            GameObject brtKnob = GetChildWithName(go, "MFDBrightnessKnob");
             brtKnob.transform.localEulerAngles = new Vector3(343.54f, 0, 180);
             brtKnob.transform.localPosition = new Vector3(111.6f, -84.4f, 56.90f);
 
 
-            swap = GetChildWithName(go,"MFDSwapButton");
+            swap = GetChildWithName(go, "MFDSwapButton");
             swap.transform.localPosition = new Vector3(-155.5f, -452.8f, 146.7f);
             swap.transform.localEulerAngles = new Vector3(275.54f, 359, 180);
             swap.transform.localScale = Vector3.Scale(swap.transform.localScale, scaler);
             VRInteractable swapInt = swap.transform.GetComponentInChildren<VRInteractable>();
 
-            GameObject newBounds = GameObject.Instantiate(GetChildWithName(go,"MasterArmPoseBounds"), go.transform);
+            GameObject newBounds = GameObject.Instantiate(GetChildWithName(go, "MasterArmPoseBounds"), go.transform);
 
             newBounds.transform.position = swapInt.transform.position;
-            newBounds.transform.eulerAngles = GetChildWithName(go,"MasterArmPoseBounds").transform.eulerAngles;
+            newBounds.transform.eulerAngles = GetChildWithName(go, "MasterArmPoseBounds").transform.eulerAngles;
             swapInt.poseBounds = newBounds.GetComponent<PoseBounds>(); //Assigns bounds for switch
 
 
@@ -490,7 +484,7 @@ public static class CUSTOM_API
 
         }
     }
-        public static void SetupNewDisplay()
+    public static void SetupNewDisplay()
     {
         bool displayEnabled = false;
         if (newDisplayPrefab != null)
@@ -503,7 +497,7 @@ public static class CUSTOM_API
 
             if (displayEnabled)
             {
-                 newDisplay = GameObject.Instantiate(newDisplayPrefab);
+                newDisplay = GameObject.Instantiate(newDisplayPrefab);
                 //manobject = GameObject.Instantiate(manprefab);
             }
         }
@@ -516,339 +510,339 @@ public static class CUSTOM_API
     /// <param name="boundName">The name of the new posebound</param>
     /// <returns></returns>
     public static GameObject createAPUSwitch(string switchName, PoseBounds bound, string boundName)
+    {
+        GameObject newSwitch = GameObject.Instantiate(APU_ORIGINAL);
+        newSwitch.name = switchName;
+        newSwitch.transform.position = APU_ORIGINAL.transform.position;
+
+        VRInteractable switchInteractable = newSwitch.transform.GetChild(0).GetChild(0).GetChild(0).GetChild(0).gameObject.GetComponent<VRInteractable>();
+        VRInteractable coverInteractable = newSwitch.transform.GetChild(1).GetChild(0).GetChild(0).GetChild(0).gameObject.GetComponent<VRInteractable>();
+        switchInteractable.interactableName = switchName;
+        coverInteractable.interactableName = switchName + " cover";
+        if (bound == null)
         {
-            GameObject newSwitch = GameObject.Instantiate(APU_ORIGINAL);
-            newSwitch.name = switchName;
-            newSwitch.transform.position = APU_ORIGINAL.transform.position;
+            GameObject newBounds = GameObject.Instantiate(SEAT_ADJUST_POSE_BOUNDS, playerGameObject.transform);
+            newBounds.name = boundName;
+            newBounds.transform.position = newSwitch.transform.position;
+            newBounds.transform.eulerAngles = SEAT_ADJUST_POSE_BOUNDS.transform.eulerAngles;
+            switchInteractable.poseBounds = newBounds.GetComponent<PoseBounds>(); //Assigns bounds for switch
+            coverInteractable.poseBounds = newBounds.GetComponent<PoseBounds>(); //Assigns bounds for cover
 
-            VRInteractable switchInteractable = newSwitch.transform.GetChild(0).GetChild(0).GetChild(0).GetChild(0).gameObject.GetComponent<VRInteractable>();
-            VRInteractable coverInteractable = newSwitch.transform.GetChild(1).GetChild(0).GetChild(0).GetChild(0).gameObject.GetComponent<VRInteractable>();
-            switchInteractable.interactableName = switchName;
-            coverInteractable.interactableName = switchName + " cover";
-            if (bound == null)
-            {
-                GameObject newBounds = GameObject.Instantiate(SEAT_ADJUST_POSE_BOUNDS, playerGameObject.transform);
-                newBounds.name = boundName;
-                newBounds.transform.position = newSwitch.transform.position;
-                newBounds.transform.eulerAngles = SEAT_ADJUST_POSE_BOUNDS.transform.eulerAngles;
-                switchInteractable.poseBounds = newBounds.GetComponent<PoseBounds>(); //Assigns bounds for switch
-                coverInteractable.poseBounds = newBounds.GetComponent<PoseBounds>(); //Assigns bounds for cover
-
-            }
-            else
-            {
-                GameObject newBounds = GameObject.Instantiate(SEAT_ADJUST_POSE_BOUNDS, playerGameObject.transform);
-                newBounds.name = boundName;
-                newBounds.transform.eulerAngles = SEAT_ADJUST_POSE_BOUNDS.transform.eulerAngles;
-                newBounds.transform.position = newSwitch.transform.position;
-                switchInteractable.poseBounds = bound; //Assigns bounds for cover switch
-                coverInteractable.poseBounds = bound; //Assigns bounds for cover
-
-
-            }
-
-            return newSwitch;
         }
+        else
+        {
+            GameObject newBounds = GameObject.Instantiate(SEAT_ADJUST_POSE_BOUNDS, playerGameObject.transform);
+            newBounds.name = boundName;
+            newBounds.transform.eulerAngles = SEAT_ADJUST_POSE_BOUNDS.transform.eulerAngles;
+            newBounds.transform.position = newSwitch.transform.position;
+            switchInteractable.poseBounds = bound; //Assigns bounds for cover switch
+            coverInteractable.poseBounds = bound; //Assigns bounds for cover
+
+
+        }
+
+        return newSwitch;
+    }
 
 
     //spawns switch where ya want relative to the original location
     public static GameObject createAPUSwitch(string switchName, PoseBounds bound, string boundName, Transform parent, Vector3 localPosition)
+    {
+
+        GameObject newSwitch = GameObject.Instantiate(APU_ORIGINAL, APU_ORIGINAL.transform.parent);
+        newSwitch.transform.localPosition = APU_ORIGINAL.transform.localPosition;
+        newSwitch.transform.SetParent(parent);
+        newSwitch.name = switchName;
+        //newSwitch.transform.position = APU_ORIGINAL.transform.position;
+        newSwitch.transform.localPosition = localPosition;
+        Debug.Log("New apu switch is at: " + newSwitch.transform.position);
+        Debug.Log("OG switch is at " + APU_ORIGINAL.transform.position);
+
+        VRInteractable switchInteractable = newSwitch.transform.GetChild(0).GetChild(0).GetChild(0).GetChild(0).gameObject.GetComponent<VRInteractable>();
+        VRInteractable coverInteractable = newSwitch.transform.GetChild(1).GetChild(0).GetChild(0).GetChild(0).gameObject.GetComponent<VRInteractable>();
+
+        switchInteractable.interactableName = switchName;
+        coverInteractable.interactableName = switchName + " cover";
+
+        Debug.Log("Set the interactables to: " + switchInteractable + " and " + coverInteractable);
+        if (bound == null)
         {
-
-            GameObject newSwitch = GameObject.Instantiate(APU_ORIGINAL, APU_ORIGINAL.transform.parent);
-            newSwitch.transform.localPosition = APU_ORIGINAL.transform.localPosition;
-            newSwitch.transform.SetParent(parent);
-            newSwitch.name = switchName;
-            //newSwitch.transform.position = APU_ORIGINAL.transform.position;
-            newSwitch.transform.localPosition = localPosition;
-            Debug.Log("New apu switch is at: " + newSwitch.transform.position);
-            Debug.Log("OG switch is at " + APU_ORIGINAL.transform.position);
-
-            VRInteractable switchInteractable = newSwitch.transform.GetChild(0).GetChild(0).GetChild(0).GetChild(0).gameObject.GetComponent<VRInteractable>();
-            VRInteractable coverInteractable = newSwitch.transform.GetChild(1).GetChild(0).GetChild(0).GetChild(0).gameObject.GetComponent<VRInteractable>();
-
-            switchInteractable.interactableName = switchName;
-            coverInteractable.interactableName = switchName + " cover";
-
-            Debug.Log("Set the interactables to: " + switchInteractable + " and " + coverInteractable);
-            if (bound == null)
-            {
-                GameObject newBounds = GameObject.Instantiate(SEAT_ADJUST_POSE_BOUNDS, playerGameObject.transform);
-                newBounds.name = boundName;
-                newBounds.transform.position = newSwitch.transform.position;
-                newBounds.transform.eulerAngles = SEAT_ADJUST_POSE_BOUNDS.transform.eulerAngles;
-                switchInteractable.poseBounds = newBounds.GetComponent<PoseBounds>(); //Assigns bounds for switch
-                coverInteractable.poseBounds = newBounds.GetComponent<PoseBounds>(); //Assigns bounds for cover
+            GameObject newBounds = GameObject.Instantiate(SEAT_ADJUST_POSE_BOUNDS, playerGameObject.transform);
+            newBounds.name = boundName;
+            newBounds.transform.position = newSwitch.transform.position;
+            newBounds.transform.eulerAngles = SEAT_ADJUST_POSE_BOUNDS.transform.eulerAngles;
+            switchInteractable.poseBounds = newBounds.GetComponent<PoseBounds>(); //Assigns bounds for switch
+            coverInteractable.poseBounds = newBounds.GetComponent<PoseBounds>(); //Assigns bounds for cover
 
 
-            }
-            else
-            {
-                GameObject newBounds = GameObject.Instantiate(SEAT_ADJUST_POSE_BOUNDS, playerGameObject.transform);
-                newBounds.name = boundName;
-                newBounds.transform.eulerAngles = SEAT_ADJUST_POSE_BOUNDS.transform.eulerAngles;
-                newBounds.transform.position = newSwitch.transform.position;
-                switchInteractable.poseBounds = bound; //Assigns bounds for cover switch
-                coverInteractable.poseBounds = bound; //Assigns bounds for cover
-
-
-            }
-
-
-
-            Debug.Log("THE FUCKING NEW SWITCH INSIDE CREATEAPU IS " + newSwitch);
-            return newSwitch;
         }
-
-        public static GameObject createAPUSwitch(string switchName, PoseBounds bound, string boundName, Transform parent, Vector3 localPosition, Vector3 locaEulerAngles)
+        else
         {
-
-            GameObject newSwitch = GameObject.Instantiate(APU_ORIGINAL, APU_ORIGINAL.transform.parent);
-            newSwitch.transform.localPosition = APU_ORIGINAL.transform.localPosition;
-            newSwitch.transform.SetParent(parent);
-            newSwitch.name = switchName;
-            newSwitch.transform.localPosition = localPosition;
-            newSwitch.transform.localEulerAngles = locaEulerAngles;
-
-            GameObject newSwitchLabel = newSwitch.transform.GetChild(4).gameObject;
-
-            GameObject customSwitchLabel = createText(switchName, newSwitch.transform, newSwitchLabel.transform.localPosition, newSwitchLabel.transform.localEulerAngles, newSwitchLabel.transform.localScale);
-
-            customSwitchLabel.transform.SetParent(newSwitch.transform);
-
-            GameObject.Destroy(newSwitchLabel);
-            Debug.Log("New apu switch is at: " + newSwitch.transform.position);
-            Debug.Log("OG switch is at " + APU_ORIGINAL.transform.position);
-
-            VRInteractable switchInteractable = newSwitch.transform.GetChild(0).GetChild(0).GetChild(0).GetChild(0).gameObject.GetComponent<VRInteractable>();
-            VRInteractable coverInteractable = newSwitch.transform.GetChild(1).GetChild(0).GetChild(0).GetChild(0).gameObject.GetComponent<VRInteractable>();
-
-            switchInteractable.interactableName = switchName;
-            coverInteractable.interactableName = switchName + " cover";
-
-            Debug.Log("Set the interactables to: " + switchInteractable + " and " + coverInteractable);
-            if (bound == null)
-            {
-                GameObject newBounds = GameObject.Instantiate(SEAT_ADJUST_POSE_BOUNDS, playerGameObject.transform);
-                newBounds.name = boundName;
-                newBounds.transform.position = newSwitch.transform.position;
-                newBounds.transform.eulerAngles = SEAT_ADJUST_POSE_BOUNDS.transform.eulerAngles;
-                switchInteractable.poseBounds = newBounds.GetComponent<PoseBounds>(); //Assigns bounds for switch
-                coverInteractable.poseBounds = newBounds.GetComponent<PoseBounds>(); //Assigns bounds for cover
+            GameObject newBounds = GameObject.Instantiate(SEAT_ADJUST_POSE_BOUNDS, playerGameObject.transform);
+            newBounds.name = boundName;
+            newBounds.transform.eulerAngles = SEAT_ADJUST_POSE_BOUNDS.transform.eulerAngles;
+            newBounds.transform.position = newSwitch.transform.position;
+            switchInteractable.poseBounds = bound; //Assigns bounds for cover switch
+            coverInteractable.poseBounds = bound; //Assigns bounds for cover
 
 
-            }
-            else
-            {
-                GameObject newBounds = GameObject.Instantiate(SEAT_ADJUST_POSE_BOUNDS, playerGameObject.transform);
-                newBounds.name = boundName;
-                newBounds.transform.eulerAngles = SEAT_ADJUST_POSE_BOUNDS.transform.eulerAngles;
-                newBounds.transform.position = newSwitch.transform.position;
-                switchInteractable.poseBounds = bound; //Assigns bounds for cover switch
-                coverInteractable.poseBounds = bound; //Assigns bounds for cover
-
-
-            }
-
-
-
-            Debug.Log("THE FUCKING NEW SWITCH INSIDE CREATEAPU IS " + newSwitch);
-            return newSwitch;
-        }
-
-        public static GameObject createAPUSwitch(string switchName, PoseBounds bound, string boundName, Transform parent, Vector3 localPosition, Vector3 locaEulerAngles, VTTextProperties properties)
-        {
-
-            GameObject newSwitch = GameObject.Instantiate(APU_ORIGINAL, APU_ORIGINAL.transform.parent);
-            newSwitch.transform.localPosition = APU_ORIGINAL.transform.localPosition;
-            newSwitch.transform.SetParent(parent);
-            newSwitch.name = switchName;
-            newSwitch.transform.localPosition = localPosition;
-            newSwitch.transform.localEulerAngles = locaEulerAngles;
-
-            GameObject newSwitchLabel = newSwitch.transform.GetChild(4).gameObject;
-
-            GameObject customSwitchLabel = createText(switchName, newSwitch.transform, newSwitchLabel.transform.localPosition, newSwitchLabel.transform.localEulerAngles, newSwitchLabel.transform.localScale, properties, false);
-
-
-
-            GameObject.Destroy(newSwitchLabel);
-            Debug.Log("New apu switch is at: " + newSwitch.transform.position);
-            Debug.Log("OG switch is at " + APU_ORIGINAL.transform.position);
-
-            VRInteractable switchInteractable = newSwitch.transform.GetChild(0).GetChild(0).GetChild(0).GetChild(0).gameObject.GetComponent<VRInteractable>();
-            VRInteractable coverInteractable = newSwitch.transform.GetChild(1).GetChild(0).GetChild(0).GetChild(0).gameObject.GetComponent<VRInteractable>();
-
-            switchInteractable.interactableName = switchName;
-            coverInteractable.interactableName = switchName + " cover";
-
-            Debug.Log("Set the interactables to: " + switchInteractable + " and " + coverInteractable);
-            if (bound == null)
-            {
-                GameObject newBounds = GameObject.Instantiate(SEAT_ADJUST_POSE_BOUNDS, playerGameObject.transform);
-                newBounds.name = boundName;
-                newBounds.transform.position = newSwitch.transform.position;
-                newBounds.transform.eulerAngles = SEAT_ADJUST_POSE_BOUNDS.transform.eulerAngles;
-                switchInteractable.poseBounds = newBounds.GetComponent<PoseBounds>(); //Assigns bounds for switch
-                coverInteractable.poseBounds = newBounds.GetComponent<PoseBounds>(); //Assigns bounds for cover
-
-
-            }
-            else
-            {
-                GameObject newBounds = GameObject.Instantiate(SEAT_ADJUST_POSE_BOUNDS, playerGameObject.transform);
-                newBounds.name = boundName;
-                newBounds.transform.eulerAngles = SEAT_ADJUST_POSE_BOUNDS.transform.eulerAngles;
-                newBounds.transform.position = newSwitch.transform.position;
-                switchInteractable.poseBounds = bound; //Assigns bounds for cover switch
-                coverInteractable.poseBounds = bound; //Assigns bounds for cover
-
-
-            }
-
-
-
-            Debug.Log("THE FUCKING NEW SWITCH INSIDE CREATEAPU IS " + newSwitch);
-            return newSwitch;
         }
 
 
 
-        public static GameObject createAPButton(string buttonName, PoseBounds bound, string boundName, Transform parent, Vector3 localPosition, Vector3 locaEulerAngles, VTTextProperties properties)
+        Debug.Log("THE FUCKING NEW SWITCH INSIDE CREATEAPU IS " + newSwitch);
+        return newSwitch;
+    }
+
+    public static GameObject createAPUSwitch(string switchName, PoseBounds bound, string boundName, Transform parent, Vector3 localPosition, Vector3 locaEulerAngles)
+    {
+
+        GameObject newSwitch = GameObject.Instantiate(APU_ORIGINAL, APU_ORIGINAL.transform.parent);
+        newSwitch.transform.localPosition = APU_ORIGINAL.transform.localPosition;
+        newSwitch.transform.SetParent(parent);
+        newSwitch.name = switchName;
+        newSwitch.transform.localPosition = localPosition;
+        newSwitch.transform.localEulerAngles = locaEulerAngles;
+
+        GameObject newSwitchLabel = newSwitch.transform.GetChild(4).gameObject;
+
+        GameObject customSwitchLabel = createText(switchName, newSwitch.transform, newSwitchLabel.transform.localPosition, newSwitchLabel.transform.localEulerAngles, newSwitchLabel.transform.localScale);
+
+        customSwitchLabel.transform.SetParent(newSwitch.transform);
+
+        GameObject.Destroy(newSwitchLabel);
+        Debug.Log("New apu switch is at: " + newSwitch.transform.position);
+        Debug.Log("OG switch is at " + APU_ORIGINAL.transform.position);
+
+        VRInteractable switchInteractable = newSwitch.transform.GetChild(0).GetChild(0).GetChild(0).GetChild(0).gameObject.GetComponent<VRInteractable>();
+        VRInteractable coverInteractable = newSwitch.transform.GetChild(1).GetChild(0).GetChild(0).GetChild(0).gameObject.GetComponent<VRInteractable>();
+
+        switchInteractable.interactableName = switchName;
+        coverInteractable.interactableName = switchName + " cover";
+
+        Debug.Log("Set the interactables to: " + switchInteractable + " and " + coverInteractable);
+        if (bound == null)
         {
-            GameObject newButton = GameObject.Instantiate(APOFF_ORIGINAL, APOFF_ORIGINAL.transform.parent);
-            newButton.transform.localPosition = APOFF_ORIGINAL.transform.localPosition;
-            newButton.transform.localEulerAngles = APOFF_ORIGINAL.transform.localEulerAngles;
-            newButton.transform.SetParent(parent);
-            newButton.name = buttonName;
-            newButton.transform.localPosition = localPosition;
-            //newButton.transform.localEulerAngles = locaEulerAngles;
-
-            newButton.transform.localScale = Vector3.Scale(newButton.transform.localScale, new Vector3(0.8f, 1, 1));
-            newButton.transform.localScale = Vector3.Scale(newButton.transform.localScale, new Vector3(0.9f, 0.9f, 0.9f));
-            GameObject newButtonLabel = newButton.GetComponentInChildren<VTText>().gameObject;
-
-            GameObject customButtonLabel = createText(buttonName, newButton.transform.GetChild(1).GetChild(0), newButtonLabel.transform.localPosition, newButtonLabel.transform.localEulerAngles, newButtonLabel.transform.localScale, properties, true);
+            GameObject newBounds = GameObject.Instantiate(SEAT_ADJUST_POSE_BOUNDS, playerGameObject.transform);
+            newBounds.name = boundName;
+            newBounds.transform.position = newSwitch.transform.position;
+            newBounds.transform.eulerAngles = SEAT_ADJUST_POSE_BOUNDS.transform.eulerAngles;
+            switchInteractable.poseBounds = newBounds.GetComponent<PoseBounds>(); //Assigns bounds for switch
+            coverInteractable.poseBounds = newBounds.GetComponent<PoseBounds>(); //Assigns bounds for cover
 
 
-
-            GameObject.Destroy(newButtonLabel);
-
-
-            VRInteractable buttonInteractable = newButton.transform.GetComponentInChildren<VRInteractable>();
-            buttonInteractable.interactableName = buttonName;
-            if (bound == null)
-            {
-                GameObject newBounds = GameObject.Instantiate(SEAT_ADJUST_POSE_BOUNDS, playerGameObject.transform);
-                newBounds.name = boundName;
-                newBounds.transform.position = newButton.transform.position;
-                newBounds.transform.eulerAngles = SEAT_ADJUST_POSE_BOUNDS.transform.eulerAngles;
-                buttonInteractable.poseBounds = newBounds.GetComponent<PoseBounds>(); //Assigns bounds for switch
-
-
-
-            }
-            else
-            {
-                GameObject newBounds = GameObject.Instantiate(SEAT_ADJUST_POSE_BOUNDS, playerGameObject.transform);
-                newBounds.name = boundName;
-                newBounds.transform.eulerAngles = SEAT_ADJUST_POSE_BOUNDS.transform.eulerAngles;
-                newBounds.transform.position = newButton.transform.position;
-                buttonInteractable.poseBounds = bound; //Assigns bounds for cover switch
-
-
-
-            }
-
-            Debug.Log("THE FUCKING NEW BUTTON INSIDE CREATEAPU IS " + newButton);
-            return newButton;
         }
-
-        /// <summary>
-        /// Creates VTText and puts it into a new empty "label" object. However, it sets the properties of the text to default sizes and alignments
-        /// </summary>
-        /// <param name="text"></param>
-        /// <param name="parent"></param>
-        /// <param name="localPosition"></param>
-        /// <param name="localEuler"></param>
-        /// <param name="localScale"></param>
-        /// <returns></returns>
-        public static GameObject createText(string text, Transform parent, Vector3 localPosition, Vector3 localEuler, Vector3 localScale)
+        else
         {
-            GameObject textObject = new GameObject(text + "Label");
-            textObject.AddComponent<VTText>();
-            VTText textRef = textObject.GetComponent<VTText>();
+            GameObject newBounds = GameObject.Instantiate(SEAT_ADJUST_POSE_BOUNDS, playerGameObject.transform);
+            newBounds.name = boundName;
+            newBounds.transform.eulerAngles = SEAT_ADJUST_POSE_BOUNDS.transform.eulerAngles;
+            newBounds.transform.position = newSwitch.transform.position;
+            switchInteractable.poseBounds = bound; //Assigns bounds for cover switch
+            coverInteractable.poseBounds = bound; //Assigns bounds for cover
 
-            GameObject objectClone = APU_ORIGINAL.transform.GetChild(4).gameObject;
-            Debug.Log("Cloned label is: " + objectClone);
-
-            VTText textClone = objectClone.GetComponentInChildren<VTText>();
-
-            textObject.transform.SetParent(parent);
-            textObject.transform.localPosition = localPosition;
-            textObject.transform.localEulerAngles = localEuler;
-            textObject.transform.localScale = localScale;
-            textRef.font = textClone.font;
-
-            textRef.text = text;
-            textRef.fontSize = 40;
-            textRef.lineHeight = 1;
-            textRef.align = VTText.AlignmentModes.Center;
-            textRef.vertAlign = VTText.VerticalAlignmentModes.Middle;
-            textRef.ApplyText();
-
-            return textObject;
 
         }
 
-        /// <summary>
-        /// Creates VTText and puts it into a new empty "label" gameobject. Is able to set custom properites to the VTText
-        /// </summary>
-        /// <param name="text">What you want the text to say</param>
-        /// <param name="parent">The parent of the label gameobject</param>
-        /// <param name="localPosition">Local position of the label gameobject</param>
-        /// <param name="localEuler">Local euler angle of the label gameobject</param>
-        /// <param name="localScale">local scale of the label gameobject</param>
-        /// <param name="properties">The properties of the actual text. Need to instantiate the VTTextProperties class and fill in the nessecary information</param>
-        /// <param name="extendedProp">Adds aditional properties such as color, emission color, useEmssion, and emssionMultiplier. Set to false if you just want to make blank white text</param>
-        /// <returns></returns>
-        public static GameObject createText(string text, Transform parent, Vector3 localPosition, Vector3 localEuler, Vector3 localScale, VTTextProperties properties, bool extendedProp)
+
+
+        Debug.Log("THE FUCKING NEW SWITCH INSIDE CREATEAPU IS " + newSwitch);
+        return newSwitch;
+    }
+
+    public static GameObject createAPUSwitch(string switchName, PoseBounds bound, string boundName, Transform parent, Vector3 localPosition, Vector3 locaEulerAngles, VTTextProperties properties)
+    {
+
+        GameObject newSwitch = GameObject.Instantiate(APU_ORIGINAL, APU_ORIGINAL.transform.parent);
+        newSwitch.transform.localPosition = APU_ORIGINAL.transform.localPosition;
+        newSwitch.transform.SetParent(parent);
+        newSwitch.name = switchName;
+        newSwitch.transform.localPosition = localPosition;
+        newSwitch.transform.localEulerAngles = locaEulerAngles;
+
+        GameObject newSwitchLabel = newSwitch.transform.GetChild(4).gameObject;
+
+        GameObject customSwitchLabel = createText(switchName, newSwitch.transform, newSwitchLabel.transform.localPosition, newSwitchLabel.transform.localEulerAngles, newSwitchLabel.transform.localScale, properties, false);
+
+
+
+        GameObject.Destroy(newSwitchLabel);
+        Debug.Log("New apu switch is at: " + newSwitch.transform.position);
+        Debug.Log("OG switch is at " + APU_ORIGINAL.transform.position);
+
+        VRInteractable switchInteractable = newSwitch.transform.GetChild(0).GetChild(0).GetChild(0).GetChild(0).gameObject.GetComponent<VRInteractable>();
+        VRInteractable coverInteractable = newSwitch.transform.GetChild(1).GetChild(0).GetChild(0).GetChild(0).gameObject.GetComponent<VRInteractable>();
+
+        switchInteractable.interactableName = switchName;
+        coverInteractable.interactableName = switchName + " cover";
+
+        Debug.Log("Set the interactables to: " + switchInteractable + " and " + coverInteractable);
+        if (bound == null)
         {
-            GameObject textObject = new GameObject(text + "Label");
-            textObject.AddComponent<VTText>();
-            VTText textRef = textObject.GetComponent<VTText>();
+            GameObject newBounds = GameObject.Instantiate(SEAT_ADJUST_POSE_BOUNDS, playerGameObject.transform);
+            newBounds.name = boundName;
+            newBounds.transform.position = newSwitch.transform.position;
+            newBounds.transform.eulerAngles = SEAT_ADJUST_POSE_BOUNDS.transform.eulerAngles;
+            switchInteractable.poseBounds = newBounds.GetComponent<PoseBounds>(); //Assigns bounds for switch
+            coverInteractable.poseBounds = newBounds.GetComponent<PoseBounds>(); //Assigns bounds for cover
 
-            GameObject objectClone = APU_ORIGINAL.transform.GetChild(4).gameObject;
-            Debug.Log("Cloned label is: " + objectClone);
 
-            VTText textClone = objectClone.GetComponentInChildren<VTText>();
+        }
+        else
+        {
+            GameObject newBounds = GameObject.Instantiate(SEAT_ADJUST_POSE_BOUNDS, playerGameObject.transform);
+            newBounds.name = boundName;
+            newBounds.transform.eulerAngles = SEAT_ADJUST_POSE_BOUNDS.transform.eulerAngles;
+            newBounds.transform.position = newSwitch.transform.position;
+            switchInteractable.poseBounds = bound; //Assigns bounds for cover switch
+            coverInteractable.poseBounds = bound; //Assigns bounds for cover
 
-            textObject.transform.SetParent(parent);
-            textObject.transform.localPosition = localPosition;
-            textObject.transform.localEulerAngles = localEuler;
-            textObject.transform.localScale = localScale;
-            textRef.font = textClone.font;
 
-            textRef.text = text;
-            textRef.fontSize = properties.fontSize;
-            textRef.lineHeight = properties.lineHeight;
-            textRef.align = properties.align;
-            textRef.vertAlign = properties.vertAlign;
+        }
 
-            if (extendedProp)
-            {
-                textRef.color = properties.color;
-                textRef.emission = properties.emission;
-                textRef.emissionMult = properties.emissionMult;
-                textRef.useEmission = properties.useEmission;
-            }
 
-            textRef.ApplyText();
+
+        Debug.Log("THE FUCKING NEW SWITCH INSIDE CREATEAPU IS " + newSwitch);
+        return newSwitch;
+    }
+
+
+
+    public static GameObject createAPButton(string buttonName, PoseBounds bound, string boundName, Transform parent, Vector3 localPosition, Vector3 locaEulerAngles, VTTextProperties properties)
+    {
+        GameObject newButton = GameObject.Instantiate(APOFF_ORIGINAL, APOFF_ORIGINAL.transform.parent);
+        newButton.transform.localPosition = APOFF_ORIGINAL.transform.localPosition;
+        newButton.transform.localEulerAngles = APOFF_ORIGINAL.transform.localEulerAngles;
+        newButton.transform.SetParent(parent);
+        newButton.name = buttonName;
+        newButton.transform.localPosition = localPosition;
+        //newButton.transform.localEulerAngles = locaEulerAngles;
+
+        newButton.transform.localScale = Vector3.Scale(newButton.transform.localScale, new Vector3(0.8f, 1, 1));
+        newButton.transform.localScale = Vector3.Scale(newButton.transform.localScale, new Vector3(0.9f, 0.9f, 0.9f));
+        GameObject newButtonLabel = newButton.GetComponentInChildren<VTText>().gameObject;
+
+        GameObject customButtonLabel = createText(buttonName, newButton.transform.GetChild(1).GetChild(0), newButtonLabel.transform.localPosition, newButtonLabel.transform.localEulerAngles, newButtonLabel.transform.localScale, properties, true);
+
+
+
+        GameObject.Destroy(newButtonLabel);
+
+
+        VRInteractable buttonInteractable = newButton.transform.GetComponentInChildren<VRInteractable>();
+        buttonInteractable.interactableName = buttonName;
+        if (bound == null)
+        {
+            GameObject newBounds = GameObject.Instantiate(SEAT_ADJUST_POSE_BOUNDS, playerGameObject.transform);
+            newBounds.name = boundName;
+            newBounds.transform.position = newButton.transform.position;
+            newBounds.transform.eulerAngles = SEAT_ADJUST_POSE_BOUNDS.transform.eulerAngles;
+            buttonInteractable.poseBounds = newBounds.GetComponent<PoseBounds>(); //Assigns bounds for switch
+
+
+
+        }
+        else
+        {
+            GameObject newBounds = GameObject.Instantiate(SEAT_ADJUST_POSE_BOUNDS, playerGameObject.transform);
+            newBounds.name = boundName;
+            newBounds.transform.eulerAngles = SEAT_ADJUST_POSE_BOUNDS.transform.eulerAngles;
+            newBounds.transform.position = newButton.transform.position;
+            buttonInteractable.poseBounds = bound; //Assigns bounds for cover switch
+
+
+
+        }
+
+        Debug.Log("THE FUCKING NEW BUTTON INSIDE CREATEAPU IS " + newButton);
+        return newButton;
+    }
+
+    /// <summary>
+    /// Creates VTText and puts it into a new empty "label" object. However, it sets the properties of the text to default sizes and alignments
+    /// </summary>
+    /// <param name="text"></param>
+    /// <param name="parent"></param>
+    /// <param name="localPosition"></param>
+    /// <param name="localEuler"></param>
+    /// <param name="localScale"></param>
+    /// <returns></returns>
+    public static GameObject createText(string text, Transform parent, Vector3 localPosition, Vector3 localEuler, Vector3 localScale)
+    {
+        GameObject textObject = new GameObject(text + "Label");
+        textObject.AddComponent<VTText>();
+        VTText textRef = textObject.GetComponent<VTText>();
+
+        GameObject objectClone = APU_ORIGINAL.transform.GetChild(4).gameObject;
+        Debug.Log("Cloned label is: " + objectClone);
+
+        VTText textClone = objectClone.GetComponentInChildren<VTText>();
+
+        textObject.transform.SetParent(parent);
+        textObject.transform.localPosition = localPosition;
+        textObject.transform.localEulerAngles = localEuler;
+        textObject.transform.localScale = localScale;
+        textRef.font = textClone.font;
+
+        textRef.text = text;
+        textRef.fontSize = 40;
+        textRef.lineHeight = 1;
+        textRef.align = VTText.AlignmentModes.Center;
+        textRef.vertAlign = VTText.VerticalAlignmentModes.Middle;
+        textRef.ApplyText();
+
+        return textObject;
+
+    }
+
+    /// <summary>
+    /// Creates VTText and puts it into a new empty "label" gameobject. Is able to set custom properites to the VTText
+    /// </summary>
+    /// <param name="text">What you want the text to say</param>
+    /// <param name="parent">The parent of the label gameobject</param>
+    /// <param name="localPosition">Local position of the label gameobject</param>
+    /// <param name="localEuler">Local euler angle of the label gameobject</param>
+    /// <param name="localScale">local scale of the label gameobject</param>
+    /// <param name="properties">The properties of the actual text. Need to instantiate the VTTextProperties class and fill in the nessecary information</param>
+    /// <param name="extendedProp">Adds aditional properties such as color, emission color, useEmssion, and emssionMultiplier. Set to false if you just want to make blank white text</param>
+    /// <returns></returns>
+    public static GameObject createText(string text, Transform parent, Vector3 localPosition, Vector3 localEuler, Vector3 localScale, VTTextProperties properties, bool extendedProp)
+    {
+        GameObject textObject = new GameObject(text + "Label");
+        textObject.AddComponent<VTText>();
+        VTText textRef = textObject.GetComponent<VTText>();
+
+        GameObject objectClone = APU_ORIGINAL.transform.GetChild(4).gameObject;
+        Debug.Log("Cloned label is: " + objectClone);
+
+        VTText textClone = objectClone.GetComponentInChildren<VTText>();
+
+        textObject.transform.SetParent(parent);
+        textObject.transform.localPosition = localPosition;
+        textObject.transform.localEulerAngles = localEuler;
+        textObject.transform.localScale = localScale;
+        textRef.font = textClone.font;
+
+        textRef.text = text;
+        textRef.fontSize = properties.fontSize;
+        textRef.lineHeight = properties.lineHeight;
+        textRef.align = properties.align;
+        textRef.vertAlign = properties.vertAlign;
+
+        if (extendedProp)
+        {
+            textRef.color = properties.color;
+            textRef.emission = properties.emission;
+            textRef.emissionMult = properties.emissionMult;
+            textRef.useEmission = properties.useEmission;
+        }
+
+        textRef.ApplyText();
         textRef.ApplyText(); textRef.ApplyText();
         textRef.SetEmission(false);
         return textObject;
 
-        }
+    }
     public static GameObject GetChildWithName(GameObject obj, string name)
     {
 
@@ -856,15 +850,15 @@ public static class CUSTOM_API
         Transform[] children = obj.GetComponentsInChildren<Transform>();
         foreach (Transform child in children)
         {
-            if (child.name==name || child.name.Contains(name+"(clone"))
+            if (child.name == name || child.name.Contains(name + "(clone"))
             {
                 return child.gameObject;
             }
-     }
-             
+        }
+
 
         return null;
-     
+
     }
 
     public static Transform GetChildTransformWithName(GameObject obj, string name)
@@ -893,7 +887,7 @@ public static class CUSTOM_API
         if (Input.GetKey("w"))
         {
             objectTemp.y += increment;
-             moveCounterY++;
+            moveCounterY++;
             objectMoved.transform.localPosition = objectTemp;
             Debug.Log(objectMoved.name + ": " + objectMoved.transform.localPosition.ToString("F4"));
 
@@ -903,7 +897,7 @@ public static class CUSTOM_API
         {
             objectTemp.y -= increment;
 
-             moveCounterY--;
+            moveCounterY--;
             objectMoved.transform.localPosition = objectTemp;
             Debug.Log(objectMoved.name + ": " + objectMoved.transform.localPosition.ToString("F4"));
         }
@@ -912,7 +906,7 @@ public static class CUSTOM_API
         {
             objectTemp.x -= increment;
 
-             moveCounterX--;
+            moveCounterX--;
             objectMoved.transform.localPosition = objectTemp;
             Debug.Log(objectMoved.name + ": " + objectMoved.transform.localPosition.ToString("F4"));
         }
@@ -921,7 +915,7 @@ public static class CUSTOM_API
         {
             objectTemp.x += increment;
 
-             moveCounterX++;
+            moveCounterX++;
             objectMoved.transform.localPosition = objectTemp;
             Debug.Log(objectMoved.name + ": " + objectMoved.transform.localPosition.ToString("F4"));
         }
@@ -930,7 +924,7 @@ public static class CUSTOM_API
         {
             objectTemp.z += increment;
 
-             moveCounterZ++;
+            moveCounterZ++;
             objectMoved.transform.localPosition = objectTemp;
             Debug.Log(objectMoved.name + ": " + objectMoved.transform.localPosition.ToString("F4"));
         }
@@ -954,7 +948,7 @@ public static class CUSTOM_API
 
         Quaternion incrementx = Quaternion.Euler(new Vector3(increment, 0.0f, 0.0f)).normalized;
 
-        Quaternion incrementy = Quaternion.Euler(new Vector3(  0.0f, increment, 0.0f)).normalized;
+        Quaternion incrementy = Quaternion.Euler(new Vector3(0.0f, increment, 0.0f)).normalized;
 
         Quaternion incrementz = Quaternion.Euler(new Vector3(0.0f, 0.0f, increment)).normalized;
         if (Input.GetKey("u"))
@@ -967,7 +961,7 @@ public static class CUSTOM_API
 
         if (Input.GetKey("j"))
         {
-            objectTemp  *= Quaternion.Inverse(incrementy);
+            objectTemp *= Quaternion.Inverse(incrementy);
 
 
             rotatedObject.transform.localRotation = objectTemp.normalized;
@@ -981,17 +975,17 @@ public static class CUSTOM_API
             rotatedObject.transform.localRotation = objectTemp.normalized;
             Debug.Log("Switch clone new angle: " + rotatedObject.transform.localEulerAngles.ToString("F2"));
         }
-    
+
 
         if (Input.GetKey("k"))
         {
-         objectTemp  *= Quaternion.Inverse(incrementx);
+            objectTemp *= Quaternion.Inverse(incrementx);
 
 
             rotatedObject.transform.localRotation = objectTemp.normalized;
             Debug.Log("Switch clone new angle: " + rotatedObject.transform.localEulerAngles.ToString("F2"));
         }
-        
+
 
         if (Input.GetKey("o"))
         {
@@ -1038,7 +1032,7 @@ public static class CUSTOM_API
     static GameObject selectedOBJ;
     public static void Update()
     {
-        
+
         /*getObjectByClick();
         if(selectedOBJ!=null)
        
@@ -1050,27 +1044,27 @@ public static class CUSTOM_API
     /// So far only works on the fa-26b. 
     /// </summary>
     public static void FindSwitchObjects(GameObject go)
-        {
-            APU_ORIGINAL = GetChildWithName(go,"APUSwitch");
-            Debug.Log("APU Original found: " + APU_ORIGINAL);
-       
-            //TODO start using the seat adjust posebounds
-            SEAT_ADJUST_POSE_BOUNDS = GetChildWithName(go,"MasterArmPoseBounds");
-            Debug.Log("pose bound found: " + SEAT_ADJUST_POSE_BOUNDS);
-            playerGameObject = VTOLAPI.GetPlayersVehicleGameObject();
+    {
+        APU_ORIGINAL = GetChildWithName(go, "APUSwitch");
+        Debug.Log("APU Original found: " + APU_ORIGINAL);
+
+        //TODO start using the seat adjust posebounds
+        SEAT_ADJUST_POSE_BOUNDS = GetChildWithName(go, "MasterArmPoseBounds");
+        Debug.Log("pose bound found: " + SEAT_ADJUST_POSE_BOUNDS);
+        playerGameObject = VTOLAPI.GetPlayersVehicleGameObject();
         //APOFF_ORIGINAL = GetChildWithName(go,"VisorButton");
-            APOFF_ORIGINAL = GetChildWithName(go,"APOff");
+        APOFF_ORIGINAL = GetChildWithName(go, "APOff");
     }
 
 
 
 
-        private static GameObject APU_ORIGINAL;
+    private static GameObject APU_ORIGINAL;
 
     private static GameObject selectedObject = null;
     private static GameObject SEAT_ADJUST_POSE_BOUNDS;
-        private static GameObject playerGameObject;
-        private static GameObject APOFF_ORIGINAL;
+    private static GameObject playerGameObject;
+    private static GameObject APOFF_ORIGINAL;
 
-    }
+}
 

@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using UnityEngine;
+﻿using UnityEngine;
 
 class WingFoldNetworker_Sender : MonoBehaviour
 {
@@ -17,17 +12,19 @@ class WingFoldNetworker_Sender : MonoBehaviour
         lastMessage = new Message_WingFold(false, networkUID);
     }
 
-    void FixedUpdate() {
+    void FixedUpdate()
+    {
         bool foldedState = wingController.deployed;
 
-        if (foldedState != lastFoldedState) {
+        if (foldedState != lastFoldedState)
+        {
             lastMessage.UID = networkUID;
             lastMessage.folded = foldedState;
             if (Networker.isHost)
                 NetworkSenderThread.Instance.SendPacketAsHostToAllClients(lastMessage, Steamworks.EP2PSend.k_EP2PSendUnreliable);
             else
                 NetworkSenderThread.Instance.SendPacketToSpecificPlayer(Networker.hostID, lastMessage, Steamworks.EP2PSend.k_EP2PSendUnreliable);
-            
+
             lastFoldedState = foldedState;
         }
     }

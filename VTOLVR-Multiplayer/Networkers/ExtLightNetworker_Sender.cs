@@ -1,10 +1,4 @@
-﻿using Steamworks;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using UnityEngine;
+﻿using UnityEngine;
 
 class ExtLight_Sender : MonoBehaviour
 {
@@ -36,7 +30,8 @@ class ExtLight_Sender : MonoBehaviour
         {
             Debug.Log("Could not get navlight lever");
         }
-        if (landingObject != null) {
+        if (landingObject != null)
+        {
             landingLever = landingObject.gameObject.GetComponent<VRLever>();
             Debug.Log("Got landing lever");
         }
@@ -65,12 +60,15 @@ class ExtLight_Sender : MonoBehaviour
             lastStrobe = strobeLight.onByDefault;
             lastNav = (navLever.currentState == 1);
             lastLanding = (landingLever.currentState == 1);
-        }        
+        }
     }
 
-    VRInteractable FindInteractableWithName(string name) {
-        foreach (VRInteractable interactable in GameObject.FindObjectsOfType<VRInteractable>()) {
-            if (interactable.interactableName == name) {
+    VRInteractable FindInteractableWithName(string name)
+    {
+        foreach (VRInteractable interactable in GameObject.FindObjectsOfType<VRInteractable>())
+        {
+            if (interactable.interactableName == name)
+            {
                 return interactable;
             }
         }

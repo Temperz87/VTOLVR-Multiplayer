@@ -1,8 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using UnityEngine;
 [Serializable]
 public class Message_SpawnAIVehicle : Message
@@ -42,10 +38,10 @@ public class Message_SpawnAIVehicle : Message
         this.unitInstanceID = unitInstanceID;
         this.unitGroup = unitGroup;
         this.radarIDs = radarIDs;
-        this.redfor = redforb;
+        redfor = redforb;
         hasGroup = true;
-        this.IRSamMissiles = IRSAMissiles;
-        this.hasAirport = airport;
+        IRSamMissiles = IRSAMissiles;
+        hasAirport = airport;
         // this.playerCount = playerCount;
         type = MessageType.SpawnAiVehicle;
     }
@@ -64,9 +60,9 @@ public class Message_SpawnAIVehicle : Message
         this.unitInstanceID = unitInstanceID;
         this.radarIDs = radarIDs;
         hasGroup = false;
-        this.redfor = redforb;
-        this.IRSamMissiles = IRSAMissiles;
-        this.hasAirport = airport;
+        redfor = redforb;
+        IRSamMissiles = IRSAMissiles;
+        hasAirport = airport;
         // this.playerCount = playerCount;
         type = MessageType.SpawnAiVehicle;
     }

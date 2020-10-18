@@ -1,8 +1,5 @@
 ﻿using Harmony;
-using Steamworks;
-using System;
 using System.Collections.Generic;
-using System.Linq;
 using UnityEngine;
 
 public class MissileNetworker_Receiver : MonoBehaviour
@@ -19,7 +16,8 @@ public class MissileNetworker_Receiver : MonoBehaviour
     private List<int> colliderLayers = new List<int>();
     private void Start()
     {
-        if (thisMissile == null) {
+        if (thisMissile == null)
+        {
             thisMissile = GetComponent<Missile>();
         }
 
@@ -33,8 +31,8 @@ public class MissileNetworker_Receiver : MonoBehaviour
                 colliderLayers.Add(collider.gameObject.layer);
                 collider.gameObject.layer = 9;
             }
-        } 
-        
+        }
+
 
         thisMissile.explodeRadius *= 1.8f; thisMissile.explodeDamage *= 0.7f;
         traverse = Traverse.Create(thisML);
@@ -92,7 +90,7 @@ public class MissileNetworker_Receiver : MonoBehaviour
                     {
                         RigidbodyNetworker_Receiver rbReceiver = gameObject.AddComponent<RigidbodyNetworker_Receiver>();
                         rbReceiver.networkUID = networkUID;
-                        rbReceiver.smoothingTime = 0.25f;
+                        rbReceiver.smoothingTime = 0.5f;
                     }
                 }
             }
@@ -132,8 +130,8 @@ public class MissileNetworker_Receiver : MonoBehaviour
             {
                 Debug.Log("Missile fired " + thisMissile.name);
                 hasFired = true;
-                if(colliderLayers.Count>0)
-                StartCoroutine(colliderTimer());
+                if (colliderLayers.Count > 0)
+                    StartCoroutine(colliderTimer());
             }
         }
 
@@ -149,7 +147,7 @@ public class MissileNetworker_Receiver : MonoBehaviour
                 ///thisMissile.rb.velocity = thisMissile.transform.forward * 10.0f;
                 thisMissile.Detonate();
             }
-               
+
 
         }
     }

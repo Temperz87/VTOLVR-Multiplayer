@@ -1,9 +1,5 @@
 ﻿using Steamworks;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using UnityEngine;
 
 class LockingRadarNetworker_Sender : MonoBehaviour
@@ -53,7 +49,7 @@ class LockingRadarNetworker_Sender : MonoBehaviour
     private void FixedUpdate()
     {
         tick += Time.fixedDeltaTime;
-        
+
         if (lr == null)
         {
             Debug.LogError($"LockingRadar is null for object {gameObject.name} with an uid of {networkUID}.");
@@ -145,14 +141,14 @@ class LockingRadarNetworker_Sender : MonoBehaviour
                                 NetworkSenderThread.Instance.SendPacketAsHostToAllClients(lastLockingMessage, EP2PSend.k_EP2PSendUnreliable);
                                 NetworkSenderThread.Instance.SendPacketAsHostToAllClients(lastLockingMessage, EP2PSend.k_EP2PSendReliable);
                             }
-                          
-                            else
-                                {
 
-                                    NetworkSenderThread.Instance.SendPacketAsHostToAllClients(lastLockingMessage, EP2PSend.k_EP2PSendUnreliable);
-                                    NetworkSenderThread.Instance.SendPacketToSpecificPlayer(Networker.hostID, lastLockingMessage, EP2PSend.k_EP2PSendReliable);
-                                }
+                            else
+                            {
+
+                                NetworkSenderThread.Instance.SendPacketAsHostToAllClients(lastLockingMessage, EP2PSend.k_EP2PSendUnreliable);
+                                NetworkSenderThread.Instance.SendPacketToSpecificPlayer(Networker.hostID, lastLockingMessage, EP2PSend.k_EP2PSendReliable);
                             }
+                        }
                         else
                         {
                             //Debug.LogError("Could not resolve lock at actor " + lastRadarLockData.actor.name);
@@ -232,14 +228,14 @@ class LockingRadarNetworker_Sender : MonoBehaviour
         if (tick > 1.0f / tickRate)
         {
             tick = 0.0f;
-       
-        if (VTOLVR_Multiplayer.AIDictionaries.reverseAllActors.TryGetValue(a, out ulong uID))
-        {
-            if (Networker.isHost)
-                NetworkSenderThread.Instance.SendPacketAsHostToAllClients(new Message_RadarDetectedActor(uID, networkUID), EP2PSend.k_EP2PSendUnreliable);
-            else
-                NetworkSenderThread.Instance.SendPacketToSpecificPlayer(Networker.hostID, new Message_RadarDetectedActor(uID, networkUID), EP2PSend.k_EP2PSendUnreliable);
-        }
+
+            if (VTOLVR_Multiplayer.AIDictionaries.reverseAllActors.TryGetValue(a, out ulong uID))
+            {
+                if (Networker.isHost)
+                    NetworkSenderThread.Instance.SendPacketAsHostToAllClients(new Message_RadarDetectedActor(uID, networkUID), EP2PSend.k_EP2PSendUnreliable);
+                else
+                    NetworkSenderThread.Instance.SendPacketToSpecificPlayer(Networker.hostID, new Message_RadarDetectedActor(uID, networkUID), EP2PSend.k_EP2PSendUnreliable);
+            }
         }
     }
 }

@@ -1,12 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using UnityEngine;
- 
- 
-    using System.Collections;
 //32 bit NOT 64 bit dont use for global positions
 [System.Serializable]
 public struct SerializableVector3
@@ -83,12 +76,12 @@ public struct SerializableVector3
         return new SerializableVector3((float)rValue.x, (float)rValue.y, (float)rValue.z);
     }
 }
-    /// <summary>
-    /// Since unity doesn't flag the Quaternion as serializable, we
-    /// need to create our own version. This one will automatically convert
-    /// between Quaternion and SerializableQuaternion
-    /// </summary>
-    [System.Serializable]
+/// <summary>
+/// Since unity doesn't flag the Quaternion as serializable, we
+/// need to create our own version. This one will automatically convert
+/// between Quaternion and SerializableQuaternion
+/// </summary>
+[System.Serializable]
 public struct SerializableQuaternion
 {
     /// <summary>

@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Steamworks;
+﻿using Steamworks;
 using UnityEngine;
 
 public static class AvatarManager
@@ -22,7 +17,8 @@ public static class AvatarManager
 
     public class RoundelPosition
     {
-        public RoundelPosition(Vector3 position, Quaternion rotation, Vector3 scale) {
+        public RoundelPosition(Vector3 position, Quaternion rotation, Vector3 scale)
+        {
             this.position = position;
             this.rotation = rotation;
             this.scale = scale;
@@ -78,7 +74,8 @@ public static class AvatarManager
 
         RoundelLayout layout = layouts[(int)type];
 
-        foreach (RoundelPosition roundelPosition in layout.roundels) {
+        foreach (RoundelPosition roundelPosition in layout.roundels)
+        {
             GameObject roundel = GameObject.CreatePrimitive(PrimitiveType.Quad);
             roundel.transform.parent = aircraft;
             roundel.transform.localPosition = roundelPosition.position + offset;
@@ -87,7 +84,7 @@ public static class AvatarManager
 
             GameObject.Destroy(roundel.GetComponent<Collider>());
 
-            roundel.GetComponent<Renderer>().material.mainTexture = pfpTexture; 
+            roundel.GetComponent<Renderer>().material.mainTexture = pfpTexture;
             roundel.GetComponent<Renderer>().material.mainTextureScale = new Vector2(1, -1);
         }
     }
@@ -112,7 +109,8 @@ public static class AvatarManager
                 returnTexture.Apply();
                 Debug.LogError("Loaded avatar!");
             }
-            else {
+            else
+            {
                 Debug.LogError("Avatar loading failed!");
             }
             return returnTexture;

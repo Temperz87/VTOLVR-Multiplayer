@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Collections;
 using UnityEngine;
 public class RigidbodyNetworker_Sender : MonoBehaviour
 {
@@ -20,7 +15,7 @@ public class RigidbodyNetworker_Sender : MonoBehaviour
     private Vector3 lastAngularVelocity;
     private float threshold = 0.5f;
     private float angleThreshold = 1f;
-    
+
     private ulong updateNumber;
     private float tick;
     public float tickRate = 10;
@@ -49,7 +44,7 @@ public class RigidbodyNetworker_Sender : MonoBehaviour
         lastUp = lastRotation * Vector3.up;
         lastForward = lastRotation * Vector3.forward;
         tick += Time.fixedDeltaTime;
-        if (tick > 1.0f/tickRate  || Vector3.Angle(lastUp, transform.up) > angleThreshold || Vector3.Angle(lastForward, transform.forward) > angleThreshold)
+        if (tick > 1.0f / tickRate)
         {
             tick = 0.0f;
             lastUp = transform.up;
@@ -67,7 +62,7 @@ public class RigidbodyNetworker_Sender : MonoBehaviour
             lastMessage.velocity = new Vector3D(rb.velocity);
             lastMessage.angularVelocity = new Vector3D(rb.angularVelocity * Mathf.Rad2Deg);
             lastMessage.networkUID = networkUID;
-            lastMessage.sequenceNumber = ++updateNumber;
+            lastMessage.sequenceNumber = PlayerManager.timeinGame;
             if (Networker.isHost)
             {
                 Networker.addToUnreliableSendBuffer(lastMessage);
@@ -88,7 +83,7 @@ public class RigidbodyNetworker_Sender : MonoBehaviour
     private IEnumerator SetSpawnEnumerator(Vector3 spawnPos, Quaternion spawnRot)
     {
         rb.interpolation = RigidbodyInterpolation.None;
-        rb.isKinematic=true;
+        rb.isKinematic = true;
         rb.velocity = new Vector3(0, 0, 0); rb.Sleep();
         rb.position = spawnPos;
         rb.transform.position = spawnPos;
@@ -98,7 +93,7 @@ public class RigidbodyNetworker_Sender : MonoBehaviour
         player = true;
         Physics.SyncTransforms();
         Debug.Log($"Our position is now {rb.position}");
-   
+
         yield return new WaitForSeconds(0.5f);
         rb.detectCollisions = true;
         rb.interpolation = RigidbodyInterpolation.Interpolate;

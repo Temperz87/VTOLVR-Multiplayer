@@ -5,11 +5,11 @@ public class Message_Death : Message
     public ulong UID;
     public bool immediate;
     public string message;
-    public Message_Death(ulong uID, bool Immediate,string msg)
+    public Message_Death(ulong uID, bool Immediate, string msg)
     {
         UID = uID;
-        this.immediate = Immediate;
-        this.message = msg;
+        immediate = Immediate;
+        message = msg;
         type = MessageType.Death;
     }
 }
@@ -24,12 +24,12 @@ public class Message_BulletHit : Message
     public float damage;
     public Message_BulletHit(ulong uID, ulong dest, ulong sourceActor, Vector3D apos, Vector3D adir, float adam)
     {
-        this.UID = uID;
-        this.destUID = dest;
-        this.pos = apos;
-        this.dir = adir;
-        this.damage = adam;
-        this.sourceActorUID = sourceActor;
+        UID = uID;
+        destUID = dest;
+        pos = apos;
+        dir = adir;
+        damage = adam;
+        sourceActorUID = sourceActor;
         type = MessageType.BulletHit;
     }
 }

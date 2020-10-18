@@ -1,11 +1,6 @@
-﻿using System;
-using System.Collections;
+﻿using Harmony;
+using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Harmony;
-using Oculus.Platform.Samples.VrHoops;
 using UnityEngine;
 
 
@@ -32,23 +27,24 @@ class PatchBullet
         {
 
             Collider coll = ColliderHits[i];
-                hitbox= coll.GetComponent<Hitbox>();
-            if ((bool)hitbox && (bool)hitbox.actor)
+            hitbox = coll.GetComponent<Hitbox>();
+            if (hitbox && hitbox.actor)
             {
                 PlayerManager.lastBulletHit = hitbox;
                 Debug.Log("hit box bullet hit");
-                ulong lastID; ulong sourceID;
+                ulong lastID; ulong sourceID=0;
                 if (VTOLVR_Multiplayer.AIDictionaries.reverseAllActors.TryGetValue(hitbox.actor, out lastID))
                 {
 
+                    if(sourceActor!=null)
                     if (VTOLVR_Multiplayer.AIDictionaries.reverseAllActors.TryGetValue(sourceActor, out sourceID))
                     {
 
                     }
-                    
+
                     Debug.Log("hit player sending bullet packet");
                     Message_BulletHit hitmsg = new Message_BulletHit(PlayerManager.localUID, lastID, sourceID, VTMapManager.WorldToGlobalPoint(pos), new Vector3D(vel), damage);
-                    if(Networker.isHost)
+                    if (Networker.isHost)
                         NetworkSenderThread.Instance.SendPacketAsHostToAllClients(hitmsg, Steamworks.EP2PSend.k_EP2PSendReliable);
                     else
                         NetworkSenderThread.Instance.SendPacketToSpecificPlayer(Networker.hostID, hitmsg, Steamworks.EP2PSend.k_EP2PSendReliable);
@@ -134,7 +130,7 @@ class Patchmission
 {
     static bool Prefix()
     {
- 
+
         PilotSaveManager.currentCampaign = Networker._instance.pilotSaveManagerControllerCampaign;
         PilotSaveManager.currentScenario = Networker._instance.pilotSaveManagerControllerCampaignScenario;
         return true;
@@ -174,10 +170,10 @@ class Patch2
     static void Postfix(VTEventTarget __instance)
     {
         String actionIdentifier = __instance.eventName + __instance.methodName + __instance.targetID + __instance.targetType.ToString();
-         foreach (VTEventTarget.ActionParamInfo aparam in __instance.parameterInfos)
+        foreach (VTEventTarget.ActionParamInfo aparam in __instance.parameterInfos)
         {
             actionIdentifier += aparam.name;
-        } 
+        }
 
         if (!__instance.TargetExists())
         {
@@ -226,7 +222,7 @@ class Patch3
             {
                 actionIdentifier+= aparam.name;
             } */
-            ObjectiveNetworker_Reciever.actionCounter+=1;
+            ObjectiveNetworker_Reciever.actionCounter += 1;
             Debug.Log(actionIdentifier);
             int hash = actionIdentifier.GetHashCode();
             Debug.Log("Compiling scenario dictonary adding to my dictionary");

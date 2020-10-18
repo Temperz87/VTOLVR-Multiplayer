@@ -1,10 +1,4 @@
-﻿using Steamworks;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using UnityEngine;
+﻿using UnityEngine;
 
 class LockingRadarNetworker_Receiver : MonoBehaviour
 {
@@ -112,6 +106,7 @@ class LockingRadarNetworker_Receiver : MonoBehaviour
                 Debug.LogError("Actor is null.");
                 return;
             }
+            if(lockingRadar!=null)
             lockingRadar.radar.ForceDetect(actor);
         }
     }

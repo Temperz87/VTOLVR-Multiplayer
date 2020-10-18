@@ -1,6 +1,5 @@
-﻿using UnityEngine;
-using System.Text;
-using System.Collections;
+﻿using System.Collections;
+using UnityEngine;
 using UnityEngine.Profiling;
 public class ProfilerDataSaverComponent : MonoBehaviour
 {
@@ -9,7 +8,7 @@ public class ProfilerDataSaverComponent : MonoBehaviour
 
     void Start()
     {
-        
+
         Profiler.logFile = "";
     }
 

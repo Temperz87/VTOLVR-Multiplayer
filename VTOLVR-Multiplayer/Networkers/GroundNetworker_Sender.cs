@@ -16,7 +16,8 @@ class GroundNetworker_Sender : MonoBehaviour
     void FixedUpdate()
     {
         timer += Time.fixedDeltaTime;
-        if (timer > 0.5f) {
+        if (timer > 0.5f)
+        {
             timer = 0;
 
             lastMessage.position = VTMapManager.WorldToGlobalPoint(groundUnitMover.transform.position);

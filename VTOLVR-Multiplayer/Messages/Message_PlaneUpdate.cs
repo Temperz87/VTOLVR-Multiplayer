@@ -1,8 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 [Serializable]
 public class Message_PlaneUpdate : Message
 {
@@ -21,7 +17,7 @@ public class Message_PlaneUpdate : Message
         this.pitch = pitch;
         this.roll = roll;
         this.yaw = yaw;
-        this.brakes = breaks;
+        brakes = breaks;
         this.throttle = throttle;
         this.tailHook = tailHook;
         this.fuelPort = fuelPort;
@@ -48,9 +44,9 @@ public class Message_IKPuppet : Message
     public ulong networkUID;
     public Message_IKPuppet(ulong networkUIDD)
     {
-        
-        this.networkUID = networkUIDD;
-        
+
+        networkUID = networkUIDD;
+
         type = MessageType.IKPuppet;
     }
 }

@@ -1,12 +1,6 @@
-﻿using System;
+﻿using Steamworks;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using UnityEngine;
-using Steamworks;
-using Harmony;
-using System.Collections;
 
 public static class PlaneEquippableManager
 {
@@ -68,7 +62,7 @@ public static class PlaneEquippableManager
                             break;
                         case HPInfoListGenerateNetworkType.sender:
                             MissileNetworker_Sender sender = HPml.ml.missiles[j].gameObject.GetComponent<MissileNetworker_Sender>();
-                            if(playerFlag)
+                            if (playerFlag)
                                 HPml.ml.missiles[j].gameObject.name = Steamworks.SteamFriends.GetPersonaName() + "'s " + HPml.ml.missiles[j].gameObject.name;
                             if (sender != null)
                             {
@@ -153,13 +147,13 @@ public static class PlaneEquippableManager
     {
         int playerIDX = PlayerManager.GetPlayerIDFromCSteamID(new CSteamID(networkID));
         bool playerFlag = false;
-        string playerName="";
-        if (playerIDX !=-1)
+        string playerName = "";
+        if (playerIDX != -1)
         {
             playerFlag = true;
         }
-        if(playerFlag)
-            playerName=PlayerManager.players[playerIDX].nameTag +"'s ";
+        if (playerFlag)
+            playerName = PlayerManager.players[playerIDX].nameTag + "'s ";
 
         WeaponManager weaponManager = vehicle.GetComponent<WeaponManager>();
         if (weaponManager == null)
@@ -186,44 +180,45 @@ public static class PlaneEquippableManager
         {
             int uIDidx = 0;
             HPEquippable equip = weaponManager.GetEquip(i);
-            if(equip != null) { 
-            if (equip is HPEquipMissileLauncher)
+            if (equip != null)
             {
-                //Debug.Log(equip.name + " is a missile launcher");
-                HPEquipMissileLauncher hpML = equip as HPEquipMissileLauncher;
-                //Debug.Log("This missile launcher has " + hpML.ml.missiles.Length + " missiles.");
-                for (int j = 0; j < hpML.ml.missiles.Length; j++)
+                if (equip is HPEquipMissileLauncher)
                 {
-                    //Debug.Log("Adding missile reciever");
-                    lastReciever = hpML.ml.missiles[j].gameObject.AddComponent<MissileNetworker_Receiver>();
-                    lastReciever.thisMissile = hpML.ml.missiles[j];
-                    foreach (var thingy in hpLoadout) // it's a loop... because fuck you!
+                    //Debug.Log(equip.name + " is a missile launcher");
+                    HPEquipMissileLauncher hpML = equip as HPEquipMissileLauncher;
+                    //Debug.Log("This missile launcher has " + hpML.ml.missiles.Length + " missiles.");
+                    for (int j = 0; j < hpML.ml.missiles.Length; j++)
                     {
-                        //Debug.Log("Try adding missile reciever uID");
-                        if (equip.hardpointIdx == thingy.hpIdx)
+                        //Debug.Log("Adding missile reciever");
+                        lastReciever = hpML.ml.missiles[j].gameObject.AddComponent<MissileNetworker_Receiver>();
+                        lastReciever.thisMissile = hpML.ml.missiles[j];
+                        foreach (var thingy in hpLoadout) // it's a loop... because fuck you!
                         {
-                            if (uIDidx < thingy.missileUIDS.Length)
+                            //Debug.Log("Try adding missile reciever uID");
+                            if (equip.hardpointIdx == thingy.hpIdx)
                             {
-                                lastReciever.networkUID = thingy.missileUIDS[uIDidx];
-                                Debug.Log($"Missile ({lastReciever.gameObject.name}) has received their UID from the host. \n Missiles UID = {lastReciever.networkUID}");
-                                lastReciever.thisML = hpML.ml;
-                                if (playerFlag)
-                                    lastReciever.gameObject.name = playerName + lastReciever.gameObject.name;
-                                lastReciever.idx = j;
-                                uIDidx++;
+                                if (uIDidx < thingy.missileUIDS.Length)
+                                {
+                                    lastReciever.networkUID = thingy.missileUIDS[uIDidx];
+                                    Debug.Log($"Missile ({lastReciever.gameObject.name}) has received their UID from the host. \n Missiles UID = {lastReciever.networkUID}");
+                                    lastReciever.thisML = hpML.ml;
+                                    if (playerFlag)
+                                        lastReciever.gameObject.name = playerName + lastReciever.gameObject.name;
+                                    lastReciever.idx = j;
+                                    uIDidx++;
+                                }
                             }
                         }
                     }
                 }
-            }
-            else if (equip is HPEquipGunTurret)
-            {
-                TurretNetworker_Receiver reciever = equip.gameObject.AddComponent<TurretNetworker_Receiver>();
-                reciever.networkUID = networkID;
-                reciever.turret = equip.GetComponent<ModuleTurret>();
-                equip.enabled = false;
-                Debug.Log("Added m230 turret reciever");
-            }
+                else if (equip is HPEquipGunTurret)
+                {
+                    TurretNetworker_Receiver reciever = equip.gameObject.AddComponent<TurretNetworker_Receiver>();
+                    reciever.networkUID = networkID;
+                    reciever.turret = equip.GetComponent<ModuleTurret>();
+                    equip.enabled = false;
+                    Debug.Log("Added m230 turret reciever");
+                }
             }
         }
         FuelTank fuelTank = vehicle.GetComponent<FuelTank>();

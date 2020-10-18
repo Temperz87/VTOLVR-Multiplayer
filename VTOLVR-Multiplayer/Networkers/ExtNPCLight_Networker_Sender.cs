@@ -1,11 +1,5 @@
-﻿using Steamworks;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using Harmony;
 using UnityEngine;
-using Harmony;
 
 class ExtNPCLight_Sender : MonoBehaviour
 {
@@ -23,7 +17,7 @@ class ExtNPCLight_Sender : MonoBehaviour
     private void Awake()
     {
         lastMessage = new Message_ExtLight(false, false, false, networkUID);
-       lightsController = GetComponentInChildren<ExteriorLightsController>();
+        lightsController = GetComponentInChildren<ExteriorLightsController>();
         traverse = Traverse.Create(lightsController.navLights[0]);
         traverse2 = Traverse.Create(lightsController.landingLights[0]);
     }
@@ -38,7 +32,7 @@ class ExtNPCLight_Sender : MonoBehaviour
             lastMessage.nav = (bool)traverse.Field("connected").GetValue();
             lastMessage.strobe = lightsController.strobeLights.onByDefault;
             if (traverse2 != null)
-            lastMessage.strobe = (bool)traverse2.Field("connected").GetValue();
+                lastMessage.strobe = (bool)traverse2.Field("connected").GetValue();
 
             if (Networker.isHost)
                 NetworkSenderThread.Instance.SendPacketAsHostToAllClients(lastMessage, Steamworks.EP2PSend.k_EP2PSendUnreliable);

@@ -1041,8 +1041,9 @@ namespace Discord
             Marshal.FreeHGlobal(StoreEventsPtr);
             Marshal.FreeHGlobal(VoiceEventsPtr);
             Marshal.FreeHGlobal(AchievementEventsPtr);
-            if (setLogHook.HasValue) {
-               setLogHook.Value.Free();
+            if (setLogHook.HasValue)
+            {
+                setLogHook.Value.Free();
             }
         }
 
@@ -1065,16 +1066,18 @@ namespace Discord
 
         public void SetLogHook(LogLevel minLevel, SetLogHookHandler callback)
         {
-            if (setLogHook.HasValue) {
-               setLogHook.Value.Free();
+            if (setLogHook.HasValue)
+            {
+                setLogHook.Value.Free();
             }
-             setLogHook = GCHandle.Alloc(callback);
+            setLogHook = GCHandle.Alloc(callback);
             Methods.SetLogHook(MethodsPtr, minLevel, GCHandle.ToIntPtr(setLogHook.Value), SetLogHookCallbackImpl);
         }
 
         public ApplicationManager GetApplicationManager()
         {
-            if (ApplicationManagerInstance == null) {
+            if (ApplicationManagerInstance == null)
+            {
                 ApplicationManagerInstance = new ApplicationManager(
                   Methods.GetApplicationManager(MethodsPtr),
                   ApplicationEventsPtr,
@@ -1086,7 +1089,8 @@ namespace Discord
 
         public UserManager GetUserManager()
         {
-            if (UserManagerInstance == null) {
+            if (UserManagerInstance == null)
+            {
                 UserManagerInstance = new UserManager(
                   Methods.GetUserManager(MethodsPtr),
                   UserEventsPtr,
@@ -1098,7 +1102,8 @@ namespace Discord
 
         public ImageManager GetImageManager()
         {
-            if (ImageManagerInstance == null) {
+            if (ImageManagerInstance == null)
+            {
                 ImageManagerInstance = new ImageManager(
                   Methods.GetImageManager(MethodsPtr),
                   ImageEventsPtr,
@@ -1110,7 +1115,8 @@ namespace Discord
 
         public ActivityManager GetActivityManager()
         {
-            if (ActivityManagerInstance == null) {
+            if (ActivityManagerInstance == null)
+            {
                 ActivityManagerInstance = new ActivityManager(
                   Methods.GetActivityManager(MethodsPtr),
                   ActivityEventsPtr,
@@ -1122,7 +1128,8 @@ namespace Discord
 
         public RelationshipManager GetRelationshipManager()
         {
-            if (RelationshipManagerInstance == null) {
+            if (RelationshipManagerInstance == null)
+            {
                 RelationshipManagerInstance = new RelationshipManager(
                   Methods.GetRelationshipManager(MethodsPtr),
                   RelationshipEventsPtr,
@@ -1134,7 +1141,8 @@ namespace Discord
 
         public LobbyManager GetLobbyManager()
         {
-            if (LobbyManagerInstance == null) {
+            if (LobbyManagerInstance == null)
+            {
                 LobbyManagerInstance = new LobbyManager(
                   Methods.GetLobbyManager(MethodsPtr),
                   LobbyEventsPtr,
@@ -1146,7 +1154,8 @@ namespace Discord
 
         public NetworkManager GetNetworkManager()
         {
-            if (NetworkManagerInstance == null) {
+            if (NetworkManagerInstance == null)
+            {
                 NetworkManagerInstance = new NetworkManager(
                   Methods.GetNetworkManager(MethodsPtr),
                   NetworkEventsPtr,
@@ -1158,7 +1167,8 @@ namespace Discord
 
         public OverlayManager GetOverlayManager()
         {
-            if (OverlayManagerInstance == null) {
+            if (OverlayManagerInstance == null)
+            {
                 OverlayManagerInstance = new OverlayManager(
                   Methods.GetOverlayManager(MethodsPtr),
                   OverlayEventsPtr,
@@ -1170,7 +1180,8 @@ namespace Discord
 
         public StorageManager GetStorageManager()
         {
-            if (StorageManagerInstance == null) {
+            if (StorageManagerInstance == null)
+            {
                 StorageManagerInstance = new StorageManager(
                   Methods.GetStorageManager(MethodsPtr),
                   StorageEventsPtr,
@@ -1182,7 +1193,8 @@ namespace Discord
 
         public StoreManager GetStoreManager()
         {
-            if (StoreManagerInstance == null) {
+            if (StoreManagerInstance == null)
+            {
                 StoreManagerInstance = new StoreManager(
                   Methods.GetStoreManager(MethodsPtr),
                   StoreEventsPtr,
@@ -1194,7 +1206,8 @@ namespace Discord
 
         public VoiceManager GetVoiceManager()
         {
-            if (VoiceManagerInstance == null) {
+            if (VoiceManagerInstance == null)
+            {
                 VoiceManagerInstance = new VoiceManager(
                   Methods.GetVoiceManager(MethodsPtr),
                   VoiceEventsPtr,
@@ -1206,7 +1219,8 @@ namespace Discord
 
         public AchievementManager GetAchievementManager()
         {
-            if (AchievementManagerInstance == null) {
+            if (AchievementManagerInstance == null)
+            {
                 AchievementManagerInstance = new AchievementManager(
                   Methods.GetAchievementManager(MethodsPtr),
                   AchievementEventsPtr,
@@ -1293,12 +1307,14 @@ namespace Discord
 
         internal ApplicationManager(IntPtr ptr, IntPtr eventsPtr, ref FFIEvents events)
         {
-            if (eventsPtr == IntPtr.Zero) {
+            if (eventsPtr == IntPtr.Zero)
+            {
                 throw new ResultException(Result.InternalError);
             }
             InitEvents(eventsPtr, ref events);
             MethodsPtr = ptr;
-            if (MethodsPtr == IntPtr.Zero) {
+            if (MethodsPtr == IntPtr.Zero)
+            {
                 throw new ResultException(Result.InternalError);
             }
         }
@@ -1431,12 +1447,14 @@ namespace Discord
 
         internal UserManager(IntPtr ptr, IntPtr eventsPtr, ref FFIEvents events)
         {
-            if (eventsPtr == IntPtr.Zero) {
+            if (eventsPtr == IntPtr.Zero)
+            {
                 throw new ResultException(Result.InternalError);
             }
             InitEvents(eventsPtr, ref events);
             MethodsPtr = ptr;
-            if (MethodsPtr == IntPtr.Zero) {
+            if (MethodsPtr == IntPtr.Zero)
+            {
                 throw new ResultException(Result.InternalError);
             }
         }
@@ -1558,12 +1576,14 @@ namespace Discord
 
         internal ImageManager(IntPtr ptr, IntPtr eventsPtr, ref FFIEvents events)
         {
-            if (eventsPtr == IntPtr.Zero) {
+            if (eventsPtr == IntPtr.Zero)
+            {
                 throw new ResultException(Result.InternalError);
             }
             InitEvents(eventsPtr, ref events);
             MethodsPtr = ptr;
-            if (MethodsPtr == IntPtr.Zero) {
+            if (MethodsPtr == IntPtr.Zero)
+            {
                 throw new ResultException(Result.InternalError);
             }
         }
@@ -1734,12 +1754,14 @@ namespace Discord
 
         internal ActivityManager(IntPtr ptr, IntPtr eventsPtr, ref FFIEvents events)
         {
-            if (eventsPtr == IntPtr.Zero) {
+            if (eventsPtr == IntPtr.Zero)
+            {
                 throw new ResultException(Result.InternalError);
             }
             InitEvents(eventsPtr, ref events);
             MethodsPtr = ptr;
-            if (MethodsPtr == IntPtr.Zero) {
+            if (MethodsPtr == IntPtr.Zero)
+            {
                 throw new ResultException(Result.InternalError);
             }
         }
@@ -1963,12 +1985,14 @@ namespace Discord
 
         internal RelationshipManager(IntPtr ptr, IntPtr eventsPtr, ref FFIEvents events)
         {
-            if (eventsPtr == IntPtr.Zero) {
+            if (eventsPtr == IntPtr.Zero)
+            {
                 throw new ResultException(Result.InternalError);
             }
             InitEvents(eventsPtr, ref events);
             MethodsPtr = ptr;
-            if (MethodsPtr == IntPtr.Zero) {
+            if (MethodsPtr == IntPtr.Zero)
+            {
                 throw new ResultException(Result.InternalError);
             }
         }
@@ -2372,12 +2396,14 @@ namespace Discord
 
         internal LobbyManager(IntPtr ptr, IntPtr eventsPtr, ref FFIEvents events)
         {
-            if (eventsPtr == IntPtr.Zero) {
+            if (eventsPtr == IntPtr.Zero)
+            {
                 throw new ResultException(Result.InternalError);
             }
             InitEvents(eventsPtr, ref events);
             MethodsPtr = ptr;
-            if (MethodsPtr == IntPtr.Zero) {
+            if (MethodsPtr == IntPtr.Zero)
+            {
                 throw new ResultException(Result.InternalError);
             }
         }
@@ -2855,7 +2881,7 @@ namespace Discord
             if (d.LobbyManagerInstance.OnLobbyMessage != null)
             {
                 byte[] data = new byte[dataLen];
-                Marshal.Copy(dataPtr, data, 0, (int)dataLen);
+                Marshal.Copy(dataPtr, data, 0, dataLen);
                 d.LobbyManagerInstance.OnLobbyMessage.Invoke(lobbyId, userId, data);
             }
         }
@@ -2879,7 +2905,7 @@ namespace Discord
             if (d.LobbyManagerInstance.OnNetworkMessage != null)
             {
                 byte[] data = new byte[dataLen];
-                Marshal.Copy(dataPtr, data, 0, (int)dataLen);
+                Marshal.Copy(dataPtr, data, 0, dataLen);
                 d.LobbyManagerInstance.OnNetworkMessage.Invoke(lobbyId, userId, channelId, data);
             }
         }
@@ -2972,12 +2998,14 @@ namespace Discord
 
         internal NetworkManager(IntPtr ptr, IntPtr eventsPtr, ref FFIEvents events)
         {
-            if (eventsPtr == IntPtr.Zero) {
+            if (eventsPtr == IntPtr.Zero)
+            {
                 throw new ResultException(Result.InternalError);
             }
             InitEvents(eventsPtr, ref events);
             MethodsPtr = ptr;
-            if (MethodsPtr == IntPtr.Zero) {
+            if (MethodsPtr == IntPtr.Zero)
+            {
                 throw new ResultException(Result.InternalError);
             }
         }
@@ -3091,7 +3119,7 @@ namespace Discord
             if (d.NetworkManagerInstance.OnMessage != null)
             {
                 byte[] data = new byte[dataLen];
-                Marshal.Copy(dataPtr, data, 0, (int)dataLen);
+                Marshal.Copy(dataPtr, data, 0, dataLen);
                 d.NetworkManagerInstance.OnMessage.Invoke(peerId, channelId, data);
             }
         }
@@ -3196,12 +3224,14 @@ namespace Discord
 
         internal OverlayManager(IntPtr ptr, IntPtr eventsPtr, ref FFIEvents events)
         {
-            if (eventsPtr == IntPtr.Zero) {
+            if (eventsPtr == IntPtr.Zero)
+            {
                 throw new ResultException(Result.InternalError);
             }
             InitEvents(eventsPtr, ref events);
             MethodsPtr = ptr;
-            if (MethodsPtr == IntPtr.Zero) {
+            if (MethodsPtr == IntPtr.Zero)
+            {
                 throw new ResultException(Result.InternalError);
             }
         }
@@ -3399,12 +3429,14 @@ namespace Discord
 
         internal StorageManager(IntPtr ptr, IntPtr eventsPtr, ref FFIEvents events)
         {
-            if (eventsPtr == IntPtr.Zero) {
+            if (eventsPtr == IntPtr.Zero)
+            {
                 throw new ResultException(Result.InternalError);
             }
             InitEvents(eventsPtr, ref events);
             MethodsPtr = ptr;
-            if (MethodsPtr == IntPtr.Zero) {
+            if (MethodsPtr == IntPtr.Zero)
+            {
                 throw new ResultException(Result.InternalError);
             }
         }
@@ -3432,7 +3464,7 @@ namespace Discord
             ReadAsyncHandler callback = (ReadAsyncHandler)h.Target;
             h.Free();
             byte[] data = new byte[dataLen];
-            Marshal.Copy(dataPtr, data, 0, (int)dataLen);
+            Marshal.Copy(dataPtr, data, 0, dataLen);
             callback(result, data);
         }
 
@@ -3449,7 +3481,7 @@ namespace Discord
             ReadAsyncPartialHandler callback = (ReadAsyncPartialHandler)h.Target;
             h.Free();
             byte[] data = new byte[dataLen];
-            Marshal.Copy(dataPtr, data, 0, (int)dataLen);
+            Marshal.Copy(dataPtr, data, 0, dataLen);
             callback(result, data);
         }
 
@@ -3656,12 +3688,14 @@ namespace Discord
 
         internal StoreManager(IntPtr ptr, IntPtr eventsPtr, ref FFIEvents events)
         {
-            if (eventsPtr == IntPtr.Zero) {
+            if (eventsPtr == IntPtr.Zero)
+            {
                 throw new ResultException(Result.InternalError);
             }
             InitEvents(eventsPtr, ref events);
             MethodsPtr = ptr;
-            if (MethodsPtr == IntPtr.Zero) {
+            if (MethodsPtr == IntPtr.Zero)
+            {
                 throw new ResultException(Result.InternalError);
             }
         }
@@ -3903,12 +3937,14 @@ namespace Discord
 
         internal VoiceManager(IntPtr ptr, IntPtr eventsPtr, ref FFIEvents events)
         {
-            if (eventsPtr == IntPtr.Zero) {
+            if (eventsPtr == IntPtr.Zero)
+            {
                 throw new ResultException(Result.InternalError);
             }
             InitEvents(eventsPtr, ref events);
             MethodsPtr = ptr;
-            if (MethodsPtr == IntPtr.Zero) {
+            if (MethodsPtr == IntPtr.Zero)
+            {
                 throw new ResultException(Result.InternalError);
             }
         }
@@ -4110,12 +4146,14 @@ namespace Discord
 
         internal AchievementManager(IntPtr ptr, IntPtr eventsPtr, ref FFIEvents events)
         {
-            if (eventsPtr == IntPtr.Zero) {
+            if (eventsPtr == IntPtr.Zero)
+            {
                 throw new ResultException(Result.InternalError);
             }
             InitEvents(eventsPtr, ref events);
             MethodsPtr = ptr;
-            if (MethodsPtr == IntPtr.Zero) {
+            if (MethodsPtr == IntPtr.Zero)
+            {
                 throw new ResultException(Result.InternalError);
             }
         }

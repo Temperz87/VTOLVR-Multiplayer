@@ -7,7 +7,7 @@ public class Message_ShipUpdate : Message
     public SerializableVector3 velocity;
     public ulong UID;
 
-    public Message_ShipUpdate (Vector3D position, SerializableQuaternion rotation, Vector3D velocity, ulong uID)
+    public Message_ShipUpdate(Vector3D position, SerializableQuaternion rotation, Vector3D velocity, ulong uID)
     {
         this.position = position;
         this.rotation = rotation;

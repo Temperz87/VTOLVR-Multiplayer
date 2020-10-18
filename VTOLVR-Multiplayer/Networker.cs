@@ -1,19 +1,14 @@
-﻿using System;
+﻿using Steamworks;
+using System;
+using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
+using System.IO;
+using System.Runtime.Serialization.Formatters.Binary;
+using System.Security.Cryptography;
 using System.Text;
-using System.Threading.Tasks;
+using TMPro;
 using UnityEngine;
 using UnityEngine.Events;
-using UnityEngine.SceneManagement;
-using Steamworks;
-using System.Runtime.Serialization.Formatters.Binary;
-using System.IO;
-using System.Collections;
-using System.Security.Cryptography;
-using TMPro;
-using Oculus.Platform.Samples.VrHoops;
-using VTOLVR_Multiplayer;
 
 public struct SBufferedMessage
 {
@@ -194,7 +189,7 @@ public class Networker : MonoBehaviour
         get { lock (timeoutCounterLock) { return timeoutCounterInternal; } }
         set { lock (timeoutCounterLock) { timeoutCounterInternal = value; } }
     }
-    private static readonly int clientTimeoutInSeconds = 60;
+    private static readonly int clientTimeoutInSeconds = 20;
     private static readonly object disconnectForClientTimeoutLock = new object();
     private static bool disconnectForClientTimeoutInternal = false;
     private static bool disconnectForClientTimeout
@@ -309,7 +304,8 @@ public class Networker : MonoBehaviour
         MessageType.LobbyInfoRequest_Result,
         MessageType.WeaponsSet_Result,
         MessageType.RequestNetworkUID,
-        MessageType.Ready
+        MessageType.Ready,
+        MessageType.ServerHeartbeat_Response
     };
     #endregion
     private void Awake()
@@ -355,7 +351,7 @@ public class Networker : MonoBehaviour
             {
                 pilotSaveManagerControllerCampaignScenario = PilotSaveManager.currentScenario;
             }
-           
+
             //PlayerManager.selectedVehicle = PilotSaveManager.currentVehicle.name;
         }
         /*if (isHost)
@@ -778,7 +774,7 @@ public class Networker : MonoBehaviour
                 Multiplayer._instance.thrust = messsageLobby.thrust;
                 DiscordRadioManager.freqLabelTableNetworkString = messsageLobby.freqLabelString;
                 DiscordRadioManager.freqTableNetworkString = messsageLobby.freqString;
-               
+
                 DiscordRadioManager.joinLobby(messsageLobby.lobbyDiscordID, messsageLobby.lobbySecret);
 
                 StartCoroutine(FlyButton());
@@ -916,20 +912,11 @@ public class Networker : MonoBehaviour
                 if (isHost)
                 {
                     Debug.Log("Client disconnected");
-                    if (Multiplayer.SoloTesting)
-                        break;
 
                     playerStatusDic[csteamID] = PlayerStatus.Disconected;
                     players.Remove(csteamID);
                     readyDic.Remove(csteamID);
-                    foreach (var player in PlayerManager.players)
-                    {
-                        if (player.cSteamID == csteamID)
-                        {
-                            Destroy(player.vehicle);
-                            PlayerManager.players.Remove(player);
-                        }
-                    }
+
                     NetworkSenderThread.Instance.RemovePlayer(csteamID);
                     NetworkSenderThread.Instance.SendPacketAsHostToAllClients(packet, packet.sendType);
                 }
@@ -950,19 +937,6 @@ public class Networker : MonoBehaviour
                         flightSceneManager.ExitScene();
                         Multiplayer._instance.displayError($"Host disconnected from session.");
                     }
-                    else
-                    {
-                        Debug.Log("Other client disconnected");
-                        foreach (var player in PlayerManager.players)
-                        {
-                            if (player.cSteamID == new CSteamID(messsage.UID))
-                            {
-                                Destroy(player.vehicle);
-                                PlayerManager.players.Remove(player);
-                            }
-                        }
-                    }
-                    break;
                 }
                 if (Disconnecting != null)
                     Disconnecting.Invoke(packet);
@@ -1539,8 +1513,8 @@ public class Networker : MonoBehaviour
         playerStatusDic.Add(csteamID, PlayerStatus.NotReady);//future people, please implement PlayerStatus.Loadout so we can see who is customising still
         Debug.Log("Done adding to status dict");
         NetworkSenderThread.Instance.AddPlayer(csteamID);
-        NetworkSenderThread.Instance.SendPacketToSpecificPlayer(csteamID, new Message_JoinRequestAccepted_Result(DiscordRadioManager.userID, DiscordRadioManager.lobbyID, DiscordRadioManager.lobbySecret,Multiplayer._instance.thrust, 
-            Multiplayer._instance.alpha,DiscordRadioManager.freqTableNetworkString, DiscordRadioManager.freqLabelTableNetworkString), EP2PSend.k_EP2PSendReliable);
+        NetworkSenderThread.Instance.SendPacketToSpecificPlayer(csteamID, new Message_JoinRequestAccepted_Result(DiscordRadioManager.userID, DiscordRadioManager.lobbyID, DiscordRadioManager.lobbySecret, Multiplayer._instance.thrust,
+            Multiplayer._instance.alpha, DiscordRadioManager.freqTableNetworkString, DiscordRadioManager.freqLabelTableNetworkString), EP2PSend.k_EP2PSendReliable);
         UpdateLoadingText();
     }
 

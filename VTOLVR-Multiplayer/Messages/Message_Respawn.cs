@@ -15,8 +15,8 @@ public class Message_Respawn : Message
         UID = uID;
         this.position = position;
         this.rotation = rotation;
-        this.isLeftie = leftTeam;
-        this.tagName = name;
+        isLeftie = leftTeam;
+        tagName = name;
         this.vehicle = vehicle;
         type = MessageType.Respawn;
     }

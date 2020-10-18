@@ -1,11 +1,5 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
+﻿using Harmony;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Harmony;
-using Oculus.Platform;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -59,14 +53,14 @@ class Patch_LoadingSceneHelmet_Update
         Traverse t = Traverse.Create(__instance);
         bool grabbed = (bool)t.Field("grabbed").GetValue();
         VRHandController c = (VRHandController)t.Field("c").GetValue();
-        if(PlayerManager.OPFORbuttonMade)
-        Debug.Log("OPFORbuttonMade is made");
+        if (PlayerManager.OPFORbuttonMade)
+            Debug.Log("OPFORbuttonMade is made");
         if (!PlayerManager.OPFORbuttonMade)
         {
             Debug.Log("OPFORbuttonMade eneter");
             var refrence = Resources.FindObjectsOfTypeAll<GameObject>().FirstOrDefault(g => g.name.Contains("RecenterCanvas"));
             GameObject button = GameObject.Instantiate(refrence);
-             PlayerManager.OPFORbuttonMade = false;
+            PlayerManager.OPFORbuttonMade = false;
             foreach (var controller in GameObject.FindObjectsOfType<VRHandController>())
             {
                 if (!controller.isLeft)
@@ -103,11 +97,11 @@ class Patch_LoadingSceneHelmet_Update
                         bInteractable.OnInteract = new UnityEngine.Events.UnityEvent();
                     }
                     button.SetActive(true);
-                     PlayerManager.OPFORbuttonMade = true;
+                    PlayerManager.OPFORbuttonMade = true;
                     break;
                 }
             }
-            
+
         }
         if (grabbed || __instance.GetComponent<Rigidbody>().velocity.sqrMagnitude > 0.1f)
         {
@@ -151,7 +145,7 @@ class Patch_LoadingSceneHelmet_Update
                     if (!Networker.hostLoaded && !Networker.isHost)
                     {
                         Debug.Log("Waiting for host to load");
-                       
+
                     }
                     __instance.equipAudioSource.Play();
                     return false;

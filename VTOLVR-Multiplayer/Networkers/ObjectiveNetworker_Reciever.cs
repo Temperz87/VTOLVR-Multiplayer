@@ -1,9 +1,5 @@
 ﻿using Steamworks;
 using System.Collections.Generic;
-using System.Linq;
-using System.Security.Policy;
-using System.Text;
-using System.Threading.Tasks;
 using UnityEngine;
 
 
@@ -11,7 +7,7 @@ class ObjectiveNetworker_Reciever
 {
     private static MissionManager mManager = MissionManager.instance;
     public static Dictionary<int, VTEventTarget> scenarioActionsList = new Dictionary<int, VTEventTarget>();
-    public static Dictionary<VTEventTarget,int> reverseScenarioActionsList = new Dictionary<VTEventTarget, int>();
+    public static Dictionary<VTEventTarget, int> reverseScenarioActionsList = new Dictionary<VTEventTarget, int>();
     public static Dictionary<int, float> scenarioActionsListCoolDown = new Dictionary<int, float>();
 
     public static Dictionary<int, MissionObjective> objectiveHashTable = new Dictionary<int, MissionObjective>();
@@ -59,17 +55,17 @@ class ObjectiveNetworker_Reciever
     }
     public static void sendObjectiveHistory(CSteamID id)
     {
-        if(Networker.isHost)
-        foreach(var msg in ObjectiveHistory)
-        {
-            NetworkSenderThread.Instance.SendPacketToSpecificPlayer(id, msg, Steamworks.EP2PSend.k_EP2PSendReliableWithBuffering);
-        }
+        if (Networker.isHost)
+            foreach (var msg in ObjectiveHistory)
+            {
+                NetworkSenderThread.Instance.SendPacketToSpecificPlayer(id, msg, Steamworks.EP2PSend.k_EP2PSendReliableWithBuffering);
+            }
     }
     public static void objectiveUpdate(int hashCode, ObjSyncType status)
     {
         Debug.Log($"Doing objective update for id {hashCode}.");
 
-        if(status == ObjSyncType.EVTBegin)
+        if (status == ObjSyncType.EVTBegin)
         {
             //VTScenario.current.objectives.GetObjective(hashCode).Dispose();
             VTScenario.current.objectives.GetObjective(hashCode).BeginObjective();
@@ -85,7 +81,7 @@ class ObjectiveNetworker_Reciever
             Debug.Log("cant find objective in hashTable");
             return;
         }
-      
+
 
         MissionObjective obj = objectiveHashTable[hashCode];
         if (obj == null)
@@ -177,17 +173,17 @@ class ObjectiveNetworker_Reciever
     {
 
         scenarioActionsList.Clear();
-     reverseScenarioActionsList.Clear();
+        reverseScenarioActionsList.Clear();
         scenarioActionsListCoolDown.Clear();
 
-      objectiveHashTable.Clear();
-     reverseObjectiveHashTable.Clear();
-     completeNext = false;
-     completeNextEvent = false;
-     completeNextFailed = false;
-     completeNextBegin = false;
-     completeNextCancel = false;
-     ObjectiveHistory.Clear();
+        objectiveHashTable.Clear();
+        reverseObjectiveHashTable.Clear();
+        completeNext = false;
+        completeNextEvent = false;
+        completeNextFailed = false;
+        completeNextBegin = false;
+        completeNextCancel = false;
+        ObjectiveHistory.Clear();
         actionCounter = 0;
     }
 }

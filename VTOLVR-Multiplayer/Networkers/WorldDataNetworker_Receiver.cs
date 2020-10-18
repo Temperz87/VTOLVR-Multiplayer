@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using UnityEngine;
-using Steamworks;
+﻿using UnityEngine;
 
 /// <summary>
 /// Updates objects with a  rigidbody over the network using velocity and position.
@@ -25,7 +19,7 @@ public class WorldDataNetworker_Receiver : MonoBehaviour
     {
         // If the client's time scale is different than the servers timescale, force the clients to match
 
-      
+
         if (Time.timeScale != serverTimescale)
         {
             //Debug.Log($"Client timescale { Time.timeScale } mismatch with server { serverTimescale } - Forcing client update");
@@ -45,7 +39,8 @@ public class WorldDataNetworker_Receiver : MonoBehaviour
 
     }
 
-    public void ClientNeedsNormalTimeFlowBecauseHostDisconnected() {
+    public void ClientNeedsNormalTimeFlowBecauseHostDisconnected()
+    {
         serverTimescale = 1f;
         Time.timeScale = serverTimescale;
     }
@@ -59,7 +54,7 @@ public class WorldDataNetworker_Receiver : MonoBehaviour
     public void OnDestroy()
     {
         Networker.WorldDataUpdate -= WorldDataUpdate;
-        Networker.Disconnecting -= OnDisconnect;
+
         //Debug.Log("Destroyed WorldData Update");
     }
 }

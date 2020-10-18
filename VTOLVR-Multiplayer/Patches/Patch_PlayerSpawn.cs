@@ -1,13 +1,5 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Harmony;
-using Oculus.Platform;
+﻿using Harmony;
 using UnityEngine;
-using UnityEngine.UI;
 
 [HarmonyPatch(typeof(PlayerSpawn), "OnPreSpawnUnit")]
 class Patch_OnPreSpawnUnit
@@ -22,7 +14,7 @@ class Patch_OnPreSpawnUnit
             PlayerManager.selectedVehicle = "F/A-26B";
         VTScenario.current.vehicle = VTResources.GetPlayerVehicle(PlayerManager.selectedVehicle);
         PilotSaveManager.currentVehicle = VTResources.GetPlayerVehicle(PlayerManager.selectedVehicle);
-        VTCampaignInfo[] list = VTResources.GetBuiltInCampaigns().ToArray(); 
+        VTCampaignInfo[] list = VTResources.GetBuiltInCampaigns().ToArray();
         string campID = " ";
         if (PlayerManager.selectedVehicle == "AV-42C")
         {

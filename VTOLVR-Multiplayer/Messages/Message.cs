@@ -1,13 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Runtime.Serialization.Formatters.Binary;
 using System.IO.Compression;
-using System.Linq;
-using Harmony;
-using System.Diagnostics;
-using UnityEngine;
- 
+using System.Runtime.Serialization.Formatters.Binary;
+
 
 [Serializable]
 public class Message
@@ -22,7 +18,7 @@ public class Message
 }
 public static class ByteArrayCompressionUtility
 {
-   
+
 
     public static byte[] Compress(byte[] data)
     {
@@ -45,24 +41,24 @@ public static class ByteArrayCompressionUtility
             return resultStream.ToArray();
         }
     }
-     
+
 }
 [Serializable]
-    public class PacketCompressedBatch : Packet
-    {
+public class PacketCompressedBatch : Packet
+{
 
-        public byte[] compressedData;
-        public int messagesNum;
-        public int[] messagesSize = new int[20];
-    
-        [NonSerialized] public List<Message> messages;
-        [NonSerialized] public List<byte> uncompressedData;
-        [NonSerialized] public byte[] decomperessedBuffer;
+    public byte[] compressedData;
+    public int messagesNum;
+    public int[] messagesSize = new int[20];
 
-        [NonSerialized] BinaryFormatter binaryFormatter;
+    [NonSerialized] public List<Message> messages;
+    [NonSerialized] public List<byte> uncompressedData;
+    [NonSerialized] public byte[] decomperessedBuffer;
+
+    [NonSerialized] BinaryFormatter binaryFormatter;
 
     public void addMessage(Message msg)
-        {
+    {
 
         messages.Add(msg);
         MemoryStream memoryStream = new MemoryStream();
@@ -73,15 +69,15 @@ public static class ByteArrayCompressionUtility
             uncompressedData.Add(b);
         }*/
         uncompressedData.AddRange(memoryStream.ToArray());
-        messagesSize[messagesNum]= (int)memoryStream.Length;
+        messagesSize[messagesNum] = (int)memoryStream.Length;
         //UnityEngine.Debug.Log("serlized size" + messagesSize[messagesNum]);
         messagesNum += 1;
 
-       // UnityEngine.Debug.Log("uncompressedData size" + uncompressedData.Count);
+        // UnityEngine.Debug.Log("uncompressedData size" + uncompressedData.Count);
     }
     public void prepareForSend()
     {
-       // UnityEngine.Debug.Log("messagesNum " + messagesNum);
+        // UnityEngine.Debug.Log("messagesNum " + messagesNum);
         //UnityEngine.Debug.Log("messagesNumlist " + messages.Count);
         CompressMessages();
     }
@@ -90,7 +86,7 @@ public static class ByteArrayCompressionUtility
     {
         binaryFormatter = new BinaryFormatter(); uncompressedData = new List<byte>();
         messages = new List<Message>();
-        if (uncompressedData !=null) uncompressedData.Clear();
+        if (uncompressedData != null) uncompressedData.Clear();
         DeCompressMessages();
         /*for (int i = 0; i < messagesNum; i++)
         {
@@ -105,29 +101,29 @@ public static class ByteArrayCompressionUtility
 
             uncompressedDataArray.Add(data.ToArray());
         }*/
-        
-       
+
+
     }
     public void generateMessageList()
     {
 
-       // UnityEngine.Debug.Log("post uncompressedData size" + decomperessedBuffer.Length);
+        // UnityEngine.Debug.Log("post uncompressedData size" + decomperessedBuffer.Length);
         messages.Clear();
-       // UnityEngine.Debug.Log("messagesNum " + messagesNum);
+        // UnityEngine.Debug.Log("messagesNum " + messagesNum);
         int index = 0;
         for (int i = 0; i < messagesNum; i++)
-        {   
+        {
 
-         
+
             MemoryStream serializationStream = new MemoryStream(decomperessedBuffer, index, messagesSize[i]);
-          
-           Message newMessage = binaryFormatter.Deserialize(serializationStream) as Message;
+
+            Message newMessage = binaryFormatter.Deserialize(serializationStream) as Message;
             if (newMessage != null)
                 messages.Add(newMessage);
 
             index += messagesSize[i];
         }
-      
+
     }
 
     public void CompressMessages()
@@ -138,8 +134,8 @@ public static class ByteArrayCompressionUtility
     public void DeCompressMessages()
     {
 
-        decomperessedBuffer=ByteArrayCompressionUtility.Decompress(compressedData);
-     
+        decomperessedBuffer = ByteArrayCompressionUtility.Decompress(compressedData);
+
     }
     /*  
 
@@ -163,12 +159,14 @@ public static class ByteArrayCompressionUtility
       //DeCompressMessages();
       deserializeBatchMessages();  
       }*/
-    public PacketCompressedBatch() { messages = new List<Message>(); packetType = PacketType.Batch; messagesNum = 0; binaryFormatter = new BinaryFormatter(); uncompressedData = new List<byte>();
+    public PacketCompressedBatch()
+    {
+        messages = new List<Message>(); packetType = PacketType.Batch; messagesNum = 0; binaryFormatter = new BinaryFormatter(); uncompressedData = new List<byte>();
         messages = new List<Message>();
     }
-    
+
 }
 
-      
-    
+
+
 

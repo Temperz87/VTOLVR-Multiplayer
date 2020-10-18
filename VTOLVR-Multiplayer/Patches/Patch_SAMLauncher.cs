@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Harmony;
+﻿using Harmony;
 using UnityEngine;
 
 public static class SAMHelper
@@ -17,7 +11,7 @@ class Patch9
 {
     [HarmonyPrefix]
     public static bool Prefix(SAMLauncher __instance)
-    { 
+    {
         if (!Networker.isHost)
         {
             return true;
@@ -39,7 +33,7 @@ class Patch9
         Debug.Log("Could not find a suitable missile to attach a sender to.");
         SAMHelper.SAMmissile = 0;
         return true;
-       // __state = 0;
+        // __state = 0;
     }
     [HarmonyPostfix]
     public static void Postfix(SAMLauncher __instance, RadarLockData lockData)
