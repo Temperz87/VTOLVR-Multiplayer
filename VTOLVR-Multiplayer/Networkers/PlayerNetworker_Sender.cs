@@ -159,7 +159,7 @@ class PlayerNetworker_Sender : MonoBehaviour
 
                 if (actor.team == Teams.Allied)
                 {
-                    actor.DiscoverActor();
+                    //actor.DiscoverActor();
                     actor.DetectActor(Teams.Allied);
                     actor.UpdateKnownPosition(actor.team);
                     actor.permanentDiscovery = true;
