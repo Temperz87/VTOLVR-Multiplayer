@@ -11,13 +11,12 @@ public static class DiscordRadioManager
     public static long lobbyID;
     public static string lobbySecret;
     public static bool connected;
-    public static Dictionary<string, long> steamIDtoDiscordIDDictionary = new Dictionary<string, long>();
     public static Dictionary<string, int> steamIDtoFreq = new Dictionary<string, int>();
     public static int radioFreq;
     public static LobbyManager lobbyManager = null;
     public static string PersonaName = " ";
     public static float tick = 0;
-    public static float tickrate = 3.0f;
+    public static float tickrate = 4.0f;
     public static List<string> frequencyTable = new List<string>();
     public static List<string> frequencyTableLabels = new List<string>();
     private static int freqSelection = 0;
@@ -151,7 +150,7 @@ public static class DiscordRadioManager
         reloadFrequencyTextFiles();
         connected = false;
         radioFreq = 0;
-        steamIDtoDiscordIDDictionary.Clear();
+    
         lobbyManager.DisconnectVoice(lobbyID, (result) =>
         {
             if (result == Discord.Result.Ok)
@@ -225,15 +224,7 @@ public static class DiscordRadioManager
     {
         if (!connectedToDiscord)
             return;
-        UnityEngine.Debug.Log("added player");
-        if (!steamIDtoDiscordIDDictionary.ContainsKey(name))
-            steamIDtoDiscordIDDictionary.Add(name, discordid);
-        else
-        {
-            steamIDtoDiscordIDDictionary.Remove(name);
-            steamIDtoDiscordIDDictionary.Add(name, discordid);
-        }
-
+     
 
         if (!steamIDtoFreq.ContainsKey(name))
             steamIDtoFreq.Add(name, 0);
@@ -310,9 +301,9 @@ public static class DiscordRadioManager
             tick = 0.0f;
             Message_SetFrequency freqMsg = new Message_SetFrequency(PersonaName, radioFreq);
             if (Networker.isHost)
-                NetworkSenderThread.Instance.SendPacketAsHostToAllClients(freqMsg, Steamworks.EP2PSend.k_EP2PSendReliable);
+                NetworkSenderThread.Instance.SendPacketAsHostToAllClients(freqMsg, Steamworks.EP2PSend.k_EP2PSendUnreliable);
             else
-                NetworkSenderThread.Instance.SendPacketToSpecificPlayer(Networker.hostID, freqMsg, Steamworks.EP2PSend.k_EP2PSendReliable);
+                NetworkSenderThread.Instance.SendPacketToSpecificPlayer(Networker.hostID, freqMsg, Steamworks.EP2PSend.k_EP2PSendUnreliable);
 
             foreach (var play in PlayerManager.players)
             {
@@ -320,18 +311,18 @@ public static class DiscordRadioManager
                 {
                     if (steamIDtoFreq[play.nameTag] != radioFreq)
                     {
-                        mutePlayer(play.nameTag, true);
+                        mutePlayer(play,play.nameTag, true);
                     }
                     else
                     {
-                        mutePlayer(play.nameTag, false);
+                        mutePlayer(play, play.nameTag, false);
                     }
                 }
             }
         }
     }
 
-    public static void mutePlayer(string name, bool state)
+    public static void mutePlayer(PlayerManager.Player play,string name, bool state)
     {
         if (!connectedToDiscord)
             return;
@@ -340,21 +331,21 @@ public static class DiscordRadioManager
         {
             var ids = lobbyManager.GetMemberUserId(lobbyID, i);
 
-            if (steamIDtoDiscordIDDictionary.ContainsKey(name))
+            if (play.discordID == ids)
             {
-                long discordid = steamIDtoDiscordIDDictionary[name];
+               
                 if (userID != ids)
                 {
                     if (state)
                     {
-                        discord.GetVoiceManager().SetLocalVolume(discordid, 0);
-                        discord.GetVoiceManager().SetLocalMute(discordid, true);
+                         discord.GetVoiceManager().SetLocalVolume(ids, 0);
+                        //discord.GetVoiceManager().SetLocalMute(discordid, true);
                     }
 
                     else
                     {
-                        discord.GetVoiceManager().SetLocalMute(discordid, false);
-                    discord.GetVoiceManager().SetLocalVolume(discordid, 100);
+                    //    discord.GetVoiceManager().SetLocalMute(discordid, false);
+                    discord.GetVoiceManager().SetLocalVolume(ids, 100);
                     }
 
                 }

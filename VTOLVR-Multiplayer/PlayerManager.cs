@@ -98,6 +98,7 @@ public static class PlayerManager
             yield return null;
         }
 
+        Random.InitState((int)(Time.deltaTime*1000.0f));
         Debug.Log("The map has loaded");
         gameLoaded = true;
         // As a client, when the map has loaded we are going to request a spawn point from the host
@@ -703,6 +704,8 @@ public static class PlayerManager
         PilotSaveManager.current.lastVehicleUsed = PilotSaveManager.currentVehicle.name;
         Campaign campref = VTResources.GetBuiltInCampaign(campID).ToIngameCampaign();
         PilotSaveManager.currentCampaign = campref;
+
+        hackSaveUnlockAllWeapons();
         Rigidbody rb = FlightSceneManager.instance.playerActor.gameObject.GetComponent<Rigidbody>();
         PlayerManager.rearmPoint = rp;
         rb.interpolation = RigidbodyInterpolation.None;
@@ -793,8 +796,8 @@ public static class PlayerManager
         pvSetup.OnBeginUsingConfigurator -= StartConfig;
         unSubscribe = false;
 
-        PilotSaveManager.currentCampaign = Networker._instance.pilotSaveManagerControllerCampaign;
-        PilotSaveManager.currentScenario = Networker._instance.pilotSaveManagerControllerCampaignScenario;
+        //PilotSaveManager.currentCampaign = Networker._instance.pilotSaveManagerControllerCampaign;
+        //PilotSaveManager.currentScenario = Networker._instance.pilotSaveManagerControllerCampaignScenario;
 
     }
     public static void SpawnLocalVehicleAndInformOtherClients(GameObject localVehicle, Vector3 pos, Quaternion rot, ulong UID, bool sendNewSpawnPacket = false, int playercount = 0) //Both
@@ -842,29 +845,56 @@ public static class PlayerManager
                     }
                 }
             }
+        AirportManager closestAirport = null;
+        float num = float.MaxValue;
+        foreach (AirportManager allAirport in VTScenario.current.GetAllAirports())
+        {
+            float sqrMagnitude = (allAirport.transform.position - rearmPoint.transform.position).sqrMagnitude;
+            if (sqrMagnitude < num)
+            {
+                num = sqrMagnitude;
+                closestAirport = allAirport;
+            }
+        }
+        List<ReArmingPoint> rearmPointList = new List<ReArmingPoint>();
+        foreach (AirportManager.ParkingSpace space in closestAirport.parkingSpaces)
+        {
+            foreach(ReArmingPoint p in space.rearmPoints)
+            {
+                if(p.radius>17.7f)
+                rearmPointList.Add(p);
+            }               
+        }
+        PlayerSpawn ps = GameObject.FindObjectOfType<PlayerSpawn>();
+        if(rearmPointList.Count>0)
+        if (ps.initialSpeed < 5.0f)
+        {
+            int randomIndex = Random.Range(0, rearmPointList.Count-1);
+            rearmPoint = rearmPointList[randomIndex];
+        }
 
         if (Networker.isHost && firstSpawnDone == false)
         {
 
-            //StartRearm(rearmPoint);
-
-
+           // StartRearm(rearmPoint);
         }
         else
         {
             if (teamLeftie)
             {
 
-                StartRearm(rearmPoint);
+                //StartRearm(rearmPoint);
             }
             else
             {
                 if (firstSpawnDone == false)
                 {
-                    PlayerSpawn ps = GameObject.FindObjectOfType<PlayerSpawn>();
+                    //PlayerSpawn ps = GameObject.FindObjectOfType<PlayerSpawn>();
                     if (ps.initialSpeed < 5.0f || carrierStart)
                     {
                         StartRearm(rearmPoint);
+                      
+
                     }
 
                 }

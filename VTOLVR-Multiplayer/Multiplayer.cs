@@ -140,13 +140,25 @@ public class Multiplayer : VTOLMOD
 
     public void CheckUpToDate()
     {
+        UpToDate = true;
+        return;
+
+        /*
         if (checkedToDate)
             return;
         checkedToDate = false;
         HttpWebRequest request = (HttpWebRequest)WebRequest.Create("https://vtolvr-mods.com/api/mods/7jdyy3go/?format=json");
+     
         request.AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate;
 
         HttpWebResponse response = (HttpWebResponse)request.GetResponse();
+
+        if (response.StatusCode == HttpStatusCode.NotFound)
+        {
+
+            UpToDate = true;
+            return;
+        }
         Stream stream = response.GetResponseStream();
         StreamReader reader = new StreamReader(stream);
         string json = reader.ReadToEnd();
@@ -167,7 +179,7 @@ public class Multiplayer : VTOLMOD
         {
             Debug.Log("Not up to date.");
             UpToDate = false;
-        }
+        }*/
     }
 
     private void CreateSettingsPage()
@@ -888,6 +900,7 @@ public class Multiplayer : VTOLMOD
                     {
                         PilotSaveManager.currentVehicle = VTResources.GetPlayerVehicle("F/A-26B");
                         PilotSaveManager.current.lastVehicleUsed = PilotSaveManager.currentVehicle.name;
+
                     }
                     else if (PilotSaveManager.currentVehicle.name == "FA-26B" || PilotSaveManager.currentVehicle.name == "F/A-26B")
                     {
@@ -962,6 +975,7 @@ public class Multiplayer : VTOLMOD
                 Text text = button.GetComponentInChildren<Text>();
                 text.transform.localScale = text.transform.localScale * 0.75f;
                 text.text = "Freq: " + CUSTOM_API.currentFreq;
+                DiscordRadioManager.radioFreq = CUSTOM_API.currentFreq.GetHashCode();
                 bInteractable.interactableName = "Freq.";
                 bInteractable.OnInteract = new UnityEvent();
 

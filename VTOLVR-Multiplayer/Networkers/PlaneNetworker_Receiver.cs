@@ -50,7 +50,7 @@ public class PlaneNetworker_Receiver : MonoBehaviour
 
         // Networker.WeaponStoppedFiring += WeaponStoppedFiring;
         Networker.FireCountermeasure += FireCountermeasure;
-        if (!ownerActor.gameObject.name.Contains("verlord") && !ownerActor.gameObject.name.Contains("kc"))
+        if (!ownerActor.gameObject.name.Contains("verlord") && !ownerActor.gameObject.name.Contains("kc") && !ownerActor.gameObject.name.Contains("KC"))
             weaponManager = GetComponent<WeaponManager>();
         mostCurrentUpdateNumber = 0;
         if (weaponManager == null)

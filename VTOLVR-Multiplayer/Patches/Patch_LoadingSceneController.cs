@@ -119,7 +119,7 @@ class Patch_LoadingSceneHelmet_Update
                     if (Networker.isHost)
                     {
                         PlayerManager.teamLeftie = false; //host cant be team leftie so ai doesnt break;
-                        if (Networker.EveryoneElseReady())
+                       // if (Networker.EveryoneElseReady())
                         {
                             Debug.Log("Everyone is ready, starting game");
                             NetworkSenderThread.Instance.SendPacketAsHostToAllClients(new Message(MessageType.AllPlayersReady), Steamworks.EP2PSend.k_EP2PSendReliable);
@@ -127,11 +127,11 @@ class Patch_LoadingSceneHelmet_Update
                             LoadingSceneController.instance.PlayerReady();
                             PlayerManager.OPFORbuttonMade = false;
                         }
-                        else
-                        {
-                            Debug.Log("I'm ready but others are not, waiting");
-                            Networker.SetHostReady(false);
-                        }
+                        //else
+                        //{
+                        //    Debug.Log("I'm ready but others are not, waiting");
+                        //    Networker.SetHostReady(false);
+                        //}
                     }
                     else
                     {

@@ -899,7 +899,7 @@ public class Networker : MonoBehaviour
                     EngineTiltUpdate.Invoke(packet);
                 break;
             case MessageType.WorldData:
-                Debug.Log("case world data");
+                //Debug.Log("case world data");
                 if (WorldDataUpdate != null)
                     WorldDataUpdate.Invoke(packet);
                 break;
@@ -1247,7 +1247,7 @@ public class Networker : MonoBehaviour
     }
     //Checks if everyone had sent the Ready Message Type saying they are ready in the vehicle config room
     public static bool EveryoneElseReady()
-    {
+    { 
         for (int i = 0; i < players.Count; i++)
         {
             if (!readyDic[players[i]])
