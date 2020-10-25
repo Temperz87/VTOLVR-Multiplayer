@@ -33,15 +33,19 @@ public static class DiscordRadioManager
         {
             clientID = "759675844971986975";
         }
-        discord = new Discord.Discord(Int64.Parse(clientID), (UInt64)Discord.CreateFlags.Default);
-        userID = 0;
-        lobbyID = 0;
-        if (discord != null)
-        {
-            connectedToDiscord = true;
-            UnityEngine.Debug.Log("loading discord worked");
-        }
+        connectedToDiscord = true; 
+        PersonaName = Steamworks.SteamFriends.GetPersonaName();
 
+        radioFreq = 0;
+        reloadFrequencyTextFiles();
+        try
+        {
+            discord = new Discord.Discord(Int64.Parse(clientID), (UInt64)Discord.CreateFlags.NoRequireDiscord, out connectedToDiscord);
+        }
+        catch (ResultException e)
+        {
+            connectedToDiscord = false;
+        }
         if (!connectedToDiscord)
             return;
         lobbyManager = discord.GetLobbyManager();
@@ -57,10 +61,7 @@ public static class DiscordRadioManager
             userID = currentUser.Id;
         };
 
-        PersonaName = Steamworks.SteamFriends.GetPersonaName();
-
-        radioFreq = 0;
-        reloadFrequencyTextFiles();
+  
     }
 
     public static void reloadFrequencyTextFiles()
@@ -169,6 +170,8 @@ public static class DiscordRadioManager
     }
     static void UpdateActivity(Discord.Discord discord, Discord.Lobby lobby)
     {
+        if (!connectedToDiscord)
+            return;
         var activityManager = discord.GetActivityManager();
         var lobbyManager = discord.GetLobbyManager();
 

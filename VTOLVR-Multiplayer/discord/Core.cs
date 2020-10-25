@@ -694,6 +694,7 @@ namespace Discord
 
         public ResultException(Result result) : base(result.ToString())
         {
+
         }
     }
 
@@ -949,7 +950,7 @@ namespace Discord
 
         private GCHandle? setLogHook;
 
-        public Discord(Int64 clientId, UInt64 flags)
+        public Discord(Int64 clientId, UInt64 flags, out bool worked)
         {
             FFICreateParams createParams;
             createParams.ClientId = clientId;
@@ -1009,11 +1010,14 @@ namespace Discord
             createParams.AchievementVersion = 1;
             InitEvents(EventsPtr, ref Events);
             var result = DiscordCreate(2, ref createParams, out MethodsPtr);
-            if (result != Result.Ok)
+            worked = true;
+            
+                if (result != Result.Ok)
             {
+                  worked = false;
                 Dispose();
                 throw new ResultException(result);
-            }
+            } 
         }
 
         private void InitEvents(IntPtr eventsPtr, ref FFIEvents events)

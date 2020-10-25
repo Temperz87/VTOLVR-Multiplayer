@@ -158,11 +158,10 @@ class PlayerNetworker_Sender : MonoBehaviour
                 Traverse.Create(actor).Field("detectedByEnemy").SetValue(false);
 
                 if (actor.team == Teams.Allied)
-                {
-                    //actor.DiscoverActor();
+                {                     
+                    actor.permanentDiscovery = true;
                     actor.DetectActor(Teams.Allied);
                     actor.UpdateKnownPosition(actor.team);
-                    actor.permanentDiscovery = true;
                 }
 
                 //actor.DiscoverActor(); <----------------breaks and only works on every 2nd spawn
