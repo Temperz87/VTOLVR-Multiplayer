@@ -861,7 +861,7 @@ public static class PlayerManager
         {
             foreach(ReArmingPoint p in space.rearmPoints)
             {
-                if(p.radius>17.7f)
+                if(p.radius>18.0f)
                 rearmPointList.Add(p);
             }               
         }
@@ -1432,6 +1432,7 @@ public static class PlayerManager
         }
         TargetManager.instance.RegisterActor(aIPilot.actor);
         aIPilot.actor.hideDeathLog = true;
+        ((AIAircraftSpawn)aIPilot.actor.unitSpawn).vehicleName +=" " +players[playerID].nameTag;
         players[playerID].leftie = isLeft;
         players[playerID].vehicle = newVehicle;
         players[playerID].actor = aIPilot.actor;

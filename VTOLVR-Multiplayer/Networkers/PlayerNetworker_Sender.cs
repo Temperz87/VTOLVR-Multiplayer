@@ -200,7 +200,7 @@ class PlayerNetworker_Sender : MonoBehaviour
             Debug.LogError("new vehicle is null");
         }
         newPlayer.GetComponent<Actor>().designation = FlightSceneManager.instance.playerActor.designation;//reassigning designation
-
+ 
         FlightSceneManager.instance.playerActor = newPlayer.GetComponent<Actor>();
         FlightSceneManager.instance.playerActor.flightInfo.PauseGCalculations();
         FlightSceneManager.instance.playerActor.flightInfo.OverrideRecordedAcceleration(Vector3.zero);
