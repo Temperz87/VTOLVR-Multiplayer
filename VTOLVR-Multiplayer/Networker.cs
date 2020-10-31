@@ -772,6 +772,7 @@ public class Networker : MonoBehaviour
                 Message_JoinRequestAccepted_Result messsageLobby = ((PacketSingle)packet).message as Message_JoinRequestAccepted_Result;
                 Multiplayer._instance.alpha = messsageLobby.hiAlpha;
                 Multiplayer._instance.thrust = messsageLobby.thrust;
+                Multiplayer._instance.fog = messsageLobby.fog;
                 DiscordRadioManager.freqLabelTableNetworkString = messsageLobby.freqLabelString;
                 DiscordRadioManager.freqTableNetworkString = messsageLobby.freqString;
 
@@ -1514,7 +1515,7 @@ public class Networker : MonoBehaviour
         Debug.Log("Done adding to status dict");
         NetworkSenderThread.Instance.AddPlayer(csteamID);
         NetworkSenderThread.Instance.SendPacketToSpecificPlayer(csteamID, new Message_JoinRequestAccepted_Result(DiscordRadioManager.userID, DiscordRadioManager.lobbyID, DiscordRadioManager.lobbySecret, Multiplayer._instance.thrust,
-            Multiplayer._instance.alpha, DiscordRadioManager.freqTableNetworkString, DiscordRadioManager.freqLabelTableNetworkString), EP2PSend.k_EP2PSendReliable);
+            Multiplayer._instance.alpha, Multiplayer._instance.fog, DiscordRadioManager.freqTableNetworkString, DiscordRadioManager.freqLabelTableNetworkString), EP2PSend.k_EP2PSendReliable);
         UpdateLoadingText();
     }
 

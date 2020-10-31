@@ -35,15 +35,17 @@ public class Message_JoinRequestAccepted_Result : Message
     public string lobbySecret;
     public float thrust;
     public bool hiAlpha;
+    public float fog;
     public string freqString;
     public string freqLabelString;
-    public Message_JoinRequestAccepted_Result(long ihostDiscordID, long ilobbyDiscordID, string ilobbySecret, float fthrust, bool alpha, String freq, string labels)
+    public Message_JoinRequestAccepted_Result(long ihostDiscordID, long ilobbyDiscordID, string ilobbySecret, float fthrust, bool alpha, float Fog, String freq, string labels)
     {
         hostDiscordID = ihostDiscordID;
         lobbyDiscordID = ilobbyDiscordID;
         lobbySecret = ilobbySecret;
         thrust = fthrust;
         hiAlpha = alpha;
+        fog = Fog;
         freqString = freq;
         freqLabelString = labels;
         type = MessageType.JoinRequestAccepted_Result;

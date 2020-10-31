@@ -65,7 +65,10 @@ public class Multiplayer : VTOLMOD
 
     public float thrust = 1.0f;
     public bool alpha = false;
+    public float fog = 0.0f;
     public UnityAction<float> thrust_changed;
+
+    public UnityAction<float> fog_changed;
     public UnityAction<bool> alpha_changed;
 
     public bool spawnRemainingPlayersAtAirBase = false;
@@ -194,6 +197,11 @@ public class Multiplayer : VTOLMOD
         settings.CreateBoolSetting("Default = False", hidePlayerRoundels_changed, AvatarManager.hideAvatars);
 
         settings.CreateCustomLabel("Host Settings");
+
+        settings.CreateCustomLabel("Fog strength");
+        fog_changed += fog_Settings;
+        settings.CreateFloatSetting("Default = 0.0f", fog_changed, 0.0f,0.0f,1.0f);
+       
         /*spawnRemainingPlayersAtAirBase_changed += spawnRemainingPlayersAtAirBase_Setting;
         settings.CreateCustomLabel("Spawn players at airbase if there are no wingmen available.");
         settings.CreateBoolSetting("Default = False", spawnRemainingPlayersAtAirBase_changed, spawnRemainingPlayersAtAirBase);*/
@@ -289,6 +297,10 @@ public class Multiplayer : VTOLMOD
     public void alpha_Settings(bool newval)
     {
         alpha = newval;
+    }
+    public void fog_Settings(float newval)
+    {
+        fog = newval;
     }
     public void DisplayCloud_Settings(bool newval)
     {
@@ -862,7 +874,7 @@ public class Multiplayer : VTOLMOD
             canvasButtonPrefab.SetActive(false);
             DontDestroyOnLoad(canvasButtonPrefab);
         }
-        foreach (var controller in GameObject.FindObjectsOfType<VRHandController>())
+        foreach (var controller in PlayerManager.FindObjectsOfTypeAll<VRHandController>())
         {
             GameObject button;
             if (canvasButtonPrefab == null)
@@ -952,7 +964,7 @@ public class Multiplayer : VTOLMOD
 
     public static GameObject CreateFreqButton()
     {
-        foreach (var controller in GameObject.FindObjectsOfType<VRHandController>())
+        foreach (var controller in PlayerManager.FindObjectsOfTypeAll<VRHandController>())
         {
             GameObject button;
             if (canvasButtonPrefab == null)

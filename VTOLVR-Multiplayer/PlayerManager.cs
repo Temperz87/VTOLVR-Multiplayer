@@ -26,6 +26,7 @@ public static class PlayerManager
     public static bool unSubscribe = true;
     public static float timeAlive = 0.0f;
     public static int kills = 0;
+    public static float DefaultFog = 0.00001f;
     public static ulong timeinGame = 0;
     /// <summary>
     /// This is the queue for people waiting to get a spawn point,
@@ -98,6 +99,8 @@ public static class PlayerManager
             yield return null;
         }
 
+
+        
         Random.InitState((int)(Time.deltaTime*1000.0f));
         Debug.Log("The map has loaded");
         gameLoaded = true;
@@ -552,6 +555,12 @@ public static class PlayerManager
 
         if (gameLoaded)
         {
+            foreach (var camset in FindObjectsOfTypeAll<CameraFogSettings>())
+            {
+                camset.density = DefaultFog + ( Multiplayer._instance.fog*0.0085f);
+                camset.linearStartDist = 1.0f;
+            }
+
             PlayerManager.timeinGame += 1;
             if (FrequenceyButton != null)
             {
@@ -800,6 +809,24 @@ public static class PlayerManager
         //PilotSaveManager.currentScenario = Networker._instance.pilotSaveManagerControllerCampaignScenario;
 
     }
+    public static List<T> FindObjectsOfTypeAll<T>()
+    {
+        List<T> results = new List<T>();
+        for (int i = 0; i < UnityEngine.SceneManagement.SceneManager.sceneCount; i++)
+        {
+            var s = UnityEngine.SceneManagement.SceneManager.GetSceneAt(i);
+            if (s.isLoaded)
+            {
+                var allGameObjects = s.GetRootGameObjects();
+                for (int j = 0; j < allGameObjects.Length; j++)
+                {
+                    var go = allGameObjects[j];
+                    results.AddRange(go.GetComponentsInChildren<T>(true));
+                }
+            }
+        }
+        return results;
+    }
     public static void SpawnLocalVehicleAndInformOtherClients(GameObject localVehicle, Vector3 pos, Quaternion rot, ulong UID, bool sendNewSpawnPacket = false, int playercount = 0) //Both
     {
         Debug.Log("Sending our location to spawn our vehicle");
@@ -816,6 +843,7 @@ public static class PlayerManager
 
         float lastRadius = 0.0f;
 
+      
 
         //rb.detectCollisions = false;
         if (PlayerManager.carrierStart)
