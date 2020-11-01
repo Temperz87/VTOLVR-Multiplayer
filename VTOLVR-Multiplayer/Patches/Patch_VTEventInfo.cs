@@ -4,6 +4,19 @@ using System.Collections.Generic;
 using UnityEngine;
 
 
+
+    [HarmonyPatch(typeof(CameraFogSettings), "OnPreRender")]
+class PatchFog
+{
+    static void Postfix(CameraFogSettings __instance)
+    {
+
+        RenderSettings.fogDensity = PlayerManager.DefaultFog + (Multiplayer._instance.fog * 0.0045f);
+
+    }
+}
+
+
 // patch to grab all the events being loaded on creation this replaces original method
 [HarmonyPatch(typeof(Bullet), "KillBullet")]
 class PatchBullet

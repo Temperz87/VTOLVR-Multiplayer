@@ -26,7 +26,7 @@ public static class PlayerManager
     public static bool unSubscribe = true;
     public static float timeAlive = 0.0f;
     public static int kills = 0;
-    public static float DefaultFog = 0.00001f;
+    public static float DefaultFog = 0.0005f;
     public static ulong timeinGame = 0;
     /// <summary>
     /// This is the queue for people waiting to get a spawn point,
@@ -555,11 +555,11 @@ public static class PlayerManager
 
         if (gameLoaded)
         {
-            foreach (var camset in FindObjectsOfTypeAll<CameraFogSettings>())
-            {
-                camset.density = DefaultFog + ( Multiplayer._instance.fog*0.0045f);
-                camset.linearStartDist = 1.0f;
-            }
+          //  foreach (var camset in FindObjectsOfTypeAll<CameraFogSettings>(FlightSceneManager.instance.playerActor.gameObject))
+          //  {
+          //      camset.density =
+          //      camset.linearStartDist = 1.0f;
+          //  }
 
             PlayerManager.timeinGame += 1;
             if (FrequenceyButton != null)
@@ -809,22 +809,12 @@ public static class PlayerManager
         //PilotSaveManager.currentScenario = Networker._instance.pilotSaveManagerControllerCampaignScenario;
 
     }
-    public static List<T> FindObjectsOfTypeAll<T>()
+    public static List<T> FindObjectsOfTypeAll<T>(GameObject obj)
     {
         List<T> results = new List<T>();
-        for (int i = 0; i < UnityEngine.SceneManagement.SceneManager.sceneCount; i++)
-        {
-            var s = UnityEngine.SceneManagement.SceneManager.GetSceneAt(i);
-            if (s.isLoaded)
-            {
-                var allGameObjects = s.GetRootGameObjects();
-                for (int j = 0; j < allGameObjects.Length; j++)
-                {
-                    var go = allGameObjects[j];
-                    results.AddRange(go.GetComponentsInChildren<T>(true));
-                }
-            }
-        }
+         
+                    results.AddRange(obj.GetComponentsInChildren<T>(true));
+                
         return results;
     }
     public static void SpawnLocalVehicleAndInformOtherClients(GameObject localVehicle, Vector3 pos, Quaternion rot, ulong UID, bool sendNewSpawnPacket = false, int playercount = 0) //Both
