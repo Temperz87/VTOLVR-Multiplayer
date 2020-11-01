@@ -557,7 +557,7 @@ public static class PlayerManager
         {
             foreach (var camset in FindObjectsOfTypeAll<CameraFogSettings>())
             {
-                camset.density = DefaultFog + ( Multiplayer._instance.fog*0.0085f);
+                camset.density = DefaultFog + ( Multiplayer._instance.fog*0.0045f);
                 camset.linearStartDist = 1.0f;
             }
 

@@ -874,7 +874,7 @@ public class Multiplayer : VTOLMOD
             canvasButtonPrefab.SetActive(false);
             DontDestroyOnLoad(canvasButtonPrefab);
         }
-        foreach (var controller in PlayerManager.FindObjectsOfTypeAll<VRHandController>())
+        foreach (var controller in GameObject.FindObjectsOfType<VRHandController>())
         {
             GameObject button;
             if (canvasButtonPrefab == null)
@@ -964,7 +964,7 @@ public class Multiplayer : VTOLMOD
 
     public static GameObject CreateFreqButton()
     {
-        foreach (var controller in PlayerManager.FindObjectsOfTypeAll<VRHandController>())
+        foreach (var controller in GameObject.FindObjectsOfType<VRHandController>())
         {
             GameObject button;
             if (canvasButtonPrefab == null)
