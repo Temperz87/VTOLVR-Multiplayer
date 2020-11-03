@@ -863,7 +863,7 @@ public static class PlayerManager
                     }
                 }
             }
-        AirportManager closestAirport = null;
+         AirportManager closestAirport = null;
         float num = float.MaxValue;
         foreach (AirportManager allAirport in VTScenario.current.GetAllAirports())
         {
@@ -889,7 +889,7 @@ public static class PlayerManager
         {
             int randomIndex = Random.Range(0, rearmPointList.Count-1);
             rearmPoint = rearmPointList[randomIndex];
-        }
+        } 
 
         if (Networker.isHost && firstSpawnDone == false)
         {
@@ -900,14 +900,13 @@ public static class PlayerManager
         {
             if (teamLeftie)
             {
-
-                //StartRearm(rearmPoint);
+                StartRearm(rearmPoint);
             }
             else
             {
                 if (firstSpawnDone == false)
                 {
-                    //PlayerSpawn ps = GameObject.FindObjectOfType<PlayerSpawn>();
+                   // PlayerSpawn ps = GameObject.FindObjectOfType<PlayerSpawn>();
                     if (ps.initialSpeed < 5.0f || carrierStart)
                     {
                         StartRearm(rearmPoint);

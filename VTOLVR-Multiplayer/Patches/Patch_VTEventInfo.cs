@@ -10,8 +10,8 @@ class PatchFog
 {
     static void Postfix(CameraFogSettings __instance)
     {
-
-        RenderSettings.fogDensity = PlayerManager.DefaultFog + (Multiplayer._instance.fog * 0.0045f);
+        if(Multiplayer._instance.fog  !=0.0f)
+            RenderSettings.fogDensity = PlayerManager.DefaultFog + (Multiplayer._instance.fog * 0.0045f);
 
     }
 }
