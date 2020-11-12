@@ -540,7 +540,7 @@ public class Multiplayer : VTOLMOD
         lableVTOLMPIntro.GetComponent<RectTransform>().localPosition = new Vector3(-200, 200);
         lableVTOLMPIntro.GetComponent<RectTransform>().sizeDelta = new Vector2(850, 500.3f);
         if (UpToDate)
-            lableVTOLMPIntro.GetComponentInChildren<Text>().text = $"Hello and welcome to multiplayer version {ModVersionString.ModVersionNumber}!\n\nThis is an alpha release and very much so a work in progress. Expect bugs!\n\nPlease report any issues at https://vtolvr-mods.com or on the modding discord here: https://discord.gg/pW4rkYf";
+            lableVTOLMPIntro.GetComponentInChildren<Text>().text = $"FOR INTERNAL USE ONLY";
         else
             lableVTOLMPIntro.GetComponentInChildren<Text>().text = $"Hello and welcome to multiplayer version {ModVersionString.ModVersionNumber}!\n\nThis is an outdated version, please update the mod to be able to play with other players who have higher versions, and while you're at it, expect bugs!\n\nPlease report any issues at https://vtolvr-mods.com or on the modding discord here: https://discord.gg/pW4rkYf";
         //lableVTOLJoinLog.GetComponentInChildren<Text>().resizeTextForBestFit = true;

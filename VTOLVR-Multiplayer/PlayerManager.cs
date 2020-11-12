@@ -56,7 +56,7 @@ public static class PlayerManager
         public CSteamID cSteamID;
         public GameObject vehicle;
         public Actor actor;
-        public VTOLVehicles vehicleType;
+        public string vehicleName;
         public ulong vehicleUID;
         public bool leftie;
         public float ping;
@@ -64,12 +64,12 @@ public static class PlayerManager
         public string nameTag;
         public long discordID;
 
-        public Player(CSteamID cSteamID, GameObject vehicle, Actor aactor, VTOLVehicles vehicleType, ulong vehicleUID, bool leftTeam, string tagName, long idiscord)
+        public Player(CSteamID cSteamID, GameObject vehicle, Actor aactor, string vehicleName, ulong vehicleUID, bool leftTeam, string tagName, long idiscord)
         {
             this.cSteamID = cSteamID;
             this.vehicle = vehicle;
             actor = aactor;
-            this.vehicleType = vehicleType;
+            this.vehicleName = vehicleName;
             this.vehicleUID = vehicleUID;
             leftie = leftTeam;
             nameTag = tagName;
@@ -820,9 +820,8 @@ public static class PlayerManager
     public static void SpawnLocalVehicleAndInformOtherClients(GameObject localVehicle, Vector3 pos, Quaternion rot, ulong UID, bool sendNewSpawnPacket = false, int playercount = 0) //Both
     {
         Debug.Log("Sending our location to spawn our vehicle");
-        VTOLVehicles currentVehicle = getPlayerVehicleType();
         Actor actor = localVehicle.GetComponent<Actor>();
-        Player localPlayer = new Player(SteamUser.GetSteamID(), localVehicle, actor, currentVehicle, UID, PlayerManager.teamLeftie, SteamFriends.GetPersonaName(), DiscordRadioManager.userID);
+        Player localPlayer = new Player(SteamUser.GetSteamID(), localVehicle, actor, PilotSaveManager.currentVehicle.name, UID, PlayerManager.teamLeftie, SteamFriends.GetPersonaName(), DiscordRadioManager.userID);
         AddToPlayerList(localPlayer);
         Rigidbody rb = localVehicle.GetComponent<Rigidbody>();
 
@@ -1088,7 +1087,7 @@ public static class PlayerManager
                 // Not host, so send host the spawn vehicle message
                 Debug.Log($"Sending spawn vehicle message to: {Networker.hostID}");
                 NetworkSenderThread.Instance.SendPacketToSpecificPlayer(Networker.hostID,
-                    new Message_SpawnPlayerVehicle(currentVehicle,
+                    new Message_SpawnPlayerVehicle(PilotSaveManager.currentVehicle.vehicleName,
                         new Vector3D(pos),
                         rot,
                         SteamUser.GetSteamID().m_SteamID,
@@ -1101,7 +1100,7 @@ public static class PlayerManager
             else
             {
                 Debug.Log("I am host,sending respawn");
-                NetworkSenderThread.Instance.SendPacketAsHostToAllClients(new Message_SpawnPlayerVehicle(currentVehicle,
+                NetworkSenderThread.Instance.SendPacketAsHostToAllClients(new Message_SpawnPlayerVehicle(PilotSaveManager.currentVehicle.vehicleName,
                         new Vector3D(pos),
                         rot,
                         SteamUser.GetSteamID().m_SteamID,
@@ -1222,7 +1221,7 @@ public static class PlayerManager
 
                     NetworkSenderThread.Instance.SendPacketToSpecificPlayer(spawnerSteamId,
                         new Message_SpawnPlayerVehicle(
-                            players[i].vehicleType,
+                            players[i].vehicleName,
                             VTMapManager.WorldToGlobalPoint(players[i].vehicle.transform.position),
                             players[i].vehicle.transform.rotation,
                             players[i].cSteamID.m_SteamID,
@@ -1245,7 +1244,7 @@ public static class PlayerManager
                     //Then we send this current player to the new player.
                     NetworkSenderThread.Instance.SendPacketToSpecificPlayer(spawnerSteamId,
                         new Message_SpawnPlayerVehicle(
-                            players[i].vehicleType,
+                            players[i].vehicleName,
                             VTMapManager.WorldToGlobalPoint(players[i].vehicle.transform.position),
                              players[i].vehicle.transform.rotation,
                             players[i].cSteamID.m_SteamID,
@@ -1274,9 +1273,9 @@ public static class PlayerManager
             Debug.Log("Telling connected client about AI units");
             AIManager.TellClientAboutAI(spawnerSteamId);
         }
-        AddToPlayerList(new Player(spawnerSteamId, null, null, message.vehicle, message.networkID, message.leftie, message.nameTag, message.discordID));
+        AddToPlayerList(new Player(spawnerSteamId, null, null, message.vehicleName, message.networkID, message.leftie, message.nameTag, message.discordID));
         DiscordRadioManager.addPlayer(message.nameTag, message.discordID);
-        GameObject puppet = SpawnRepresentation(message.networkID, message.position, message.rotation, message.leftie, message.nameTag, message.vehicle);
+        GameObject puppet = SpawnRepresentation(message.networkID, message.position, message.rotation, message.leftie, message.nameTag, message.vehicleName);
         if (puppet != null)
         {
             PlaneEquippableManager.SetLoadout(puppet, message.networkID, message.normalizedFuel, message.hpLoadout, message.cmLoadout);
@@ -1317,7 +1316,7 @@ public static class PlayerManager
         sendGPS = true;
         //NetworkSenderThread.Instance.SendPacketToSpecificPlayer(Networker.hostID, msg, EP2PSend.k_EP2PSendReliable);
     }
-    public static GameObject SpawnRepresentation(ulong networkID, Vector3D position, Quaternion rotation, bool isLeft, string nameTagString, VTOLVehicles vehicle)
+    public static GameObject SpawnRepresentation(ulong networkID, Vector3D position, Quaternion rotation, bool isLeft, string nameTagString, string vehicleName)
     {
         if (networkID == localUID)
             return null;
@@ -1332,8 +1331,8 @@ public static class PlayerManager
          if (players[playerID].vehicle != null)
             GameObject.Destroy(players[playerID].vehicle);
 
-        GameObject newVehicle = null;
-        switch (vehicle)
+        GameObject newVehicle = GameObject.Instantiate(PilotSaveManager.GetVehicle(vehicleName).vehiclePrefab);
+        /*switch (vehicle)
         {
             case VTOLVehicles.None:
                 Debug.LogError("Vehcile Enum seems to be none, couldn't spawn player vehicle");
@@ -1359,7 +1358,7 @@ public static class PlayerManager
                 }
                 newVehicle = GameObject.Instantiate(f45Prefab, VTMapManager.GlobalToWorldPoint(position), rotation);
                 break;
-        }
+        }*/
         //Debug.Log("Setting vehicle name");
         newVehicle.name = $"Client [{players[playerID].cSteamID}]";
         Debug.Log($"Spawned new vehicle at {newVehicle.transform.position}");
@@ -1378,8 +1377,22 @@ public static class PlayerManager
         //rbNetworker.smoothingTime = 0.25f;
         PlaneNetworker_Receiver planeReceiver = newVehicle.AddComponent<PlaneNetworker_Receiver>();
         planeReceiver.networkUID = networkID;
-        planeReceiver.vehicleType = players[playerID].vehicleType;
-        if (players[playerID].vehicleType == VTOLVehicles.AV42C || players[playerID].vehicleType == VTOLVehicles.F45A)
+        switch (players[playerID].vehicleName)
+        {
+            case "AV-42C":
+                planeReceiver.vehicleType = VTOLVehicles.AV42C;
+                break;
+            case "F/A-26B":
+                planeReceiver.vehicleType = VTOLVehicles.FA26B;
+                break;
+            case "F-45A":
+                planeReceiver.vehicleType = VTOLVehicles.F45A;
+                break;
+            default:
+                planeReceiver.vehicleType = VTOLVehicles.None;
+                break;
+        }
+        if (players[playerID].vehicleName == "F-45A" || players[playerID].vehicleName == "AV-42C")
         {
             //Debug.Log("Adding Tilt Controller to this vehicle " + message.networkID);
             EngineTiltNetworker_Receiver tiltReceiver = newVehicle.AddComponent<EngineTiltNetworker_Receiver>();
@@ -1426,7 +1439,7 @@ public static class PlayerManager
 
         Debug.Log($"Finished changing {newVehicle.name}\n Pos:{rb.position} Rotation:{rb.rotation.eulerAngles}");
 
-        AvatarManager.SetupAircraftRoundels(newVehicle.transform, players[playerID].vehicleType, players[playerID].cSteamID, Vector3.zero);
+        AvatarManager.SetupAircraftRoundels(newVehicle.transform, players[playerID].vehicleName, players[playerID].cSteamID, Vector3.zero);
 
         if (!Multiplayer._instance.hidePlayerNameTags)
         {

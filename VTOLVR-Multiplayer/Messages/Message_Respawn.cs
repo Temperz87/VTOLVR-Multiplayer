@@ -9,15 +9,15 @@ public class Message_Respawn : Message
     public SerializableQuaternion rotation;
     public bool isLeftie;
     public string tagName;
-    public VTOLVehicles vehicle;
-    public Message_Respawn(ulong uID, Vector3D position, Quaternion rotation, bool leftTeam, string name, VTOLVehicles vehicle)
+    public string vehicleName;
+    public Message_Respawn(ulong uID, Vector3D position, Quaternion rotation, bool leftTeam, string name, string vehicleName)
     {
         UID = uID;
         this.position = position;
         this.rotation = rotation;
         isLeftie = leftTeam;
         tagName = name;
-        this.vehicle = vehicle;
+        this.vehicleName = vehicleName;
         type = MessageType.Respawn;
     }
 }

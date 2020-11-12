@@ -3,7 +3,7 @@ using UnityEngine;
 [Serializable]
 public class Message_SpawnPlayerVehicle : Message
 {
-    public VTOLVehicles vehicle;
+    public string vehicleName;
     public Vector3D position;
     public SerializableQuaternion rotation;
     public ulong csteamID;
@@ -16,9 +16,9 @@ public class Message_SpawnPlayerVehicle : Message
     public long discordID;
     // public int playerCount;
 
-    public Message_SpawnPlayerVehicle(VTOLVehicles vehicle, Vector3D position, Quaternion rotation, ulong csteamID, ulong networkID, HPInfo[] hpLoadout, int[] cmLoadout, float normalizedFuel, bool isLeftie, string tagName, long idiscord)
+    public Message_SpawnPlayerVehicle(string vehicleName, Vector3D position, Quaternion rotation, ulong csteamID, ulong networkID, HPInfo[] hpLoadout, int[] cmLoadout, float normalizedFuel, bool isLeftie, string tagName, long idiscord)
     {
-        this.vehicle = vehicle;
+        this.vehicleName = vehicleName;
         this.position = position;
         this.rotation = rotation;
         this.csteamID = csteamID;

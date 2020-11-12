@@ -64,6 +64,21 @@ public static class AvatarManager
         })
     };
     public static bool hideAvatars = false;//set this when we implement an option to dissable avatars
+    public static void SetupAircraftRoundels(Transform aircraft, string vehicleName, CSteamID steamID, Vector3 offset)
+    {
+        if (hideAvatars)
+            return;
+        VTOLVehicles type;
+        if (vehicleName == "AV-42C")
+            type = VTOLVehicles.AV42C;
+        else if (vehicleName == "F/A-26B")
+            type = VTOLVehicles.FA26B;
+        else if (vehicleName == "F-45A")
+            type = VTOLVehicles.F45A;
+        else
+            return;
+        SetupAircraftRoundels(aircraft, type, steamID, offset);
+    }
 
     public static void SetupAircraftRoundels(Transform aircraft, VTOLVehicles type, CSteamID steamID, Vector3 offset)
     {

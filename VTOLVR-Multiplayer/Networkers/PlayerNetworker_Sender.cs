@@ -36,7 +36,7 @@ class PlayerNetworker_Sender : MonoBehaviour
 
     void Awake()
     {
-        lastMessage = new Message_Respawn(networkUID, new Vector3D(), new Quaternion(), false, Steamworks.SteamFriends.GetPersonaName(), VTOLAPI.GetPlayersVehicleEnum());
+        lastMessage = new Message_Respawn(networkUID, new Vector3D(), new Quaternion(), false, Steamworks.SteamFriends.GetPersonaName(), PilotSaveManager.currentVehicle.vehicleName);
         actor = GetComponent<Actor>();
         health = actor.health;
 
@@ -212,7 +212,8 @@ class PlayerNetworker_Sender : MonoBehaviour
         PilotSaveManager.currentScenario.equipConfigurable = true;
 
         PlayerVehicleSetup pvSetup = newPlayer.GetComponent<PlayerVehicleSetup>();
-        pvSetup.SetupForFlight();
+        if (pvSetup!= null)
+            pvSetup.SetupForFlight();
 
         Rigidbody rb = newPlayer.GetComponent<Rigidbody>();
         GearAnimator gearAnim = newPlayer.GetComponent<GearAnimator>();
@@ -233,7 +234,7 @@ class PlayerNetworker_Sender : MonoBehaviour
         lastMessage.UID = networkUID;
         lastMessage.isLeftie = PlayerManager.teamLeftie;
         lastMessage.tagName = Steamworks.SteamFriends.GetPersonaName();
-        lastMessage.vehicle = PlayerManager.getPlayerVehicleType();
+        lastMessage.vehicleName = PilotSaveManager.currentVehicle.vehicleName;
         if (Networker.isHost)
         {
             NetworkSenderThread.Instance.SendPacketAsHostToAllClients(lastMessage, Steamworks.EP2PSend.k_EP2PSendReliable);
