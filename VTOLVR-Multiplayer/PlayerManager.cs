@@ -51,6 +51,7 @@ public static class PlayerManager
     public static GameObject FrequenceyButton;
     public static Hitbox lastBulletHit;
     public static Material playerCanopyMaterial;
+    public static bool flyStart = false;
     public class Player
     {
         public CSteamID cSteamID;
@@ -100,7 +101,8 @@ public static class PlayerManager
         }
 
 
-        
+        PlayerSpawn ps = GameObject.FindObjectOfType<PlayerSpawn>();
+        flyStart = ps.initialSpeed > 10.0f;
         Random.InitState((int)(Time.deltaTime*1000.0f));
         Debug.Log("The map has loaded");
         gameLoaded = true;
@@ -879,13 +881,12 @@ public static class PlayerManager
         {
             foreach(ReArmingPoint p in space.rearmPoints)
             {
-                if(p.radius>18.0f)
+                if(p.radius>18.8f)
                 rearmPointList.Add(p);
             }               
         }
-        PlayerSpawn ps = GameObject.FindObjectOfType<PlayerSpawn>();
         if(rearmPointList.Count>0)
-        if (ps.initialSpeed < 5.0f)
+        if (!flyStart)
         {
             int randomIndex = Random.Range(0, rearmPointList.Count-1);
             rearmPoint = rearmPointList[randomIndex];
@@ -907,7 +908,7 @@ public static class PlayerManager
                 if (firstSpawnDone == false)
                 {
                    // PlayerSpawn ps = GameObject.FindObjectOfType<PlayerSpawn>();
-                    if (ps.initialSpeed < 5.0f || carrierStart)
+                    if (!flyStart|| carrierStart)
                     {
                         StartRearm(rearmPoint);
                       

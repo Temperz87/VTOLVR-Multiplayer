@@ -351,7 +351,7 @@ public static class CUSTOM_API
             radioText = radioInput.GetComponent<VTText>();
 
             Debug.Log("createAPButton");
-
+            selectedOBJ = GetChildWithName(go, "MFD1");
             //TODO assign audio listener
             //Debug.Log("Found event: " + cloneLever.OnSetState.GetPersistentTarget(0));
 
@@ -1033,11 +1033,18 @@ public static class CUSTOM_API
     public static void Update()
     {
 
-        /*getObjectByClick();
+        //getObjectByClick();
         if(selectedOBJ!=null)
-       
+        { 
+           foreach( var objo in selectedOBJ.GetComponentsInChildren<Rigidbody>())
+                {
+                objo.isKinematic = true;
+                 
+            }
         if (selectedOBJ != null)
-            rotateObjectByKeyboard(selectedOBJ, 0.5f);*/
+            moveObjectByKeyboard(selectedOBJ, 0.15f);
+        }
+
     }
     /// <summary>
     /// Must be called at the beggining of the program in order to retrieve all the objects that will be cloned
