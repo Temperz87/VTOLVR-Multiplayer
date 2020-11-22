@@ -134,38 +134,45 @@ class ObjectiveNetworker_Reciever
     }
     public static void runScenarioAction(int hash)
     {
-        if (scenarioActionsListCoolDown.ContainsKey(hash))
+        if (scenarioActionsList.ContainsKey(hash))
         {
-            float currentTime = Time.unscaledTime;
-            if (currentTime - scenarioActionsListCoolDown[hash] > 5.0f)
-            {
-                if (scenarioActionsList.ContainsKey(hash))
-                {
-
-                    scenarioActionsListCoolDown.Remove(hash);
-                    scenarioActionsListCoolDown.Add(hash, currentTime);
-                    completeNextEvent = true;
-                    scenarioActionsList[hash].Invoke();
-                }
-                else
-                    Debug.Log("scenario error doesnt exsist");
-            }
+            completeNextEvent = true;
+            scenarioActionsList[hash].Invoke();
         }
         else
+            Debug.Log("scenario error doesnt exsist");
+        /* if (scenarioActionsListCoolDown.ContainsKey(hash))
+         {
+             float currentTime = Time.unscaledTime;
+             if (currentTime - scenarioActionsListCoolDown[hash] > 5.0f)
+             {
+                 if (scenarioActionsList.ContainsKey(hash))
+                 {
 
-        {
+                     scenarioActionsListCoolDown.Remove(hash);
+                     scenarioActionsListCoolDown.Add(hash, currentTime);
+                     completeNextEvent = true;
+                     scenarioActionsList[hash].Invoke();
+                 }
+                 else
+                     Debug.Log("scenario error doesnt exsist");
+             }
+         }
+         else
 
-            if (scenarioActionsList.ContainsKey(hash))
-            {
-                float currentTime = Time.unscaledTime;
-                scenarioActionsList[hash].Invoke();
-                completeNextEvent = true;
-                scenarioActionsListCoolDown.Add(hash, currentTime);
+         {
 
-            }
-            else
-                Debug.Log("secanrio error doesnt exsist");
-        }
+             if (scenarioActionsList.ContainsKey(hash))
+             {
+                 float currentTime = Time.unscaledTime;
+                 scenarioActionsList[hash].Invoke();
+                 completeNextEvent = true;
+                 scenarioActionsListCoolDown.Add(hash, currentTime);
+
+             }
+             else
+                 Debug.Log("secanrio error doesnt exsist");
+         }*/
 
     }
 

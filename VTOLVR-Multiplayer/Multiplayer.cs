@@ -137,7 +137,7 @@ public class Multiplayer : VTOLMOD
         base.ModLoaded();
         CreateUI();
         gameObject.AddComponent<Networker>();
-        gameObject.AddComponent<ProfilerDataSaverComponent>();
+     
         debugLog_Settings(debugLogs);
     }
 

@@ -105,7 +105,6 @@
     <Compile Include="AIDictionaries.cs" />
     <Compile Include="AIManager.cs" />
     <Compile Include="AvatarManager.cs" />
-    <Compile Include="Class1.cs" />
     <Compile Include="CustomCockpit\CustomCockpitAPI.cs" />
     <Compile Include="DiscordRadioManager.cs" />
     <Compile Include="Discord\ActivityManager.cs" />

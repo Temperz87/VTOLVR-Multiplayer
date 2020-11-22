@@ -57,7 +57,9 @@ public class PlaneNetworker_Receiver : MonoBehaviour
             Debug.LogError("Weapon Manager was null on " + gameObject.name);
         else
             traverse = Traverse.Create(weaponManager);
-        foreach (var iwb in weaponManager.internalWeaponBays)
+
+        if (weaponManager != null)
+            foreach (var iwb in weaponManager.internalWeaponBays)
         {
             iwb.openOnAnyWeaponMatch = true;
         }

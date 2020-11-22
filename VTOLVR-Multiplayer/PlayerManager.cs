@@ -93,11 +93,13 @@ public static class PlayerManager
         {
             ScreenFader.FadeOut(Color.black, 0.0f, fadeoutVolume: true);
         }
-
-        while (VTMapManager.fetch == null || !VTMapManager.fetch.scenarioReady || FlightSceneManager.instance.switchingScene || !PlayerSpawn.playerVehicleReady)
+        if (carrierStart && !Networker.isHost)
         {
-            ScreenFader.FadeOut(Color.black, 0.0f, fadeoutVolume: true);
-            yield return null;
+            while (VTMapManager.fetch == null || !VTMapManager.fetch.scenarioReady || FlightSceneManager.instance.switchingScene || !PlayerSpawn.playerVehicleReady)
+            {
+                ScreenFader.FadeOut(Color.black, 0.0f, fadeoutVolume: true);
+                yield return null;
+            }
         }
 
 
@@ -865,32 +867,36 @@ public static class PlayerManager
                     }
                 }
             }
-         AirportManager closestAirport = null;
-        float num = float.MaxValue;
-        foreach (AirportManager allAirport in VTScenario.current.GetAllAirports())
+        if(!teamLeftie)
         {
-            float sqrMagnitude = (allAirport.transform.position - rearmPoint.transform.position).sqrMagnitude;
-            if (sqrMagnitude < num)
+            AirportManager closestAirport = null;
+            float num = float.MaxValue;
+            foreach (AirportManager allAirport in VTScenario.current.GetAllAirports())
             {
-                num = sqrMagnitude;
-                closestAirport = allAirport;
+                float sqrMagnitude = (allAirport.transform.position - rearmPoint.transform.position).sqrMagnitude;
+                if (sqrMagnitude < num)
+                {
+                    num = sqrMagnitude;
+                    closestAirport = allAirport;
+                }
             }
-        }
-        List<ReArmingPoint> rearmPointList = new List<ReArmingPoint>();
-        foreach (AirportManager.ParkingSpace space in closestAirport.parkingSpaces)
-        {
-            foreach(ReArmingPoint p in space.rearmPoints)
+            List<ReArmingPoint> rearmPointList = new List<ReArmingPoint>();
+            foreach (AirportManager.ParkingSpace space in closestAirport.parkingSpaces)
             {
-                if(p.radius>18.8f)
-                rearmPointList.Add(p);
-            }               
+                foreach (ReArmingPoint p in space.rearmPoints)
+                {
+                    if (p.radius > 18.8f)
+                        rearmPointList.Add(p);
+                }
+            }
+            if (rearmPointList.Count > 0)
+                if (!flyStart)
+                {
+                    int randomIndex = Random.Range(0, rearmPointList.Count - 1);
+                    rearmPoint = rearmPointList[randomIndex];
+                }
+
         }
-        if(rearmPointList.Count>0)
-        if (!flyStart)
-        {
-            int randomIndex = Random.Range(0, rearmPointList.Count-1);
-            rearmPoint = rearmPointList[randomIndex];
-        } 
 
         if (Networker.isHost && firstSpawnDone == false)
         {
