@@ -9,7 +9,8 @@ public class MissileNetworker_Receiver : MonoBehaviour
     public MissileLauncher thisML;
     public int idx;
     private Message_MissileUpdate lastMessage;
-    private Traverse traverse;
+    private Traverse traverseML;
+    private Traverse traverseMSL;
     private RadarLockData lockData;
     // private Rigidbody rigidbody; see missileSender for why i not using rigidbody
     private bool hasFired = false;
@@ -33,10 +34,10 @@ public class MissileNetworker_Receiver : MonoBehaviour
             }
         }
 
-
-        thisMissile.explodeRadius *= 1.8f; thisMissile.explodeDamage *= 0.7f;
-        traverse = Traverse.Create(thisML);
-        traverse.Field("detonated").SetValue(true);
+         thisMissile.explodeDamage *= 0.7f;
+        traverseML = Traverse.Create(thisML);
+        traverseMSL = Traverse.Create(thisMissile);
+        traverseMSL.Field("detonated").SetValue(true);
     }
 
     public void MissileUpdate(Packet packet)
@@ -52,10 +53,11 @@ public class MissileNetworker_Receiver : MonoBehaviour
             Debug.LogError(thisMissile.gameObject.name + " isn't active in hiearchy, changing it to active.");
             thisMissile.gameObject.SetActive(true);
         }
-        if (traverse == null)
+        if (traverseML == null)
         {
-            traverse = Traverse.Create(thisML);
-        }
+            traverseML = Traverse.Create(thisML);
+        } 
+        
         if (!thisMissile.fired)
         {
             Debug.Log(thisMissile.gameObject.name + " missile fired on one end but not another, firing here.");
@@ -81,7 +83,7 @@ public class MissileNetworker_Receiver : MonoBehaviour
                 if (radarLauncher != null)
                 {
                     Debug.Log("Guidance mode radar, firing it as a radar missile.");
-                    traverse.Field("missileIdx").SetValue(idx);
+                    traverseML.Field("missileIdx").SetValue(idx);
                     if (!radarLauncher.TryFireMissile())
                     {
                         Debug.LogError($"Could not fire radar missile, lock data is as follows: Locked: {lockData.locked}, Actor: {lockData.actor}");
@@ -90,7 +92,7 @@ public class MissileNetworker_Receiver : MonoBehaviour
                     {
                         RigidbodyNetworker_Receiver rbReceiver = gameObject.AddComponent<RigidbodyNetworker_Receiver>();
                         rbReceiver.networkUID = networkUID;
-                        rbReceiver.smoothingTime = 0.5f;
+                        rbReceiver.smoothingTime =0.02f;
                     }
                 }
             }
@@ -121,7 +123,7 @@ public class MissileNetworker_Receiver : MonoBehaviour
                     }
                 }
                 // Debug.Log("Try fire missile clientside");
-                traverse.Field("missileIdx").SetValue(idx);
+                traverseML.Field("missileIdx").SetValue(idx);
                 thisML.FireMissile();
                 RigidbodyNetworker_Receiver rbReceiver = gameObject.AddComponent<RigidbodyNetworker_Receiver>();
                 rbReceiver.networkUID = networkUID;
@@ -142,7 +144,7 @@ public class MissileNetworker_Receiver : MonoBehaviour
             Debug.Log("Missile exploded.");
             if (thisMissile != null)
             {
-                traverse.Field("detonated").SetValue(false);
+                traverseMSL.Field("detonated").SetValue(false);
 
                 ///thisMissile.rb.velocity = thisMissile.transform.forward * 10.0f;
                 thisMissile.Detonate();

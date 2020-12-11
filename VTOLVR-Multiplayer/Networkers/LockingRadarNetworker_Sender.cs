@@ -232,9 +232,9 @@ class LockingRadarNetworker_Sender : MonoBehaviour
             if (VTOLVR_Multiplayer.AIDictionaries.reverseAllActors.TryGetValue(a, out ulong uID))
             {
                 if (Networker.isHost)
-                    NetworkSenderThread.Instance.SendPacketAsHostToAllClients(new Message_RadarDetectedActor(uID, networkUID), EP2PSend.k_EP2PSendUnreliable);
+                    NetworkSenderThread.Instance.SendPacketAsHostToAllClients(new Message_RadarDetectedActor(uID, networkUID), EP2PSend.k_EP2PSendReliable);
                 else
-                    NetworkSenderThread.Instance.SendPacketToSpecificPlayer(Networker.hostID, new Message_RadarDetectedActor(uID, networkUID), EP2PSend.k_EP2PSendUnreliable);
+                    NetworkSenderThread.Instance.SendPacketToSpecificPlayer(Networker.hostID, new Message_RadarDetectedActor(uID, networkUID), EP2PSend.k_EP2PSendReliable);
             }
         }
     }

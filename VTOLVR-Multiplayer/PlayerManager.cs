@@ -683,6 +683,7 @@ public static class PlayerManager
         campaignSave.availableWeapons.Clear();
         foreach (var w in wepList)
             campaignSave.availableWeapons.Add(w);
+
     }
 
     public static void StartConfig(LoadoutConfigurator lc)
