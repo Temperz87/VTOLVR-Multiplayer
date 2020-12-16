@@ -16,7 +16,7 @@ public class RigidbodyNetworker_Receiver : MonoBehaviour
     private Actor actor;
     private KinematicPlane kplane;
     private float positionThreshold = 25.5f;
-    public float smoothingTime = 0.02f;
+    public float smoothingTime = 0.06f;
     private float rotSmoothingTime = 0.1f;
     private float velSmoothingTime = 0.5f;//actor velocity for using with the gunsight, should stop the jitter
     private float latency = 0.0f;
@@ -55,7 +55,7 @@ public class RigidbodyNetworker_Receiver : MonoBehaviour
         mostCurrentUpdateNumber = 0;
     }
 
-    void FixedUpdate()
+    void LateUpdate()
     {
         ///stops baha touching our velocities
         actor.fixedVelocityUpdate = true;

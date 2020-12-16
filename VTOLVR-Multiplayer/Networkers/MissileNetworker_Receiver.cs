@@ -34,7 +34,7 @@ public class MissileNetworker_Receiver : MonoBehaviour
             }
         }
 
-         thisMissile.explodeDamage *= 0.7f;
+        
         traverseML = Traverse.Create(thisML);
         traverseMSL = Traverse.Create(thisMissile);
         traverseMSL.Field("detonated").SetValue(true);
@@ -92,7 +92,7 @@ public class MissileNetworker_Receiver : MonoBehaviour
                     {
                         RigidbodyNetworker_Receiver rbReceiver = gameObject.AddComponent<RigidbodyNetworker_Receiver>();
                         rbReceiver.networkUID = networkUID;
-                        rbReceiver.smoothingTime =0.02f;
+                        rbReceiver.smoothingTime =0.06f;
                     }
                 }
             }
@@ -155,13 +155,16 @@ public class MissileNetworker_Receiver : MonoBehaviour
     }
     private void LateUpdate()
     {
-
+        traverseMSL.Field("detonated").SetValue(true);
+        traverseMSL.Field("radarLostTime").SetValue(0.0f);
+        traverseMSL.Field("finalTorque").SetValue(new Vector3(0.0f, 0.0f, 0.0f));
+        
     }
 
 
     private System.Collections.IEnumerator colliderTimer()
     {
-        yield return new WaitForSeconds(0.5f);
+        yield return new WaitForSeconds(0.75f);
         int count = 0;
         foreach (var collider in thisMissile.GetComponentsInChildren<Collider>())
         {

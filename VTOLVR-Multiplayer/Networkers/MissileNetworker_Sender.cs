@@ -20,7 +20,7 @@ public class MissileNetworker_Sender : MonoBehaviour
         thisMissile = GetComponent<Missile>();
         ownerActor = GetComponentInParent<Actor>();
         thisMissile.OnMissileDetonated += OnDetonated;
-         thisMissile.explodeDamage *= 0.7f;
+       
     }
     /*private bool sendRateLimiter()
     {

@@ -28,7 +28,7 @@ class PlayerNetworker_Sender : MonoBehaviour
 
     GameObject hud;
     GameObject hudWaypoint;
-
+    VehicleMaster vm;
 
 
     GameObject button = null;
@@ -61,10 +61,11 @@ class PlayerNetworker_Sender : MonoBehaviour
         //    canopyPos = ejection.canopyObject.transform.localPosition;
         //    canopyRot = ejection.canopyObject.transform.localRotation;
         //}
-
+        vm = GetComponentInChildren<VehicleMaster>();
         effects = GetComponentsInChildren<EngineEffects>();
 
 
+        vm.OnPilotDied+= Death;
 
     }
 
@@ -428,6 +429,8 @@ class PlayerNetworker_Sender : MonoBehaviour
 
     void Death()
     {
+
+        vm.OnPilotDied -= Death;
         foreach (Collider collider in FlightSceneManager.instance.playerActor.gameObject.GetComponentsInChildren<Collider>())
         {
             if (collider)
