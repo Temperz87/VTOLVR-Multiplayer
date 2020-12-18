@@ -16,7 +16,7 @@ public class RigidbodyNetworker_Receiver : MonoBehaviour
     private Actor actor;
     private KinematicPlane kplane;
     private float positionThreshold = 25.5f;
-    public float smoothingTime = 0.06f;
+    public float smoothingTime = 0.1f;
     private float rotSmoothingTime = 0.1f;
     private float velSmoothingTime = 0.5f;//actor velocity for using with the gunsight, should stop the jitter
     private float latency = 0.0f;
@@ -92,7 +92,7 @@ public class RigidbodyNetworker_Receiver : MonoBehaviour
         if (playerWeRepresent != null)
         {
             //delta time needs to be added to latency as this runs after packet has arrived for a while
-            latency = (latency * 0.5f) + (playerWeRepresent.ping * 0.5f);
+            latency = playerWeRepresent.ping;
         }
 
         globalTargetPosition += new Vector3D(targetVelocity * Time.fixedDeltaTime);
@@ -102,10 +102,9 @@ public class RigidbodyNetworker_Receiver : MonoBehaviour
         Quaternion currentRotation = transform.rotation;
         currentRotation *= quatVel;
 
-
-        rb.velocity = targetVelocity;
-        //actor.SetCustomVelocity(Vector3.Lerp(actor.velocity, targetVelocity + (localTargetPosition - transform.position) / smoothingTime, Time.fixedDeltaTime / velSmoothingTime));
-        actor.SetCustomVelocity(rb.velocity);
+        actor.SetCustomVelocity(Vector3.Lerp(actor.velocity, targetVelocity + (localTargetPosition - transform.position) / smoothingTime, Time.fixedDeltaTime / velSmoothingTime));
+        rb.velocity = actor.velocity;
+        
         Vector3D errorVec = (globalTargetPosition- VTMapManager.WorldToGlobalPoint(transform.position));
       
             rb.MovePosition(transform.position + targetVelocity * Time.fixedDeltaTime + ((errorVec.toVector3) * Time.fixedDeltaTime) / smoothingTime);

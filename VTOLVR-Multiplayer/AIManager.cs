@@ -200,7 +200,7 @@ public static class AIManager
                 RigidbodyNetworker_Receiver rbNetworker = child.gameObject.AddComponent<RigidbodyNetworker_Receiver>();
                 rbNetworker.networkUID = message.networkIDs[currentSubActorID];
                 if(child.gameObject.GetComponent<RefuelPlane>() != null)
-                rbNetworker.smoothingTime =0.5f;
+                rbNetworker.smoothingTime =1.5f;
             }
             if (child.role == Actor.Roles.Air)
             {

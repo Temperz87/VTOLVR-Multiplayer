@@ -92,7 +92,7 @@ public class MissileNetworker_Receiver : MonoBehaviour
                     {
                         RigidbodyNetworker_Receiver rbReceiver = gameObject.AddComponent<RigidbodyNetworker_Receiver>();
                         rbReceiver.networkUID = networkUID;
-                        rbReceiver.smoothingTime =0.06f;
+                        rbReceiver.smoothingTime =0.1f;
                     }
                 }
             }
