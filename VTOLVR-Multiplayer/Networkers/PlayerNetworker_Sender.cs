@@ -421,9 +421,9 @@ class PlayerNetworker_Sender : MonoBehaviour
         {
             message = "cowardly ejection";
         }
-        FlightSceneManager.instance.playerActor.health.Damage(10000000.0f, FlightSceneManager.instance.playerActor.gameObject.transform.position, Health.DamageTypes.Impact, fkiller, message);
+        FlightSceneManager.instance.playerActor.health.Damage(0.01f, FlightSceneManager.instance.playerActor.gameObject.transform.position, Health.DamageTypes.Impact, fkiller, message);
         // health.invincible = false;
-        //health.Kill();
+        FlightSceneManager.instance.playerActor.health.Kill();
 
     }
 

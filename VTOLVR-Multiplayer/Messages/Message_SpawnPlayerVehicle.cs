@@ -14,9 +14,12 @@ public class Message_SpawnPlayerVehicle : Message
     public bool leftie;
     public string nameTag;
     public long discordID;
+    public bool customPlane;
+    public string customPlaneString;
     // public int playerCount;
 
-    public Message_SpawnPlayerVehicle(VTOLVehicles vehicle, Vector3D position, Quaternion rotation, ulong csteamID, ulong networkID, HPInfo[] hpLoadout, int[] cmLoadout, float normalizedFuel, bool isLeftie, string tagName, long idiscord)
+    public Message_SpawnPlayerVehicle(VTOLVehicles vehicle, Vector3D position, Quaternion rotation, ulong csteamID, ulong networkID, HPInfo[] hpLoadout, 
+        int[] cmLoadout, float normalizedFuel, bool isLeftie, string tagName, long idiscord,bool bcustomPlane, String scustomPlaneString)
     {
         this.vehicle = vehicle;
         this.position = position;
@@ -29,8 +32,10 @@ public class Message_SpawnPlayerVehicle : Message
         leftie = isLeftie;
         nameTag = tagName;
         discordID = idiscord;
-        // this.playerCount = playerCount;
-        type = MessageType.SpawnPlayerVehicle;
+        customPlane = bcustomPlane;
+        customPlaneString = scustomPlaneString;
+    // this.playerCount = playerCount;
+    type = MessageType.SpawnPlayerVehicle;
     }
 }
 

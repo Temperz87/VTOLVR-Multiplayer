@@ -5,9 +5,14 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using UnityEngine.UI;
-
+using UnityEngine.Events;
 public static class PlayerManager
 {
+    public struct CustomPlaneDef
+    {
+        public GameObject planeObj;
+        public string CustomPlaneString;
+    }
     public static List<Transform> spawnPoints { private set; get; }
     public static List<ReArmingPoint> reaArms;
     public static string selectedVehicle = "";
@@ -28,6 +33,9 @@ public static class PlayerManager
     public static int kills = 0;
     public static float DefaultFog = 0.0005f;
     public static ulong timeinGame = 0;
+
+    public static UnityAction<CustomPlaneDef> onSpawnLocalPlayer = null;
+    public static UnityAction<CustomPlaneDef> onSpawnClient = null;
     /// <summary>
     /// This is the queue for people waiting to get a spawn point,
     /// incase the host hasn't loaded in, in time.
@@ -52,6 +60,9 @@ public static class PlayerManager
     public static Hitbox lastBulletHit;
     public static Material playerCanopyMaterial;
     public static bool flyStart = false;
+
+    public static bool PlayerIsCustomPlane = false;
+    public static string LoadedCustomPlaneString = "";
     public class Player
     {
         public CSteamID cSteamID;
@@ -64,8 +75,10 @@ public static class PlayerManager
         public float timeSinceLastResponse;
         public string nameTag;
         public long discordID;
+        public bool customPlane;
+        public string customPlaneName;
 
-        public Player(CSteamID cSteamID, GameObject vehicle, Actor aactor, VTOLVehicles vehicleType, ulong vehicleUID, bool leftTeam, string tagName, long idiscord)
+        public Player(CSteamID cSteamID, GameObject vehicle, Actor aactor, VTOLVehicles vehicleType, ulong vehicleUID, bool leftTeam, string tagName, long idiscord,bool bcustomPlane, string scustomPlaneName)
         {
             this.cSteamID = cSteamID;
             this.vehicle = vehicle;
@@ -76,6 +89,8 @@ public static class PlayerManager
             nameTag = tagName;
             timeSinceLastResponse = 0.0f;
             discordID = idiscord;
+            customPlane = bcustomPlane;
+            customPlaneName = scustomPlaneName;
         }
     }
     public static List<Player> players = new List<Player>(); //This is the list of players
@@ -801,7 +816,7 @@ public static class PlayerManager
         //FloatingOrigin.instance.ShiftOrigin(rb.position,true);
         //rb.detectCollisions = true;
         Actor act = FlightSceneManager.instance.playerActor.gameObject.GetComponent<Actor>();
-        act.health.invincible = true;
+        act.health.invincible = false;
         if (unSubscribe)
         {
             rearmPoint.OnEndRearm -= finishRearm;
@@ -822,12 +837,18 @@ public static class PlayerManager
                 
         return results;
     }
+    public static void setPlayerCustomPlane(string plnString)
+    {
+        PlayerIsCustomPlane = true;
+        LoadedCustomPlaneString = plnString;
+    }
     public static void SpawnLocalVehicleAndInformOtherClients(GameObject localVehicle, Vector3 pos, Quaternion rot, ulong UID, bool sendNewSpawnPacket = false, int playercount = 0) //Both
     {
+
         Debug.Log("Sending our location to spawn our vehicle");
         VTOLVehicles currentVehicle = getPlayerVehicleType();
         Actor actor = localVehicle.GetComponent<Actor>();
-        Player localPlayer = new Player(SteamUser.GetSteamID(), localVehicle, actor, currentVehicle, UID, PlayerManager.teamLeftie, SteamFriends.GetPersonaName(), DiscordRadioManager.userID);
+        Player localPlayer = new Player(SteamUser.GetSteamID(), localVehicle, actor, currentVehicle, UID, PlayerManager.teamLeftie, SteamFriends.GetPersonaName(), DiscordRadioManager.userID,PlayerIsCustomPlane,LoadedCustomPlaneString);
         AddToPlayerList(localPlayer);
         Rigidbody rb = localVehicle.GetComponent<Rigidbody>();
 
@@ -1103,7 +1124,7 @@ public static class PlayerManager
                         UID,
                         hpInfos.ToArray(),
                         cm.ToArray(),
-                        fuel, PlayerManager.teamLeftie, SteamFriends.GetPersonaName(), DiscordRadioManager.userID),
+                        fuel, PlayerManager.teamLeftie, SteamFriends.GetPersonaName(), DiscordRadioManager.userID, PlayerIsCustomPlane, LoadedCustomPlaneString),
                         EP2PSend.k_EP2PSendReliable);
             }
             else
@@ -1116,7 +1137,7 @@ public static class PlayerManager
                         UID,
                         hpInfos.ToArray(),
                         cm.ToArray(),
-                        fuel, PlayerManager.teamLeftie, SteamFriends.GetPersonaName(), DiscordRadioManager.userID),
+                        fuel, PlayerManager.teamLeftie, SteamFriends.GetPersonaName(), DiscordRadioManager.userID, PlayerIsCustomPlane, LoadedCustomPlaneString),
                         EP2PSend.k_EP2PSendReliable);
             }
         }
@@ -1150,6 +1171,16 @@ public static class PlayerManager
         {
             engine.maxThrust *= Multiplayer._instance.thrust;
         }
+
+        if(PlayerIsCustomPlane)
+        {
+            CustomPlaneDef plndef = new CustomPlaneDef();
+            plndef.planeObj = localVehicle;
+            plndef.CustomPlaneString = LoadedCustomPlaneString;
+            if (onSpawnLocalPlayer != null)
+                onSpawnLocalPlayer.Invoke(plndef);
+        }
+        
     }
     /// <summary>
     /// When the user has received a message of spawn player vehicle, 
@@ -1237,7 +1268,7 @@ public static class PlayerManager
                             players[i].vehicleUID,
                             hpInfos.ToArray(),
                             cm.ToArray(),
-                            fuel, players[i].leftie, players[i].nameTag, players[i].discordID),
+                            fuel, players[i].leftie, players[i].nameTag, players[i].discordID, players[i].customPlane, players[i].customPlaneName),
                         EP2PSend.k_EP2PSendReliable);
 
                     //Debug.Log($"We have told the new player about the host and NOT the other way around.");
@@ -1260,7 +1291,7 @@ public static class PlayerManager
                             players[i].vehicleUID,
                             existingPlayersPR.GenerateHPInfo(),
                             existingPlayersPR.GetCMS(),
-                            existingPlayersPR.GetFuel(), players[i].leftie, players[i].nameTag, players[i].discordID),
+                            existingPlayersPR.GetFuel(), players[i].leftie, players[i].nameTag, players[i].discordID, players[i].customPlane, players[i].customPlaneName),
                         EP2PSend.k_EP2PSendReliable);
                     //Debug.Log($"We have told {players[i].cSteamID.m_SteamID} about the new player ({message.csteamID}) and the other way round.");
 
@@ -1282,7 +1313,7 @@ public static class PlayerManager
             Debug.Log("Telling connected client about AI units");
             AIManager.TellClientAboutAI(spawnerSteamId);
         }
-        AddToPlayerList(new Player(spawnerSteamId, null, null, message.vehicle, message.networkID, message.leftie, message.nameTag, message.discordID));
+        AddToPlayerList(new Player(spawnerSteamId, null, null, message.vehicle, message.networkID, message.leftie, message.nameTag, message.discordID, message.customPlane,message.customPlaneString));
         DiscordRadioManager.addPlayer(message.nameTag, message.discordID);
         GameObject puppet = SpawnRepresentation(message.networkID, message.position, message.rotation, message.leftie, message.nameTag, message.vehicle);
         if (puppet != null)
@@ -1476,7 +1507,15 @@ public static class PlayerManager
             VTOLVR_Multiplayer.AIDictionaries.reverseAllActors[aIPilot.actor] = networkID;
 
         }
-
+        if(players[playerID].customPlane)
+        {
+            CustomPlaneDef plndef = new CustomPlaneDef();
+            plndef.planeObj = newVehicle;
+            plndef.CustomPlaneString = players[playerID].customPlaneName;
+            if (onSpawnClient != null)
+                onSpawnClient.Invoke(plndef);
+        }
+     
         return newVehicle;
     }
 

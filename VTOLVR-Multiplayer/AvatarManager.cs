@@ -63,7 +63,7 @@ public static class AvatarManager
             new RoundelPosition(new Vector3(0.609f, 0.018f, 5.622f), Quaternion.Euler(new Vector3(-21.99f,-96.01501f,2.259f)), new Vector3(0.6f,0.6f,0.6f))//roundel on the right of the cockpit
         })
     };
-    public static bool hideAvatars = false;//set this when we implement an option to dissable avatars
+    public static bool hideAvatars = true;//set this when we implement an option to dissable avatars
 
     public static void SetupAircraftRoundels(Transform aircraft, VTOLVehicles type, CSteamID steamID, Vector3 offset)
     {

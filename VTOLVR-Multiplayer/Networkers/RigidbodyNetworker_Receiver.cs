@@ -16,9 +16,9 @@ public class RigidbodyNetworker_Receiver : MonoBehaviour
     private Actor actor;
     private KinematicPlane kplane;
     private float positionThreshold = 25.5f;
-    public float smoothingTime = 0.1f;
-    private float rotSmoothingTime = 0.1f;
-    private float velSmoothingTime = 0.5f;//actor velocity for using with the gunsight, should stop the jitter
+    public float smoothingTime = 1.0f;
+    private float rotSmoothingTime = 0.2f;
+    private float velSmoothingTime = 1.0f;//actor velocity for using with the gunsight, should stop the jitter
     private float latency = 0.0f;
 
     private PlayerManager.Player playerWeRepresent;
@@ -55,7 +55,7 @@ public class RigidbodyNetworker_Receiver : MonoBehaviour
         mostCurrentUpdateNumber = 0;
     }
 
-    void LateUpdate()
+    void FixedUpdate()
     {
         ///stops baha touching our velocities
         actor.fixedVelocityUpdate = true;
@@ -92,7 +92,7 @@ public class RigidbodyNetworker_Receiver : MonoBehaviour
         if (playerWeRepresent != null)
         {
             //delta time needs to be added to latency as this runs after packet has arrived for a while
-            latency = playerWeRepresent.ping;
+            latency = (latency * 0.5f) + (playerWeRepresent.ping * 0.5f);
         }
 
         globalTargetPosition += new Vector3D(targetVelocity * Time.fixedDeltaTime);
@@ -102,12 +102,13 @@ public class RigidbodyNetworker_Receiver : MonoBehaviour
         Quaternion currentRotation = transform.rotation;
         currentRotation *= quatVel;
 
-        actor.SetCustomVelocity(Vector3.Lerp(actor.velocity, targetVelocity + (localTargetPosition - transform.position) / smoothingTime, Time.fixedDeltaTime / velSmoothingTime));
+
+         actor.SetCustomVelocity(Vector3.Lerp(actor.velocity, targetVelocity + (localTargetPosition - transform.position) / smoothingTime, Time.fixedDeltaTime / velSmoothingTime));
+
         rb.velocity = actor.velocity;
-        
-        Vector3D errorVec = (globalTargetPosition- VTMapManager.WorldToGlobalPoint(transform.position));
-      
-            rb.MovePosition(transform.position + targetVelocity * Time.fixedDeltaTime + ((errorVec.toVector3) * Time.fixedDeltaTime) / smoothingTime);
+        Vector3D errorVec = (globalTargetPosition - VTMapManager.WorldToGlobalPoint(transform.position));
+
+        rb.MovePosition(transform.position + targetVelocity * Time.fixedDeltaTime + ((errorVec.toVector3) * Time.fixedDeltaTime) / smoothingTime);
         Quaternion quat = Quaternion.Slerp(currentRotation, targetRotation, Time.fixedDeltaTime / rotSmoothingTime);
         rb.MoveRotation(quat.normalized);
     }
@@ -120,7 +121,7 @@ public class RigidbodyNetworker_Receiver : MonoBehaviour
             return;
 
         if (rigidbodyUpdate.sequenceNumber <= mostCurrentUpdateNumber)
-         return;
+            return;
         mostCurrentUpdateNumber = rigidbodyUpdate.sequenceNumber;
 
         globalTargetPosition = rigidbodyUpdate.position + rigidbodyUpdate.velocity.toVector3 * latency;
@@ -138,7 +139,7 @@ public class RigidbodyNetworker_Receiver : MonoBehaviour
         }
     }
 
- 
+
     //sliders for testing different values for smoothing interpolation
     //uncomment if you wana tweak them in realtime
     //void OnGUI()

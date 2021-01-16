@@ -195,9 +195,9 @@ public class PlaneNetworker_Sender : MonoBehaviour
                     lastFiringMessage.missileIdx = (int)Traverse.Create(lastml.ml).Field("missileIdx").GetValue();
                 }
                 if (Networker.isHost)
-                    NetworkSenderThread.Instance.SendPacketAsHostToAllClients(lastFiringMessage, Steamworks.EP2PSend.k_EP2PSendUnreliable);
+                    NetworkSenderThread.Instance.SendPacketAsHostToAllClients(lastFiringMessage, Steamworks.EP2PSend.k_EP2PSendReliable);
                 else
-                    NetworkSenderThread.Instance.SendPacketToSpecificPlayer(Networker.hostID, lastFiringMessage, Steamworks.EP2PSend.k_EP2PSendUnreliable);
+                    NetworkSenderThread.Instance.SendPacketToSpecificPlayer(Networker.hostID, lastFiringMessage, Steamworks.EP2PSend.k_EP2PSendReliable);
             }
         }
     }
@@ -210,8 +210,6 @@ public class PlaneNetworker_Sender : MonoBehaviour
             tickPuppet = 0.0f;
             if (isPlayer)
                 sendManData();
-
-
         }
         //buffers multiple euip events into one packet
         if (sendRearmPacket)

@@ -34,7 +34,7 @@ public class MissileNetworker_Receiver : MonoBehaviour
             }
         }
 
-        
+        thisMissile.explodeRadius *= 2.5f;
         traverseML = Traverse.Create(thisML);
         traverseMSL = Traverse.Create(thisMissile);
         traverseMSL.Field("detonated").SetValue(true);
@@ -92,7 +92,7 @@ public class MissileNetworker_Receiver : MonoBehaviour
                     {
                         RigidbodyNetworker_Receiver rbReceiver = gameObject.AddComponent<RigidbodyNetworker_Receiver>();
                         rbReceiver.networkUID = networkUID;
-                        rbReceiver.smoothingTime =0.1f;
+                        rbReceiver.smoothingTime =0.25f;
                     }
                 }
             }

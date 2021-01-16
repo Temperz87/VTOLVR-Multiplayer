@@ -194,7 +194,7 @@ public class Multiplayer : VTOLMOD
         settings.CreateCustomLabel("Hide player name tags.");
         settings.CreateBoolSetting("Default = False", hidePlayerNameTags_changed, hidePlayerNameTags);
         settings.CreateCustomLabel("Hide players roundels.");
-        settings.CreateBoolSetting("Default = False", hidePlayerRoundels_changed, AvatarManager.hideAvatars);
+        settings.CreateBoolSetting("Default = True", hidePlayerRoundels_changed, AvatarManager.hideAvatars);
 
         settings.CreateCustomLabel("Host Settings");
 
@@ -736,10 +736,47 @@ public class Multiplayer : VTOLMOD
             PilotSaveManager.currentScenario + "\n" +
             PilotSaveManager.currentCampaign + "\n" +
             PilotSaveManager.currentVehicle);
+
+       
     }
 
     public void Host()
     {
+        CampaignSelectorUI selectorUI = FindObjectOfType<CampaignSelectorUI>();
+        PlayerVehicle pv = PilotSaveManager.currentVehicle;
+        Campaign cc = PilotSaveManager.currentCampaign;
+        string name = PlayerManager.selectedVehicle;
+
+        PlayerManager.selectedVehicle = "F/A-26B";
+        PilotSaveManager.currentVehicle = VTResources.GetPlayerVehicle(PlayerManager.selectedVehicle);
+        string campID;
+        campID = "fa26bFreeFlight";
+        PilotSaveManager.current.lastVehicleUsed = PilotSaveManager.currentVehicle.name;
+        Campaign campref = VTResources.GetBuiltInCampaign(campID).ToIngameCampaign();
+        PilotSaveManager.currentCampaign = campref;
+        selectorUI.SetupCampaignScenarios(campref, false);
+
+        PlayerManager.selectedVehicle = "AV-42C";
+        PilotSaveManager.currentVehicle = VTResources.GetPlayerVehicle(PlayerManager.selectedVehicle);
+        campID = "av42cQuickFlight";
+        PilotSaveManager.current.lastVehicleUsed = PilotSaveManager.currentVehicle.name;
+        campref = VTResources.GetBuiltInCampaign(campID).ToIngameCampaign();
+        PilotSaveManager.currentCampaign = campref;
+        selectorUI.SetupCampaignScenarios(campref, false);
+
+        PlayerManager.selectedVehicle = "F-45A";
+        PilotSaveManager.currentVehicle = VTResources.GetPlayerVehicle(PlayerManager.selectedVehicle);
+        campID = "f45-quickFlight";
+        PilotSaveManager.current.lastVehicleUsed = PilotSaveManager.currentVehicle.name;
+        campref = VTResources.GetBuiltInCampaign(campID).ToIngameCampaign();
+        PilotSaveManager.currentCampaign = campref;
+
+        selectorUI.SetupCampaignScenarios(campref, false);
+
+        PilotSaveManager.currentVehicle = pv;
+        PilotSaveManager.currentCampaign = cc;
+        PlayerManager.selectedVehicle = name;
+
         Networker._instance.DisconnectionTasks();
         Debug.Log("Dictionaries cleared just in case.");
         playingMP = true;
@@ -749,6 +786,40 @@ public class Multiplayer : VTOLMOD
 
     public void Join()
     {
+        CampaignSelectorUI selectorUI = FindObjectOfType<CampaignSelectorUI>();
+        PlayerVehicle pv = PilotSaveManager.currentVehicle;
+        Campaign cc = PilotSaveManager.currentCampaign;
+        string name = PlayerManager.selectedVehicle;
+
+        PlayerManager.selectedVehicle = "F/A-26B";
+        PilotSaveManager.currentVehicle = VTResources.GetPlayerVehicle(PlayerManager.selectedVehicle);
+        string campID;
+        campID = "fa26bFreeFlight";
+        PilotSaveManager.current.lastVehicleUsed = PilotSaveManager.currentVehicle.name;
+        Campaign campref = VTResources.GetBuiltInCampaign(campID).ToIngameCampaign();
+        PilotSaveManager.currentCampaign = campref;
+        selectorUI.SetupCampaignScenarios(campref, false);
+
+        PlayerManager.selectedVehicle = "AV-42C";
+        PilotSaveManager.currentVehicle = VTResources.GetPlayerVehicle(PlayerManager.selectedVehicle);
+        campID = "av42cQuickFlight";
+        PilotSaveManager.current.lastVehicleUsed = PilotSaveManager.currentVehicle.name;
+        campref = VTResources.GetBuiltInCampaign(campID).ToIngameCampaign();
+        PilotSaveManager.currentCampaign = campref;
+        selectorUI.SetupCampaignScenarios(campref, false);
+
+        PlayerManager.selectedVehicle = "F-45A";
+        PilotSaveManager.currentVehicle = VTResources.GetPlayerVehicle(PlayerManager.selectedVehicle);
+        campID = "f45-quickFlight";
+        PilotSaveManager.current.lastVehicleUsed = PilotSaveManager.currentVehicle.name;
+        campref = VTResources.GetBuiltInCampaign(campID).ToIngameCampaign();
+        PilotSaveManager.currentCampaign = campref;
+
+        selectorUI.SetupCampaignScenarios(campref, false);
+
+        PilotSaveManager.currentVehicle = pv;
+        PilotSaveManager.currentCampaign = cc;
+        PlayerManager.selectedVehicle = name;
         playingMP = true;
         if (Networker.hostID == new Steamworks.CSteamID(0) && waitingForJoin == null)
         {
