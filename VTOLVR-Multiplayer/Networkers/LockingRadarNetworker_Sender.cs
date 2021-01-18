@@ -15,7 +15,7 @@ class LockingRadarNetworker_Sender : MonoBehaviour
     private bool lastWasNull = true;
     ulong lastID;
     private float tick = 0.0f;
-    public float tickRate = 0.5f;
+    public float tickRate = 4.0f;
     TacticalSituationController controller;
     private void Awake()
     {
@@ -50,11 +50,6 @@ class LockingRadarNetworker_Sender : MonoBehaviour
     {
         tick += Time.fixedDeltaTime;
 
-        if(tick<tickRate)
-        {
-            return;
-        }
-        tick = 0.0f;
         if (lr == null)
         {
             Debug.LogError($"LockingRadar is null for object {gameObject.name} with an uid of {networkUID}.");
@@ -69,7 +64,7 @@ class LockingRadarNetworker_Sender : MonoBehaviour
         }
         if (lr.radar != null)
         {
-            //if (lr.radar.radarEnabled != lastOn || lr.radar.sweepFov != lastFov)
+            if (lr.radar.radarEnabled != lastOn || lr.radar.sweepFov != lastFov)
             {
                 // Debug.Log("radar.radar is not equal to last on");
                 lastRadarMessage.UID = networkUID;
@@ -80,13 +75,13 @@ class LockingRadarNetworker_Sender : MonoBehaviour
                 //Debug.Log("Sending sweepFOV");
 
                 if (Networker.isHost)
-                    NetworkSenderThread.Instance.SendPacketAsHostToAllClients(lastRadarMessage, Steamworks.EP2PSend.k_EP2PSendUnreliable);
+                    NetworkSenderThread.Instance.SendPacketAsHostToAllClients(lastRadarMessage, Steamworks.EP2PSend.k_EP2PSendReliable);
                 else
-                    NetworkSenderThread.Instance.SendPacketToSpecificPlayer(Networker.hostID, lastRadarMessage, Steamworks.EP2PSend.k_EP2PSendUnreliable);
+                    NetworkSenderThread.Instance.SendPacketToSpecificPlayer(Networker.hostID, lastRadarMessage, Steamworks.EP2PSend.k_EP2PSendReliable);
                 //Debug.Log("last 2");
-                //lastOn = lr.radar.radarEnabled;
+                lastOn = lr.radar.radarEnabled;
                 //Debug.Log("last one");
-                //lastFov = lr.radar.sweepFov;
+                lastFov = lr.radar.sweepFov;
             }
         }
         if (controller == null)
@@ -124,9 +119,9 @@ class LockingRadarNetworker_Sender : MonoBehaviour
                     lastLockingMessage.senderUID = networkUID;
                     //Debug.Log($"Sending a locking radar message from uID {networkUID}");
                     if (Networker.isHost)
-                        NetworkSenderThread.Instance.SendPacketAsHostToAllClients(lastLockingMessage, EP2PSend.k_EP2PSendUnreliable);
+                        NetworkSenderThread.Instance.SendPacketAsHostToAllClients(lastLockingMessage, EP2PSend.k_EP2PSendReliable);
                     else
-                        NetworkSenderThread.Instance.SendPacketToSpecificPlayer(Networker.hostID, lastLockingMessage, EP2PSend.k_EP2PSendUnreliable);
+                        NetworkSenderThread.Instance.SendPacketToSpecificPlayer(Networker.hostID, lastLockingMessage, EP2PSend.k_EP2PSendReliable);
                 }
                 else
                 {
@@ -143,15 +138,13 @@ class LockingRadarNetworker_Sender : MonoBehaviour
                             lastLockingMessage.senderUID = networkUID;
                             if (Networker.isHost)
                             {
-                                NetworkSenderThread.Instance.SendPacketAsHostToAllClients(lastLockingMessage, EP2PSend.k_EP2PSendUnreliable);
-                                //NetworkSenderThread.Instance.SendPacketAsHostToAllClients(lastLockingMessage, EP2PSend.k_EP2PSendReliable);
+                                NetworkSenderThread.Instance.SendPacketAsHostToAllClients(lastLockingMessage, EP2PSend.k_EP2PSendReliable);
                             }
 
                             else
                             {
 
-                                NetworkSenderThread.Instance.SendPacketAsHostToAllClients(lastLockingMessage, EP2PSend.k_EP2PSendUnreliable);
-                                //NetworkSenderThread.Instance.SendPacketToSpecificPlayer(Networker.hostID, lastLockingMessage, EP2PSend.k_EP2PSendReliable);
+                                NetworkSenderThread.Instance.SendPacketToSpecificPlayer(Networker.hostID, lastLockingMessage, EP2PSend.k_EP2PSendReliable);
                             }
                         }
                         else
@@ -187,7 +180,7 @@ class LockingRadarNetworker_Sender : MonoBehaviour
                         lastWasNull = false;
                     }
                 }
-                //stateChanged = false;
+                stateChanged = false;
             }
         }
     }
@@ -230,16 +223,19 @@ class LockingRadarNetworker_Sender : MonoBehaviour
     }
     private void RadarDetectedActor(Actor a)
     {
-        
+        return;
+        if (tick > 1.0f / tickRate)
+        {
+            tick = 0.0f;
 
             if (VTOLVR_Multiplayer.AIDictionaries.reverseAllActors.TryGetValue(a, out ulong uID))
             {
                 if (Networker.isHost)
-                    NetworkSenderThread.Instance.SendPacketAsHostToAllClients(new Message_RadarDetectedActor(uID, networkUID), EP2PSend.k_EP2PSendReliable);
+                    NetworkSenderThread.Instance.SendPacketAsHostToAllClients(new Message_RadarDetectedActor(uID, networkUID), EP2PSend.k_EP2PSendUnreliable);
                 else
-                    NetworkSenderThread.Instance.SendPacketToSpecificPlayer(Networker.hostID, new Message_RadarDetectedActor(uID, networkUID), EP2PSend.k_EP2PSendReliable);
+                    NetworkSenderThread.Instance.SendPacketToSpecificPlayer(Networker.hostID, new Message_RadarDetectedActor(uID, networkUID), EP2PSend.k_EP2PSendUnreliable);
             }
-        
+        }
     }
 }
 

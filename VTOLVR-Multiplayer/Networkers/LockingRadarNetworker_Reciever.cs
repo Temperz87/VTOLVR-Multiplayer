@@ -44,12 +44,12 @@ class LockingRadarNetworker_Receiver : MonoBehaviour
     public void LockingRadarUpdate(Packet packet)
     {
         lastLockingMessage = (Message_LockingRadarUpdate)((PacketSingle)packet).message;
-        // Debug.Log("Got a new locking radar update intended for id " + lastLockingMessage.senderUID);
+        Debug.Log("Got a new locking radar update intended for id " + lastLockingMessage.senderUID);
         if (lastLockingMessage.senderUID != networkUID)
             return;
         if (lockingRadar == null)
         {
-            //Debug.Log($"Locking radar on networkUID {networkUID} is null.");
+             Debug.Log($"Locking radar on networkUID {networkUID} is null.");
             return;
         }
         if (lockingRadar.radar == null)
@@ -57,14 +57,15 @@ class LockingRadarNetworker_Receiver : MonoBehaviour
             lockingRadar.radar = gameObject.GetComponentInChildren<Radar>();
             if (lockingRadar.radar == null)
             {
-                //Debug.Log($"Radar was null on network uID {networkUID}");
+                 Debug.Log($"Radar was null on network uID {networkUID}");
+                return;
             }
         }
         if (!lockingRadar.radar.radarEnabled)
         {
             lockingRadar.radar.radarEnabled = true;
         }
-        //Debug.Log($"Doing LockingRadarupdate for uid {networkUID} which is intended for uID {lastLockingMessage.senderUID}");
+        Debug.Log($"Doing LockingRadarupdate for uid {networkUID} which is intended for uID {lastLockingMessage.senderUID}");
         if (!lastLockingMessage.isLocked && lockingRadar.IsLocked())
         {
             //Debug.Log("Unlocking radar " + gameObject.name);
@@ -75,22 +76,20 @@ class LockingRadarNetworker_Receiver : MonoBehaviour
         }
         else if (lastLockingMessage.actorUID != lastLock || (lastLockingMessage.isLocked && !lockingRadar.IsLocked()))
         {
-            // Debug.Log("Trying to lock radar.");
+           Debug.Log("Trying to lock radar.");
 
             if (VTOLVR_Multiplayer.AIDictionaries.allActors.TryGetValue(lastLockingMessage.actorUID, out lastActor))
             {
-                // if (gameObject.name == null)
-                //Debug.Log($"Radar {networkUID} found its lock " + lastActor.name + $" with an id of {lastLock} while trying to lock id {lastLockingMessage.actorUID}. Trying to force a lock.");
-                //else
-                //Debug.Log($"Radar " + gameObject.name + " found its lock " + lastActor.name + $" with an id of {lastLock} while trying to lock id {lastLockingMessage.actorUID}. Trying to force a lock.");
+                if (lastActor == null)
+                    return;
                 lockingRadar.ForceLock(lastActor, out radarLockData);
                 lastLock = lastLockingMessage.actorUID;
                 lastLocked = true;
-                // Debug.Log($"The lock data is Locked: {radarLockData.locked}, Locked Actor: " + radarLockData.actor.name);
+                  Debug.Log($"The lock data is Locked: {radarLockData.locked}, Locked Actor: " + radarLockData.actor.name);
             }
             else
             {
-                // Debug.Log($"Could not resolve a lock on uID {lastLockingMessage.actorUID} from sender {lastLockingMessage.senderUID}.");
+                 Debug.Log($"Could not resolve a lock on uID {lastLockingMessage.actorUID} from sender {lastLockingMessage.senderUID}.");
             }
         }
     }
@@ -106,8 +105,8 @@ class LockingRadarNetworker_Receiver : MonoBehaviour
                 Debug.LogError("Actor is null.");
                 return;
             }
-            if(lockingRadar!=null)
-            lockingRadar.radar.ForceDetect(actor);
+            if (lockingRadar != null)
+                lockingRadar.radar.ForceDetect(actor);
         }
     }
     /*private void FixedUpdate()
