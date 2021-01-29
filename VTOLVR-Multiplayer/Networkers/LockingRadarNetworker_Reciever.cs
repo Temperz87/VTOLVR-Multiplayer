@@ -34,6 +34,8 @@ class LockingRadarNetworker_Receiver : MonoBehaviour
     {
         lastRadarMessage = (Message_RadarUpdate)((PacketSingle)packet).message;
         // Debug.Log("Got a new radar update intended for id " + lastRadarMessage.UID);
+        if (lastRadarMessage.UID == PlayerManager.localUID)
+            return;
         if (lastRadarMessage.UID != networkUID)
             return;
 
@@ -45,6 +47,8 @@ class LockingRadarNetworker_Receiver : MonoBehaviour
     {
         lastLockingMessage = (Message_LockingRadarUpdate)((PacketSingle)packet).message;
         Debug.Log("Got a new locking radar update intended for id " + lastLockingMessage.senderUID);
+        if (lastLockingMessage.senderUID == PlayerManager.localUID)
+            return;
         if (lastLockingMessage.senderUID != networkUID)
             return;
         if (lockingRadar == null)

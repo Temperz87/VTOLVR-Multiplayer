@@ -16,6 +16,7 @@ public class PlaneNetworker_Receiver : MonoBehaviour
     private CountermeasureManager cmManager;
     private FuelTank fuelTank;
     private Traverse traverse;
+    private Traverse landedTraverse;
     private HPEquipMissileLauncher lastml;
     private int idx;
     private bool noAmmo;
@@ -101,7 +102,11 @@ public class PlaneNetworker_Receiver : MonoBehaviour
             }
         }
 
+        if(ownerActor.flightInfo !=null)
+        {
 
+            landedTraverse = Traverse.Create(ownerActor.flightInfo);
+        }
 
         StartCoroutine(colliderTimer());
     }
@@ -214,6 +219,10 @@ public class PlaneNetworker_Receiver : MonoBehaviour
                 manPuppet.SetActive(true);
 
             }
+        }
+        if (landedTraverse != null)
+        {
+            landedTraverse.Field("isLanded").SetValue(false);
         }
     }
     public void IKUpdate(Packet packet)

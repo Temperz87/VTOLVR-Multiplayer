@@ -75,9 +75,9 @@ class LockingRadarNetworker_Sender : MonoBehaviour
                 //Debug.Log("Sending sweepFOV");
 
                 if (Networker.isHost)
-                    NetworkSenderThread.Instance.SendPacketAsHostToAllClients(lastRadarMessage, Steamworks.EP2PSend.k_EP2PSendReliable);
+                    NetworkSenderThread.Instance.SendPacketAsHostToAllClients(lastRadarMessage, Steamworks.EP2PSend.k_EP2PSendUnreliable);
                 else
-                    NetworkSenderThread.Instance.SendPacketToSpecificPlayer(Networker.hostID, lastRadarMessage, Steamworks.EP2PSend.k_EP2PSendReliable);
+                    NetworkSenderThread.Instance.SendPacketToSpecificPlayer(Networker.hostID, lastRadarMessage, Steamworks.EP2PSend.k_EP2PSendUnreliable);
                 //Debug.Log("last 2");
                 lastOn = lr.radar.radarEnabled;
                 //Debug.Log("last one");
@@ -86,19 +86,21 @@ class LockingRadarNetworker_Sender : MonoBehaviour
         }
         if (controller == null)
         {
-            // if (lr.currentLock != lastRadarLockData) { stateChanged = true; }
+             if (lr.currentLock != lastRadarLockData) { stateChanged = true; }
             if (lr.currentLock != null)
             {
-                if (lr.IsLocked() != lastLockingMessage.isLocked) { stateChanged = true; }
+                //if (lr.IsLocked() != lastLockingMessage.isLocked) { stateChanged = true; }
                 if (lr.currentLock.actor != lastRadarLockData.actor)
                 {
                     lastRadarLockData.actor = lr.currentLock.actor;
                     stateChanged = true;
+                    lastWasNull = false;
                 }
                 if (lr.currentLock.locked != lastRadarLockData.locked)
                 {
                     lastRadarLockData.locked = lr.currentLock.locked;
                     stateChanged = true;
+                    lastWasNull = false;
                 }
             }
             else if (!lastWasNull)
@@ -119,9 +121,9 @@ class LockingRadarNetworker_Sender : MonoBehaviour
                     lastLockingMessage.senderUID = networkUID;
                     //Debug.Log($"Sending a locking radar message from uID {networkUID}");
                     if (Networker.isHost)
-                        NetworkSenderThread.Instance.SendPacketAsHostToAllClients(lastLockingMessage, EP2PSend.k_EP2PSendReliable);
+                        NetworkSenderThread.Instance.SendPacketAsHostToAllClients(lastLockingMessage, EP2PSend.k_EP2PSendUnreliable);
                     else
-                        NetworkSenderThread.Instance.SendPacketToSpecificPlayer(Networker.hostID, lastLockingMessage, EP2PSend.k_EP2PSendReliable);
+                        NetworkSenderThread.Instance.SendPacketToSpecificPlayer(Networker.hostID, lastLockingMessage, EP2PSend.k_EP2PSendUnreliable);
                 }
                 else
                 {
@@ -138,13 +140,12 @@ class LockingRadarNetworker_Sender : MonoBehaviour
                             lastLockingMessage.senderUID = networkUID;
                             if (Networker.isHost)
                             {
-                                NetworkSenderThread.Instance.SendPacketAsHostToAllClients(lastLockingMessage, EP2PSend.k_EP2PSendReliable);
+                                NetworkSenderThread.Instance.SendPacketAsHostToAllClients(lastLockingMessage, EP2PSend.k_EP2PSendUnreliable);
                             }
 
                             else
                             {
-
-                                NetworkSenderThread.Instance.SendPacketToSpecificPlayer(Networker.hostID, lastLockingMessage, EP2PSend.k_EP2PSendReliable);
+                                NetworkSenderThread.Instance.SendPacketToSpecificPlayer(Networker.hostID, lastLockingMessage, EP2PSend.k_EP2PSendUnreliable);
                             }
                         }
                         else
@@ -175,11 +176,9 @@ class LockingRadarNetworker_Sender : MonoBehaviour
                             break;
                         }
                     }*/
-                    if (lastWasNull)
-                    {
-                        lastWasNull = false;
-                    }
+                   
                 }
+                
                 stateChanged = false;
             }
         }
@@ -223,7 +222,8 @@ class LockingRadarNetworker_Sender : MonoBehaviour
     }
     private void RadarDetectedActor(Actor a)
     {
-        return;
+        if (a == null)
+            return;
         if (tick > 1.0f / tickRate)
         {
             tick = 0.0f;

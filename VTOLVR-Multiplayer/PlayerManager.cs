@@ -261,7 +261,6 @@ public static class PlayerManager
             {
                 TargetManager.instance.UnregisterActor(actor);
                 GameObject.Destroy(actor.gameObject);
-
             }
             VTScenario.current.units.units.Clear();
             VTScenario.current.units.alliedUnits.Clear();

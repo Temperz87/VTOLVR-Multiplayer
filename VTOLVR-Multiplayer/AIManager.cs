@@ -393,7 +393,7 @@ public static class AIManager
                 {
                     Debug.Log($"Adding radar receiver to object {child.name} as it is the same game object as this actor.");
                     LockingRadarNetworker_Receiver lastLockingReceiver = child.gameObject.AddComponent<LockingRadarNetworker_Receiver>();
-                    lastLockingReceiver.networkUID = message.networkIDs[currentSubActorID];
+                   lastLockingReceiver.networkUID = message.networkIDs[currentSubActorID];
                     Debug.Log("Added locking radar!");
                 }
                 else if (radar.GetComponentInParent<Actor>() == child)
@@ -445,7 +445,7 @@ public static class AIManager
             }
             Debug.Log("Trying sending new stage 1");
             if (!actor.isPlayer)
-                if (actor.name.Contains("Client [") == false)
+                if (actor.gameObject.name.Contains("Client [") == false)
                 {
                     Debug.Log("Trying sending new stage 2");
                     bool Aggresion = false;
@@ -589,6 +589,8 @@ public static class AIManager
         if (actor.role == Actor.Roles.Missile || actor.isPlayer)
             return;
         if (actor.name.Contains("Rearm/Refuel"))
+            return;
+        if (actor.gameObject.name.Contains("Client"))
             return;
         foreach (AI ai in AIManager.AIVehicles)
         {

@@ -1196,6 +1196,43 @@ public class Networker : MonoBehaviour
     }
     private IEnumerator FlyButton()
     {
+
+        CampaignSelectorUI selectorUI = FindObjectOfType<CampaignSelectorUI>();
+        PlayerVehicle pv = PilotSaveManager.currentVehicle;
+        Campaign cc = PilotSaveManager.currentCampaign;
+        string name = PlayerManager.selectedVehicle;
+
+        PlayerManager.selectedVehicle = "F/A-26B";
+        PilotSaveManager.currentVehicle = VTResources.GetPlayerVehicle(PlayerManager.selectedVehicle);
+        string campID;
+        campID = "fa26bFreeFlight";
+        PilotSaveManager.current.lastVehicleUsed = PilotSaveManager.currentVehicle.name;
+        Campaign campref = VTResources.GetBuiltInCampaign(campID).ToIngameCampaign();
+        PilotSaveManager.currentCampaign = campref;
+        selectorUI.SetupCampaignScenarios(campref, false);
+
+        PlayerManager.selectedVehicle = "AV-42C";
+        PilotSaveManager.currentVehicle = VTResources.GetPlayerVehicle(PlayerManager.selectedVehicle);
+        campID = "av42cQuickFlight";
+        PilotSaveManager.current.lastVehicleUsed = PilotSaveManager.currentVehicle.name;
+        campref = VTResources.GetBuiltInCampaign(campID).ToIngameCampaign();
+        PilotSaveManager.currentCampaign = campref;
+        selectorUI.SetupCampaignScenarios(campref, false);
+
+        PlayerManager.selectedVehicle = "F-45A";
+        PilotSaveManager.currentVehicle = VTResources.GetPlayerVehicle(PlayerManager.selectedVehicle);
+        campID = "f45-quickFlight";
+        PilotSaveManager.current.lastVehicleUsed = PilotSaveManager.currentVehicle.name;
+        campref = VTResources.GetBuiltInCampaign(campID).ToIngameCampaign();
+        PilotSaveManager.currentCampaign = campref;
+
+        selectorUI.SetupCampaignScenarios(campref, false);
+
+        PilotSaveManager.currentVehicle = pv;
+        PilotSaveManager.currentCampaign = cc;
+        PlayerManager.selectedVehicle = name;
+
+
         PilotSaveManager.currentCampaign = pilotSaveManagerControllerCampaign;
         PilotSaveManager.currentScenario = pilotSaveManagerControllerCampaignScenario;
         PlayerManager.selectedVehicle = PilotSaveManager.currentVehicle.name;
