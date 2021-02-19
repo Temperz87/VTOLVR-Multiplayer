@@ -30,6 +30,7 @@
     <DefineConstants>TRACE;MAXCOMPRESSIONBUFFERSIZE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <PlatformTarget>x64</PlatformTarget>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Solo Test|AnyCPU'">
     <DebugSymbols>true</DebugSymbols>

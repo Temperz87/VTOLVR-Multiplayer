@@ -6,6 +6,6 @@ public static class Patch_TreeMaster
     [HarmonyPrefix]
     public static bool Prefix()
     {
-        return true;
+        return false;
     }
 }

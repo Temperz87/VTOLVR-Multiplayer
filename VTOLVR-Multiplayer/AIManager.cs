@@ -676,7 +676,7 @@ public static class AIManager
                     //reduced tick rate for ground Units
                     if (child.role == Actor.Roles.Ground)
                     {
-                        lastRigidSender.tickRate = 0.01f;
+                        lastRigidSender.tickRate = 0.5f;
                     }
                     if (child.role == Actor.Roles.GroundArmor)
                     {

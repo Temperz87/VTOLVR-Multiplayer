@@ -394,8 +394,8 @@ public class Networker : MonoBehaviour
     {
         if (isHost)
         {
-            flushUnreliableBuffer();
-            flushReliableBuffer();
+            //flushUnreliableBuffer();
+            //flushReliableBuffer();
         }
     }
     private void LateUpdate()

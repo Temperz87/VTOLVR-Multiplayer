@@ -26,7 +26,7 @@ public static class DiscordRadioManager
     public static void start()
     {
         UnityEngine.Debug.Log("loading discord");
-        var dllDirectory = @"VTOLVR_ModLoader\mods\Multiplayer";
+        var dllDirectory = @"VTOLVR_ModLoader\mods\Multiplayer\discordsdk";
         Environment.SetEnvironmentVariable("PATH", Environment.GetEnvironmentVariable("PATH") + ";" + dllDirectory);
         var clientID = Environment.GetEnvironmentVariable("DISCORD_CLIENT_ID");
         if (clientID == null)
