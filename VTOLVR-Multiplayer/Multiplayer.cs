@@ -104,6 +104,7 @@ public class Multiplayer : VTOLMOD
         }
         _instance = this;
         Networker.SetMultiplayerInstance(this);
+        
     }
     public static void callback()
     {
@@ -117,7 +118,7 @@ public class Multiplayer : VTOLMOD
     {
         Log($"VTOL VR Multiplayer v{ ModVersionString.ModVersionNumber } - branch: { ModVersionString.ReleaseBranch }");
 
-        GameSettings.SetGameSettingValue("USE_OVERCLOUD", false, true);
+        GameSettings.SetGameSettingValue("USE_OVERCLOUD", displayClouds, false);
 #if DEBUG
         Log("Running in Debug Mode");
 #else
@@ -237,7 +238,7 @@ public class Multiplayer : VTOLMOD
         settings.CreateBoolSetting("Default = False", DisplayPing_changed, displayPing);
 
         displayClouds_changed += DisplayCloud_Settings;
-        settings.CreateCustomLabel("Show C");
+        settings.CreateCustomLabel("Show Clouds");
         settings.CreateBoolSetting("Default = False", displayClouds_changed, displayClouds);
 
         VTOLAPI.CreateSettingsMenu(settings);
@@ -304,8 +305,8 @@ public class Multiplayer : VTOLMOD
     }
     public void DisplayCloud_Settings(bool newval)
     {
-        //displayClouds = newval;
-        GameSettings.SetGameSettingValue("USE_OVERCLOUD", false, true);
+        displayClouds = newval;
+        GameSettings.SetGameSettingValue("USE_OVERCLOUD", displayClouds, true);
     }
     void OnGUI()//the 2d ping display, feel free to move elsewhere
     {
@@ -366,6 +367,12 @@ public class Multiplayer : VTOLMOD
                 DestroyLoadingSceneObjects();
                 StartCoroutine(PlayerManager.MapLoaded());
                 break;
+            case VTOLScenes.CustomMapBase_OverCloud:
+                   Log("Map Loaded from vtol scenes custom map base");
+                waitingForJoin = null;
+                DestroyLoadingSceneObjects();
+                StartCoroutine(PlayerManager.MapLoaded());
+                break;
             case VTOLScenes.LoadingScene:
                 if (playingMP)
                 {
@@ -374,6 +381,7 @@ public class Multiplayer : VTOLMOD
                     break;
                 }
                 break;
+
             case VTOLScenes.VehicleConfiguration:
                 CreateVehicleButton();
                 break;
@@ -683,6 +691,7 @@ public class Multiplayer : VTOLMOD
                 }
             }
         }
+        SteamMatchmaking.RequestLobbyList();
         Log("Adding friends to list");
         //Now we want to create the ingame list
         friendsTemplate.SetActive(true);
@@ -786,40 +795,7 @@ public class Multiplayer : VTOLMOD
 
     public void Join()
     {
-        CampaignSelectorUI selectorUI = FindObjectOfType<CampaignSelectorUI>();
-        PlayerVehicle pv = PilotSaveManager.currentVehicle;
-        Campaign cc = PilotSaveManager.currentCampaign;
-        string name = PlayerManager.selectedVehicle;
-
-        PlayerManager.selectedVehicle = "F/A-26B";
-        PilotSaveManager.currentVehicle = VTResources.GetPlayerVehicle(PlayerManager.selectedVehicle);
-        string campID;
-        campID = "fa26bFreeFlight";
-        PilotSaveManager.current.lastVehicleUsed = PilotSaveManager.currentVehicle.name;
-        Campaign campref = VTResources.GetBuiltInCampaign(campID).ToIngameCampaign();
-        PilotSaveManager.currentCampaign = campref;
-        selectorUI.SetupCampaignScenarios(campref, false);
-
-        PlayerManager.selectedVehicle = "AV-42C";
-        PilotSaveManager.currentVehicle = VTResources.GetPlayerVehicle(PlayerManager.selectedVehicle);
-        campID = "av42cQuickFlight";
-        PilotSaveManager.current.lastVehicleUsed = PilotSaveManager.currentVehicle.name;
-        campref = VTResources.GetBuiltInCampaign(campID).ToIngameCampaign();
-        PilotSaveManager.currentCampaign = campref;
-        selectorUI.SetupCampaignScenarios(campref, false);
-
-        PlayerManager.selectedVehicle = "F-45A";
-        PilotSaveManager.currentVehicle = VTResources.GetPlayerVehicle(PlayerManager.selectedVehicle);
-        campID = "f45-quickFlight";
-        PilotSaveManager.current.lastVehicleUsed = PilotSaveManager.currentVehicle.name;
-        campref = VTResources.GetBuiltInCampaign(campID).ToIngameCampaign();
-        PilotSaveManager.currentCampaign = campref;
-
-        selectorUI.SetupCampaignScenarios(campref, false);
-
-        PilotSaveManager.currentVehicle = pv;
-        PilotSaveManager.currentCampaign = cc;
-        PlayerManager.selectedVehicle = name;
+      
         playingMP = true;
         if (Networker.hostID == new Steamworks.CSteamID(0) && waitingForJoin == null)
         {

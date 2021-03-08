@@ -11,7 +11,7 @@ public class MissileNetworker_Sender : MonoBehaviour
     private bool hasFired = false;
     public Actor ownerActor;
     private float tick;
-    private float tickRate = 20.0f;
+    private float tickRate = 10.0f;
 
     private void Awake()
     {
@@ -53,6 +53,8 @@ public class MissileNetworker_Sender : MonoBehaviour
 
                 RigidbodyNetworker_Sender rbSender = gameObject.AddComponent<RigidbodyNetworker_Sender>();
                 rbSender.networkUID = networkUID;
+                rbSender.tickRate = 30.0f;
+
             }
             if (thisMissile != null && thisMissile.fired)
             {

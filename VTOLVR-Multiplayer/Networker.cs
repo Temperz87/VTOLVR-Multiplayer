@@ -337,6 +337,7 @@ public class Networker : MonoBehaviour
 
     private void Update()
     {
+        VTResources.useOverCloud = true;
         ReadP2P();
         DiscordRadioManager.Update();
         if (VTOLAPI.currentScene == VTOLScenes.VehicleConfiguration)
@@ -775,7 +776,40 @@ public class Networker : MonoBehaviour
                 Multiplayer._instance.fog = messsageLobby.fog;
                 DiscordRadioManager.freqLabelTableNetworkString = messsageLobby.freqLabelString;
                 DiscordRadioManager.freqTableNetworkString = messsageLobby.freqString;
+                CampaignSelectorUI selectorUI = FindObjectOfType<CampaignSelectorUI>();
+                PlayerVehicle pv = PilotSaveManager.currentVehicle;
+                Campaign cc = PilotSaveManager.currentCampaign;
+                string name = PlayerManager.selectedVehicle;
 
+                PlayerManager.selectedVehicle = "F/A-26B";
+                PilotSaveManager.currentVehicle = VTResources.GetPlayerVehicle(PlayerManager.selectedVehicle);
+                string campID;
+                campID = "fa26bFreeFlight";
+                PilotSaveManager.current.lastVehicleUsed = PilotSaveManager.currentVehicle.name;
+                Campaign campref = VTResources.GetBuiltInCampaign(campID).ToIngameCampaign();
+                PilotSaveManager.currentCampaign = campref;
+                selectorUI.SetupCampaignScenarios(campref, false);
+
+                PlayerManager.selectedVehicle = "AV-42C";
+                PilotSaveManager.currentVehicle = VTResources.GetPlayerVehicle(PlayerManager.selectedVehicle);
+                campID = "av42cQuickFlight";
+                PilotSaveManager.current.lastVehicleUsed = PilotSaveManager.currentVehicle.name;
+                campref = VTResources.GetBuiltInCampaign(campID).ToIngameCampaign();
+                PilotSaveManager.currentCampaign = campref;
+                selectorUI.SetupCampaignScenarios(campref, false);
+
+                PlayerManager.selectedVehicle = "F-45A";
+                PilotSaveManager.currentVehicle = VTResources.GetPlayerVehicle(PlayerManager.selectedVehicle);
+                campID = "f45-quickFlight";
+                PilotSaveManager.current.lastVehicleUsed = PilotSaveManager.currentVehicle.name;
+                campref = VTResources.GetBuiltInCampaign(campID).ToIngameCampaign();
+                PilotSaveManager.currentCampaign = campref;
+
+                selectorUI.SetupCampaignScenarios(campref, false);
+
+                PilotSaveManager.currentVehicle = pv;
+                PilotSaveManager.currentCampaign = cc;
+                PlayerManager.selectedVehicle = name;
                 DiscordRadioManager.joinLobby(messsageLobby.lobbyDiscordID, messsageLobby.lobbySecret);
 
                 StartCoroutine(FlyButton());
@@ -824,6 +858,7 @@ public class Networker : MonoBehaviour
                     {
                         //Someone is trying to join when we are already in game.
                         Debug.Log($"We are already in session, {csteamID} is joining in!");
+                        UpdateLoadingText();
                         NetworkSenderThread.Instance.SendPacketToSpecificPlayer(csteamID, new Message(MessageType.AllPlayersReady), EP2PSend.k_EP2PSendReliable);
 
                         // Send host loaded message right away
@@ -858,7 +893,7 @@ public class Networker : MonoBehaviour
                 playerStatusDic[hostID] = PlayerStatus.Loading;
                 UpdateLoadingText();
                 hostReady = true;
-                // LoadingSceneController.instance.PlayerReady();
+                LoadingSceneController.instance.PlayerReady();
                 break;
             case MessageType.RequestSpawn:
                 Debug.Log($"case request spawn from: {csteamID.m_SteamID}, we are {SteamUser.GetSteamID().m_SteamID}, host is {hostID}");
