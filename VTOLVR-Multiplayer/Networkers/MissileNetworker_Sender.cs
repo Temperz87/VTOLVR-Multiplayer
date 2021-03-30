@@ -23,6 +23,7 @@ public class MissileNetworker_Sender : MonoBehaviour
 
         thisMissile.explodeRadius *= 2.5f;
 
+        tick += UnityEngine.Random.Range(0.0f, 1.0f / tickRate);
     }
     /*private bool sendRateLimiter()
     {
@@ -53,7 +54,7 @@ public class MissileNetworker_Sender : MonoBehaviour
 
                 RigidbodyNetworker_Sender rbSender = gameObject.AddComponent<RigidbodyNetworker_Sender>();
                 rbSender.networkUID = networkUID;
-                rbSender.tickRate = 30.0f;
+                rbSender.tickRate = 10.0f;
 
             }
             if (thisMissile != null && thisMissile.fired)

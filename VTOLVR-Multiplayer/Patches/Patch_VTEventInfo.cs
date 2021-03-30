@@ -132,7 +132,6 @@ class PatchPROTECC
         {
             return false;
         }
-
     }
 }
 
@@ -164,7 +163,7 @@ class Patch22
         else
         {
 
-            if (__instance.targetType == VTEventTarget.TargetTypes.System)
+           
             {
                 bool shouldComplete = ObjectiveNetworker_Reciever.completeNextEvent;
                 Debug.Log($"Should complete is {shouldComplete}.");
@@ -182,20 +181,16 @@ class Patch2
 {
     static void Postfix(VTEventTarget __instance)
     {
-        String actionIdentifier = __instance.eventName + __instance.methodName + __instance.targetID + __instance.targetType.ToString();
-        foreach (VTEventTarget.ActionParamInfo aparam in __instance.parameterInfos)
-        {
-            actionIdentifier += aparam.name;
-        }
-
+        
         if (!__instance.TargetExists())
         {
             Debug.Log("Target doesn't exist in invoke");
         }
 
-        if (Networker.isHost)
+   
+            if (Networker.isHost)
         {
-            Debug.Log("Host sent Event action" + __instance.eventName + " of type " + __instance.methodName + " for target " + __instance.targetID);
+            FlightLogger.Log("Host sent Event action" + __instance.eventName + " of type " + __instance.methodName + " for target " + __instance.targetID);
             if (ObjectiveNetworker_Reciever.reverseScenarioActionsList.ContainsKey(__instance))
             {
                 int hash = 0;
@@ -214,6 +209,7 @@ class Patch2
     }
 }
 
+
 // patch to grab all the events being loaded on creation this replaces original method
 [HarmonyPatch(typeof(VTEventInfo), "LoadFromInfoNode")]
 class Patch3
@@ -230,11 +226,8 @@ class Patch3
             vTEventTarget.LoadFromNode(node);
             __instance.actions.Add(vTEventTarget);
             Debug.Log("Compiling scenario dictonary my codd2");
-            String actionIdentifier = __instance.eventName + vTEventTarget.eventName + vTEventTarget.methodName + vTEventTarget.targetID + vTEventTarget.targetType.ToString() + ObjectiveNetworker_Reciever.actionCounter;
-            /*foreach(VTEventTarget.ActionParamInfo aparam in vTEventTarget.parameterInfos)
-            {
-                actionIdentifier+= aparam.name;
-            } */
+            String actionIdentifier = __instance.eventName + vTEventTarget.eventName + vTEventTarget.methodName + vTEventTarget.targetID + vTEventTarget.targetType.ToString()+ ObjectiveNetworker_Reciever.actionCounter.ToString();
+
             ObjectiveNetworker_Reciever.actionCounter += 1;
             Debug.Log(actionIdentifier);
             int hash = actionIdentifier.GetHashCode();
@@ -251,11 +244,6 @@ class Patch3
         return false;//dont run bahas code
     }
 }
-
-
-
-
-
 
 //patch to grab all the events being loaded on creation this replaces original method
 [HarmonyPatch(typeof(MissionObjective), "CompleteObjective")]

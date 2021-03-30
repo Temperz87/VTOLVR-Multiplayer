@@ -11,6 +11,8 @@ class GroundNetworker_Sender : MonoBehaviour
     {
         lastMessage = new Message_ShipUpdate(new Vector3D(), new Quaternion(), new Vector3D(), networkUID);//it uses ship update, cause the information really isnt all that different
         groundUnitMover = GetComponent<GroundUnitMover>();
+
+        timer += UnityEngine.Random.Range(0.0f, 0.5f);
     }
 
     void FixedUpdate()

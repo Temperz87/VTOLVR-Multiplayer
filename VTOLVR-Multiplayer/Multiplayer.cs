@@ -93,7 +93,11 @@ public class Multiplayer : VTOLMOD
     private UnityAction<bool> DisplayPing_changed;
 
     public bool displayClouds = false;
+
     private UnityAction<bool> displayClouds_changed;
+    public bool ptt = false;
+
+    private UnityAction<bool> ptt_Changed;
     public static Discord.Discord discord;
     private void Start()
     {
@@ -118,7 +122,7 @@ public class Multiplayer : VTOLMOD
     {
         Log($"VTOL VR Multiplayer v{ ModVersionString.ModVersionNumber } - branch: { ModVersionString.ReleaseBranch }");
 
-        GameSettings.SetGameSettingValue("USE_OVERCLOUD", displayClouds, false);
+         GameSettings.SetGameSettingValue("USE_OVERCLOUD", false, true);
 #if DEBUG
         Log("Running in Debug Mode");
 #else
@@ -240,7 +244,9 @@ public class Multiplayer : VTOLMOD
         displayClouds_changed += DisplayCloud_Settings;
         settings.CreateCustomLabel("Show Clouds");
         settings.CreateBoolSetting("Default = False", displayClouds_changed, displayClouds);
-
+        ptt_Changed += ptt_Settings;
+        settings.CreateCustomLabel("Radio PTT");
+        settings.CreateBoolSetting("Default = False", ptt_Changed, ptt);
         VTOLAPI.CreateSettingsMenu(settings);
     }
 
@@ -308,6 +314,11 @@ public class Multiplayer : VTOLMOD
         displayClouds = newval;
         GameSettings.SetGameSettingValue("USE_OVERCLOUD", displayClouds, true);
     }
+    public void ptt_Settings(bool newval)
+    {
+        ptt = newval; 
+    }
+    
     void OnGUI()//the 2d ping display, feel free to move elsewhere
     {
         if (displayPing)
@@ -354,6 +365,7 @@ public class Multiplayer : VTOLMOD
         {
             case VTOLScenes.ReadyRoom:
                 CreateUI();
+             
                 break;
             case VTOLScenes.Akutan:
                 Log("Map Loaded from vtol scenes akutan");
@@ -374,6 +386,7 @@ public class Multiplayer : VTOLMOD
                 StartCoroutine(PlayerManager.MapLoaded());
                 break;
             case VTOLScenes.LoadingScene:
+                
                 if (playingMP)
                 {
                     Log("Create Loading Scene");
@@ -383,6 +396,13 @@ public class Multiplayer : VTOLMOD
                 break;
 
             case VTOLScenes.VehicleConfiguration:
+                Log("loading akutan disable OC " + PilotSaveManager.currentScenario.mapSceneName);
+                if (PilotSaveManager.currentScenario.mapSceneName.Contains("kutan"))
+                {
+                    Log("loading akutan disable OC");
+                    displayClouds = false;
+                    GameSettings.SetGameSettingValue("USE_OVERCLOUD", false, true);
+                }
                 CreateVehicleButton();
                 break;
         }

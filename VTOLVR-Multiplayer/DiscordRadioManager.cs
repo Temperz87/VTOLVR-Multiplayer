@@ -20,7 +20,7 @@ public static class DiscordRadioManager
     public static List<string> frequencyTable = new List<string>();
     public static List<string> frequencyTableLabels = new List<string>();
     private static int freqSelection = 0;
-
+    private static bool pttCommand = false;
     public static string freqTableNetworkString = "UNICOM";
     public static string freqLabelTableNetworkString = "122.8";
     public static void start()
@@ -286,7 +286,11 @@ public static class DiscordRadioManager
     // Connect to voice chat, used in this case to actually know in overlay if your successful in connecting.
 */
     }
+    public static void selfMute(bool value)
+    {
+        discord.GetVoiceManager().SetSelfMute(value);
 
+    }
     public static void Update()
     {
         if (!connectedToDiscord)
@@ -312,6 +316,12 @@ public static class DiscordRadioManager
             {
                 if (steamIDtoFreq.ContainsKey(play.nameTag))
                 {
+                    if(steamIDtoFreq[play.nameTag] == 9999)
+                    {
+                        mutePlayer(play, play.nameTag, false);
+                        FlightLogger.Log("command");
+                    }
+                    else
                     if (steamIDtoFreq[play.nameTag] != radioFreq)
                     {
                         mutePlayer(play,play.nameTag, true);

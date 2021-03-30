@@ -48,13 +48,11 @@ class Patch_LoadingSceneHelmet_Update
     [HarmonyPrefix]
     static bool Prefix(LoadingSceneHelmet __instance)
     {
-        if (!Multiplayer._instance.playingMP)
-            return true;
+        
         Traverse t = Traverse.Create(__instance);
         bool grabbed = (bool)t.Field("grabbed").GetValue();
         VRHandController c = (VRHandController)t.Field("c").GetValue();
-        if (PlayerManager.OPFORbuttonMade)
-            Debug.Log("OPFORbuttonMade is made");
+       
         if (!PlayerManager.OPFORbuttonMade)
         {
             Debug.Log("OPFORbuttonMade eneter");
@@ -119,7 +117,7 @@ class Patch_LoadingSceneHelmet_Update
                     if (Networker.isHost)
                     {
                         PlayerManager.teamLeftie = false; //host cant be team leftie so ai doesnt break;
-                       // if (Networker.EveryoneElseReady())
+                        if (Networker.EveryoneElseReady())
                         {
                             Debug.Log("Everyone is ready, starting game");
                             NetworkSenderThread.Instance.SendPacketAsHostToAllClients(new Message(MessageType.AllPlayersReady), Steamworks.EP2PSend.k_EP2PSendReliable);
@@ -127,11 +125,11 @@ class Patch_LoadingSceneHelmet_Update
                             LoadingSceneController.instance.PlayerReady();
                             PlayerManager.OPFORbuttonMade = false;
                         }
-                        //else
-                        //{
-                        //    Debug.Log("I'm ready but others are not, waiting");
-                        //    Networker.SetHostReady(false);
-                        //}
+                        else
+                        {
+                            Debug.Log("I'm ready but others are not, waiting");
+                           Networker.SetHostReady(false);
+                        }
                     }
                     else
                     {
@@ -142,9 +140,10 @@ class Patch_LoadingSceneHelmet_Update
                             Debug.Log("Waiting for the host to say everyone is ready");
                         }
                     }
-                    if (!Networker.hostLoaded && !Networker.isHost)
+                    if (Networker.hostLoaded && !Networker.isHost)
                     {
-                        Debug.Log("Waiting for host to load");
+                        LoadingSceneController.instance.PlayerReady();
+                        PlayerManager.OPFORbuttonMade = false;
 
                     }
                     __instance.equipAudioSource.Play();
@@ -153,11 +152,11 @@ class Patch_LoadingSceneHelmet_Update
                 else
                 {
                     Debug.Log("Player is not a MP host or client.");
-                    LoadingSceneController.instance.PlayerReady();
+                   // LoadingSceneController.instance.PlayerReady();
                     PlayerManager.OPFORbuttonMade = false;
                 }
             }
         }
-        return true;
+        return false;
     }
 }

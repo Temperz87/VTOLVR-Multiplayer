@@ -56,5 +56,6 @@ public enum MessageType
     GPSTarget,
     CompressedBatch,
     SetFrequency,
-    IKPuppet
+    IKPuppet,
+    AudioMessage
 }

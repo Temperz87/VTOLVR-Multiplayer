@@ -103,13 +103,8 @@ public class PlaneNetworker_Sender : MonoBehaviour
 
         if (isPlayer)
             setupManSender();
-
-
-
         ikMsg = new Message_IKPuppet(networkUID);
-        //if (gameObject.name.Contains("Client"))
-      
-     
+       
     }
 
 

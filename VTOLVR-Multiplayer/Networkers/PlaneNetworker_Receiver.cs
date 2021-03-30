@@ -41,6 +41,8 @@ public class PlaneNetworker_Receiver : MonoBehaviour
 
         ownerActor = GetComponentInParent<Actor>();
         autoPilot = aiPilot.autoPilot;
+        
+        aiPilot.enabled = false;
         aiPilot.enabled = false;
         Networker.PlaneUpdate += PlaneUpdate;
         Networker.WeaponSet_Result += WeaponSet_Result;
@@ -112,6 +114,19 @@ public class PlaneNetworker_Receiver : MonoBehaviour
         {
             setupManReciever();
             Networker.IKUpdate += IKUpdate;
+            //if (gameObject.name.Contains("Client"))
+            Transform[] children = gameObject.GetComponentsInChildren<Transform>(true);
+            foreach (Transform child in children)
+            {
+                if (child.name == "lowPolyInterior" || child.name.Contains("lowPolyInterior" + "(clone"))
+                {
+                    child.gameObject.SetActive(true);
+                }else
+                if (child.name == "sevtf_lowPolyInterior" || child.name.Contains("sevtf_lowPolyInterior" + "(clone"))
+                    {
+                        child.gameObject.SetActive(true);
+                    }
+              }
             foreach (var rend in GetComponentsInChildren<Renderer>())
             {
                 if (rend.material.name.Contains("Glass") || rend.material.name.Contains("glass"))
@@ -150,10 +165,13 @@ public class PlaneNetworker_Receiver : MonoBehaviour
 
 
         if (vehicleType == VTOLVehicles.FA26B)
+        {
             manPuppet.transform.localPosition = new Vector3(0.03f, 1.04f, 5.31f);
-
+          
+        }
         if (vehicleType == VTOLVehicles.F45A)
-            manPuppet.transform.localPosition = new Vector3(-0.06f, 0.79f, 5.7f);
+            manPuppet.transform.localPosition = new Vector3(-0.06f, 0.77f, 5.7f);
+      
 
         if (vehicleType == VTOLVehicles.AV42C)
             manPuppet.transform.localPosition = new Vector3(-0.07f, 0.69f, -0.1f) - PlayerManager.av42Offset;
@@ -212,7 +230,6 @@ public class PlaneNetworker_Receiver : MonoBehaviour
             else
             {
                 manPuppet.SetActive(true);
-
             }
         }
     }
@@ -361,6 +378,9 @@ public class PlaneNetworker_Receiver : MonoBehaviour
     {
         for (int i = 0; i < autoPilot.engines.Count; i++)
         {
+            autoPilot.engines[i].autoAB=true;
+
+            autoPilot.engines[i].afterburner = (throttle > autoPilot.engines[i].autoABThreshold);
             autoPilot.engines[i].SetThrottle(throttle);
         }
     }

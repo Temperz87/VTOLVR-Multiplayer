@@ -6,6 +6,7 @@ using System.Linq;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.Events;
+ 
 public static class PlayerManager
 {
     public struct CustomPlaneDef
@@ -33,9 +34,9 @@ public static class PlayerManager
     public static int kills = 0;
     public static float DefaultFog = 0.0005f;
     public static ulong timeinGame = 0;
-
     public static UnityAction<CustomPlaneDef> onSpawnLocalPlayer = null;
     public static UnityAction<CustomPlaneDef> onSpawnClient = null;
+    public static Transform LeftPTT = null;
     /// <summary>
     /// This is the queue for people waiting to get a spawn point,
     /// incase the host hasn't loaded in, in time.
@@ -60,6 +61,10 @@ public static class PlayerManager
     public static Hitbox lastBulletHit;
     public static Material playerCanopyMaterial;
     public static bool flyStart = false;
+
+    public static AudioSource audioSource;
+    public static AudioClip clip;
+
 
     public static bool PlayerIsCustomPlane = false;
     public static string LoadedCustomPlaneString = "";
@@ -100,19 +105,21 @@ public static class PlayerManager
     /// when the player first can interact with the vehicle.
     /// </summary>
     /// 
-
+     
     public static IEnumerator MapLoaded()
     {
+
+        
         Debug.Log("map loading started");
         if (!Networker.isHost)
         {
             ScreenFader.FadeOut(Color.black, 0.0f, fadeoutVolume: true);
         }
-        if (carrierStart && !Networker.isHost)
+        //if (carrierStart && !Networker.isHost)
         {
             while (VTMapManager.fetch == null || !VTMapManager.fetch.scenarioReady || FlightSceneManager.instance.switchingScene || !PlayerSpawn.playerVehicleReady)
             {
-                ScreenFader.FadeOut(Color.black, 0.0f, fadeoutVolume: true);
+               // ScreenFader.FadeOut(Color.black, 0.0f, fadeoutVolume: true);
                 yield return null;
             }
         }
@@ -130,6 +137,9 @@ public static class PlayerManager
         carrierStart = FlightSceneManager.instance.playerActor.unitSpawn.unitSpawner.linkedToCarrier;
         if (carrierStart && !Networker.isHost)
         {
+
+            if (PlayerSpawn.playerVehicleReady == false)
+            { Debug.LogError("start  NO PLAYERE  SPAWN"); FlightLogger.Log("start  NO PLAYERE  SPAWN"); }
             Debug.LogError("mapload1");
             ScreenFader.FadeOut(Color.black, 0.0f, fadeoutVolume: true);
             TempPilotDetacher detacher = FlightSceneManager.instance.playerActor.gameObject.GetComponentInChildren<TempPilotDetacher>();
@@ -145,6 +155,10 @@ public static class PlayerManager
             UnityEngine.Object.Destroy(FlightSceneManager.instance.playerActor.gameObject.GetComponent<PlayerSpawn>());
             UnityEngine.Object.Destroy(FlightSceneManager.instance.playerActor.gameObject);
             Debug.LogError("mapload4");
+
+            if (PlayerSpawn.playerVehicleReady == false)
+            { Debug.LogError("NO PLAYERE  SPAWN"); FlightLogger.Log("NO PLAYERE  SPAWN"); }
+
             /* foreach (EngineEffects effect in effects)
              {
                  Destroy(effect);
@@ -235,6 +249,22 @@ public static class PlayerManager
                 if (gearAnim.state != GearAnimator.GearStates.Extended)
                     gearAnim.ExtendImmediate();
             }
+
+            VRHead vehicleVRHead = newPlayer.GetComponentInChildren<VRHead>(true);
+            if (VTMapGenerator.fetch)
+            {
+                if (vehicleVRHead)
+                {
+                    VTMapGenerator.fetch.StartLODRoutine(vehicleVRHead.transform);
+                }
+                else if (VRHead.instance)
+                {
+                    VTMapGenerator.fetch.StartLODRoutine(VRHead.instance.transform);
+                }
+            }
+            if (PlayerSpawn.playerVehicleReady == false)
+            { Debug.LogError("NO PLAYERE  SPAWN end"); FlightLogger.Log("NO PLAYERE  SPAWN end"); }
+
             ScreenFader.FadeOut(Color.black, 0.0f, fadeoutVolume: true);
         }
 
@@ -349,7 +379,7 @@ public static class PlayerManager
 
                 SpawnLocalVehicleAndInformOtherClients(localVehicle, hostTrans.transform.position, hostTrans.transform.rotation, localUID, true, 0);
                 ScreenFader.FadeIn(0.25f);
-            }
+               }
             else
                 Debug.Log("Local vehicle for host was null");
             if (spawnRequestQueue.Count != 0)
@@ -377,8 +407,12 @@ public static class PlayerManager
             Debug.Log($"Player is the host, setting up the world data sender");
             worldData = new GameObject();
             worldData.AddComponent<WorldDataNetworker_Sender>();
-        }
 
+           
+        }
+        clip = GameObject.FindObjectOfType<VRQuadHandMenu>().pressSound;
+        PilotSaveManager.currentCampaign = Networker._instance.pilotSaveManagerControllerCampaign;
+        PilotSaveManager.currentScenario = Networker._instance.pilotSaveManagerControllerCampaignScenario;
 
 
     }
@@ -600,52 +634,106 @@ public static class PlayerManager
                 }
             }
 
-            /*foreach (Renderer rend in invisibleActorList)
+          /*
+           if (LeftPTT == null)
             {
+                if (FlightSceneManager.instance.playerActor.gameObject != null)
+                {
+                    LeftPTT = CUSTOM_API.GetChildTransformWithName(FlightSceneManager.instance.playerActor.gameObject, "torsoBone.002");
 
-
-                rend.enabled = true;
-
+                }
 
             }
-            invisibleActorList.Clear();
-
-            Vector3D plane = VTMapManager.WorldToGlobalPoint(FlightSceneManager.instance.playerActor.gameObject.transform.position);
-
-            foreach (Player play in players)
+            else
             {
-                if (play.vehicle != null)
+                foreach (var controller in GameObject.FindObjectsOfType<VRHandController>())
                 {
-
-                    Vector3D plane2 = VTMapManager.WorldToGlobalPoint(play.vehicle.transform.position);
-                    Vector3D dist = plane - plane2;
-
-                    double dists = dist.magnitude;
-                    if (dists < 5.0f && play.vehicleUID != localUID)
+                    if(Multiplayer._instance.ptt)
+                    if (controller.isLeft  )
                     {
-                        foreach (var comp in play.vehicle.GetComponentsInChildren<Renderer>())
+                        if (controller.stickPressDown)
                         {
-                            if (comp.enabled == true)
-                            {
-                                comp.enabled = false;
-                                invisibleActorList.Add(comp);
-                            }
+                            DiscordRadioManager.selfMute(false);
                         }
-
+                        else
+                        {
+                            DiscordRadioManager.selfMute(true);
+                        }
                     }
+                    if (controller.isLeft && controller.triggerAxis >0.5f)
+                    {
+                       
+                        if (Vector3.Distance(controller.transform.position, LeftPTT.position) < 0.2f)
+                        {
+                            
+                            if (DiscordRadioManager.radioFreq != 9999)
+                            {
+                                if(audioSource!=null)audioSource.PlayOneShot(clip);
+                            }
+                            DiscordRadioManager.radioFreq = 9999;
+                            DiscordRadioManager.selfMute(false); 
+                            DiscordRadioManager.setFreq(SteamFriends.GetPersonaName(), 9999);
+                        }
+                        
+                    }
+                    else
+                    if (controller.isLeft && controller.triggerAxis < 0.5f)
+                    {
+                        DiscordRadioManager.radioFreq = CUSTOM_API.currentFreq.GetHashCode();
+                        DiscordRadioManager.setFreq(SteamFriends.GetPersonaName(), DiscordRadioManager.radioFreq);
+                        DiscordRadioManager.selfMute(true);
+                    }
+
                 }
             }*/
 
+                /*foreach (Renderer rend in invisibleActorList)
+                {
+
+
+                    rend.enabled = true;
+
+
+                }
+                invisibleActorList.Clear();
+
+                Vector3D plane = VTMapManager.WorldToGlobalPoint(FlightSceneManager.instance.playerActor.gameObject.transform.position);
+
+                foreach (Player play in players)
+                {
+                    if (play.vehicle != null)
+                    {
+
+                        Vector3D plane2 = VTMapManager.WorldToGlobalPoint(play.vehicle.transform.position);
+                        Vector3D dist = plane - plane2;
+
+                        double dists = dist.magnitude;
+                        if (dists < 5.0f && play.vehicleUID != localUID)
+                        {
+                            foreach (var comp in play.vehicle.GetComponentsInChildren<Renderer>())
+                            {
+                                if (comp.enabled == true)
+                                {
+                                    comp.enabled = false;
+                                    invisibleActorList.Add(comp);
+                                }
+                            }
+
+                        }
+                    }
+                }*/
 
 
 
-        }
+
+            }
 
         if (gameLoaded)
         {
             if (EndMission.instance.completeObject.active == false)
                 EndMission.instance.HideEndMission();
-
+            if (PlayerSpawn.playerVehicleReady == false)
+            {  FlightLogger.Log("start  NO PLAYERE  SPAWN"); }
             Actor player = FlightSceneManager.instance.playerActor;
             if (player)
             {
@@ -824,9 +912,8 @@ public static class PlayerManager
         PlayerVehicleSetup pvSetup = act.gameObject.GetComponent<PlayerVehicleSetup>();
         pvSetup.OnBeginUsingConfigurator -= StartConfig;
         unSubscribe = false;
-
-        //PilotSaveManager.currentCampaign = Networker._instance.pilotSaveManagerControllerCampaign;
-        //PilotSaveManager.currentScenario = Networker._instance.pilotSaveManagerControllerCampaignScenario;
+        PilotSaveManager.currentCampaign = Networker._instance.pilotSaveManagerControllerCampaign;
+     PilotSaveManager.currentScenario = Networker._instance.pilotSaveManagerControllerCampaignScenario;
 
     }
     public static List<T> FindObjectsOfTypeAll<T>(GameObject obj)
@@ -845,13 +932,14 @@ public static class PlayerManager
     public static void SpawnLocalVehicleAndInformOtherClients(GameObject localVehicle, Vector3 pos, Quaternion rot, ulong UID, bool sendNewSpawnPacket = false, int playercount = 0) //Both
     {
 
+        audioSource=localVehicle.AddComponent<AudioSource>();
         Debug.Log("Sending our location to spawn our vehicle");
         VTOLVehicles currentVehicle = getPlayerVehicleType();
         Actor actor = localVehicle.GetComponent<Actor>();
         Player localPlayer = new Player(SteamUser.GetSteamID(), localVehicle, actor, currentVehicle, UID, PlayerManager.teamLeftie, SteamFriends.GetPersonaName(), DiscordRadioManager.userID,PlayerIsCustomPlane,LoadedCustomPlaneString);
         AddToPlayerList(localPlayer);
         Rigidbody rb = localVehicle.GetComponent<Rigidbody>();
-
+        DiscordRadioManager.addPlayer(SteamFriends.GetPersonaName(), DiscordRadioManager.userID);
         ReArmingPoint[] rearmPoints = GameObject.FindObjectsOfType<ReArmingPoint>();
         rearmPoint = rearmPoints[UnityEngine.Random.Range(0, rearmPoints.Length - 1)];
         int rand = UnityEngine.Random.Range(0, rearmPoints.Length - 1);
@@ -907,7 +995,7 @@ public static class PlayerManager
             {
                 foreach (ReArmingPoint p in space.rearmPoints)
                 {
-                    if (p.radius > 18.8f)
+                    if (p.radius > 18.9f)
                         rearmPointList.Add(p);
                 }
             }
@@ -939,8 +1027,6 @@ public static class PlayerManager
                     if (!flyStart|| carrierStart)
                     {
                         StartRearm(rearmPoint);
-                      
-
                     }
 
                 }
@@ -1180,7 +1266,7 @@ public static class PlayerManager
             if (onSpawnLocalPlayer != null)
                 onSpawnLocalPlayer.Invoke(plndef);
         }
-        
+      
     }
     /// <summary>
     /// When the user has received a message of spawn player vehicle, 
@@ -1738,6 +1824,7 @@ public static class PlayerManager
         kills = 0;
         OPFORbuttonMade = false;
         timeinGame = 0;
+        Networker.hostLoaded = false;
     }
 
     public static void OnDisconnect()

@@ -165,7 +165,7 @@ public class Networker : MonoBehaviour
     public static Networker _instance { get; private set; }
     private static readonly object isHostLock = new object();
     private static bool isHostInternal = false;
-    public static bool isHost
+    public static bool isHost  
     {
         get
         {
@@ -189,7 +189,7 @@ public class Networker : MonoBehaviour
         get { lock (timeoutCounterLock) { return timeoutCounterInternal; } }
         set { lock (timeoutCounterLock) { timeoutCounterInternal = value; } }
     }
-    private static readonly int clientTimeoutInSeconds = 20;
+    private static readonly int clientTimeoutInSeconds = 100;
     private static readonly object disconnectForClientTimeoutLock = new object();
     private static bool disconnectForClientTimeoutInternal = false;
     private static bool disconnectForClientTimeout
@@ -290,6 +290,7 @@ public class Networker : MonoBehaviour
     public static event UnityAction<Packet> BulletHit;
     public static event UnityAction<Packet> RadarDetectedUpdate;
     public static event UnityAction<Packet> IKUpdate;
+    public static event UnityAction<Packet> AudioCommand;
     #endregion
     #region Host Forwarding Suppress By Message Type List
     private List<MessageType> hostMessageForwardingSuppressList = new List<MessageType> {
@@ -337,7 +338,7 @@ public class Networker : MonoBehaviour
 
     private void Update()
     {
-        VTResources.useOverCloud = true;
+        //VTResources.useOverCloud = true;
         ReadP2P();
         DiscordRadioManager.Update();
         if (VTOLAPI.currentScene == VTOLScenes.VehicleConfiguration)
@@ -538,7 +539,7 @@ public class Networker : MonoBehaviour
     {
         MessageBatchingReliableBuffer.Add(msg);
 
-        if (MessageBatchingReliableBuffer.Count > 10)
+        if (MessageBatchingReliableBuffer.Count > 5)
         {
             flushReliableBuffer();
         }
@@ -883,7 +884,7 @@ public class Networker : MonoBehaviour
                             playerStatusDic[hostID] = PlayerStatus.Loading;
                             UpdateLoadingText();
                         }
-                        LoadingSceneController.instance.PlayerReady();
+                       
                     }
                     UpdateLoadingText();
                 }
@@ -893,7 +894,6 @@ public class Networker : MonoBehaviour
                 playerStatusDic[hostID] = PlayerStatus.Loading;
                 UpdateLoadingText();
                 hostReady = true;
-                LoadingSceneController.instance.PlayerReady();
                 break;
             case MessageType.RequestSpawn:
                 Debug.Log($"case request spawn from: {csteamID.m_SteamID}, we are {SteamUser.GetSteamID().m_SteamID}, host is {hostID}");
@@ -1075,6 +1075,8 @@ public class Networker : MonoBehaviour
                 Debug.Log("case host loaded");
                 if (!hostLoaded)
                 {
+                    Message_HostLoaded hlMessage= ((PacketSingle)packet).message as Message_HostLoaded;
+
                     if (isHost)
                     {
                         Debug.Log("we shouldn't have gotten a host loaded....");
@@ -1082,9 +1084,9 @@ public class Networker : MonoBehaviour
                     }
                     else
                     {
-                        hostLoaded = true;
+                        hostLoaded = hlMessage.isReady;
                         playerStatusDic[hostID] = PlayerStatus.InGame;
-                        LoadingSceneController.instance.PlayerReady();
+                        //LoadingSceneController.instance.PlayerReady();
                     }
                 }
                 else
@@ -1171,6 +1173,10 @@ public class Networker : MonoBehaviour
             case MessageType.RocketLauncherUpdate:
                 if (RocketUpdate != null)
                     RocketUpdate.Invoke(packet);
+                break;
+            case MessageType.AudioMessage:
+                Message_AudioCommand lastMessages = (Message_AudioCommand)((PacketSingle)packet).message;
+
                 break;
             case MessageType.ScenarioAction:
                 Debug.Log("case scenario action packet");
@@ -1550,7 +1556,8 @@ public class Networker : MonoBehaviour
         Debug.Log("Done adding to status dict");
         NetworkSenderThread.Instance.AddPlayer(csteamID);
         NetworkSenderThread.Instance.SendPacketToSpecificPlayer(csteamID, new Message_JoinRequestAccepted_Result(DiscordRadioManager.userID, DiscordRadioManager.lobbyID, DiscordRadioManager.lobbySecret, Multiplayer._instance.thrust,
-            Multiplayer._instance.alpha, Multiplayer._instance.fog, DiscordRadioManager.freqTableNetworkString, DiscordRadioManager.freqLabelTableNetworkString), EP2PSend.k_EP2PSendReliable);
+        Multiplayer._instance.alpha, Multiplayer._instance.fog, DiscordRadioManager.freqTableNetworkString, DiscordRadioManager.freqLabelTableNetworkString), EP2PSend.k_EP2PSendReliable);
+        NetworkSenderThread.Instance.SendPacketToSpecificPlayer(csteamID, new Message_HostLoaded(hostLoaded), EP2PSend.k_EP2PSendReliable);
         UpdateLoadingText();
     }
 

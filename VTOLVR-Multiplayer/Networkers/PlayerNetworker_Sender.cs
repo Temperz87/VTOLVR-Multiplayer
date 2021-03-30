@@ -223,6 +223,18 @@ class PlayerNetworker_Sender : MonoBehaviour
                 gearAnim.ExtendImmediate();
         }
 
+        VRHead vehicleVRHead = newPlayer.GetComponentInChildren<VRHead>(true);
+        if (VTMapGenerator.fetch)
+        {
+            if (vehicleVRHead)
+            {
+                VTMapGenerator.fetch.StartLODRoutine(vehicleVRHead.transform);
+            }
+            else if (VRHead.instance)
+            {
+                VTMapGenerator.fetch.StartLODRoutine(VRHead.instance.transform);
+            }
+        }
 
         //  PlayerManager.StartRearm(rearmPoint);
         //rb.velocity = Vector3.zero;

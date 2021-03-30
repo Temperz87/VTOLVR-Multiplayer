@@ -7,6 +7,7 @@ class Patch_OnPreSpawnUnit
 {
     public static bool Prefix(PlayerSpawn __instance)
     {
+       
         if (PlayerManager.selectedVehicle == "")
         {
             Debug.LogError("selected vehicle is empty");

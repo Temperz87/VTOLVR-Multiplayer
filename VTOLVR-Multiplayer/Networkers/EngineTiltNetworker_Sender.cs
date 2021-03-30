@@ -11,6 +11,7 @@ class EngineTiltNetworker_Sender : MonoBehaviour
     {
         tiltController = GetComponent<TiltController>();
         lastMessage = new Message_EngineTiltUpdate(networkUID, 0);
+       
     }
 
     private void LateUpdate()
