@@ -293,7 +293,26 @@ class Patch4
         return true;
     }
 }
-
+/*
+[HarmonyPatch(typeof(Actor), "DetectActor")]
+class Patchact
+{
+    static bool Prefix(Actor __instance, Teams detectedBy)
+    {
+        if (detectedBy == Teams.Enemy)
+            return true;
+        if (PlayerManager.networkedDetection)
+            return true;
+        if (VTOLVR_Multiplayer.AIDictionaries.reverseAllActors.TryGetValue(__instance, out ulong uID))
+        {
+            if (Networker.isHost)
+                NetworkSenderThread.Instance.SendPacketAsHostToAllClients(new Message_DiscoveredActor(uID, PlayerManager.localUID, PlayerManager.teamLeftie), Steamworks.EP2PSend.k_EP2PSendReliable);
+            else
+                NetworkSenderThread.Instance.SendPacketToSpecificPlayer(Networker.hostID, new Message_DiscoveredActor(uID, PlayerManager.localUID, PlayerManager.teamLeftie), Steamworks.EP2PSend.k_EP2PSendReliable);
+        }
+        return true;
+    }
+}*/
 //patch to grab all the events being loaded on creation this replaces original method
 [HarmonyPatch(typeof(MissionObjective), "FailObjective")]
 class Patch5

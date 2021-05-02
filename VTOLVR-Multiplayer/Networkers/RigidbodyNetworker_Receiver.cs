@@ -21,7 +21,7 @@ public class RigidbodyNetworker_Receiver : MonoBehaviour
     private float velSmoothingTime = 1.0f;//actor velocity for using with the gunsight, should stop the jitter
     private float latency = 0.0f;
 
-    private PlayerManager.Player playerWeRepresent;
+    public PlayerManager.Player playerWeRepresent = null;
 
     private ulong mostCurrentUpdateNumber;
 

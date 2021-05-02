@@ -57,5 +57,6 @@ public enum MessageType
     CompressedBatch,
     SetFrequency,
     IKPuppet,
-    AudioMessage
+    AudioMessage,
+    ActorDiscovery
 }

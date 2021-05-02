@@ -37,6 +37,9 @@ public static class PlayerManager
     public static UnityAction<CustomPlaneDef> onSpawnLocalPlayer = null;
     public static UnityAction<CustomPlaneDef> onSpawnClient = null;
     public static Transform LeftPTT = null;
+    public static bool safeToForceDetect = false;
+
+    public static bool networkedDetection = false;
     /// <summary>
     /// This is the queue for people waiting to get a spawn point,
     /// incase the host hasn't loaded in, in time.
@@ -50,6 +53,8 @@ public static class PlayerManager
     public static ulong localUID;
     private static Packet storedSpawnMessage;
     public static GameObject worldData;
+
+    public static List<Actor> enemyDetectedList = new List<Actor>();
     public static List<Renderer> invisibleActorList = new List<Renderer>();
     public static Multiplayer multiplayerInstance = null;
     public static bool teamLeftie = false;
@@ -68,6 +73,7 @@ public static class PlayerManager
 
     public static bool PlayerIsCustomPlane = false;
     public static string LoadedCustomPlaneString = "";
+    public static bool allowStart=false;
     public class Player
     {
         public CSteamID cSteamID;
@@ -133,7 +139,9 @@ public static class PlayerManager
         // As a client, when the map has loaded we are going to request a spawn point from the host
         SetPrefabs();
         CUSTOM_API.loadDisplayPrefab();
+        GameObject.Destroy(FlightSceneManager.instance.playerActor.gameObject.GetComponent<DashMapDisplay>());
 
+        FlightSceneManager.instance.playerActor.gameObject.AddComponent<DashMapDisplay>();
         carrierStart = FlightSceneManager.instance.playerActor.unitSpawn.unitSpawner.linkedToCarrier;
         if (carrierStart && !Networker.isHost)
         {
@@ -277,6 +285,8 @@ public static class PlayerManager
             Debug.Log($"Sending spawn request to host, host id: {Networker.hostID}, client id: {SteamUser.GetSteamID().m_SteamID}");
             Debug.Log("Killing all units currently on the map.");
             List<Actor> allActors = new List<Actor>();
+
+                
             foreach (var actor in TargetManager.instance.allActors)
             {
                 if (!actor.isPlayer)
@@ -543,6 +553,40 @@ public static class PlayerManager
         localUID = result.vehicleUID;
 
         Time.timeScale = 1.0f;
+
+        Radar rad = FlightSceneManager.instance.playerActor.gameObject.GetComponentInChildren<Radar>();
+        foreach (var actors in TargetManager.instance.allActors)
+        {
+            if (actors != FlightSceneManager.instance.playerActor)
+                if (rad && actors.team == Teams.Allied)
+                    rad.ForceDetect(actors);
+        }
+
+        if (!rad)
+        {
+            OpticalTargeter opt = FlightSceneManager.instance.playerActor.gameObject.GetComponentInChildren<OpticalTargeter>();
+            foreach (var actors in TargetManager.instance.allActors)
+            {
+
+                if (actors.team == Teams.Allied)
+                {
+                    actors.DiscoverActor(); actors.DetectActor(Teams.Allied);
+
+                }
+
+            }
+        }
+
+        foreach (var actors in enemyDetectedList)
+        {
+            if (actors != null)
+            {
+                actors.DiscoverActor(); actors.DetectActor(Teams.Allied);
+
+            }
+
+        }
+        enemyDetectedList.Clear();
     }
     /// <summary>
     /// Spawns a local vehicle, and sends the message to other clients to 
@@ -634,7 +678,7 @@ public static class PlayerManager
                 }
             }
 
-          /*
+         
            if (LeftPTT == null)
             {
                 if (FlightSceneManager.instance.playerActor.gameObject != null)
@@ -648,18 +692,7 @@ public static class PlayerManager
             {
                 foreach (var controller in GameObject.FindObjectsOfType<VRHandController>())
                 {
-                    if(Multiplayer._instance.ptt)
-                    if (controller.isLeft  )
-                    {
-                        if (controller.stickPressDown)
-                        {
-                            DiscordRadioManager.selfMute(false);
-                        }
-                        else
-                        {
-                            DiscordRadioManager.selfMute(true);
-                        }
-                    }
+                    
                     if (controller.isLeft && controller.triggerAxis >0.5f)
                     {
                        
@@ -670,8 +703,7 @@ public static class PlayerManager
                             {
                                 if(audioSource!=null)audioSource.PlayOneShot(clip);
                             }
-                            DiscordRadioManager.radioFreq = 9999;
-                            DiscordRadioManager.selfMute(false); 
+                            DiscordRadioManager.radioFreq = 9999; 
                             DiscordRadioManager.setFreq(SteamFriends.GetPersonaName(), 9999);
                         }
                         
@@ -681,11 +713,11 @@ public static class PlayerManager
                     {
                         DiscordRadioManager.radioFreq = CUSTOM_API.currentFreq.GetHashCode();
                         DiscordRadioManager.setFreq(SteamFriends.GetPersonaName(), DiscordRadioManager.radioFreq);
-                        DiscordRadioManager.selfMute(true);
+                         
                     }
 
                 }
-            }*/
+            } 
 
                 /*foreach (Renderer rend in invisibleActorList)
                 {
@@ -913,8 +945,46 @@ public static class PlayerManager
         pvSetup.OnBeginUsingConfigurator -= StartConfig;
         unSubscribe = false;
         PilotSaveManager.currentCampaign = Networker._instance.pilotSaveManagerControllerCampaign;
-     PilotSaveManager.currentScenario = Networker._instance.pilotSaveManagerControllerCampaignScenario;
+        PilotSaveManager.currentScenario = Networker._instance.pilotSaveManagerControllerCampaignScenario;
 
+
+        PlayerManager.networkedDetection = true;
+        Radar rad = act.gameObject.GetComponentInChildren<Radar>();
+        foreach (var actors in TargetManager.instance.allActors)
+        {
+            if(actors!= act)
+            if (rad && actors.team == Teams.Allied)
+                rad.ForceDetect(actors);
+        }
+
+        if (!rad)
+        {
+            OpticalTargeter opt = act.gameObject.GetComponentInChildren<OpticalTargeter>();
+            foreach (var actors in TargetManager.instance.allActors)
+            {
+
+                if (actors.team == Teams.Allied)
+                {
+                    actors.DiscoverActor(); actors.DetectActor(Teams.Allied);
+                    
+                }
+                 
+            }
+        }
+
+        foreach (var actors in enemyDetectedList)
+        {
+            if (actors!=null)
+            {
+                actors.DiscoverActor(); actors.DetectActor(Teams.Allied);
+
+            }
+
+        }
+        enemyDetectedList.Clear();
+
+        PlayerManager.networkedDetection = false;
+        PlayerManager.safeToForceDetect = true;
     }
     public static List<T> FindObjectsOfTypeAll<T>(GameObject obj)
     {
@@ -1046,7 +1116,7 @@ public static class PlayerManager
             VTMapGenerator.fetch.BakeColliderAtPosition(localVehicle.transform.position);
         }
         //rb.detectCollisions = true;
-        SetupLocalAircraft(localVehicle, pos, rot, UID, sendNewSpawnPacket);
+        SetupLocalAircraft(localVehicle, rearmPoint.transform.position, rearmPoint.transform.rotation, UID, sendNewSpawnPacket);
 
 
         firstSpawnDone = true;
@@ -1204,7 +1274,7 @@ public static class PlayerManager
                 Debug.Log($"Sending spawn vehicle message to: {Networker.hostID}");
                 NetworkSenderThread.Instance.SendPacketToSpecificPlayer(Networker.hostID,
                     new Message_SpawnPlayerVehicle(currentVehicle,
-                        new Vector3D(pos),
+                        VTMapManager.WorldToGlobalPoint(pos),
                         rot,
                         SteamUser.GetSteamID().m_SteamID,
                         UID,
@@ -1217,7 +1287,7 @@ public static class PlayerManager
             {
                 Debug.Log("I am host,sending respawn");
                 NetworkSenderThread.Instance.SendPacketAsHostToAllClients(new Message_SpawnPlayerVehicle(currentVehicle,
-                        new Vector3D(pos),
+                        VTMapManager.WorldToGlobalPoint(pos),
                         rot,
                         SteamUser.GetSteamID().m_SteamID,
                         UID,
@@ -1266,7 +1336,9 @@ public static class PlayerManager
             if (onSpawnLocalPlayer != null)
                 onSpawnLocalPlayer.Invoke(plndef);
         }
+
       
+
     }
     /// <summary>
     /// When the user has received a message of spawn player vehicle, 
@@ -1574,7 +1646,10 @@ public static class PlayerManager
         }
         TargetManager.instance.RegisterActor(aIPilot.actor);
         aIPilot.actor.hideDeathLog = true;
+        if(!players[playerID].customPlane)
         ((AIAircraftSpawn)aIPilot.actor.unitSpawn).vehicleName +=" " +players[playerID].nameTag;
+        else
+        ((AIAircraftSpawn)aIPilot.actor.unitSpawn).vehicleName = players[playerID].customPlaneName+ " " + players[playerID].nameTag;
         players[playerID].leftie = isLeft;
         players[playerID].vehicle = newVehicle;
         players[playerID].actor = aIPilot.actor;
@@ -1825,6 +1900,8 @@ public static class PlayerManager
         OPFORbuttonMade = false;
         timeinGame = 0;
         Networker.hostLoaded = false;
+
+        PlayerManager.allowStart = false;
     }
 
     public static void OnDisconnect()

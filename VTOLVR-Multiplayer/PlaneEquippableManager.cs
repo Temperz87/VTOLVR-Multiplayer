@@ -147,10 +147,16 @@ public static class PlaneEquippableManager
     {
         int playerIDX = PlayerManager.GetPlayerIDFromCSteamID(new CSteamID(networkID));
         bool playerFlag = false;
+        ulong ownerUID;
         string playerName = "";
         if (playerIDX != -1)
         {
             playerFlag = true;
+            ownerUID = PlayerManager.players[playerIDX].cSteamID.m_SteamID;
+        }
+        else
+        {
+            ownerUID = Networker.hostID.m_SteamID;
         }
         if (playerFlag)
             playerName = PlayerManager.players[playerIDX].nameTag + "'s ";
@@ -191,6 +197,7 @@ public static class PlaneEquippableManager
                     {
                         //Debug.Log("Adding missile reciever");
                         lastReciever = hpML.ml.missiles[j].gameObject.AddComponent<MissileNetworker_Receiver>();
+                        lastReciever.ownerNetworkUID = ownerUID;
                         lastReciever.thisMissile = hpML.ml.missiles[j];
                         foreach (var thingy in hpLoadout) // it's a loop... because fuck you!
                         {

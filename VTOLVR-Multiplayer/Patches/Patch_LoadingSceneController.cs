@@ -45,14 +45,41 @@ public class Patch_LoadingSceneController_PlayerReady
 [HarmonyPatch(typeof(LoadingSceneHelmet), "Update")]
 class Patch_LoadingSceneHelmet_Update
 {
+    public static float returnTimer = 0.0f;
     [HarmonyPrefix]
+   
     static bool Prefix(LoadingSceneHelmet __instance)
     {
         
         Traverse t = Traverse.Create(__instance);
         bool grabbed = (bool)t.Field("grabbed").GetValue();
+
+         Quaternion startRotation = (Quaternion)t.Field("startRotation").GetValue();
+
+         Vector3 startPosition = (Vector3)t.Field("startPosition").GetValue();
         VRHandController c = (VRHandController)t.Field("c").GetValue();
-       
+
+
+
+        if (!grabbed)
+        {
+            if ((__instance.transform.position - __instance.radiusTf.position).magnitude > __instance.returnRadius)
+            {
+                 returnTimer += Time.deltaTime;
+                if ( returnTimer > 3f)
+                {
+                   
+                    __instance.transform.position =  startPosition;
+                    __instance.transform.rotation =  startRotation;
+                     returnTimer = 0f;
+                     
+                }
+            }
+            else
+            {
+                 returnTimer = 0f;
+            }
+        }
         if (!PlayerManager.OPFORbuttonMade)
         {
             Debug.Log("OPFORbuttonMade eneter");
@@ -117,18 +144,19 @@ class Patch_LoadingSceneHelmet_Update
                     if (Networker.isHost)
                     {
                         PlayerManager.teamLeftie = false; //host cant be team leftie so ai doesnt break;
-                        if (Networker.EveryoneElseReady())
+                        //if (Networker.EveryoneElseReady())
                         {
                             Debug.Log("Everyone is ready, starting game");
                             NetworkSenderThread.Instance.SendPacketAsHostToAllClients(new Message(MessageType.AllPlayersReady), Steamworks.EP2PSend.k_EP2PSendReliable);
                             Networker.SetHostReady(true);
+                            PlayerManager.allowStart = true;
                             LoadingSceneController.instance.PlayerReady();
                             PlayerManager.OPFORbuttonMade = false;
                         }
-                        else
+                       // else
                         {
-                            Debug.Log("I'm ready but others are not, waiting");
-                           Networker.SetHostReady(false);
+                           // Debug.Log("I'm ready but others are not, waiting");
+                         // Networker.SetHostReady(false);
                         }
                     }
                     else
@@ -142,6 +170,7 @@ class Patch_LoadingSceneHelmet_Update
                     }
                     if (Networker.hostLoaded && !Networker.isHost)
                     {
+                        PlayerManager.allowStart = true;
                         LoadingSceneController.instance.PlayerReady();
                         PlayerManager.OPFORbuttonMade = false;
 
@@ -158,5 +187,15 @@ class Patch_LoadingSceneHelmet_Update
             }
         }
         return false;
+    }
+}
+
+[HarmonyPatch(typeof(LoadingSceneController), "PlayerReady")]
+class lol
+{
+    [HarmonyPrefix]
+    static bool Prefix(LoadingSceneController __instance)
+    {
+        return PlayerManager.allowStart;
     }
 }

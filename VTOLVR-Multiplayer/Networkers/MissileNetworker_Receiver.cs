@@ -5,6 +5,7 @@ using UnityEngine;
 public class MissileNetworker_Receiver : MonoBehaviour
 {
     public ulong networkUID;
+    public ulong ownerNetworkUID;
     public Missile thisMissile;
     public MissileLauncher thisML;
     public int idx;
@@ -34,7 +35,7 @@ public class MissileNetworker_Receiver : MonoBehaviour
             }
         }
 
-        thisMissile.explodeRadius *= 2.5f;
+        thisMissile.explodeRadius *= 2.0f;
         traverseML = Traverse.Create(thisML);
         traverseMSL = Traverse.Create(thisMissile);
         traverseMSL.Field("detonated").SetValue(true);
@@ -92,7 +93,15 @@ public class MissileNetworker_Receiver : MonoBehaviour
                     {
                         RigidbodyNetworker_Receiver rbReceiver = gameObject.AddComponent<RigidbodyNetworker_Receiver>();
                         rbReceiver.networkUID = networkUID;
-                        rbReceiver.smoothingTime =0.1f;
+                        foreach(PlayerManager.Player p in PlayerManager.players)
+                        {
+                            if(p.cSteamID.m_SteamID == ownerNetworkUID)
+                            {
+                                rbReceiver.playerWeRepresent = p;
+                            }
+                        }
+                       
+                        rbReceiver.smoothingTime =0.2f;
                     }
                 }
             }

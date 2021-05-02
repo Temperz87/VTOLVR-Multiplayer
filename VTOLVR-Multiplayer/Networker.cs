@@ -866,7 +866,7 @@ public class Networker : MonoBehaviour
                         NetworkSenderThread.Instance.SendPacketToSpecificPlayer(csteamID, new Message_HostLoaded(true), EP2PSend.k_EP2PSendReliable);
                         break;
                     }
-                    else if (hostReady && EveryoneElseReady())
+                    else if (hostReady)// && EveryoneElseReady())
                     {
                         Debug.Log("The last client has said they are ready, starting");
                         if (!allPlayersReadyHasBeenSentFirstTime)
@@ -1013,6 +1013,7 @@ public class Networker : MonoBehaviour
                 break;
             case MessageType.SetFrequency:
                 Message_SetFrequency freMessage = ((PacketSingle)packet).message as Message_SetFrequency;
+                //if(freMessage.source!=PlayerManager.localUID)
                 DiscordRadioManager.setFreq(freMessage.source, freMessage.freq);
                 break;
             case MessageType.Respawn:
@@ -1086,7 +1087,12 @@ public class Networker : MonoBehaviour
                     {
                         hostLoaded = hlMessage.isReady;
                         playerStatusDic[hostID] = PlayerStatus.InGame;
-                        //LoadingSceneController.instance.PlayerReady();
+                        if(readySent && hostLoaded)
+                        {
+                            PlayerManager.allowStart = true;
+                            LoadingSceneController.instance.PlayerReady();
+                        }
+                       
                     }
                 }
                 else
@@ -1204,6 +1210,23 @@ public class Networker : MonoBehaviour
                 Debug.Log("case missiledmage");
                 PlayerManager.MissileDamage(packet);
                 break;
+                /*
+            case MessageType.ActorDiscovery:
+                Message_DiscoveredActor actorDiscMsg = (Message_DiscoveredActor)((PacketSingle)packet).message;
+                if(actorDiscMsg.team  == PlayerManager.teamLeftie)
+                {          
+                if (VTOLVR_Multiplayer.AIDictionaries.allActors.TryGetValue(actorDiscMsg.detectedUID, out Actor actor))
+                {
+                    if (actor != null)
+                    {
+                            PlayerManager.networkedDetection = true;
+                            actor.DiscoverActor();
+                            actor.DetectActor(Teams.Allied);
+                            PlayerManager.networkedDetection = false;
+                        }   
+                }
+                }
+                 break;*/
             case MessageType.ObjectiveSync:
                 Debug.Log("case Objective");
 

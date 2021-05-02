@@ -76,7 +76,7 @@ class PlayerNetworker_Sender : MonoBehaviour
         yield return new WaitForSeconds(respawnTimer);
         if (button != null)
             Destroy(button);
-
+        PlayerManager.safeToForceDetect = false;
         Debug.Log("Finished respawn timer.");
 
         ReArmingPoint[] rearmPoints = GameObject.FindObjectsOfType<ReArmingPoint>();
@@ -141,6 +141,19 @@ class PlayerNetworker_Sender : MonoBehaviour
         AudioController.instance.ClearAllOpenings();
 
         UnitIconManager.instance.UnregisterAll();
+     
+
+
+        foreach (var actor in TargetManager.instance.detectedByAllies)
+        {
+            if (actor != null)
+            {
+                if (actor.team == Teams.Enemy)
+                {
+                    PlayerManager.enemyDetectedList.Add(actor);
+                }
+            }
+        }
         TargetManager.instance.detectedByAllies.Clear();
         TargetManager.instance.detectedByEnemies.Clear();
 
@@ -500,6 +513,7 @@ class PlaneButton : MonoBehaviour
     }
     private void LateUpdate()
     {
+       
 
         foreach (var controller in GameObject.FindObjectsOfType<VRHandController>())
         {

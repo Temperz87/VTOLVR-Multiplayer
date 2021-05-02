@@ -21,7 +21,7 @@ public class MissileNetworker_Sender : MonoBehaviour
         ownerActor = GetComponentInParent<Actor>();
         thisMissile.OnMissileDetonated += OnDetonated;
 
-        thisMissile.explodeRadius *= 2.5f;
+        thisMissile.explodeRadius *= 2.0f;
 
         tick += UnityEngine.Random.Range(0.0f, 1.0f / tickRate);
     }
